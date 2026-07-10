@@ -294,3 +294,110 @@ export const invoiceItems = mysqlTable("invoice_items", {
 export type InvoiceItem = typeof invoiceItems.$inferSelect;
 export type InsertInvoiceItem = typeof invoiceItems.$inferInsert;
 
+
+// ─── Subscription Plans (global, managed by superadmin) ──────────────────────────
+export const subscriptionPlans = mysqlTable("subscription_plans", {
+  id: int("id").autoincrement().primaryKey(),
+  name: varchar("name", { length: 100 }).notNull(), // "Starter", "Pro", "Enterprise"
+  description: text("description"),
+  maxUsers: int("maxUsers").notNull(),
+  monthlyPrice: decimal("monthlyPrice", { precision: 10, scale: 2 }).notNull(),
+  yearlyPrice: decimal("yearlyPrice", { precision: 10, scale: 2 }).notNull(),
+  features: text("features"), // JSON array of feature strings
+  sortOrder: int("sortOrder").notNull().default(0),
+  isActive: boolean("isActive").notNull().default(true),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type SubscriptionPlan = typeof subscriptionPlans.$inferSelect;
+export type InsertSubscriptionPlan = typeof subscriptionPlans.$inferInsert;
+
+// ─── Firm Subscriptions ───────────────────────────────────────────────────────────
+export const firmSubscriptions = mysqlTable("firm_subscriptions", {
+  id: int("id").autoincrement().primaryKey(),
+  firmId: int("firmId").notNull(),
+  planId: int("planId").notNull(),
+  billingCycle: mysqlEnum("billingCycle", ["monthly", "yearly"]).notNull().default("monthly"),
+  status: mysqlEnum("status", ["active", "past_due", "cancelled", "suspended"]).notNull().default("active"),
+  currentPeriodStart: timestamp("currentPeriodStart").notNull(),
+  currentPeriodEnd: timestamp("currentPeriodEnd").notNull(),
+  cancelledAt: timestamp("cancelledAt"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type FirmSubscription = typeof firmSubscriptions.$inferSelect;
+export type InsertFirmSubscription = typeof firmSubscriptions.$inferInsert;
+
+// ─── Payment Plans (invoice payment schedules) ────────────────────────────────────
+export const paymentPlans = mysqlTable("payment_plans", {
+  id: int("id").autoincrement().primaryKey(),
+  invoiceId: int("invoiceId").notNull(),
+  name: varchar("name", { length: 100 }).notNull(), // "Monthly 3x", "Upfront + Milestone"
+  description: text("description"),
+  totalAmount: decimal("totalAmount", { precision: 12, scale: 2 }).notNull(),
+  installmentCount: int("installmentCount").notNull(),
+  intervalDays: int("intervalDays").notNull(), // 30 for monthly, 0 for one-time
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type PaymentPlan = typeof paymentPlans.$inferSelect;
+export type InsertPaymentPlan = typeof paymentPlans.$inferInsert;
+
+// ─── Payment Plan Installments ────────────────────────────────────────────────────
+export const paymentInstallments = mysqlTable("payment_installments", {
+  id: int("id").autoincrement().primaryKey(),
+  paymentPlanId: int("paymentPlanId").notNull(),
+  installmentNumber: int("installmentNumber").notNull(),
+  amount: decimal("amount", { precision: 12, scale: 2 }).notNull(),
+  dueDate: timestamp("dueDate").notNull(),
+  status: mysqlEnum("status", ["pending", "paid", "overdue", "failed"]).notNull().default("pending"),
+  paidAt: timestamp("paidAt"),
+  adyenPaymentId: varchar("adyenPaymentId", { length: 255 }),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type PaymentInstallment = typeof paymentInstallments.$inferSelect;
+export type InsertPaymentInstallment = typeof paymentInstallments.$inferInsert;
+
+// ─── Adyen Accounts (per firm) ────────────────────────────────────────────────────
+export const adyenAccounts = mysqlTable("adyen_accounts", {
+  id: int("id").autoincrement().primaryKey(),
+  firmId: int("firmId").notNull(),
+  merchantAccount: varchar("merchantAccount", { length: 255 }).notNull(),
+  apiKey: text("apiKey").notNull(), // Encrypted
+  clientKey: text("clientKey").notNull(), // Public key for frontend
+  isActive: boolean("isActive").notNull().default(false),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type AdyenAccount = typeof adyenAccounts.$inferSelect;
+export type InsertAdyenAccount = typeof adyenAccounts.$inferInsert;
+
+// ─── Agency Settings (global, managed by superadmin) ──────────────────────────────
+export const agencySettings = mysqlTable("agency_settings", {
+  id: int("id").autoincrement().primaryKey(),
+  key: varchar("key", { length: 100 }).notNull().unique(), // "logo_url", "vat_rates", "agency_name"
+  value: text("value").notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type AgencySetting = typeof agencySettings.$inferSelect;
+export type InsertAgencySetting = typeof agencySettings.$inferInsert;
+
+// ─── Superadmin Audit Log ────────────────────────────────────────────────────────
+export const superadminAuditLog = mysqlTable("superadmin_audit_log", {
+  id: int("id").autoincrement().primaryKey(),
+  superadminId: int("superadminId").notNull(),
+  action: varchar("action", { length: 100 }).notNull(), // "create_firm", "update_plan", "suspend_firm"
+  targetType: varchar("targetType", { length: 50 }).notNull(), // "firm", "plan", "subscription"
+  targetId: int("targetId"),
+  details: text("details"), // JSON
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type SuperadminAuditLog = typeof superadminAuditLog.$inferSelect;
+export type InsertSuperadminAuditLog = typeof superadminAuditLog.$inferInsert;
