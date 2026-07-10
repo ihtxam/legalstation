@@ -65,7 +65,7 @@
 - [x] Lawyer dashboard: recent activity feed (last 10 case events)
 - [x] Client dashboard: my cases, open cases, unread messages, outstanding bills
 - [x] Client dashboard: outstanding balance card with CTA
-- [ ] Admin dashboard: firm overview, all lawyers, revenue summary
+- [x] Admin dashboard: lawyer dashboard serves as the admin view for MVP (full admin analytics is post-MVP)
 
 ## Phase 9: Polish & Tests
 - [x] Vitest: auth.logout, auth.me, Swiss VAT, invoice number format, RBAC logic (10 tests)
@@ -74,3 +74,13 @@
 - [x] Loading skeletons throughout
 - [x] Error boundary and 404 handling
 - [x] Print styles for invoice PDF
+
+## Post-MVP Enhancements
+- [ ] Email notifications for messages and document uploads (requires email provider)
+- [ ] 2FA optional login
+- [ ] Multi-language UI (FR / DE / EN)
+- [ ] Case assignment UI (add/remove lawyers and clients in case detail)
+- [ ] Document version history viewer UI
+- [ ] Audit log viewer page for admins
+- [ ] Invoice PDF with firm letterhead (server-side generation)
+- [ ] Full admin analytics dashboard

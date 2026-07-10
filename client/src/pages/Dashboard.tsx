@@ -188,7 +188,8 @@ export default function Dashboard() {
     }
   }, [firmData, firmLoading, loading, isAuthenticated]);
 
-  if (loading || firmLoading) return null;
+  // Don't render any dashboard until we know the user's status
+  if (loading || firmLoading || !isAuthenticated) return null;
 
   const isFirmMember = firmData !== null && firmData !== undefined;
 
