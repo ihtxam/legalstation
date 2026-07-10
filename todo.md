@@ -84,3 +84,22 @@
 - [ ] Audit log viewer page for admins
 - [ ] Invoice PDF with firm letterhead (server-side generation)
 - [ ] Full admin analytics dashboard
+
+## Critical MVP Fixes (Phase 10)
+- [ ] Brevo API integration: send firm invite, client invite, and message notification emails
+- [ ] Case assignment UI: add/remove clients and lawyers from case detail page
+- [ ] Test case assignment workflow end-to-end
+
+## Deployment & Data Protection (Phase 11)
+- [ ] Deployment mode support: DEPLOYMENT_MODE env flag (saas | on_premise)
+- [ ] Single-tenant mode for on-prem deployments
+- [ ] License module for on-prem (offline validation, grace period)
+- [ ] Encryption at rest configuration (Postgres TDE, S3 SSE)
+- [ ] Per-tenant data encryption keys (DEK/KEK)
+- [ ] Audit log export for SIEM integration
+- [ ] Swiss DPA template (FR/DE bilingual)
+- [ ] Technical & organizational measures (TOMs) documentation
+- [ ] Data residency certificate template
+- [ ] Backup encryption + offsite policy
+- [ ] Penetration test readiness checklist
+- [ ] Sales sheet for Swiss law firms

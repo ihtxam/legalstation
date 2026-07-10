@@ -15,6 +15,8 @@ import {
   removeCaseAssignment,
   updateCase,
   updateCaseEvent,
+  getFirmMembers,
+  getClientsByFirm,
 } from "../db";
 import { protectedProcedure, router } from "../_core/trpc";
 
@@ -32,7 +34,6 @@ export const casesRouter = router({
       type: z.string().optional(),
     }).optional())
     .query(async ({ ctx, input }) => {
-      // Check if user is a firm member or a client
       const member = await getFirmMemberByUserId(ctx.user.id);
       if (member) {
         let all = await getCasesByFirm(member.firmId);
@@ -44,7 +45,6 @@ export const casesRouter = router({
         if (input?.type) all = all.filter(c => c.type === input.type);
         return all;
       }
-      // Client: only their assigned cases
       const client = await getClientByUserId(ctx.user.id);
       if (client) {
         return getCasesByClientId(client.id);
@@ -140,7 +140,6 @@ export const casesRouter = router({
       return { success: true };
     }),
 
-  // Timeline events
   getEvents: protectedProcedure
     .input(z.object({ caseId: z.number() }))
     .query(async ({ ctx, input }) => {
@@ -198,27 +197,116 @@ export const casesRouter = router({
       return { success: true };
     }),
 
-  // Assignments
-  addAssignment: protectedProcedure
-    .input(z.object({
-      caseId: z.number(),
-      userId: z.number().optional(),
-      clientId: z.number().optional(),
-      assignmentType: z.enum(["lawyer", "assistant", "client"]),
-    }))
+  // Case assignment management
+  getAssignmentOptions: protectedProcedure
+    .input(z.object({ caseId: z.number() }))
+    .query(async ({ ctx, input }) => {
+      const member = await requireFirmMember(ctx.user.id);
+      const caseData = await getCaseById(input.caseId, member.firmId);
+      if (!caseData) throw new TRPCError({ code: "NOT_FOUND" });
+      
+      const lawyers = await getFirmMembers(member.firmId);
+      const clients = await getClientsByFirm(member.firmId);
+      const assignments = await getCaseAssignments(input.caseId);
+      
+      return {
+        availableLawyers: lawyers.filter(l => !assignments.some(a => a.userId === l.member.userId && a.assignmentType === "lawyer")),
+        availableClients: clients.filter(c => !assignments.some(a => a.clientId === c.id)),
+        currentAssignments: assignments,
+      };
+    }),
+
+  assignLawyer: protectedProcedure
+    .input(z.object({ caseId: z.number(), lawyerId: z.number() }))
     .mutation(async ({ ctx, input }) => {
       const member = await requireFirmMember(ctx.user.id);
-      if (!["admin", "lawyer"].includes(member.firmRole)) throw new TRPCError({ code: "FORBIDDEN" });
-      await addCaseAssignment({ ...input, assignedByUserId: ctx.user.id });
+      const caseData = await getCaseById(input.caseId, member.firmId);
+      if (!caseData) throw new TRPCError({ code: "NOT_FOUND" });
+      
+      await addCaseAssignment({
+        caseId: input.caseId,
+        userId: input.lawyerId,
+        assignmentType: "lawyer",
+        assignedByUserId: ctx.user.id,
+      });
+      
+      await createCaseEvent({
+        caseId: input.caseId,
+        authorUserId: ctx.user.id,
+        eventType: "system",
+        visibility: "internal",
+        title: "Lawyer assigned",
+        content: `A lawyer was assigned to this case.`,
+      });
+      
       return { success: true };
     }),
 
-  removeAssignment: protectedProcedure
-    .input(z.object({ caseId: z.number(), userId: z.number().optional(), clientId: z.number().optional() }))
+  assignClient: protectedProcedure
+    .input(z.object({ caseId: z.number(), clientId: z.number() }))
     .mutation(async ({ ctx, input }) => {
       const member = await requireFirmMember(ctx.user.id);
-      if (!["admin", "lawyer"].includes(member.firmRole)) throw new TRPCError({ code: "FORBIDDEN" });
-      await removeCaseAssignment(input.caseId, input.userId, input.clientId);
+      const caseData = await getCaseById(input.caseId, member.firmId);
+      if (!caseData) throw new TRPCError({ code: "NOT_FOUND" });
+      
+      await addCaseAssignment({
+        caseId: input.caseId,
+        clientId: input.clientId,
+        assignmentType: "client",
+        assignedByUserId: ctx.user.id,
+      });
+      
+      await createCaseEvent({
+        caseId: input.caseId,
+        authorUserId: ctx.user.id,
+        eventType: "system",
+        visibility: "internal",
+        title: "Client assigned",
+        content: `A client was assigned to this case.`,
+      });
+      
+      return { success: true };
+    }),
+
+  removeLawyer: protectedProcedure
+    .input(z.object({ caseId: z.number(), lawyerId: z.number() }))
+    .mutation(async ({ ctx, input }) => {
+      const member = await requireFirmMember(ctx.user.id);
+      const caseData = await getCaseById(input.caseId, member.firmId);
+      if (!caseData) throw new TRPCError({ code: "NOT_FOUND" });
+      
+      await removeCaseAssignment(input.caseId, input.lawyerId);
+      
+      await createCaseEvent({
+        caseId: input.caseId,
+        authorUserId: ctx.user.id,
+        eventType: "system",
+        visibility: "internal",
+        title: "Lawyer removed",
+        content: `A lawyer was removed from this case.`,
+      });
+      
+      return { success: true };
+    }),
+
+  removeClient: protectedProcedure
+    .input(z.object({ caseId: z.number(), clientId: z.number() }))
+    .mutation(async ({ ctx, input }) => {
+      const member = await requireFirmMember(ctx.user.id);
+      const caseData = await getCaseById(input.caseId, member.firmId);
+      if (!caseData) throw new TRPCError({ code: "NOT_FOUND" });
+      
+      await removeCaseAssignment(input.caseId, undefined, input.clientId);
+      
+      await createCaseEvent({
+        caseId: input.caseId,
+        authorUserId: ctx.user.id,
+        eventType: "system",
+        visibility: "internal",
+        title: "Client removed",
+        content: `A client was removed from this case.`,
+      });
+      
       return { success: true };
     }),
 });

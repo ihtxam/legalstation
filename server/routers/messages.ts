@@ -1,5 +1,6 @@
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
+import { sendMessageNotificationEmail } from "../email";
 import {
   createMessage,
   getFirmMemberByUserId,
@@ -32,6 +33,18 @@ export const messagesRouter = router({
         content: input.content,
         parentMessageId: input.parentMessageId,
       });
+      
+      // Send notification email (fire-and-forget)
+      sendMessageNotificationEmail(
+        "case-participants@lexflow.ch", // TODO: Get actual recipient emails from case assignments
+        ctx.user.name || "Your colleague",
+        `Case ${input.caseId}`,
+        input.content.substring(0, 100),
+        `${ctx.req.headers.origin}/cases/${input.caseId}`
+      ).catch(err => {
+        console.error("[Email] Failed to send message notification:", err.message);
+      });
+      
       return { success: true };
     }),
 

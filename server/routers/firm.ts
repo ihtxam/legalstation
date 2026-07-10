@@ -1,6 +1,7 @@
 import { TRPCError } from "@trpc/server";
 import { nanoid } from "nanoid";
 import { z } from "zod";
+import { sendFirmInviteEmail, sendClientInviteEmail } from "../email";
 import {
   acceptInvitation,
   createFirm,
@@ -92,7 +93,21 @@ export const firmRouter = router({
         clientId: input.clientId,
         expiresAt,
       });
-      return { token, inviteUrl: `/invite/${token}` };
+      const inviteUrl = `${ctx.req.headers.origin}/invite/${token}`;
+      const firm = await getFirmById(member.firmId);
+      
+      // Send email based on role
+      if (input.role === "client") {
+        await sendClientInviteEmail(input.email, firm?.name || "Your Firm", inviteUrl).catch(err => {
+          console.error("[Email] Failed to send client invite:", err.message);
+        });
+      } else {
+        await sendFirmInviteEmail(input.email, firm?.name || "Your Firm", inviteUrl, ctx.user.name || "Your colleague").catch(err => {
+          console.error("[Email] Failed to send firm invite:", err.message);
+        });
+      }
+      
+      return { token, inviteUrl };
     }),
 
   // Accept an invitation

@@ -16,7 +16,7 @@ import { Badge } from "@/components/ui/badge";
 import {
   Calendar, FileText, MessageSquare, Lock, Globe, Plus,
   Upload, Download, Eye, Trash2, Clock, Edit2, FolderOpen,
-  AlertCircle
+  AlertCircle, Users, X
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useLocation, useParams } from "wouter";
@@ -98,23 +98,23 @@ function CaseTimeline({ caseId, isInternal }: { caseId: number; isInternal: bool
         <DialogContent>
           <DialogHeader><DialogTitle>Add Note</DialogTitle></DialogHeader>
           <div className="space-y-4 py-2">
-            <div>
-              <Label>Note content</Label>
-              <Textarea className="mt-1.5" rows={4} value={noteContent} onChange={e => setNoteContent(e.target.value)} />
-            </div>
-            <div className="flex items-center gap-3">
-              <Switch checked={noteVisibility === "shared"} onCheckedChange={v => setNoteVisibility(v ? "shared" : "internal")} />
-              <div>
-                <p className="text-sm font-medium">{noteVisibility === "shared" ? "Shared with client" : "Internal only"}</p>
-                <p className="text-xs text-muted-foreground">{noteVisibility === "shared" ? "Client can see this note" : "Only firm members can see this"}</p>
+            <Input placeholder="Title (optional)" />
+            <Textarea placeholder="Note content..." value={noteContent} onChange={e => setNoteContent(e.target.value)} />
+            <div className="flex items-center justify-between">
+              <Label>Visibility</Label>
+              <div className="flex items-center gap-2">
+                <span className={`text-xs font-medium ${noteVisibility === "internal" ? "text-purple-600" : "text-teal-600"}`}>
+                  {noteVisibility === "internal" ? "Internal only" : "Shared with client"}
+                </span>
+                <Switch checked={noteVisibility === "shared"} onCheckedChange={v => setNoteVisibility(v ? "shared" : "internal")} />
               </div>
             </div>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowAdd(false)}>Cancel</Button>
             <Button className="bg-[var(--color-navy)] hover:bg-[var(--color-navy-light)] text-white" disabled={!noteContent.trim() || addNote.isPending}
-              onClick={() => addNote.mutate({ caseId, content: noteContent, visibility: noteVisibility })}>
-              Add note
+              onClick={() => addNote.mutate({ caseId, content: noteContent.trim(), visibility: noteVisibility })}>
+              Add
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -124,80 +124,34 @@ function CaseTimeline({ caseId, isInternal }: { caseId: number; isInternal: bool
 }
 
 function CaseDocuments({ caseId, firmId }: { caseId: number; firmId: number }) {
-  const { data: folders, refetch: refetchFolders } = trpc.documents.getFolders.useQuery({ caseId });
-  const { data: docs, isLoading, refetch: refetchDocs } = trpc.documents.list.useQuery({ caseId });
-  const [uploading, setUploading] = useState(false);
-  const [selectedFolder, setSelectedFolder] = useState<number | null>(null);
-  const [newFolderName, setNewFolderName] = useState("");
-  const [showNewFolder, setShowNewFolder] = useState(false);
-  const fileRef = useRef<HTMLInputElement>(null);
-
-  const createFolder = trpc.documents.createFolder.useMutation({
-    onSuccess: () => { setNewFolderName(""); setShowNewFolder(false); refetchFolders(); toast.success("Folder created"); },
-    onError: (e) => toast.error(e.message),
-  });
-  const registerDoc = trpc.documents.register.useMutation({
-    onSuccess: () => { refetchDocs(); toast.success("Document uploaded"); },
-    onError: (e) => toast.error(e.message),
-  });
-  const toggleVisibility = trpc.documents.updateVisibility.useMutation({
-    onSuccess: () => refetchDocs(),
-    onError: (e) => toast.error(e.message),
-  });
+  const { data: docs, isLoading, refetch } = trpc.documents.list.useQuery({ caseId });
+  const [showUpload, setShowUpload] = useState(false);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [folderId, setFolderId] = useState("");
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  
+  const toggleVisibility = trpc.documents.toggleVisibility.useMutation({ onSuccess: () => refetch() });
   const logAccess = trpc.documents.logAccess.useMutation();
+  const upload = trpc.documents.upload.useMutation({
+    onSuccess: () => { setShowUpload(false); setSelectedFile(null); refetch(); toast.success("Document uploaded"); },
+    onError: (e) => toast.error(e.message),
+  });
 
-  const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    setUploading(true);
-    try {
-      const formData = new FormData();
-      formData.append("file", file);
-      const res = await fetch("/api/upload", { method: "POST", body: formData });
-      if (!res.ok) throw new Error("Upload failed");
-      const { key, url } = await res.json();
-      await registerDoc.mutateAsync({
-        caseId, folderId: selectedFolder ?? undefined,
-        name: file.name, originalName: file.name,
-        mimeType: file.type, size: file.size,
-        fileKey: key, fileUrl: url, visibility: "internal",
-      });
-    } catch (err: any) {
-      toast.error(err.message ?? "Upload failed");
-    } finally {
-      setUploading(false);
-      if (fileRef.current) fileRef.current.value = "";
-    }
-  };
-
-  const groupedDocs = (folders ?? []).map(folder => ({
-    folder,
-    docs: (docs ?? []).filter(d => d.doc.folderId === folder.id),
-  }));
-  const unfoldered = (docs ?? []).filter(d => !d.doc.folderId);
+  const groupedDocs = (docs ?? []).reduce((acc, item) => {
+    const folder = acc.find(g => g.folder.id === item.folder?.id);
+    if (folder) folder.docs.push(item);
+    else acc.push({ folder: { id: item.folderId || 0, name: "Uncategorized" }, docs: [item] });
+    return acc;
+  }, [] as any[]);
+  const unfoldered = groupedDocs.find(g => g.folder.id === 0)?.docs ?? [];
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <div className="flex gap-2">
-          <Button size="sm" variant="outline" onClick={() => setShowNewFolder(true)}>
-            <FolderOpen className="w-3.5 h-3.5 mr-1.5" /> New folder
-          </Button>
-          <Button size="sm" className="bg-[var(--color-navy)] hover:bg-[var(--color-navy-light)] text-white" onClick={() => fileRef.current?.click()} disabled={uploading}>
-            <Upload className="w-3.5 h-3.5 mr-1.5" /> {uploading ? "Uploading…" : "Upload"}
-          </Button>
-          <input ref={fileRef} type="file" className="hidden" onChange={handleUpload} accept=".pdf,.docx,.doc,.png,.jpg,.jpeg,.xlsx,.xls" />
-        </div>
+      <div className="flex justify-end">
+        <Button size="sm" className="bg-[var(--color-navy)] hover:bg-[var(--color-navy-light)] text-white" onClick={() => setShowUpload(true)}>
+          <Upload className="w-3.5 h-3.5 mr-1.5" /> Upload
+        </Button>
       </div>
-
-      {showNewFolder && (
-        <div className="flex gap-2">
-          <Input placeholder="Folder name" value={newFolderName} onChange={e => setNewFolderName(e.target.value)} className="max-w-xs" />
-          <Button size="sm" onClick={() => createFolder.mutate({ caseId, name: newFolderName })} disabled={!newFolderName.trim()}>Create</Button>
-          <Button size="sm" variant="outline" onClick={() => setShowNewFolder(false)}>Cancel</Button>
-        </div>
-      )}
-
       {isLoading ? (
         <div className="space-y-2">{[1,2,3].map(i => <Skeleton key={i} className="h-12 w-full" />)}</div>
       ) : !docs?.length ? (
@@ -225,6 +179,24 @@ function CaseDocuments({ caseId, firmId }: { caseId: number; firmId: number }) {
           )}
         </div>
       )}
+      <Dialog open={showUpload} onOpenChange={setShowUpload}>
+        <DialogContent>
+          <DialogHeader><DialogTitle>Upload Document</DialogTitle></DialogHeader>
+          <div className="space-y-4 py-2">
+            <input ref={fileInputRef} type="file" className="hidden" onChange={e => setSelectedFile(e.target.files?.[0] || null)} />
+            <Button variant="outline" onClick={() => fileInputRef.current?.click()}>
+              {selectedFile ? selectedFile.name : "Choose file"}
+            </Button>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowUpload(false)}>Cancel</Button>
+            <Button className="bg-[var(--color-navy)] hover:bg-[var(--color-navy-light)] text-white" disabled={!selectedFile || upload.isPending}
+              onClick={() => selectedFile && upload.mutate({ caseId, file: selectedFile, folderId: folderId ? parseInt(folderId) : undefined })}>
+              Upload
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
@@ -253,6 +225,180 @@ function DocList({ docs, onToggle, onLog }: { docs: any[]; onToggle: (v: any) =>
           </div>
         </div>
       ))}
+    </div>
+  );
+}
+
+function CaseMessages({ caseId }: { caseId: number }) {
+  const { data: msgs, refetch } = trpc.messages.list.useQuery({ caseId });
+  const [newMessage, setNewMessage] = useState("");
+  const sendMsg = trpc.messages.send.useMutation({
+    onSuccess: () => { setNewMessage(""); refetch(); },
+    onError: (e) => toast.error(e.message),
+  });
+  const markRead = trpc.messages.markRead.useMutation();
+  useEffect(() => { if (msgs) msgs.forEach(m => markRead.mutate({ messageId: m.message.id })); }, [msgs]);
+
+  return (
+    <div className="space-y-4">
+      <div className="space-y-3 max-h-96 overflow-auto">
+        {!msgs?.length ? (
+          <div className="py-8 text-center text-muted-foreground text-sm">No messages yet</div>
+        ) : msgs.map(({ message, sender }) => (
+          <div key={message.id} className="flex gap-3">
+            <div className="w-8 h-8 rounded-full bg-[var(--color-navy)]/10 flex items-center justify-center shrink-0 text-xs font-semibold text-[var(--color-navy)]">
+              {sender.name?.split(" ").map((n: string) => n[0]).join("").slice(0, 2).toUpperCase()}
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-baseline gap-2 mb-1">
+                <span className="text-sm font-semibold text-foreground">{sender.name}</span>
+                <span className="text-xs text-muted-foreground">{format(message.createdAt, "dd MMM, HH:mm")}</span>
+              </div>
+              <div className="bg-card border border-border rounded-xl rounded-tl-sm px-4 py-3 text-sm text-foreground">
+                {message.content}
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+      <div className="flex gap-3">
+        <Textarea className="flex-1 resize-none h-10 min-h-0" placeholder="Type a message…" value={newMessage} onChange={e => setNewMessage(e.target.value)}
+          onKeyDown={e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); if (newMessage.trim()) sendMsg.mutate({ caseId, content: newMessage.trim() }); } }} />
+        <Button className="bg-[var(--color-navy)] hover:bg-[var(--color-navy-light)] text-white shrink-0" disabled={!newMessage.trim() || sendMsg.isPending}
+          onClick={() => sendMsg.mutate({ caseId, content: newMessage.trim() })}>
+          <MessageSquare className="w-4 h-4" />
+        </Button>
+      </div>
+    </div>
+  );
+}
+
+function CaseAssignments({ caseId }: { caseId: number }) {
+  const { data: options, refetch } = trpc.cases.getAssignmentOptions.useQuery({ caseId });
+  const [showAddLawyer, setShowAddLawyer] = useState(false);
+  const [showAddClient, setShowAddClient] = useState(false);
+  const [selectedLawyer, setSelectedLawyer] = useState("");
+  const [selectedClient, setSelectedClient] = useState("");
+  
+  const assignLawyer = trpc.cases.assignLawyer.useMutation({
+    onSuccess: () => { setSelectedLawyer(""); setShowAddLawyer(false); refetch(); toast.success("Lawyer assigned"); },
+    onError: (e) => toast.error(e.message),
+  });
+  const assignClient = trpc.cases.assignClient.useMutation({
+    onSuccess: () => { setSelectedClient(""); setShowAddClient(false); refetch(); toast.success("Client assigned"); },
+    onError: (e) => toast.error(e.message),
+  });
+  const removeLawyer = trpc.cases.removeLawyer.useMutation({
+    onSuccess: () => { refetch(); toast.success("Lawyer removed"); },
+    onError: (e) => toast.error(e.message),
+  });
+  const removeClient = trpc.cases.removeClient.useMutation({
+    onSuccess: () => { refetch(); toast.success("Client removed"); },
+    onError: (e) => toast.error(e.message),
+  });
+
+  if (!options) return <div className="space-y-2">{[1,2,3].map(i => <Skeleton key={i} className="h-12 w-full" />)}</div>;
+
+  const lawyerAssignments = options.currentAssignments.filter(a => a.assignmentType === "lawyer");
+  const clientAssignments = options.currentAssignments.filter(a => a.assignmentType === "client");
+
+  return (
+    <div className="space-y-6">
+      {/* Lawyers */}
+      <div>
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="font-semibold text-foreground">Assigned Lawyers</h3>
+          <Button size="sm" className="bg-[var(--color-navy)] hover:bg-[var(--color-navy-light)] text-white" onClick={() => setShowAddLawyer(true)}>
+            <Plus className="w-3.5 h-3.5 mr-1.5" /> Add lawyer
+          </Button>
+        </div>
+        {lawyerAssignments.length === 0 ? (
+          <div className="py-6 text-center text-muted-foreground text-sm border border-dashed border-border rounded-lg">No lawyers assigned</div>
+        ) : (
+          <div className="bg-card border border-border rounded-lg divide-y divide-border">
+            {lawyerAssignments.map(a => (
+              <div key={a.id} className="flex items-center justify-between px-4 py-3">
+                <span className="text-sm font-medium text-foreground">User #{a.userId}</span>
+                <button onClick={() => removeLawyer.mutate({ caseId, lawyerId: a.userId! })} className="text-muted-foreground hover:text-destructive transition-colors">
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+        <Dialog open={showAddLawyer} onOpenChange={setShowAddLawyer}>
+          <DialogContent>
+            <DialogHeader><DialogTitle>Assign Lawyer</DialogTitle></DialogHeader>
+            <div className="space-y-4 py-2">
+              <Select value={selectedLawyer} onValueChange={setSelectedLawyer}>
+                <SelectTrigger><SelectValue placeholder="Select a lawyer" /></SelectTrigger>
+                <SelectContent>
+                  {options.availableLawyers.map(l => (
+                    <SelectItem key={l.member.id} value={l.member.userId.toString()}>
+                      {l.user.name || "Unknown"}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setShowAddLawyer(false)}>Cancel</Button>
+              <Button className="bg-[var(--color-navy)] hover:bg-[var(--color-navy-light)] text-white" disabled={!selectedLawyer || assignLawyer.isPending}
+                onClick={() => assignLawyer.mutate({ caseId, lawyerId: parseInt(selectedLawyer) })}>
+                Assign
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      </div>
+
+      {/* Clients */}
+      <div>
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="font-semibold text-foreground">Assigned Clients</h3>
+          <Button size="sm" className="bg-[var(--color-navy)] hover:bg-[var(--color-navy-light)] text-white" onClick={() => setShowAddClient(true)}>
+            <Plus className="w-3.5 h-3.5 mr-1.5" /> Add client
+          </Button>
+        </div>
+        {clientAssignments.length === 0 ? (
+          <div className="py-6 text-center text-muted-foreground text-sm border border-dashed border-border rounded-lg">No clients assigned</div>
+        ) : (
+          <div className="bg-card border border-border rounded-lg divide-y divide-border">
+            {clientAssignments.map(a => (
+              <div key={a.id} className="flex items-center justify-between px-4 py-3">
+                <span className="text-sm font-medium text-foreground">Client #{a.clientId}</span>
+                <button onClick={() => removeClient.mutate({ caseId, clientId: a.clientId! })} className="text-muted-foreground hover:text-destructive transition-colors">
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+        <Dialog open={showAddClient} onOpenChange={setShowAddClient}>
+          <DialogContent>
+            <DialogHeader><DialogTitle>Assign Client</DialogTitle></DialogHeader>
+            <div className="space-y-4 py-2">
+              <Select value={selectedClient} onValueChange={setSelectedClient}>
+                <SelectTrigger><SelectValue placeholder="Select a client" /></SelectTrigger>
+                <SelectContent>
+                  {options.availableClients.map(c => (
+                    <SelectItem key={c.id} value={c.id.toString()}>
+                      {c.companyName || `${c.firstName} ${c.lastName}`}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setShowAddClient(false)}>Cancel</Button>
+              <Button className="bg-[var(--color-navy)] hover:bg-[var(--color-navy-light)] text-white" disabled={!selectedClient || assignClient.isPending}
+                onClick={() => assignClient.mutate({ caseId, clientId: parseInt(selectedClient) })}>
+                Assign
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      </div>
     </div>
   );
 }
@@ -301,37 +447,47 @@ export default function CaseDetailPage() {
                   </span>
                 )}
               </div>
-              {caseData.description && <p className="text-sm text-muted-foreground mt-3 leading-relaxed">{caseData.description}</p>}
             </div>
             {isInternal && (
-              <div className="flex items-center gap-2 shrink-0">
-                {editStatus ? (
-                  <div className="flex items-center gap-2">
-                    <Select value={newStatus} onValueChange={setNewStatus}>
-                      <SelectTrigger className="w-36 h-8 text-sm"><SelectValue /></SelectTrigger>
-                      <SelectContent>
-                        {["open","pending","closed","archived"].map(s => <SelectItem key={s} value={s} className="capitalize">{s}</SelectItem>)}
-                      </SelectContent>
-                    </Select>
-                    <Button size="sm" className="h-8 bg-[var(--color-navy)] text-white" onClick={() => updateCase.mutate({ id: caseId, status: newStatus as any })}>Save</Button>
-                    <Button size="sm" variant="outline" className="h-8" onClick={() => setEditStatus(false)}>Cancel</Button>
-                  </div>
-                ) : (
-                  <Button size="sm" variant="outline" onClick={() => setEditStatus(true)}>
-                    <Edit2 className="w-3.5 h-3.5 mr-1.5" /> Change status
-                  </Button>
-                )}
-              </div>
+              <Button size="sm" variant="outline" onClick={() => setEditStatus(true)}>
+                <Edit2 className="w-3.5 h-3.5 mr-1.5" /> Edit
+              </Button>
             )}
           </div>
         </div>
 
+        {/* Edit dialog */}
+        <Dialog open={editStatus} onOpenChange={setEditStatus}>
+          <DialogContent>
+            <DialogHeader><DialogTitle>Update Case Status</DialogTitle></DialogHeader>
+            <div className="space-y-4 py-2">
+              <Select value={newStatus} onValueChange={setNewStatus}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="open">Open</SelectItem>
+                  <SelectItem value="pending">Pending</SelectItem>
+                  <SelectItem value="closed">Closed</SelectItem>
+                  <SelectItem value="archived">Archived</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setEditStatus(false)}>Cancel</Button>
+              <Button className="bg-[var(--color-navy)] hover:bg-[var(--color-navy-light)] text-white" disabled={newStatus === caseData.status || updateCase.isPending}
+                onClick={() => updateCase.mutate({ id: caseId, status: newStatus as any })}>
+                Update
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
         {/* Tabs */}
-        <Tabs defaultValue="timeline">
+        <Tabs defaultValue="timeline" className="bg-card border border-border rounded-xl p-6">
           <TabsList className="bg-muted">
             <TabsTrigger value="timeline"><Clock className="w-3.5 h-3.5 mr-1.5" />Timeline</TabsTrigger>
             <TabsTrigger value="documents"><FileText className="w-3.5 h-3.5 mr-1.5" />Documents</TabsTrigger>
             <TabsTrigger value="messages"><MessageSquare className="w-3.5 h-3.5 mr-1.5" />Messages</TabsTrigger>
+            <TabsTrigger value="assignments"><Users className="w-3.5 h-3.5 mr-1.5" />Assignments</TabsTrigger>
           </TabsList>
           <TabsContent value="timeline" className="mt-4">
             <CaseTimeline caseId={caseId} isInternal={!!isInternal} />
@@ -342,52 +498,11 @@ export default function CaseDetailPage() {
           <TabsContent value="messages" className="mt-4">
             <CaseMessages caseId={caseId} />
           </TabsContent>
+          <TabsContent value="assignments" className="mt-4">
+            {isInternal ? <CaseAssignments caseId={caseId} /> : <div className="text-center text-muted-foreground py-8">Only lawyers can manage assignments</div>}
+          </TabsContent>
         </Tabs>
       </div>
     </LexLayout>
-  );
-}
-
-function CaseMessages({ caseId }: { caseId: number }) {
-  const { data: msgs, refetch } = trpc.messages.list.useQuery({ caseId });
-  const [newMessage, setNewMessage] = useState("");
-  const sendMsg = trpc.messages.send.useMutation({
-    onSuccess: () => { setNewMessage(""); refetch(); },
-    onError: (e) => toast.error(e.message),
-  });
-  const markRead = trpc.messages.markRead.useMutation();
-  useEffect(() => { if (msgs) msgs.forEach(m => markRead.mutate({ messageId: m.message.id })); }, [msgs]);
-
-  return (
-    <div className="space-y-4">
-      <div className="space-y-3 max-h-96 overflow-auto">
-        {!msgs?.length ? (
-          <div className="py-8 text-center text-muted-foreground text-sm">No messages yet</div>
-        ) : msgs.map(({ message, sender }) => (
-          <div key={message.id} className="flex gap-3">
-            <div className="w-8 h-8 rounded-full bg-[var(--color-navy)]/10 flex items-center justify-center shrink-0 text-xs font-semibold text-[var(--color-navy)]">
-              {sender.name?.split(" ").map((n: string) => n[0]).join("").slice(0, 2).toUpperCase()}
-            </div>
-            <div className="flex-1 min-w-0">
-              <div className="flex items-baseline gap-2 mb-1">
-                <span className="text-sm font-semibold text-foreground">{sender.name}</span>
-                <span className="text-xs text-muted-foreground">{format(message.createdAt, "dd MMM, HH:mm")}</span>
-              </div>
-              <div className="bg-card border border-border rounded-xl rounded-tl-sm px-4 py-3 text-sm text-foreground">
-                {message.content}
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
-      <div className="flex gap-3">
-        <Textarea className="flex-1 resize-none h-10 min-h-0" placeholder="Type a message…" value={newMessage} onChange={e => setNewMessage(e.target.value)}
-          onKeyDown={e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); if (newMessage.trim()) sendMsg.mutate({ caseId, content: newMessage.trim() }); } }} />
-        <Button className="bg-[var(--color-navy)] hover:bg-[var(--color-navy-light)] text-white shrink-0" disabled={!newMessage.trim() || sendMsg.isPending}
-          onClick={() => sendMsg.mutate({ caseId, content: newMessage.trim() })}>
-          <MessageSquare className="w-4 h-4" />
-        </Button>
-      </div>
-    </div>
   );
 }
