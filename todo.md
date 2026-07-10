@@ -103,3 +103,22 @@
 - [ ] Backup encryption + offsite policy
 - [ ] Penetration test readiness checklist
 - [ ] Sales sheet for Swiss law firms
+
+
+## Phase 4: SaaS Multi-Tenant & Superadmin
+- [ ] Extend schema: firmSubscriptions, subscriptionPlans, paymentPlans, swissPayoutAccounts, firmBillingHistory
+- [ ] Add superadmin role to users table
+- [ ] Superadmin dashboard: firm list, create firm, approve subdomains, manage subscription plans
+- [ ] Firm creation flow: name, address, VAT/UID, subdomain request, auto/manual approval
+- [ ] Subscription plan management: Starter/Pro/Enterprise with user limits, pricing
+- [ ] Firm subscription UI: current plan, upgrade/downgrade, billing history
+- [ ] Manual payment option: invoice generation for firm subscription
+- [ ] Swisspayout account setup for firms (bank details, API keys)
+
+## Phase 5: Invoice Payment Plans
+- [ ] Payment plan creation: lawyers define schedule (e.g., 50% upfront, 50% on completion)
+- [ ] Payment plan UI in invoice creation form
+- [ ] Payment plan visualization on invoice detail page
+- [ ] Auto-generate scheduled invoices based on plan
+- [ ] Swisspayout integration: payment link per invoice
+- [ ] Payment status tracking: pending, paid, overdue, cancelled

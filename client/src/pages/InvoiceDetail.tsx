@@ -1,3 +1,7 @@
+import { useEffect, useState } from "react";
+import { useLocation, useParams } from "wouter";
+import { toast } from "sonner";
+import { format } from "date-fns";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { startLogin } from "@/const";
 import { trpc } from "@/lib/trpc";
@@ -12,6 +16,17 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Separator } from "@/components/ui/separator";
 import { Plus, Trash2, FileText, Send, CheckCircle, Download, CreditCard } from "lucide-react";
+
+function formatCHF(amount: string | number) {
+  return new Intl.NumberFormat("de-CH", { style: "currency", currency: "CHF" }).format(Number(amount));
+}
+
+interface LineItem {
+  description: string;
+  billingType: "hourly" | "flat_fee";
+  quantity: number;
+  unitPrice: number;
+}
 
 function StripePayButton({ invoiceId }: { invoiceId: number }) {
   const createSession = trpc.stripe.createCheckoutSession.useMutation({
@@ -36,21 +51,6 @@ function StripePayButton({ invoiceId }: { invoiceId: number }) {
       </Button>
     </div>
   );
-}
-import { useEffect, useState } from "react";
-import { useLocation, useParams } from "wouter";
-import { toast } from "sonner";
-import { format } from "date-fns";
-
-function formatCHF(amount: string | number) {
-  return new Intl.NumberFormat("de-CH", { style: "currency", currency: "CHF" }).format(Number(amount));
-}
-
-interface LineItem {
-  description: string;
-  billingType: "hourly" | "flat_fee";
-  quantity: number;
-  unitPrice: number;
 }
 
 function NewInvoiceForm() {
@@ -98,21 +98,24 @@ function NewInvoiceForm() {
               </Select>
             </div>
             <div>
-              <Label>Case (optional)</Label>
-              <Select value={caseId?.toString() ?? "none"} onValueChange={v => setCaseId(v === "none" ? null : parseInt(v))}>
-                <SelectTrigger className="mt-1.5"><SelectValue placeholder="Link to case" /></SelectTrigger>
+              <Label>Case <span className="text-destructive">*</span></Label>
+              <Select value={caseId?.toString() ?? ""} onValueChange={v => setCaseId(parseInt(v))}>
+                <SelectTrigger className="mt-1.5"><SelectValue placeholder="Select case" /></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="none">No case</SelectItem>
-                  {cases?.map(c => <SelectItem key={c.id} value={c.id.toString()}>{c.title}</SelectItem>)}
+                  {cases?.map(c => (
+                    <SelectItem key={c.id} value={c.id.toString()}>
+                      {c.title}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
             <div>
-              <Label>Due date <span className="text-destructive">*</span></Label>
-              <Input type="date" className="mt-1.5" value={dueDate} onChange={e => setDueDate(e.target.value)} />
+              <Label>Due Date</Label>
+              <Input type="date" value={dueDate} onChange={e => setDueDate(e.target.value)} className="mt-1.5" />
             </div>
             <div>
-              <Label>VAT rate (%)</Label>
+              <Label>VAT Rate (%)</Label>
               <Select value={vatRate} onValueChange={setVatRate}>
                 <SelectTrigger className="mt-1.5"><SelectValue /></SelectTrigger>
                 <SelectContent>
@@ -129,76 +132,76 @@ function NewInvoiceForm() {
         <div className="bg-card border border-border rounded-xl p-6 space-y-4">
           <div className="flex items-center justify-between">
             <h3 className="font-semibold text-foreground">Line Items</h3>
-            <Button size="sm" variant="outline" onClick={addItem}><Plus className="w-3.5 h-3.5 mr-1.5" />Add item</Button>
+            <Button size="sm" className="bg-[var(--color-navy)] hover:bg-[var(--color-navy-light)] text-white" onClick={addItem}>
+              <Plus className="w-3.5 h-3.5 mr-1.5" /> Add item
+            </Button>
           </div>
           <div className="space-y-3">
             {items.map((item, i) => (
-              <div key={i} className="grid grid-cols-12 gap-2 items-end">
-                <div className="col-span-4">
-                  {i === 0 && <Label className="text-xs">Description</Label>}
-                  <Input className="mt-1" placeholder="Service description" value={item.description} onChange={e => updateItem(i, "description", e.target.value)} />
+              <div key={i} className="flex gap-3 items-end">
+                <div className="flex-1">
+                  <Label className="text-xs">Description</Label>
+                  <Input value={item.description} onChange={e => updateItem(i, "description", e.target.value)} className="mt-1" placeholder="e.g., Legal consultation" />
                 </div>
-                <div className="col-span-2">
-                  {i === 0 && <Label className="text-xs">Type</Label>}
+                <div className="w-24">
+                  <Label className="text-xs">Type</Label>
                   <Select value={item.billingType} onValueChange={v => updateItem(i, "billingType", v)}>
-                    <SelectTrigger className="mt-1 text-xs"><SelectValue /></SelectTrigger>
+                    <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
                     <SelectContent>
                       <SelectItem value="hourly">Hourly</SelectItem>
-                      <SelectItem value="flat_fee">Flat fee</SelectItem>
+                      <SelectItem value="flat_fee">Flat Fee</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
-                <div className="col-span-2">
-                  {i === 0 && <Label className="text-xs">Qty / Hours</Label>}
-                  <Input type="number" className="mt-1" min="0.01" step="0.25" value={item.quantity} onChange={e => updateItem(i, "quantity", parseFloat(e.target.value) || 0)} />
+                <div className="w-20">
+                  <Label className="text-xs">Qty</Label>
+                  <Input type="number" value={item.quantity} onChange={e => updateItem(i, "quantity", parseFloat(e.target.value))} className="mt-1" min="0.5" step="0.5" />
                 </div>
-                <div className="col-span-2">
-                  {i === 0 && <Label className="text-xs">Unit price (CHF)</Label>}
-                  <Input type="number" className="mt-1" min="0" step="0.01" value={item.unitPrice} onChange={e => updateItem(i, "unitPrice", parseFloat(e.target.value) || 0)} />
+                <div className="w-24">
+                  <Label className="text-xs">Price (CHF)</Label>
+                  <Input type="number" value={item.unitPrice} onChange={e => updateItem(i, "unitPrice", parseFloat(e.target.value))} className="mt-1" min="0" step="0.01" />
                 </div>
-                <div className="col-span-1">
-                  {i === 0 && <Label className="text-xs">Amount</Label>}
-                  <p className="mt-1 text-sm font-medium text-foreground h-9 flex items-center">{formatCHF(item.quantity * item.unitPrice)}</p>
-                </div>
-                <div className="col-span-1 flex justify-end">
-                  {items.length > 1 && (
-                    <button onClick={() => removeItem(i)} className="text-muted-foreground hover:text-destructive transition-colors p-2">
-                      <Trash2 className="w-3.5 h-3.5" />
-                    </button>
-                  )}
-                </div>
+                <button onClick={() => removeItem(i)} className="p-2 text-muted-foreground hover:text-destructive transition-colors">
+                  <Trash2 className="w-4 h-4" />
+                </button>
               </div>
             ))}
           </div>
+        </div>
+
+        <div className="bg-card border border-border rounded-xl p-6 space-y-3">
+          <div className="flex justify-between text-sm">
+            <span className="text-muted-foreground">Subtotal</span>
+            <span className="font-medium">{formatCHF(subtotal)}</span>
+          </div>
+          <div className="flex justify-between text-sm">
+            <span className="text-muted-foreground">VAT ({vatRate}%)</span>
+            <span className="font-medium">{formatCHF(vatAmount)}</span>
+          </div>
           <Separator />
-          <div className="space-y-1.5 text-sm">
-            <div className="flex justify-between text-muted-foreground">
-              <span>Subtotal</span><span>{formatCHF(subtotal)}</span>
-            </div>
-            <div className="flex justify-between text-muted-foreground">
-              <span>VAT ({vatRate}%)</span><span>{formatCHF(vatAmount)}</span>
-            </div>
-            <div className="flex justify-between font-semibold text-foreground text-base pt-1 border-t border-border">
-              <span>Total</span><span className="font-serif">{formatCHF(total)}</span>
-            </div>
+          <div className="flex justify-between text-lg font-semibold">
+            <span>Total</span>
+            <span>{formatCHF(total)}</span>
           </div>
         </div>
 
-        <div className="bg-card border border-border rounded-xl p-6">
-          <Label>Notes</Label>
-          <Textarea className="mt-1.5" rows={3} placeholder="Payment instructions, bank details, etc." value={notes} onChange={e => setNotes(e.target.value)} />
+        <div className="bg-card border border-border rounded-xl p-6 space-y-4">
+          <h3 className="font-semibold text-foreground">Notes</h3>
+          <Textarea value={notes} onChange={e => setNotes(e.target.value)} placeholder="Additional notes for the invoice…" />
         </div>
 
-        <div className="flex justify-end gap-3">
-          <Button variant="outline" onClick={() => navigate("/invoices")}>Cancel</Button>
-          <Button className="bg-[var(--color-navy)] hover:bg-[var(--color-navy-light)] text-white"
-            disabled={!clientId || !dueDate || items.some(i => !i.description) || createInvoice.isPending}
+        <div className="flex gap-3 justify-end">
+          <Button variant="outline" onClick={() => window.history.back()}>Cancel</Button>
+          <Button className="bg-[var(--color-navy)] hover:bg-[var(--color-navy-light)] text-white" disabled={!clientId || !caseId || items.length === 0 || createInvoice.isPending}
             onClick={() => createInvoice.mutate({
-              clientId: clientId!, caseId: caseId ?? undefined,
-              dueDate: new Date(dueDate).getTime(), vatRate: parseFloat(vatRate),
-              notes: notes || undefined, items,
+              clientId: clientId!,
+              caseId: caseId!,
+              dueDate: dueDate ? new Date(dueDate).getTime() : undefined,
+              vatRate: parseFloat(vatRate),
+              notes,
+              items: items.map(i => ({ ...i, unitPrice: i.unitPrice.toString() })),
             })}>
-            {createInvoice.isPending ? "Creating…" : "Create invoice"}
+            Create Invoice
           </Button>
         </div>
       </div>
@@ -208,14 +211,12 @@ function NewInvoiceForm() {
 
 export default function InvoiceDetailPage() {
   const { id } = useParams<{ id: string }>();
+  const invoiceId = parseInt(id);
   const { isAuthenticated, loading } = useAuth();
   const [, navigate] = useLocation();
 
   useEffect(() => { if (!loading && !isAuthenticated) startLogin(); }, [isAuthenticated, loading]);
 
-  if (id === "new") return <NewInvoiceForm />;
-
-  const invoiceId = parseInt(id);
   const { data: invoiceData, isLoading, refetch } = trpc.invoices.get.useQuery({ id: invoiceId }, { enabled: isAuthenticated && !isNaN(invoiceId) });
   const updateStatus = trpc.invoices.updateStatus.useMutation({
     onSuccess: () => { refetch(); toast.success("Invoice updated"); },
@@ -225,130 +226,100 @@ export default function InvoiceDetailPage() {
   if (isLoading) return <LexLayout title="Invoice"><div className="p-6"><Skeleton className="h-64 w-full" /></div></LexLayout>;
   if (!invoiceData) return <LexLayout title="Not Found"><div className="p-6 text-center text-muted-foreground">Invoice not found</div></LexLayout>;
 
-  const { invoice, items } = invoiceData as any;
-  const clientName = invoiceData && (invoiceData as any).client
-    ? ((invoiceData as any).client.companyName ?? `${(invoiceData as any).client.firstName ?? ""} ${(invoiceData as any).client.lastName ?? ""}`.trim())
-    : "Client";
+  const invoice = invoiceData;
+  const subtotal = invoice.items?.reduce((s: number, i: any) => s + (i.quantity * i.unitPrice), 0) ?? 0;
+  const vatAmount = subtotal * (invoice.vatRate / 100);
+  const total = subtotal + vatAmount;
 
   return (
-    <LexLayout breadcrumb={[{ label: "Billing", href: "/invoices" }, { label: invoice.invoiceNumber }]}>
-      <div className="p-6 max-w-3xl mx-auto space-y-6">
-        {/* Invoice header */}
+    <LexLayout breadcrumb={[{ label: "Billing", href: "/invoices" }, { label: `Invoice #${invoice.invoiceNumber}` }]}>
+      <div className="p-6 max-w-4xl mx-auto space-y-6">
+        {/* Header */}
         <div className="bg-card border border-border rounded-xl p-6">
-          <div className="flex items-start justify-between">
+          <div className="flex items-start justify-between gap-4 mb-4">
             <div>
-              <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">Invoice</p>
-              <h2 className="text-2xl font-bold font-serif text-foreground">{invoice.invoiceNumber}</h2>
-              <div className="flex items-center gap-2 mt-2">
-                <StatusBadge status={invoice.status} />
-                <span className="text-sm text-muted-foreground">Due {format(invoice.dueDate, "dd MMMM yyyy")}</span>
-              </div>
+              <h2 className="text-2xl font-semibold text-foreground">Invoice #{invoice.invoiceNumber}</h2>
+              <p className="text-sm text-muted-foreground mt-1">Case ID: {invoice.caseId}</p>
             </div>
-            <div className="text-right">
-              <p className="text-3xl font-bold font-serif text-foreground">{formatCHF(invoice.total)}</p>
-              <p className="text-xs text-muted-foreground mt-1">incl. {Number(invoice.vatRate)}% VAT</p>
-            </div>
+            <StatusBadge status={invoice.status} />
           </div>
-          <Separator className="my-5" />
-          <div className="grid grid-cols-2 gap-4 text-sm">
+          <div className="grid grid-cols-2 gap-6 text-sm">
             <div>
-              <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">Billed to</p>
-              <p className="font-medium text-foreground">{clientName}</p>
+              <p className="text-muted-foreground">Client</p>
+              <p className="font-medium text-foreground">Client ID: {invoice.clientId}</p>
             </div>
             <div>
-              <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">Issued</p>
-              <p className="font-medium text-foreground">{format(invoice.createdAt, "dd MMMM yyyy")}</p>
+              <p className="text-muted-foreground">Due Date</p>
+              <p className="font-medium text-foreground">{invoice.dueDate ? format(invoice.dueDate, "dd MMM yyyy") : "—"}</p>
+            </div>
+            <div>
+              <p className="text-muted-foreground">Issued</p>
+              <p className="font-medium text-foreground">{format(invoice.createdAt, "dd MMM yyyy")}</p>
+            </div>
+            <div>
+              <p className="text-muted-foreground">Total</p>
+              <p className="font-semibold text-lg text-foreground">{formatCHF(total)}</p>
             </div>
           </div>
         </div>
 
         {/* Line items */}
-        <div className="bg-card border border-border rounded-xl overflow-hidden">
-          <table className="w-full">
-            <thead>
-              <tr className="border-b border-border bg-muted/40">
-                <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wide">Description</th>
-                <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wide">Type</th>
-                <th className="text-right px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wide">Qty</th>
-                <th className="text-right px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wide">Unit price</th>
-                <th className="text-right px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wide">Amount</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-border">
-              {(items ?? []).map((item: any) => (
-                <tr key={item.id}>
-                  <td className="px-4 py-3 text-sm text-foreground">{item.description}</td>
-                  <td className="px-4 py-3 text-sm text-muted-foreground capitalize">{item.billingType.replace("_", " ")}</td>
-                  <td className="px-4 py-3 text-sm text-right text-muted-foreground">{Number(item.quantity)}</td>
-                  <td className="px-4 py-3 text-sm text-right text-muted-foreground">{formatCHF(item.unitPrice)}</td>
-                  <td className="px-4 py-3 text-sm text-right font-medium text-foreground">{formatCHF(item.amount)}</td>
-                </tr>
-              ))}
-            </tbody>
-            <tfoot className="border-t border-border bg-muted/20">
-              <tr>
-                <td colSpan={3} />
-                <td className="px-4 py-2 text-sm text-muted-foreground text-right">Subtotal</td>
-                <td className="px-4 py-2 text-sm text-right font-medium">{formatCHF(invoice.subtotal)}</td>
-              </tr>
-              <tr>
-                <td colSpan={3} />
-                <td className="px-4 py-2 text-sm text-muted-foreground text-right">VAT ({Number(invoice.vatRate)}%)</td>
-                <td className="px-4 py-2 text-sm text-right font-medium">{formatCHF(invoice.vatAmount)}</td>
-              </tr>
-              <tr className="border-t border-border">
-                <td colSpan={3} />
-                <td className="px-4 py-3 text-sm font-semibold text-foreground text-right">Total (CHF)</td>
-                <td className="px-4 py-3 text-base font-bold text-foreground text-right font-serif">{formatCHF(invoice.total)}</td>
-              </tr>
-            </tfoot>
-          </table>
+        <div className="bg-card border border-border rounded-xl p-6">
+          <h3 className="font-semibold text-foreground mb-4">Line Items</h3>
+          <div className="divide-y divide-border">
+            {invoice.items?.map((item: any, i: number) => (
+              <div key={i} className="flex justify-between py-3 text-sm">
+                <div>
+                  <p className="font-medium text-foreground">{item.description}</p>
+                  <p className="text-xs text-muted-foreground">{item.billingType === "hourly" ? `${item.quantity} hours @ ${formatCHF(item.unitPrice)}/hr` : "Flat fee"}</p>
+                </div>
+                <p className="font-medium text-foreground">{formatCHF(item.quantity * item.unitPrice)}</p>
+              </div>
+            ))}
+          </div>
         </div>
 
-        {invoice.notes && (
-          <div className="bg-card border border-border rounded-xl p-5">
-            <p className="text-xs text-muted-foreground uppercase tracking-wide mb-2">Notes</p>
-            <p className="text-sm text-foreground whitespace-pre-wrap">{invoice.notes}</p>
+        {/* Totals */}
+        <div className="bg-card border border-border rounded-xl p-6 space-y-3">
+          <div className="flex justify-between text-sm">
+            <span className="text-muted-foreground">Subtotal</span>
+            <span className="font-medium">{formatCHF(subtotal)}</span>
+          </div>
+          <div className="flex justify-between text-sm">
+            <span className="text-muted-foreground">VAT ({invoice.vatRate}%)</span>
+            <span className="font-medium">{formatCHF(vatAmount)}</span>
+          </div>
+          <Separator />
+          <div className="flex justify-between text-lg font-semibold">
+            <span>Total</span>
+            <span>{formatCHF(total)}</span>
+          </div>
+        </div>
+
+        {/* Payment section */}
+        {invoice.status !== "paid" && (
+          <div className="space-y-3">
+            <StripePayButton invoiceId={invoiceId} />
           </div>
         )}
 
         {/* Actions */}
-        <div className="flex items-center justify-between">
-          <div className="flex gap-2">
-            {invoice.status === "draft" && (
-              <Button className="bg-[var(--color-navy)] hover:bg-[var(--color-navy-light)] text-white" disabled={updateStatus.isPending}
-                onClick={() => updateStatus.mutate({ id: invoice.id, status: "sent" })}>
-                <Send className="w-4 h-4 mr-1.5" /> Send to client
-              </Button>
-            )}
-            {invoice.status === "sent" && (
-              <Button className="bg-emerald-600 hover:bg-emerald-700 text-white" disabled={updateStatus.isPending}
-                onClick={() => updateStatus.mutate({ id: invoice.id, status: "paid" })}>
-                <CheckCircle className="w-4 h-4 mr-1.5" /> Mark as paid
-              </Button>
-            )}
-            {(invoice.status === "sent" || invoice.status === "draft") && (
-              <Button variant="outline" disabled={updateStatus.isPending}
-                onClick={() => updateStatus.mutate({ id: invoice.id, status: "overdue" })}>
-                Mark overdue
-              </Button>
-            )}
-          </div>
+        <div className="flex gap-3 justify-end">
           <Button variant="outline" onClick={() => window.print()}>
-            <Download className="w-4 h-4 mr-1.5" /> Print / PDF
+            <Download className="w-4 h-4 mr-1.5" /> Print PDF
           </Button>
+          {invoice.status === "draft" && (
+            <Button className="bg-[var(--color-navy)] hover:bg-[var(--color-navy-light)] text-white" onClick={() => updateStatus.mutate({ id: invoiceId, status: "sent" })}>
+              <Send className="w-4 h-4 mr-1.5" /> Send to Client
+            </Button>
+          )}
+          {invoice.status === "paid" && (
+            <div className="flex items-center gap-2 text-green-600">
+              <CheckCircle className="w-5 h-5" />
+              <span className="font-medium">Paid</span>
+            </div>
+          )}
         </div>
-        {/* Stripe payment */}
-        {(invoice.status === "sent" || invoice.status === "overdue") && (
-          <StripePayButton invoiceId={invoice.id} />
-        )}
-        {/* Payment success/cancel feedback */}
-        {typeof window !== "undefined" && new URLSearchParams(window.location.search).get("payment") === "success" && (
-          <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-4 flex items-center gap-3">
-            <CheckCircle className="w-5 h-5 text-emerald-600 shrink-0" />
-            <p className="text-emerald-800 font-medium">Payment successful! The invoice will be marked as paid shortly.</p>
-          </div>
-        )}
       </div>
     </LexLayout>
   );
