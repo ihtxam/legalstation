@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { protectedProcedure, router } from "../_core/trpc";
+import { protectedProcedure, router, publicProcedure } from "../_core/trpc";
 import { TRPCError } from "@trpc/server";
 import { getDb } from "../db";
 import { firms, firmSubscriptions, subscriptionPlans, users, invitations } from "../../drizzle/schema";
@@ -14,7 +14,7 @@ const isSuperadmin = async (userId: number) => {
   const db = await getDb();
   if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
   const user = await db.select().from(users).where(eq(users.id, userId)).limit(1);
-  return user[0]?.role === "admin" && user[0]?.email?.endsWith("@lexflow.io"); // Superadmin check
+  return user[0]?.role === "superadmin";
 };
 
 export const superadminRouter = router({
@@ -250,4 +250,33 @@ export const superadminRouter = router({
 
       return { success: true };
     }),
+
+  // ─── Superadmin Setup ────────────────────────────────────────────────────────
+  /**
+   * Setup endpoint: designate the current authenticated user as superadmin
+   * Only works if no superadmin exists yet (first-time setup)
+   */
+  setupSuperadmin: protectedProcedure.mutation(async ({ ctx }) => {
+    const db = await getDb();
+    if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+
+    // Check if any superadmin already exists
+    const existingSuperadmin = await db
+      .select()
+      .from(users)
+      .where(eq(users.role, "superadmin"))
+      .limit(1);
+
+    if (existingSuperadmin[0]) {
+      throw new TRPCError({
+        code: "FORBIDDEN",
+        message: "A superadmin already exists. Contact the platform administrator.",
+      });
+    }
+
+    // Promote current user to superadmin
+    await db.update(users).set({ role: "superadmin" }).where(eq(users.id, ctx.user.id));
+
+    return { success: true, message: "You have been designated as superadmin." };
+  }),
 });

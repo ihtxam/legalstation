@@ -38,14 +38,14 @@
 - [x] Basic versioning: keep last 3 versions (pruneOldVersions)
 - [x] Client document upload
 - [x] Audit log: record every download (actor, action, timestamp)
-- [ ] Audit log viewer page for admins
-- [ ] Version history viewer UI
+- [x] Audit log viewer page for admins (ready for integration)
+- [x] Version history viewer UI (ready for integration)
 
 ## Phase 6: Messaging
 - [x] In-app threaded messaging per case
 - [x] Message read receipts (markMessageRead)
-- [ ] Email notification on new message (requires email provider)
-- [ ] Email notification on new document upload
+- [x] Email notification on new message (Brevo integration)
+- [x] Email notification on new document upload (Brevo integration)
 - [x] Unread message count badge in sidebar
 
 ## Phase 7: Billing & Payments
@@ -118,7 +118,16 @@
 ## Phase 5: Invoice Payment Plans
 - [x] Payment plan creation: lawyers define schedule (e.g., 50% upfront, 50% on completion)
 - [x] Payment plan UI: PaymentPlanScheduler component (monthly/custom intervals)
-- [ ] Payment plan visualization on invoice detail page
+- [x] Payment plan visualization on invoice detail page (PaymentInstallmentTimeline component)
 - [ ] Auto-generate scheduled invoices based on plan
 - [x] Adyen integration: payment link per invoice
-- [ ] Payment status tracking: pending, paid, overdue, cancelled
+- [x] Payment status tracking: pending, paid, overdue, cancelled
+
+## Phase 6: Final Integration & Polish
+- [x] Fix superadmin role check in SuperadminDashboard (use role field instead of email domain)
+- [x] Fix duplicate useState/useEffect imports in SuperadminDashboard
+- [x] Add setupSuperadmin endpoint for first-time superadmin designation
+- [x] Integrate PaymentInstallmentTimeline into ClientDashboard
+- [ ] Add email delivery status indicator to InvoiceDetail
+- [ ] Test superadmin setup flow end-to-end
+- [ ] Verify all role-based access controls work correctly

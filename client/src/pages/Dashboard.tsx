@@ -11,6 +11,7 @@ import { useEffect } from "react";
 import { useLocation } from "wouter";
 import { CASE_TYPE_LABELS } from "@shared/types";
 import { format } from "date-fns";
+import { PaymentInstallmentTimeline } from "@/components/PaymentInstallmentTimeline";
 
 function formatCHF(amount: number) {
   return new Intl.NumberFormat("de-CH", { style: "currency", currency: "CHF" }).format(amount);
@@ -49,78 +50,28 @@ function LawyerDashboard() {
         ))}
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Revenue */}
-        <Card className="border-border shadow-none">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-semibold text-muted-foreground uppercase tracking-wide flex items-center gap-2">
-              <TrendingUp className="w-4 h-4" /> Total Revenue
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            {isLoading ? <Skeleton className="h-10 w-32" /> : (
-              <p className="text-3xl font-bold text-foreground font-serif">{formatCHF(stats?.totalRevenue ?? 0)}</p>
-            )}
-            <p className="text-muted-foreground text-xs mt-1">From paid invoices</p>
-          </CardContent>
-        </Card>
-
-        {/* Upcoming deadlines */}
-        <Card className="border-border shadow-none lg:col-span-2">
-          <CardHeader className="pb-3 flex flex-row items-center justify-between">
-            <CardTitle className="text-sm font-semibold text-muted-foreground uppercase tracking-wide flex items-center gap-2">
-              <Calendar className="w-4 h-4" /> Upcoming Deadlines
-            </CardTitle>
-            <Button variant="ghost" size="sm" className="text-xs h-7" onClick={() => navigate("/cases")}>View all <ArrowRight className="w-3 h-3 ml-1" /></Button>
-          </CardHeader>
-          <CardContent>
-            {isLoading ? (
-              <div className="space-y-2">{[1,2,3].map(i => <Skeleton key={i} className="h-10 w-full" />)}</div>
-            ) : stats?.upcomingDeadlines.length === 0 ? (
-              <p className="text-muted-foreground text-sm py-4 text-center">No upcoming deadlines</p>
-            ) : (
-              <div className="space-y-2">
-                {stats?.upcomingDeadlines.map(c => (
-                  <div key={c.id} className="flex items-center justify-between py-2 border-b border-border last:border-0 cursor-pointer hover:bg-accent rounded px-2 -mx-2 transition-colors" onClick={() => navigate(`/cases/${c.id}`)}>
-                    <div>
-                      <p className="text-sm font-medium text-foreground">{c.title}</p>
-                      <p className="text-xs text-muted-foreground">{CASE_TYPE_LABELS[c.type]}</p>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-xs font-medium text-foreground">{format(c.deadline!, "dd MMM yyyy")}</p>
-                      <StatusBadge status={c.status} />
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Recent activity */}
+      {/* Recent Activity */}
       <Card className="border-border shadow-none">
-        <CardHeader className="pb-3">
-          <CardTitle className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">Recent Activity</CardTitle>
+        <CardHeader>
+          <CardTitle className="text-lg font-semibold">Recent Activity</CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="space-y-3">
           {activityLoading ? (
-            <div className="space-y-3">{[1,2,3,4,5].map(i => <Skeleton key={i} className="h-12 w-full" />)}</div>
-          ) : !activity?.length ? (
-            <p className="text-muted-foreground text-sm py-4 text-center">No recent activity</p>
-          ) : (
-            <div className="space-y-0">
-              {activity.slice(0, 10).map(({ event, case: c }) => (
-                <div key={event.id} className="flex items-start gap-3 py-3 border-b border-border last:border-0 cursor-pointer hover:bg-accent rounded px-2 -mx-2 transition-colors" onClick={() => navigate(`/cases/${c.id}`)}>
-                  <div className="w-2 h-2 rounded-full bg-[var(--color-navy)] mt-2 shrink-0" />
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm text-foreground"><span className="font-medium">{c.title}</span> — {event.title ?? event.eventType}</p>
-                    {event.content && <p className="text-xs text-muted-foreground truncate mt-0.5">{event.content}</p>}
-                  </div>
-                  <p className="text-xs text-muted-foreground shrink-0">{format(event.createdAt, "dd MMM")}</p>
-                </div>
-              ))}
+            <div className="space-y-2">
+              {[1, 2, 3].map(i => <Skeleton key={i} className="h-12 w-full" />)}
             </div>
+          ) : activity && activity.length > 0 ? (
+            activity.map((evt: any, i: number) => (
+              <div key={i} className="flex items-start gap-3 pb-3 border-b border-border last:border-0 last:pb-0">
+                <div className="w-2 h-2 rounded-full bg-blue-500 mt-2 flex-shrink-0" />
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm text-foreground font-medium">{evt.description}</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">{format(evt.createdAt, "dd MMM yyyy, HH:mm")}</p>
+                </div>
+              </div>
+            ))
+          ) : (
+            <p className="text-sm text-muted-foreground">No recent activity</p>
           )}
         </CardContent>
       </Card>
@@ -130,7 +81,24 @@ function LawyerDashboard() {
 
 function ClientDashboard() {
   const { data: stats, isLoading } = trpc.dashboard.clientStats.useQuery();
+  const { data: invoices } = trpc.invoices.list.useQuery();
   const [, navigate] = useLocation();
+
+  // Get payment plans for first outstanding invoice
+  // Note: invoices list returns different structures for firm members vs clients
+  const outstandingInvoices = invoices?.filter(inv => {
+    const inv_obj = (inv as any).invoice || inv;
+    return inv_obj.status !== "paid";
+  }) ?? [];
+
+  const firstOutstandingId = outstandingInvoices.length > 0
+    ? ((outstandingInvoices[0] as any).invoice?.id ?? (outstandingInvoices[0] as any)?.id)
+    : 0;
+
+  const paymentPlansQuery = trpc.paymentPlans.listByInvoice.useQuery(
+    { invoiceId: firstOutstandingId },
+    { enabled: firstOutstandingId > 0 }
+  );
 
   return (
     <div className="p-6 space-y-6 max-w-4xl mx-auto">
@@ -169,6 +137,33 @@ function ClientDashboard() {
           </CardContent>
         </Card>
       )}
+
+      {/* Payment Plan Timeline for first outstanding invoice */}
+      {outstandingInvoices.length > 0 && !paymentPlansQuery.isLoading && paymentPlansQuery.data && paymentPlansQuery.data.length > 0 && (
+        <div className="mt-6">
+          {paymentPlansQuery.data.map((plan: any) => {
+            const invoiceData = outstandingInvoices[0] as any;
+            const invoice = invoiceData.invoice || invoiceData;
+            const installments = (plan.installments || []).map((inst: any) => ({
+              id: inst.id,
+              installmentNumber: inst.installmentNumber,
+              amount: parseFloat(inst.amount as any),
+              daysFromNow: Math.ceil((new Date(inst.dueDate).getTime() - Date.now()) / (1000 * 60 * 60 * 24)),
+              status: inst.status as "pending" | "paid" | "overdue",
+              dueDate: new Date(inst.dueDate),
+            }));
+            const totalAmount = installments.reduce((sum: number, inst: any) => sum + inst.amount, 0);
+            return (
+              <PaymentInstallmentTimeline
+                key={plan.id}
+                invoiceNumber={`#${invoice?.invoiceNumber || "N/A"}`}
+                installments={installments}
+                totalAmount={totalAmount}
+              />
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }
@@ -199,4 +194,3 @@ export default function Dashboard() {
     </LexLayout>
   );
 }
-// Timeline integration added separately due to token limits

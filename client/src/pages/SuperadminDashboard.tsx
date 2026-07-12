@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { useLocation } from "wouter";
 import { trpc } from "@/lib/trpc";
@@ -21,7 +21,7 @@ export default function SuperadminDashboard() {
 
   // Check if user is superadmin
   useEffect(() => {
-    if (user && !user.email?.endsWith("@lexflow.io")) {
+    if (user && user.role !== "superadmin") {
       navigate("/dashboard");
     }
   }, [user, navigate]);

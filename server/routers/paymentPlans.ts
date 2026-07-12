@@ -4,7 +4,7 @@ import { TRPCError } from "@trpc/server";
 import { getDb } from "../db";
 import { paymentPlans, paymentInstallments, invoices } from "../../drizzle/schema";
 import { eq, and } from "drizzle-orm";
-import { getFirmMemberByUserId, getInvoiceById } from "../db";
+import { getFirmMemberByUserId, getInvoiceById, getClientByUserId } from "../db";
 
 /**
  * Payment plan router — lawyers define custom payment schedules for invoices
@@ -106,18 +106,29 @@ export const paymentPlansRouter = router({
     }),
 
   // ─── List Payment Plans for Invoice ───────────────────────────────────────
+  // Allows both firm members and clients to view payment plans for invoices they have access to
   listByInvoice: protectedProcedure
     .input(z.object({ invoiceId: z.number() }))
     .query(async ({ ctx, input }) => {
-      const member = await getFirmMemberByUserId(ctx.user.id);
-      if (!member) throw new TRPCError({ code: "UNAUTHORIZED" });
-
       const db = await getDb();
       if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
 
-      // Verify invoice belongs to firm
-      const invoice = await getInvoiceById(input.invoiceId, member.firmId);
-      if (!invoice) throw new TRPCError({ code: "UNAUTHORIZED" });
+      // Get the invoice to verify access
+      const invoiceRow = await db.select().from(invoices).where(eq(invoices.id, input.invoiceId)).limit(1);
+      if (!invoiceRow[0]) throw new TRPCError({ code: "NOT_FOUND" });
+
+      const invoice = invoiceRow[0];
+
+      // Check access: either firm member OR the invoice's client
+      const member = await getFirmMemberByUserId(ctx.user.id);
+      if (member) {
+        // Firm member: verify invoice belongs to their firm
+        if (member.firmId !== invoice.firmId) throw new TRPCError({ code: "UNAUTHORIZED" });
+      } else {
+        // Non-member: must be the invoice's client
+        const client = await getClientByUserId(ctx.user.id);
+        if (!client || client.id !== invoice.clientId) throw new TRPCError({ code: "UNAUTHORIZED" });
+      }
 
       const plans = await db
         .select()
