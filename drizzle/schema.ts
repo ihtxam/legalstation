@@ -269,6 +269,8 @@ export const invoices = mysqlTable("invoices", {
   notes: text("notes"),
   stripePaymentIntentId: varchar("stripePaymentIntentId", { length: 255 }),
   stripePaymentUrl: text("stripePaymentUrl"),
+  adyenPaymentLinkId: varchar("adyenPaymentLinkId", { length: 255 }),
+  adyenPaymentLinkUrl: text("adyenPaymentLinkUrl"),
   paidAt: timestamp("paidAt"),
   createdByUserId: int("createdByUserId").notNull(),
   createdAt: timestamp("createdAt").defaultNow().notNull(),

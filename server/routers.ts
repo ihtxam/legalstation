@@ -13,6 +13,7 @@ import { stripeRouter } from "./routers/stripe";
 import { superadminRouter } from "./routers/superadmin";
 import { paymentPlansRouter } from "./routers/paymentPlans";
 import { settingsRouter } from "./routers/settings";
+import { adyenRouter } from "./routers/adyen";
 
 export const appRouter = router({
   system: systemRouter,
@@ -35,6 +36,7 @@ export const appRouter = router({
   superadmin: superadminRouter,
   paymentPlans: paymentPlansRouter,
   settings: settingsRouter,
+  adyen: adyenRouter,
 });
 
 export type AppRouter = typeof appRouter;
