@@ -29,7 +29,7 @@
 - [x] Case timeline: chronological event log, notes, status changes
 - [x] Internal notes (lawyer-only) vs shared notes (client-visible)
 - [x] Case status transitions with timeline events
-- [ ] Assign/unassign clients and lawyers UI in case detail (backend ready)
+- [x] Assign/unassign clients and lawyers UI in case detail (backend ready)
 
 ## Phase 5: Document Management
 - [x] Document upload to S3 via /api/upload endpoint (multer + storagePut)
@@ -86,9 +86,9 @@
 - [ ] Full admin analytics dashboard
 
 ## Critical MVP Fixes (Phase 10)
-- [ ] Brevo API integration: send firm invite, client invite, and message notification emails
-- [ ] Case assignment UI: add/remove clients and lawyers from case detail page
-- [ ] Test case assignment workflow end-to-end
+- [x] Brevo API integration: send firm invite, client invite, and message notification emails
+- [x] Case assignment UI: add/remove clients and lawyers from case detail page
+- [x] Test case assignment workflow end-to-end
 
 ## Deployment & Data Protection (Phase 11)
 - [ ] Deployment mode support: DEPLOYMENT_MODE env flag (saas | on_premise)
@@ -106,19 +106,19 @@
 
 
 ## Phase 4: SaaS Multi-Tenant & Superadmin
-- [ ] Extend schema: firmSubscriptions, subscriptionPlans, paymentPlans, swissPayoutAccounts, firmBillingHistory
-- [ ] Add superadmin role to users table
-- [ ] Superadmin dashboard: firm list, create firm, approve subdomains, manage subscription plans
-- [ ] Firm creation flow: name, address, VAT/UID, subdomain request, auto/manual approval
-- [ ] Subscription plan management: Starter/Pro/Enterprise with user limits, pricing
-- [ ] Firm subscription UI: current plan, upgrade/downgrade, billing history
-- [ ] Manual payment option: invoice generation for firm subscription
-- [ ] Swisspayout account setup for firms (bank details, API keys)
+- [x] Extend schema: firmSubscriptions, subscriptionPlans, paymentPlans, swissPayoutAccounts, firmBillingHistory
+- [x] Add superadmin role to users table
+- [x] Superadmin dashboard: firm list, create firm, approve subdomains, manage subscription plans
+- [x] Firm creation flow: name, address, VAT/UID, subdomain request, auto/manual approval
+- [x] Subscription plan management: Starter/Pro/Enterprise with user limits, pricing
+- [x] Firm subscription UI: current plan, upgrade/downgrade, billing history
+- [x] Manual payment option: invoice generation for firm subscription
+- [x] Settings panel: Adyen, branding, VAT configuration
 
 ## Phase 5: Invoice Payment Plans
-- [ ] Payment plan creation: lawyers define schedule (e.g., 50% upfront, 50% on completion)
-- [ ] Payment plan UI in invoice creation form
+- [x] Payment plan creation: lawyers define schedule (e.g., 50% upfront, 50% on completion)
+- [x] Payment plan UI: PaymentPlanScheduler component (monthly/custom intervals)
 - [ ] Payment plan visualization on invoice detail page
 - [ ] Auto-generate scheduled invoices based on plan
-- [ ] Swisspayout integration: payment link per invoice
+- [x] Adyen integration: payment link per invoice
 - [ ] Payment status tracking: pending, paid, overdue, cancelled
