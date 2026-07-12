@@ -17,6 +17,7 @@ import SettingsPage from "./pages/Settings";
 import OnboardingPage from "./pages/Onboarding";
 import InvitePage from "./pages/Invite";
 import SuperadminDashboard from "./pages/SuperadminDashboard";
+import AdminSettings from "./pages/AdminSettings";
 
 function Router() {
   return (
@@ -34,6 +35,7 @@ function Router() {
       <Route path="/messages" component={MessagesPage} />
       <Route path="/settings" component={SettingsPage} />
       <Route path="/superadmin" component={SuperadminDashboard} />
+      <Route path="/admin/settings" component={AdminSettings} />
       <Route path="/404" component={NotFound} />
       <Route component={NotFound} />
     </Switch>

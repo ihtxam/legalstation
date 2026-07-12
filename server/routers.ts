@@ -12,6 +12,7 @@ import { dashboardRouter } from "./routers/dashboard";
 import { stripeRouter } from "./routers/stripe";
 import { superadminRouter } from "./routers/superadmin";
 import { paymentPlansRouter } from "./routers/paymentPlans";
+import { settingsRouter } from "./routers/settings";
 
 export const appRouter = router({
   system: systemRouter,
@@ -33,6 +34,7 @@ export const appRouter = router({
   stripe: stripeRouter,
   superadmin: superadminRouter,
   paymentPlans: paymentPlansRouter,
+  settings: settingsRouter,
 });
 
 export type AppRouter = typeof appRouter;

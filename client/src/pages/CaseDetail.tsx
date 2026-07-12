@@ -130,17 +130,17 @@ function CaseDocuments({ caseId, firmId }: { caseId: number; firmId: number }) {
   const [folderId, setFolderId] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
   
-  const toggleVisibility = trpc.documents.toggleVisibility.useMutation({ onSuccess: () => refetch() });
+  const updateVisibility = trpc.documents.updateVisibility.useMutation({ onSuccess: () => refetch() });
   const logAccess = trpc.documents.logAccess.useMutation();
-  const upload = trpc.documents.upload.useMutation({
+  const register = trpc.documents.register.useMutation({
     onSuccess: () => { setShowUpload(false); setSelectedFile(null); refetch(); toast.success("Document uploaded"); },
-    onError: (e) => toast.error(e.message),
+    onError: (e: any) => toast.error(e.message),
   });
 
-  const groupedDocs = (docs ?? []).reduce((acc, item) => {
-    const folder = acc.find(g => g.folder.id === item.folder?.id);
+  const groupedDocs = (docs ?? []).reduce((acc: any[], item: any) => {
+    const folder = acc.find(g => g.folder.id === item.doc?.folderId);
     if (folder) folder.docs.push(item);
-    else acc.push({ folder: { id: item.folderId || 0, name: "Uncategorized" }, docs: [item] });
+    else acc.push({ folder: { id: item.doc?.folderId || 0, name: "Uncategorized" }, docs: [item] });
     return acc;
   }, [] as any[]);
   const unfoldered = groupedDocs.find(g => g.folder.id === 0)?.docs ?? [];
@@ -148,8 +148,8 @@ function CaseDocuments({ caseId, firmId }: { caseId: number; firmId: number }) {
   return (
     <div className="space-y-4">
       <div className="flex justify-end">
-        <Button size="sm" className="bg-[var(--color-navy)] hover:bg-[var(--color-navy-light)] text-white" onClick={() => setShowUpload(true)}>
-          <Upload className="w-3.5 h-3.5 mr-1.5" /> Upload
+        <Button size="sm" onClick={() => setShowUpload(true)}>
+          <Upload className="w-3.5 h-3.5 mr-1.5" /> Upload Document
         </Button>
       </div>
       {isLoading ? (
@@ -168,13 +168,13 @@ function CaseDocuments({ caseId, firmId }: { caseId: number; firmId: number }) {
                 <span className="text-sm font-semibold text-foreground">{folder.name}</span>
                 <span className="text-xs text-muted-foreground">({fDocs.length})</span>
               </div>
-              <DocList docs={fDocs} onToggle={toggleVisibility.mutate} onLog={logAccess.mutate} />
+              <DocList docs={fDocs} onToggle={updateVisibility.mutate} onLog={logAccess.mutate} />
             </div>
           ))}
           {unfoldered.length > 0 && (
             <div>
               <p className="text-sm font-semibold text-muted-foreground mb-2">Unfiled</p>
-              <DocList docs={unfoldered} onToggle={toggleVisibility.mutate} onLog={logAccess.mutate} />
+              <DocList docs={unfoldered} onToggle={updateVisibility.mutate} onLog={logAccess.mutate} />
             </div>
           )}
         </div>
@@ -190,8 +190,25 @@ function CaseDocuments({ caseId, firmId }: { caseId: number; firmId: number }) {
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowUpload(false)}>Cancel</Button>
-            <Button className="bg-[var(--color-navy)] hover:bg-[var(--color-navy-light)] text-white" disabled={!selectedFile || upload.isPending}
-              onClick={() => selectedFile && upload.mutate({ caseId, file: selectedFile, folderId: folderId ? parseInt(folderId) : undefined })}>
+            <Button disabled={!selectedFile || register.isPending}
+              onClick={async () => {
+                if (!selectedFile) return;
+                const formData = new FormData();
+                formData.append('file', selectedFile);
+                formData.append('caseId', caseId.toString());
+                const res = await fetch('/api/upload', { method: 'POST', body: formData });
+                const { fileKey, fileUrl } = await res.json();
+                register.mutate({
+                  caseId,
+                  name: selectedFile.name,
+                  originalName: selectedFile.name,
+                  mimeType: selectedFile.type,
+                  size: selectedFile.size,
+                  fileKey,
+                  fileUrl,
+                  folderId: folderId ? parseInt(folderId) : undefined,
+                });
+              }}>
               Upload
             </Button>
           </DialogFooter>
