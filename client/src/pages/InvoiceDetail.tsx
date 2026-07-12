@@ -199,7 +199,7 @@ function NewInvoiceForm() {
               dueDate: dueDate ? new Date(dueDate).getTime() : undefined,
               vatRate: parseFloat(vatRate),
               notes,
-              items: items.map(i => ({ ...i, unitPrice: i.unitPrice.toString() })),
+              items: items.map(i => ({ ...i, unitPrice: parseFloat(i.unitPrice).toString() })),
             })}>
             Create Invoice
           </Button>
@@ -227,8 +227,8 @@ export default function InvoiceDetailPage() {
   if (!invoiceData) return <LexLayout title="Not Found"><div className="p-6 text-center text-muted-foreground">Invoice not found</div></LexLayout>;
 
   const invoice = invoiceData;
-  const subtotal = invoice.items?.reduce((s: number, i: any) => s + (i.quantity * i.unitPrice), 0) ?? 0;
-  const vatAmount = subtotal * (invoice.vatRate / 100);
+  const subtotal = invoice.items?.reduce((s: number, i: any) => s + (i.quantity * parseFloat(i.unitPrice)), 0) ?? 0;
+  const vatAmount = subtotal * (parseFloat(invoice.vatRate as any) / 100);
   const total = subtotal + vatAmount;
 
   return (

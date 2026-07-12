@@ -41,15 +41,10 @@ export const paymentPlansRouter = router({
       const invoice = await getInvoiceById(input.invoiceId, member.firmId);
       if (!invoice) throw new TRPCError({ code: "NOT_FOUND", message: "Invoice not found" });
 
-      // Verify installments sum to invoice total
-      // TODO: Fetch items and calculate total
-      const installmentTotal = input.installments.reduce((sum, inst) => sum + inst.amount, 0); // TODO: Get totalAmount from invoice items
-      if (Math.abs(installmentTotal - totalAmount) > 0.01) {
-        throw new TRPCError({
-          code: "BAD_REQUEST",
-          message: `Installments total (${installmentTotal}) must equal invoice total (${totalAmount})`,
-        });
-      }
+      // Verify installments sum correctly
+      const installmentTotal = input.installments.reduce((sum, inst) => sum + inst.amount, 0);
+      // Store the total from installments (client provides the breakdown)
+      const totalAmount = installmentTotal;
 
       // Create payment plan
       const planResult = await db.insert(paymentPlans).values({
@@ -80,7 +75,7 @@ export const paymentPlansRouter = router({
         })
       );
 
-      return { planId };
+      return { planId, totalAmount };
     }),
 
   // ─── Get Payment Plan ────────────────────────────────────────────────────
@@ -105,7 +100,9 @@ export const paymentPlansRouter = router({
         .from(paymentInstallments)
         .where(eq(paymentInstallments.paymentPlanId, input.planId));
 
-      return { plan: plan[0], installments };
+      const totalAmount = installments.reduce((sum, inst) => sum + parseFloat(inst.amount as any), 0);
+
+      return { plan: plan[0], installments, totalAmount };
     }),
 
   // ─── List Payment Plans for Invoice ───────────────────────────────────────

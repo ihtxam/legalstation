@@ -10,6 +10,8 @@ import { messagesRouter } from "./routers/messages";
 import { invoicesRouter } from "./routers/invoices";
 import { dashboardRouter } from "./routers/dashboard";
 import { stripeRouter } from "./routers/stripe";
+import { superadminRouter } from "./routers/superadmin";
+import { paymentPlansRouter } from "./routers/paymentPlans";
 
 export const appRouter = router({
   system: systemRouter,
@@ -29,6 +31,8 @@ export const appRouter = router({
   invoices: invoicesRouter,
   dashboard: dashboardRouter,
   stripe: stripeRouter,
+  superadmin: superadminRouter,
+  paymentPlans: paymentPlansRouter,
 });
 
 export type AppRouter = typeof appRouter;

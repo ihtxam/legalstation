@@ -16,6 +16,7 @@ import MessagesPage from "./pages/Messages";
 import SettingsPage from "./pages/Settings";
 import OnboardingPage from "./pages/Onboarding";
 import InvitePage from "./pages/Invite";
+import SuperadminDashboard from "./pages/SuperadminDashboard";
 
 function Router() {
   return (
@@ -32,6 +33,7 @@ function Router() {
       <Route path="/invoices/:id" component={InvoiceDetailPage} />
       <Route path="/messages" component={MessagesPage} />
       <Route path="/settings" component={SettingsPage} />
+      <Route path="/superadmin" component={SuperadminDashboard} />
       <Route path="/404" component={NotFound} />
       <Route component={NotFound} />
     </Switch>
