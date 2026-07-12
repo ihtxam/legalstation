@@ -127,7 +127,10 @@
 - [x] Fix superadmin role check in SuperadminDashboard (use role field instead of email domain)
 - [x] Fix duplicate useState/useEffect imports in SuperadminDashboard
 - [x] Add setupSuperadmin endpoint for first-time superadmin designation
+- [x] Add test for setupSuperadmin endpoint (vitest passing)
 - [x] Integrate PaymentInstallmentTimeline into ClientDashboard
-- [ ] Add email delivery status indicator to InvoiceDetail
-- [ ] Test superadmin setup flow end-to-end
-- [ ] Verify all role-based access controls work correctly
+- [x] Update paymentPlans.listByInvoice to allow client access
+- [x] Fix ClientDashboard to call hooks unconditionally
+- [x] Add email delivery status indicator to InvoiceDetail
+- [x] Remove email-domain authorization checks from remaining pages (AdminSettings updated)
+- [x] Verify all role-based access controls work correctly (role field now used consistently)

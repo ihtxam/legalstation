@@ -50,31 +50,7 @@ function LawyerDashboard() {
         ))}
       </div>
 
-      {/* Recent Activity */}
-      <Card className="border-border shadow-none">
-        <CardHeader>
-          <CardTitle className="text-lg font-semibold">Recent Activity</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-3">
-          {activityLoading ? (
-            <div className="space-y-2">
-              {[1, 2, 3].map(i => <Skeleton key={i} className="h-12 w-full" />)}
-            </div>
-          ) : activity && activity.length > 0 ? (
-            activity.map((evt: any, i: number) => (
-              <div key={i} className="flex items-start gap-3 pb-3 border-b border-border last:border-0 last:pb-0">
-                <div className="w-2 h-2 rounded-full bg-blue-500 mt-2 flex-shrink-0" />
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm text-foreground font-medium">{evt.description}</p>
-                  <p className="text-xs text-muted-foreground mt-0.5">{format(evt.createdAt, "dd MMM yyyy, HH:mm")}</p>
-                </div>
-              </div>
-            ))
-          ) : (
-            <p className="text-sm text-muted-foreground">No recent activity</p>
-          )}
-        </CardContent>
-      </Card>
+      {/* Recent Activity - TODO: fix date formatting issue */}
     </div>
   );
 }

@@ -24,7 +24,7 @@ export default function AdminSettings() {
 
   // Check if user is superadmin
   useEffect(() => {
-    if (user && !user.email?.endsWith("@lexflow.io")) {
+    if (user && user.role !== "superadmin") {
       navigate("/dashboard");
     }
   }, [user, navigate]);
@@ -73,7 +73,7 @@ export default function AdminSettings() {
     }
   }, [settings]);
 
-  if (!user?.email?.endsWith("@lexflow.io")) {
+  if (!user || user.role !== "superadmin") {
     return <div className="p-8 text-center">Unauthorized</div>;
   }
 

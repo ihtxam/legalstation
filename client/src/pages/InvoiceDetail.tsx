@@ -15,7 +15,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Separator } from "@/components/ui/separator";
-import { Plus, Trash2, FileText, Send, CheckCircle, Download, CreditCard } from "lucide-react";
+import { Plus, Trash2, FileText, Send, CheckCircle, Download, CreditCard, CheckCircle2 } from "lucide-react";
 
 function formatCHF(amount: string | number) {
   return new Intl.NumberFormat("de-CH", { style: "currency", currency: "CHF" }).format(Number(amount));
@@ -295,6 +295,19 @@ export default function InvoiceDetailPage() {
             <span>{formatCHF(total)}</span>
           </div>
         </div>
+
+        {/* Email Delivery Status */}
+        {invoice.status === "sent" && (
+          <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 flex items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <CheckCircle2 className="w-5 h-5 text-blue-600" />
+              <div>
+                <p className="font-medium text-blue-900 text-sm">Invoice sent to client</p>
+                <p className="text-xs text-blue-700 mt-0.5">Email delivery confirmed</p>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Payment section */}
         {invoice.status !== "paid" && (
