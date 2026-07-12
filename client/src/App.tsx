@@ -1,3 +1,6 @@
+import { useEffect } from "react";
+import { useLocation } from "wouter";
+import { useAuth } from "@/_core/hooks/useAuth";
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import NotFound from "@/pages/NotFound";
@@ -20,6 +23,16 @@ import SuperadminDashboard from "./pages/SuperadminDashboard";
 import AdminSettings from "./pages/AdminSettings";
 
 function Router() {
+  const { user } = useAuth();
+  const [location, navigate] = useLocation();
+
+  // Redirect superadmin to /superadmin
+  useEffect(() => {
+    if (user?.role === "superadmin" && !location.startsWith("/superadmin") && !location.startsWith("/admin")) {
+      navigate("/superadmin");
+    }
+  }, [user?.role, location, navigate]);
+
   return (
     <Switch>
       <Route path="/" component={Home} />

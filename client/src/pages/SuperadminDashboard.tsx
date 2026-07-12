@@ -92,9 +92,14 @@ export default function SuperadminDashboard() {
     <div className="min-h-screen bg-background">
       {/* Header */}
       <div className="border-b bg-card">
-        <div className="container mx-auto px-4 py-6">
-          <h1 className="text-3xl font-bold">LexFlow Superadmin</h1>
-          <p className="text-muted-foreground">Manage law firms and subscription plans</p>
+        <div className="container mx-auto px-4 py-6 flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold">LexFlow Superadmin</h1>
+            <p className="text-muted-foreground">Manage law firms and subscription plans</p>
+          </div>
+          <Button variant="outline" onClick={() => navigate("/admin/settings")}>
+            Settings
+          </Button>
         </div>
       </div>
 

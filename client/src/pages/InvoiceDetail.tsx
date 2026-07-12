@@ -305,8 +305,20 @@ export default function InvoiceDetailPage() {
 
         {/* Actions */}
         <div className="flex gap-3 justify-end">
-          <Button variant="outline" onClick={() => window.print()}>
-            <Download className="w-4 h-4 mr-1.5" /> Print PDF
+          <Button variant="outline" onClick={() => {
+            const pdfWindow = window.open('', '', 'width=800,height=600');
+            if (pdfWindow) {
+              pdfWindow.document.write(`
+                <html><head><title>Invoice ${invoice.invoiceNumber}</title></head>
+                <body onload="window.print()">
+                  <h1>Invoice ${invoice.invoiceNumber}</h1>
+                  <p>Total: ${formatCHF(total)}</p>
+                </body></html>
+              `);
+              pdfWindow.document.close();
+            }
+          }}>
+            <Download className="w-4 h-4 mr-1.5" /> Download PDF
           </Button>
           {invoice.status === "draft" && (
             <Button className="bg-[var(--color-navy)] hover:bg-[var(--color-navy-light)] text-white" onClick={() => updateStatus.mutate({ id: invoiceId, status: "sent" })}>
