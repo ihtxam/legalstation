@@ -76,7 +76,7 @@ export const documentsRouter = router({
         });
         await createDocumentAuditEntry({ documentId: doc.id, userId: ctx.user.id, action: "upload" });
       }
-      return { success: true };
+      return { success: true, documentId: doc?.id || null };
     }),
 
   updateVisibility: protectedProcedure

@@ -33,9 +33,18 @@ const navItems = [
 
 const clientNavItems = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/cases", label: "My Cases", icon: Briefcase },
+  { href: "/client-portal", label: "My Cases", icon: Briefcase },
   { href: "/messages", label: "Messages", icon: MessageSquare },
   { href: "/invoices", label: "Invoices", icon: Receipt },
+];
+
+const lawyerNavItems = [
+  { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
+  { href: "/cases", label: "Cases", icon: Briefcase },
+  { href: "/clients", label: "Clients", icon: Users },
+  { href: "/messages", label: "Messages", icon: MessageSquare },
+  { href: "/invoices", label: "Billing", icon: Receipt },
+  { href: "/time-reports", label: "Time Reports", icon: FileText },
 ];
 
 interface LexLayoutProps {
@@ -52,7 +61,8 @@ export default function LexLayout({ children, title, breadcrumb }: LexLayoutProp
   const [sidebarOpen, setSidebarOpen] = useState(true);
 
   const isClient = !firmData;
-  const items = isClient ? clientNavItems : navItems;
+  const isSuperadmin = user?.role === "superadmin";
+  const items = isClient ? clientNavItems : isSuperadmin ? navItems : lawyerNavItems;
 
   const initials = user?.name
     ? user.name.split(" ").map((n: string) => n[0]).join("").toUpperCase().slice(0, 2)

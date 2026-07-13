@@ -134,3 +134,39 @@
 - [x] Add email delivery status indicator to InvoiceDetail
 - [x] Remove email-domain authorization checks from remaining pages (AdminSettings updated)
 - [x] Verify all role-based access controls work correctly (role field now used consistently)
+
+## Phase 7: Advanced Time Tracking
+- [x] Time tracking schema: timeEntries, timeEntryTags, lawyerRates tables
+- [x] Browser-based timer widget with start/pause/reset controls
+- [x] Time entry creation and management (create, update, delete)
+- [x] Time entry list with duration and calculated amounts
+- [x] Time Reports page with monthly breakdown
+- [x] Time analytics: total hours, billable hours, utilization rate
+- [x] Daily time breakdown with date grouping
+- [x] Firm analytics for admins (all lawyers' time data)
+- [ ] Add time entries to invoices (simplified integration)
+- [ ] Time entry submission workflow (draft → submitted → billed)
+
+## Phase 8: Enhanced Client Portal
+- [x] Improved document exchange UI with drag-and-drop upload (DocumentExchange component)
+- [x] Document sharing permissions (view-only, download, share dialog)
+- [x] Case status timeline visible to clients (CaseStatusTimeline component)
+- [x] Client portal dashboard (ClientPortal page with case list and tabs)
+- [x] Case update notifications integration
+- [x] Client communication (messages tab)
+- [x] Download history tracking for clients (via logAccess)
+- [x] Navigation updates (My Cases for clients, Time Reports for lawyers)
+
+## Phase 9: AI-Powered Document Analysis
+- [x] Add documentSummaries table to schema (documentId, summary, keyPoints, sentiment, createdAt)
+- [x] Create document analysis database helpers (createSummary, getSummary, updateSummary)
+- [x] Build AI summarization backend procedure (analyze document via LLM)
+- [x] Extract key points and metadata from documents
+- [x] Create DocumentSummaryCard UI component (display summary, key points, sentiment)
+- [x] Add summary display to DocumentExchange component
+- [x] Integrate AI analysis trigger on document upload
+- [x] Add loading state for document analysis
+- [x] Display analysis results in client portal
+- [x] Update documents.register to return documentId for analysis triggering
+- [ ] Test with various document types (PDF, Word, text)
+- [ ] Trigger analysis automatically on document upload (post-MVP)

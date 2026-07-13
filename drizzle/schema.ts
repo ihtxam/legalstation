@@ -403,3 +403,82 @@ export const superadminAuditLog = mysqlTable("superadmin_audit_log", {
 
 export type SuperadminAuditLog = typeof superadminAuditLog.$inferSelect;
 export type InsertSuperadminAuditLog = typeof superadminAuditLog.$inferInsert;
+
+// ─── Time Tracking (timers, time entries for billable work) ──────────────────
+export const timeEntries = mysqlTable("time_entries", {
+  id: int("id").autoincrement().primaryKey(),
+  firmId: int("firmId").notNull(),
+  caseId: int("caseId").notNull(),
+  lawyerId: int("lawyerId").notNull(), // firmMember.userId
+  description: text("description").notNull(),
+  durationMinutes: int("durationMinutes").notNull(), // Total time in minutes
+  hourlyRate: decimal("hourlyRate", { precision: 10, scale: 2 }), // Optional: override default rate
+  billable: boolean("billable").default(true).notNull(),
+  invoiceItemId: int("invoiceItemId"), // Link to invoice line item if billed
+  status: mysqlEnum("status", ["draft", "submitted", "billed"]).default("draft").notNull(),
+  date: timestamp("date").notNull(), // Date when work was performed
+  startTime: timestamp("startTime"), // Optional: when timer started
+  endTime: timestamp("endTime"), // Optional: when timer ended
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type TimeEntry = typeof timeEntries.$inferSelect;
+export type InsertTimeEntry = typeof timeEntries.$inferInsert;
+
+// ─── Time Entry Tags (categorize time entries: research, drafting, meeting, etc) ──
+export const timeEntryTags = mysqlTable("time_entry_tags", {
+  id: int("id").autoincrement().primaryKey(),
+  firmId: int("firmId").notNull(),
+  name: varchar("name", { length: 100 }).notNull(), // "Research", "Drafting", "Meeting", etc
+  color: varchar("color", { length: 7 }).default("#3B82F6"), // Hex color
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type TimeEntryTag = typeof timeEntryTags.$inferSelect;
+export type InsertTimeEntryTag = typeof timeEntryTags.$inferInsert;
+
+// ─── Time Entry Tag Mapping (many-to-many) ──────────────────────────────────
+export const timeEntryTagMappings = mysqlTable("time_entry_tag_mappings", {
+  id: int("id").autoincrement().primaryKey(),
+  timeEntryId: int("timeEntryId").notNull(),
+  tagId: int("tagId").notNull(),
+});
+
+export type TimeEntryTagMapping = typeof timeEntryTagMappings.$inferSelect;
+export type InsertTimeEntryTagMapping = typeof timeEntryTagMappings.$inferInsert;
+
+// ─── Lawyer Hourly Rates (default billing rate per lawyer) ───────────────────
+export const lawyerRates = mysqlTable("lawyer_rates", {
+  id: int("id").autoincrement().primaryKey(),
+  firmId: int("firmId").notNull(),
+  lawyerId: int("lawyerId").notNull(), // firmMember.userId
+  hourlyRate: decimal("hourlyRate", { precision: 10, scale: 2 }).notNull(),
+  effectiveFrom: timestamp("effectiveFrom").defaultNow().notNull(),
+  effectiveTo: timestamp("effectiveTo"), // NULL = current rate
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type LawyerRate = typeof lawyerRates.$inferSelect;
+export type InsertLawyerRate = typeof lawyerRates.$inferInsert;
+
+// ─── Document Summaries (AI-powered analysis of uploaded documents) ───────────
+export const documentSummaries = mysqlTable("document_summaries", {
+  id: int("id").autoincrement().primaryKey(),
+  documentId: int("documentId").notNull(),
+  summary: text("summary"), // Main summary of document content
+  keyPoints: text("keyPoints"), // JSON array of key points
+  sentiment: varchar("sentiment", { length: 50 }), // positive, neutral, negative
+  documentType: varchar("documentType", { length: 100 }), // contract, agreement, letter, etc
+  wordCount: int("wordCount"),
+  readingTime: int("readingTime"), // Estimated reading time in minutes
+  extractedEntities: text("extractedEntities"), // JSON array of named entities (names, dates, amounts)
+  status: mysqlEnum("status", ["pending", "analyzing", "completed", "failed"]).default("pending").notNull(),
+  error: text("error"), // Error message if analysis failed
+  analyzedAt: timestamp("analyzedAt"), // When analysis was completed
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type DocumentSummary = typeof documentSummaries.$inferSelect;
+export type InsertDocumentSummary = typeof documentSummaries.$inferInsert;
