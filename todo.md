@@ -167,5 +167,6 @@
 - [x] Integrate AI analysis trigger on document upload
 - [x] Add loading state for document analysis
 - [x] Display analysis results in client portal
+- [x] Update documents.register to return documentId for analysis triggering
 - [ ] Test with various document types (PDF, Word, text)
 - [ ] Trigger analysis automatically on document upload (post-MVP)
