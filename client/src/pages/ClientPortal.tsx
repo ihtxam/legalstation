@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { startLogin } from "@/const";
@@ -52,6 +52,10 @@ export default function ClientPortalPage() {
     { caseId: selectedCaseId! },
     { enabled: isAuthenticated && !!selectedCaseId }
   );
+
+  // Document summaries - will be fetched on-demand by DocumentSummaryCard
+  const [summaries, setSummaries] = useState<Record<number, any>>({});
+  const [summariesLoading, setSummariesLoading] = useState<Record<number, boolean>>({});
 
   const updateDocVisibility = trpc.documents.updateVisibility.useMutation();
   const deleteDocument = trpc.documents.delete.useMutation();
@@ -127,25 +131,22 @@ export default function ClientPortalPage() {
           </div>
 
           {/* Case Detail */}
-          <div className="lg:col-span-2 space-y-6">
+          <div className="lg:col-span-2">
             {!selectedCaseId ? (
-              <div className="bg-card border border-border rounded-lg p-12 text-center">
+              <div className="bg-card border border-border rounded-lg p-8 text-center">
                 <FileText className="w-12 h-12 text-muted-foreground/40 mx-auto mb-3" />
-                <p className="text-muted-foreground">
-                  Select a case to view details, documents, and updates
-                </p>
+                <p className="text-muted-foreground">Select a case to view details</p>
               </div>
             ) : caseLoading ? (
               <div className="space-y-4">
-                {[1, 2, 3].map((i) => (
-                  <Skeleton key={i} className="h-24 w-full" />
-                ))}
+                <Skeleton className="h-32 w-full" />
+                <Skeleton className="h-64 w-full" />
               </div>
             ) : activeCase ? (
-              <>
+              <div className="space-y-6">
                 {/* Case Header */}
-                <div className="bg-card border border-border rounded-lg p-6">
-                  <div className="flex items-start justify-between gap-4 mb-4">
+                <div className="bg-card border border-border rounded-lg p-6 space-y-4">
+                  <div className="flex items-start justify-between gap-4">
                     <div>
                       <h2 className="text-2xl font-bold text-foreground">
                         {activeCase.title}
@@ -257,6 +258,8 @@ export default function ClientPortalPage() {
                       }}
                       canUpload={true}
                       canShare={false}
+                      summaries={summaries}
+                      summariesLoading={summariesLoading}
                     />
                   </TabsContent>
 
@@ -278,43 +281,17 @@ export default function ClientPortalPage() {
 
                   {/* Messages Tab */}
                   <TabsContent value="messages" className="space-y-4">
-                    <div className="bg-card border border-border rounded-lg p-6">
-                      {!messages || messages.length === 0 ? (
-                        <div className="text-center py-8">
-                          <MessageSquare className="w-10 h-10 text-muted-foreground/40 mx-auto mb-2" />
-                          <p className="text-muted-foreground text-sm">
-                            No messages yet
-                          </p>
-                        </div>
-                      ) : (
-                        <div className="space-y-3">
-                          {messages.map((msg: any) => (
-                            <div
-                              key={msg.id}
-                              className="border border-border rounded-lg p-3"
-                            >
-                              <div className="flex items-start justify-between gap-2 mb-1">
-                                <p className="text-sm font-medium text-foreground">
-                                  {msg.author?.name || "Unknown"}
-                                </p>
-                                <span className="text-xs text-muted-foreground">
-                                  {format(
-                                    new Date(msg.createdAt),
-                                    "dd MMM, HH:mm"
-                                  )}
-                                </span>
-                              </div>
-                              <p className="text-sm text-muted-foreground">
-                                {msg.content}
-                              </p>
-                            </div>
-                          ))}
-                        </div>
-                      )}
+                    <div className="bg-card border border-border rounded-lg p-6 text-center">
+                      <MessageSquare className="w-12 h-12 text-muted-foreground/40 mx-auto mb-3" />
+                      <p className="text-muted-foreground">
+                        {messages && messages.length > 0
+                          ? "Messages will be displayed here"
+                          : "No messages yet"}
+                      </p>
                     </div>
                   </TabsContent>
                 </Tabs>
-              </>
+              </div>
             ) : null}
           </div>
         </div>

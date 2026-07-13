@@ -5,6 +5,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { format } from "date-fns";
+import { DocumentSummaryCard } from "./DocumentSummaryCard";
 
 interface DocumentExchangeProps {
   docs: any[];
@@ -15,6 +16,8 @@ interface DocumentExchangeProps {
   onDownload: (id: number, name: string) => void;
   canUpload: boolean;
   canShare: boolean;
+  summaries?: Record<number, any>;
+  summariesLoading?: Record<number, boolean>;
 }
 
 export function DocumentExchange({
@@ -26,6 +29,8 @@ export function DocumentExchange({
   onDownload,
   canUpload,
   canShare,
+  summaries = {},
+  summariesLoading = {},
 }: DocumentExchangeProps) {
   const [showUpload, setShowUpload] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -107,12 +112,12 @@ export function DocumentExchange({
           )}
         </div>
       ) : (
-        <div className="space-y-2">
+        <div className="space-y-4">
           {docs.map(({ doc }) => (
-            <div
-              key={doc.id}
-              className="bg-card border border-border rounded-lg p-4 hover:bg-accent/50 transition-colors"
-            >
+            <div key={doc.id} className="space-y-3">
+              <div
+                className="bg-card border border-border rounded-lg p-4 hover:bg-accent/50 transition-colors"
+              >
               <div className="flex items-start gap-3">
                 {/* File Icon */}
                 <div className="text-2xl mt-0.5 shrink-0">
@@ -192,6 +197,13 @@ export function DocumentExchange({
                   )}
                 </div>
               </div>
+              </div>
+              {summaries[doc.id] && (
+                <DocumentSummaryCard
+                  summary={summaries[doc.id]}
+                  isLoading={summariesLoading[doc.id]}
+                />
+              )}
             </div>
           ))}
         </div>
