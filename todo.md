@@ -156,3 +156,15 @@
 - [x] Client communication (messages tab)
 - [x] Download history tracking for clients (via logAccess)
 - [x] Navigation updates (My Cases for clients, Time Reports for lawyers)
+
+## Phase 9: AI-Powered Document Analysis
+- [x] Add documentSummaries table to schema (documentId, summary, keyPoints, sentiment, createdAt)
+- [x] Create document analysis database helpers (createSummary, getSummary, updateSummary)
+- [x] Build AI summarization backend procedure (analyze document via LLM)
+- [x] Extract key points and metadata from documents
+- [x] Create DocumentSummaryCard UI component (display summary, key points, sentiment)
+- [ ] Add summary display to DocumentExchange component
+- [ ] Integrate AI analysis trigger on document upload
+- [ ] Add loading state for document analysis
+- [ ] Display analysis results in client portal
+- [ ] Test with various document types (PDF, Word, text)

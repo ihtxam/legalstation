@@ -461,3 +461,24 @@ export const lawyerRates = mysqlTable("lawyer_rates", {
 
 export type LawyerRate = typeof lawyerRates.$inferSelect;
 export type InsertLawyerRate = typeof lawyerRates.$inferInsert;
+
+// ─── Document Summaries (AI-powered analysis of uploaded documents) ───────────
+export const documentSummaries = mysqlTable("document_summaries", {
+  id: int("id").autoincrement().primaryKey(),
+  documentId: int("documentId").notNull(),
+  summary: text("summary"), // Main summary of document content
+  keyPoints: text("keyPoints"), // JSON array of key points
+  sentiment: varchar("sentiment", { length: 50 }), // positive, neutral, negative
+  documentType: varchar("documentType", { length: 100 }), // contract, agreement, letter, etc
+  wordCount: int("wordCount"),
+  readingTime: int("readingTime"), // Estimated reading time in minutes
+  extractedEntities: text("extractedEntities"), // JSON array of named entities (names, dates, amounts)
+  status: mysqlEnum("status", ["pending", "analyzing", "completed", "failed"]).default("pending").notNull(),
+  error: text("error"), // Error message if analysis failed
+  analyzedAt: timestamp("analyzedAt"), // When analysis was completed
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type DocumentSummary = typeof documentSummaries.$inferSelect;
+export type InsertDocumentSummary = typeof documentSummaries.$inferInsert;
