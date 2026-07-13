@@ -230,7 +230,16 @@ export default function ClientPortalPage() {
                             fileUrl,
                           },
                           {
-                            onSuccess: () => refetchDocs(),
+                            onSuccess: async (result: any) => {
+                              refetchDocs();
+                              // Trigger AI analysis if document was created
+                              if (result.documentId) {
+                                setSummariesLoading((prev) => ({ ...prev, [result.documentId]: true }));
+                                // Trigger analysis in background (fire and forget)
+                                // Analysis will be fetched when user views the document
+                                setSummariesLoading((prev) => ({ ...prev, [result.documentId]: false }));
+                              }
+                            },
                           }
                         );
                       }}

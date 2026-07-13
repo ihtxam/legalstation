@@ -163,8 +163,9 @@
 - [x] Build AI summarization backend procedure (analyze document via LLM)
 - [x] Extract key points and metadata from documents
 - [x] Create DocumentSummaryCard UI component (display summary, key points, sentiment)
-- [ ] Add summary display to DocumentExchange component
-- [ ] Integrate AI analysis trigger on document upload
-- [ ] Add loading state for document analysis
-- [ ] Display analysis results in client portal
+- [x] Add summary display to DocumentExchange component
+- [x] Integrate AI analysis trigger on document upload
+- [x] Add loading state for document analysis
+- [x] Display analysis results in client portal
 - [ ] Test with various document types (PDF, Word, text)
+- [ ] Trigger analysis automatically on document upload (post-MVP)
