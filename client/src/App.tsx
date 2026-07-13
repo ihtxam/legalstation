@@ -21,6 +21,7 @@ import OnboardingPage from "./pages/Onboarding";
 import InvitePage from "./pages/Invite";
 import SuperadminDashboard from "./pages/SuperadminDashboard";
 import AdminSettings from "./pages/AdminSettings";
+import ClientPortalPage from "./pages/ClientPortal";
 
 function Router() {
   const { user } = useAuth();
@@ -49,6 +50,7 @@ function Router() {
       <Route path="/settings" component={SettingsPage} />
       <Route path="/superadmin" component={SuperadminDashboard} />
       <Route path="/admin/settings" component={AdminSettings} />
+      <Route path="/client-portal" component={ClientPortalPage} />
       <Route path="/404" component={NotFound} />
       <Route component={NotFound} />
     </Switch>
