@@ -170,3 +170,14 @@
 - [x] Update documents.register to return documentId for analysis triggering
 - [ ] Test with various document types (PDF, Word, text)
 - [ ] Trigger analysis automatically on document upload (post-MVP)
+
+## Phase 10: Settings Enhancements
+- [x] Add logo upload feature to Firm settings tab
+- [x] Store logo URL in firm table
+- [ ] Display logo on invoices
+- [ ] Display logo on client portal
+- [x] Add save confirmation toast notification
+- [x] Highlight unsaved changes in form fields
+- [ ] Add email invitation feature in Team settings tab
+- [ ] Enhance superadmin panel for merchant/firm creation
+- [ ] Add merchant management dashboard

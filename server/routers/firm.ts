@@ -55,6 +55,7 @@ export const firmRouter = router({
       email: z.string().email().optional().nullable(),
       website: z.string().optional().nullable(),
       vatNumber: z.string().optional().nullable(),
+      logoUrl: z.string().optional().nullable(),
     }))
     .mutation(async ({ ctx, input }) => {
       const member = await getFirmMemberByUserId(ctx.user.id);
