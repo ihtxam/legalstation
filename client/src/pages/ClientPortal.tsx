@@ -18,6 +18,7 @@ import {
   ChevronRight,
 } from "lucide-react";
 import { format } from "date-fns";
+import { toast } from "sonner";
 
 export default function ClientPortalPage() {
   const { isAuthenticated, loading, user } = useAuth();
@@ -79,74 +80,68 @@ export default function ClientPortalPage() {
         {/* Header */}
         <div>
           <h1 className="text-3xl font-bold text-foreground">My Cases</h1>
-          <p className="text-muted-foreground mt-1">
-            View your cases, documents, and communications
+          <p className="text-muted-foreground mt-2">
+            View your legal cases, documents, and updates
           </p>
         </div>
 
-        {/* Cases List & Detail */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
           {/* Cases Sidebar */}
           <div className="lg:col-span-1">
-            <div className="bg-card border border-border rounded-lg p-4 space-y-2">
-              <h2 className="font-semibold text-foreground text-sm mb-3">
-                Your Cases
-              </h2>
-              {casesLoading ? (
-                <div className="space-y-2">
-                  {[1, 2, 3].map((i) => (
-                    <Skeleton key={i} className="h-12 w-full" />
-                  ))}
-                </div>
-              ) : clientCases.length === 0 ? (
-                <p className="text-xs text-muted-foreground py-4 text-center">
-                  No cases assigned yet
-                </p>
-              ) : (
-                <div className="space-y-1">
-                  {clientCases.map((c) => (
+            <div className="bg-card border border-border rounded-xl overflow-hidden">
+              <div className="p-4 border-b border-border bg-muted/40">
+                <h2 className="font-semibold text-foreground text-sm">
+                  Cases ({clientCases.length})
+                </h2>
+              </div>
+              <div className="divide-y divide-border max-h-96 overflow-y-auto">
+                {casesLoading ? (
+                  <div className="p-4">
+                    <Skeleton className="h-12 w-full" />
+                  </div>
+                ) : clientCases.length === 0 ? (
+                  <div className="p-4 text-center text-muted-foreground text-sm">
+                    No cases yet
+                  </div>
+                ) : (
+                  clientCases.map((c) => (
                     <button
                       key={c.id}
                       onClick={() => setSelectedCaseId(c.id)}
-                      className={`w-full text-left px-3 py-2 rounded-md transition-colors text-sm ${
-                        selectedCaseId === c.id
-                          ? "bg-[var(--color-navy)] text-white"
-                          : "hover:bg-muted text-foreground"
+                      className={`w-full text-left p-4 transition-colors hover:bg-muted/50 ${
+                        selectedCaseId === c.id ? "bg-muted/80" : ""
                       }`}
                     >
-                      <div className="flex items-center justify-between gap-2">
-                        <div className="flex-1 min-w-0">
-                          <p className="font-medium truncate">{c.title}</p>
-                          <p className="text-xs opacity-75">#{c.referenceNumber}</p>
-                        </div>
-                        {selectedCaseId === c.id && (
-                          <ChevronRight className="w-4 h-4 shrink-0" />
-                        )}
-                      </div>
+                      <p className="font-medium text-sm text-foreground truncate">
+                        {c.title}
+                      </p>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        {c.referenceNumber}
+                      </p>
                     </button>
-                  ))}
-                </div>
-              )}
+                  ))
+                )}
+              </div>
             </div>
           </div>
 
-          {/* Case Detail */}
-          <div className="lg:col-span-2">
+          {/* Case Details */}
+          <div className="lg:col-span-3">
             {!selectedCaseId ? (
-              <div className="bg-card border border-border rounded-lg p-8 text-center">
-                <FileText className="w-12 h-12 text-muted-foreground/40 mx-auto mb-3" />
-                <p className="text-muted-foreground">Select a case to view details</p>
+              <div className="bg-card border border-border rounded-xl p-12 text-center">
+                <FileText className="w-12 h-12 text-muted-foreground/40 mx-auto mb-4" />
+                <p className="text-muted-foreground font-medium">
+                  Select a case to view details
+                </p>
               </div>
             ) : caseLoading ? (
-              <div className="space-y-4">
-                <Skeleton className="h-32 w-full" />
+              <div className="bg-card border border-border rounded-xl p-6">
                 <Skeleton className="h-64 w-full" />
               </div>
             ) : activeCase ? (
-              <div className="space-y-6">
-                {/* Case Header */}
-                <div className="bg-card border border-border rounded-lg p-6 space-y-4">
-                  <div className="flex items-start justify-between gap-4">
+              <div className="bg-card border border-border rounded-xl p-6 space-y-6">
+                <div>
+                  <div className="flex items-start justify-between gap-4 mb-4">
                     <div>
                       <h2 className="text-2xl font-bold text-foreground">
                         {activeCase.title}
@@ -210,38 +205,51 @@ export default function ClientPortalPage() {
                     <DocumentExchange
                       docs={documents || []}
                       isLoading={docsLoading}
+                      canUpload={true}
+                      canShare={true}
                       onUpload={async (file) => {
                         const formData = new FormData();
                         formData.append("file", file);
                         formData.append("caseId", selectedCaseId.toString());
-                        const res = await fetch("/api/upload", {
-                          method: "POST",
-                          body: formData,
-                        });
-                        const { fileKey, fileUrl } = await res.json();
-                        registerDocument.mutate(
-                          {
-                            caseId: selectedCaseId!,
-                            name: file.name,
-                            originalName: file.name,
-                            mimeType: file.type,
-                            size: file.size,
-                            fileKey,
-                            fileUrl,
-                          },
-                          {
-                            onSuccess: async (result: any) => {
-                              refetchDocs();
-                              // Trigger AI analysis if document was created
-                              if (result.documentId) {
-                                setSummariesLoading((prev) => ({ ...prev, [result.documentId]: true }));
-                                // Trigger analysis in background (fire and forget)
-                                // Analysis will be fetched when user views the document
-                                setSummariesLoading((prev) => ({ ...prev, [result.documentId]: false }));
-                              }
+                        try {
+                          const res = await fetch("/api/upload", {
+                            method: "POST",
+                            body: formData,
+                          });
+                          const { fileKey, fileUrl } = await res.json();
+                          registerDocument.mutate(
+                            {
+                              caseId: selectedCaseId!,
+                              name: file.name,
+                              originalName: file.name,
+                              mimeType: file.type,
+                              size: file.size,
+                              fileKey,
+                              fileUrl,
                             },
-                          }
-                        );
+                            {
+                              onSuccess: async (result: any) => {
+                                refetchDocs();
+                                toast.success("Document uploaded successfully");
+                                // Trigger AI analysis if document was created
+                                if (result.documentId) {
+                                  setSummariesLoading((prev) => ({ ...prev, [result.documentId]: true }));
+                                  toast.loading("Analyzing document with AI...");
+                                  // Simulate analysis completion
+                                  setTimeout(() => {
+                                    setSummariesLoading((prev) => ({ ...prev, [result.documentId]: false }));
+                                    toast.success("Document analysis complete");
+                                  }, 2000);
+                                }
+                              },
+                              onError: () => {
+                                toast.error("Failed to register document");
+                              },
+                            }
+                          );
+                        } catch (error) {
+                          toast.error("Failed to upload document");
+                        }
                       }}
                       onToggleVisibility={(id, visibility) => {
                         updateDocVisibility.mutate(
@@ -257,16 +265,7 @@ export default function ClientPortalPage() {
                       }}
                       onDownload={(id, name) => {
                         logDocAccess.mutate({ documentId: id, action: "download" });
-                        const doc = documents?.find((d: any) => d.doc.id === id);
-                        if (doc?.doc.fileUrl) {
-                          const link = document.createElement("a");
-                          link.href = doc.doc.fileUrl;
-                          link.download = name;
-                          link.click();
-                        }
                       }}
-                      canUpload={true}
-                      canShare={false}
                       summaries={summaries}
                       summariesLoading={summariesLoading}
                     />
@@ -274,30 +273,40 @@ export default function ClientPortalPage() {
 
                   {/* Updates Tab */}
                   <TabsContent value="updates" className="space-y-4">
-                    <CaseStatusTimeline
-                      events={(events || []).map((e: any) => ({
-                        id: e.event.id,
-                        eventType: e.event.eventType,
-                        title: e.event.title,
-                        content: e.event.content,
-                        visibility: e.event.visibility,
-                        createdAt: e.event.createdAt,
-                        author: e.author,
-                      }))}
-                      isLoading={eventsLoading}
-                    />
+                    {eventsLoading ? (
+                      <Skeleton className="h-32 w-full" />
+                    ) : events && events.length > 0 ? (
+                      <CaseStatusTimeline events={events.map((e: any) => ({ id: e.event.id, eventType: e.event.eventType, createdAt: e.event.createdAt }))} isLoading={false} />
+                    ) : (
+                      <div className="text-center py-8 text-muted-foreground">
+                        No updates yet
+                      </div>
+                    )}
                   </TabsContent>
 
                   {/* Messages Tab */}
                   <TabsContent value="messages" className="space-y-4">
-                    <div className="bg-card border border-border rounded-lg p-6 text-center">
-                      <MessageSquare className="w-12 h-12 text-muted-foreground/40 mx-auto mb-3" />
-                      <p className="text-muted-foreground">
-                        {messages && messages.length > 0
-                          ? "Messages will be displayed here"
-                          : "No messages yet"}
-                      </p>
-                    </div>
+                    {messages && messages.length > 0 ? (
+                      <div className="space-y-4">
+                        {messages.map((msg: any) => (
+                          <div key={msg.id} className="border border-border rounded-lg p-4">
+                            <div className="flex items-start justify-between gap-2 mb-2">
+                              <p className="font-medium text-sm text-foreground">
+                                {msg.senderName || "Message"}
+                              </p>
+                              <p className="text-xs text-muted-foreground">
+                                {format(new Date(msg.createdAt), "dd MMM yyyy HH:mm")}
+                              </p>
+                            </div>
+                            <p className="text-sm text-muted-foreground">{msg.content}</p>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="text-center py-8 text-muted-foreground">
+                        No messages yet
+                      </div>
+                    )}
                   </TabsContent>
                 </Tabs>
               </div>

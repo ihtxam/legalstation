@@ -63,6 +63,7 @@ function NewInvoiceForm() {
   const [vatRate, setVatRate] = useState("7.7");
   const [notes, setNotes] = useState("");
   const [items, setItems] = useState<LineItem[]>([{ description: "", billingType: "hourly", quantity: 1, unitPrice: 0 }]);
+  const [showPreview, setShowPreview] = useState(false);
 
   const createInvoice = trpc.invoices.create.useMutation({
     onSuccess: (inv) => { toast.success("Invoice created"); navigate(`/invoices/${inv?.id}`); },
@@ -192,6 +193,7 @@ function NewInvoiceForm() {
 
         <div className="flex gap-3 justify-end">
           <Button variant="outline" onClick={() => window.history.back()}>Cancel</Button>
+          <Button variant="outline" disabled={!clientId || !caseId || items.length === 0} onClick={() => setShowPreview(true)}>Preview</Button>
           <Button className="bg-[var(--color-navy)] hover:bg-[var(--color-navy-light)] text-white" disabled={!clientId || !caseId || items.length === 0 || createInvoice.isPending}
             onClick={() => createInvoice.mutate({
               clientId: clientId!,
@@ -204,25 +206,110 @@ function NewInvoiceForm() {
             Create Invoice
           </Button>
         </div>
+
+        {/* Preview Modal */}
+        <Dialog open={showPreview} onOpenChange={setShowPreview}>
+          <DialogContent className="max-w-2xl">
+            <DialogHeader>
+              <DialogTitle>Invoice Preview</DialogTitle>
+            </DialogHeader>
+            <div className="bg-card border border-border rounded-lg p-6 space-y-4">
+              <div className="grid grid-cols-2 gap-4 text-sm">
+                <div>
+                  <p className="text-muted-foreground">Client</p>
+                  <p className="font-medium">{clients?.find(c => c.id === clientId)?.companyName || `${clients?.find(c => c.id === clientId)?.firstName} ${clients?.find(c => c.id === clientId)?.lastName}`}</p>
+                </div>
+                <div>
+                  <p className="text-muted-foreground">Case</p>
+                  <p className="font-medium">{cases?.find(c => c.id === caseId)?.title}</p>
+                </div>
+                <div>
+                  <p className="text-muted-foreground">Due Date</p>
+                  <p className="font-medium">{dueDate ? format(new Date(dueDate), "dd MMM yyyy") : "Not set"}</p>
+                </div>
+                <div>
+                  <p className="text-muted-foreground">VAT Rate</p>
+                  <p className="font-medium">{vatRate}%</p>
+                </div>
+              </div>
+              <Separator />
+              <div className="space-y-2">
+                <h4 className="font-semibold text-sm">Line Items</h4>
+                {items.map((item, i) => (
+                  <div key={i} className="flex justify-between text-sm">
+                    <span>{item.description} ({item.quantity} × CHF {item.unitPrice})</span>
+                    <span className="font-medium">CHF {(item.quantity * item.unitPrice).toFixed(2)}</span>
+                  </div>
+                ))}
+              </div>
+              <Separator />
+              <div className="space-y-2 text-sm">
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Subtotal</span>
+                  <span className="font-medium">{formatCHF(subtotal)}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">VAT ({vatRate}%)</span>
+                  <span className="font-medium">{formatCHF(vatAmount)}</span>
+                </div>
+                <Separator />
+                <div className="flex justify-between text-base font-semibold">
+                  <span>Total</span>
+                  <span>{formatCHF(total)}</span>
+                </div>
+              </div>
+              {notes && (
+                <>
+                  <Separator />
+                  <div>
+                    <p className="text-sm text-muted-foreground mb-1">Notes</p>
+                    <p className="text-sm">{notes}</p>
+                  </div>
+                </>
+              )}
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setShowPreview(false)}>Cancel</Button>
+              <Button className="bg-[var(--color-navy)] hover:bg-[var(--color-navy-light)] text-white" disabled={createInvoice.isPending}
+                onClick={() => {
+                  createInvoice.mutate({
+                    clientId: clientId!,
+                    caseId: caseId!,
+                    dueDate: dueDate ? new Date(dueDate).getTime() : 0,
+                    vatRate: parseFloat(vatRate),
+                    notes,
+                    items: items.map(i => ({ ...i, unitPrice: typeof i.unitPrice === 'string' ? parseFloat(i.unitPrice) : i.unitPrice })),
+                  });
+                  setShowPreview(false);
+                }}>
+                Create Invoice
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
     </LexLayout>
   );
 }
 
 export default function InvoiceDetailPage() {
-  const { id } = useParams<{ id: string }>();
-  const invoiceId = parseInt(id);
+  const [location] = useLocation();
+  const isNewInvoice = location === "/invoices/new";
+  const id = isNewInvoice ? "new" : location.split("/").pop();
+  const invoiceId = isNewInvoice ? NaN : parseInt(id || "");
   const { isAuthenticated, loading } = useAuth();
   const [, navigate] = useLocation();
 
   useEffect(() => { if (!loading && !isAuthenticated) startLogin(); }, [isAuthenticated, loading]);
 
+  // Only fetch if viewing existing invoice
   const { data: invoiceData, isLoading, refetch } = trpc.invoices.get.useQuery({ id: invoiceId }, { enabled: isAuthenticated && !isNaN(invoiceId) });
   const updateStatus = trpc.invoices.updateStatus.useMutation({
     onSuccess: () => { refetch(); toast.success("Invoice updated"); },
     onError: (e) => toast.error(e.message),
   });
 
+  if (isNewInvoice) return <NewInvoiceForm />;
   if (isLoading) return <LexLayout title="Invoice"><div className="p-6"><Skeleton className="h-64 w-full" /></div></LexLayout>;
   if (!invoiceData) return <LexLayout title="Not Found"><div className="p-6 text-center text-muted-foreground">Invoice not found</div></LexLayout>;
 

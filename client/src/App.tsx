@@ -46,6 +46,7 @@ function Router() {
       <Route path="/cases" component={CasesPage} />
       <Route path="/cases/:id" component={CaseDetailPage} />
       <Route path="/invoices" component={InvoicesPage} />
+      <Route path="/invoices/new" component={InvoiceDetailPage} />
       <Route path="/invoices/:id" component={InvoiceDetailPage} />
       <Route path="/messages" component={MessagesPage} />
       <Route path="/settings" component={SettingsPage} />
