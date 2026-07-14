@@ -84,8 +84,8 @@ export default function SuperadminDashboard() {
     });
   };
 
-  if (!user?.email?.endsWith("@lexflow.io")) {
-    return <div className="p-8 text-center">Unauthorized</div>;
+  if (user?.role !== "superadmin") {
+    return <div className="p-8 text-center text-muted-foreground">Unauthorized. Superadmin access required.</div>;
   }
 
   return (
@@ -181,58 +181,67 @@ export default function SuperadminDashboard() {
           </div>
 
           {firmsLoading ? (
-            <div className="text-center py-8">Loading firms...</div>
+            <div className="text-center py-8 text-muted-foreground">Loading firms...</div>
           ) : firms && firms.length > 0 ? (
-            <div className="overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Firm Name</TableHead>
-                    <TableHead>Email</TableHead>
-                    <TableHead>Plan</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Billing Cycle</TableHead>
-                    <TableHead>Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {firms.map((firm) => (
-                    <TableRow key={firm.id}>
-                      <TableCell className="font-medium">{firm.name}</TableCell>
-                      <TableCell>{firm.email}</TableCell>
-                      <TableCell>
-                        {plans?.find((p) => p.id === firm.subscription?.planId)?.name || "—"}
-                      </TableCell>
-                      <TableCell>
-                        <Badge
-                          variant={
-                            firm.subscription?.status === "active"
-                              ? "default"
-                              : firm.subscription?.status === "suspended"
-                                ? "destructive"
-                                : "secondary"
-                          }
-                        >
-                          {firm.subscription?.status || "inactive"}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>{firm.subscription?.billingCycle || "—"}</TableCell>
-                      <TableCell>
-                        <div className="flex gap-2">
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => suspendFirmMutation.mutate({ firmId: firm.id })}
-                            disabled={firm.subscription?.status === "suspended"}
-                          >
-                            <Pause className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
+            <div className="grid gap-4">
+              {firms.map((firm) => (
+                <Card key={firm.id}>
+                  <CardHeader className="pb-3">
+                    <div className="flex items-start justify-between">
+                      <div>
+                        <CardTitle className="text-lg">{firm.name}</CardTitle>
+                        <CardDescription className="mt-1">{firm.email}</CardDescription>
+                      </div>
+                      <Badge
+                        variant={
+                          firm.subscription?.status === "active"
+                            ? "default"
+                            : firm.subscription?.status === "suspended"
+                              ? "destructive"
+                              : "secondary"
+                        }
+                      >
+                        {firm.subscription?.status || "inactive"}
+                      </Badge>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-2 gap-4 text-sm mb-4">
+                      <div>
+                        <p className="text-muted-foreground">Plan</p>
+                        <p className="font-medium">{plans?.find((p) => p.id === firm.subscription?.planId)?.name || "—"}</p>
+                      </div>
+                      <div>
+                        <p className="text-muted-foreground">Billing Cycle</p>
+                        <p className="font-medium capitalize">{firm.subscription?.billingCycle || "—"}</p>
+                      </div>
+                      <div>
+                        <p className="text-muted-foreground">Address</p>
+                        <p className="font-medium text-xs">{firm.address || "—"}</p>
+                      </div>
+                      <div>
+                        <p className="text-muted-foreground">Phone</p>
+                        <p className="font-medium">{firm.phone || "—"}</p>
+                      </div>
+                    </div>
+                    <div className="flex gap-2">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => suspendFirmMutation.mutate({ firmId: firm.id })}
+                        disabled={firm.subscription?.status === "suspended" || suspendFirmMutation.isPending}
+                      >
+                        <Pause className="h-4 w-4 mr-1" />
+                        {firm.subscription?.status === "suspended" ? "Suspended" : "Suspend"}
+                      </Button>
+                      <Button size="sm" variant="outline">
+                        <Edit2 className="h-4 w-4 mr-1" />
+                        Edit
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
             </div>
           ) : (
             <Card>

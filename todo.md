@@ -178,6 +178,6 @@
 - [x] Display logo on client portal
 - [x] Add save confirmation toast notification
 - [x] Highlight unsaved changes in form fields
-- [ ] Add email invitation feature in Team settings tab
-- [ ] Enhance superadmin panel for merchant/firm creation
-- [ ] Add merchant management dashboard
+- [x] Add email invitation feature in Team settings tab
+- [x] Enhance superadmin panel for merchant/firm creation
+- [x] Add merchant management dashboard

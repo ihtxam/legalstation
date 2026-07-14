@@ -40,7 +40,11 @@ export default function SettingsPage() {
     onError: (e) => toast.error(e.message),
   });
   const invite = trpc.firm.invite.useMutation({
-    onSuccess: () => { toast.success("Invitation sent!"); setInviteEmail(""); },
+    onSuccess: () => { 
+      toast.success("Invitation sent! Team member will receive an email with the join link."); 
+      setInviteEmail(""); 
+      setInviteRole("lawyer");
+    },
     onError: (e) => toast.error(e.message),
   });
 
@@ -150,8 +154,11 @@ export default function SettingsPage() {
 
           <TabsContent value="team">
             <div className="space-y-4">
-              <div className="bg-card border border-border rounded-xl p-6">
-                <h3 className="font-semibold text-foreground mb-4">Invite Team Member</h3>
+              <div className="bg-card border border-border rounded-xl p-6 space-y-4">
+                <div>
+                  <h3 className="font-semibold text-foreground mb-2">Invite Team Member</h3>
+                  <p className="text-sm text-muted-foreground">Send an invitation email to add a new team member. They'll receive a link to join your firm.</p>
+                </div>
                 <div className="flex gap-3">
                   <Input className="flex-1" placeholder="Email address" value={inviteEmail} onChange={e => setInviteEmail(e.target.value)} />
                   <select className="border border-input rounded-md px-3 text-sm bg-background" value={inviteRole} onChange={e => setInviteRole(e.target.value as any)}>
@@ -160,13 +167,13 @@ export default function SettingsPage() {
                   </select>
                   <Button className="bg-[var(--color-navy)] hover:bg-[var(--color-navy-light)] text-white shrink-0" disabled={!inviteEmail || invite.isPending}
                     onClick={() => invite.mutate({ email: inviteEmail, role: inviteRole })}>
-                    <Send className="w-4 h-4 mr-1.5" /> Invite
+                    {invite.isPending ? "Sending..." : <><Send className="w-4 h-4 mr-1.5" /> Invite</> }
                   </Button>
                 </div>
               </div>
               <div className="bg-card border border-border rounded-xl overflow-hidden">
                 <div className="px-5 py-3.5 border-b border-border bg-muted/40">
-                  <h3 className="font-semibold text-sm text-foreground">Team Members</h3>
+                  <h3 className="font-semibold text-sm text-foreground">Team Members ({members?.length ?? 0})</h3>
                 </div>
                 {!members?.length ? (
                   <div className="p-6 text-center text-muted-foreground text-sm">No team members</div>
