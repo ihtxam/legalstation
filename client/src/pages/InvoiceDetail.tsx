@@ -299,6 +299,7 @@ export default function InvoiceDetailPage() {
   const invoiceId = isNewInvoice ? NaN : parseInt(id || "");
   const { isAuthenticated, loading } = useAuth();
   const [, navigate] = useLocation();
+  const { data: branding } = trpc.firm.branding.useQuery(undefined, { enabled: isAuthenticated });
 
   useEffect(() => { if (!loading && !isAuthenticated) startLogin(); }, [isAuthenticated, loading]);
 
@@ -324,16 +325,23 @@ export default function InvoiceDetailPage() {
         {/* Header */}
         <div className="bg-card border border-border rounded-xl p-6">
           <div className="flex items-start justify-between gap-4 mb-4">
-            <div>
-              <h2 className="text-2xl font-semibold text-foreground">Invoice #{invoice.invoiceNumber}</h2>
-              <p className="text-sm text-muted-foreground mt-1">Case ID: {invoice.caseId}</p>
+            <div className="flex items-start gap-4 flex-1">
+              {branding?.logoUrl && (
+                <img src={branding.logoUrl} alt="Firm logo" className="h-12 w-auto object-contain" />
+              )}
+              <div>
+                <h2 className="text-2xl font-semibold text-foreground">Invoice #{invoice.invoiceNumber}</h2>
+                <p className="text-sm text-muted-foreground mt-1">Case ID: {invoice.caseId}</p>
+              </div>
             </div>
             <StatusBadge status={invoice.status} />
           </div>
+          <Separator className="my-4" />
           <div className="grid grid-cols-2 gap-6 text-sm">
             <div>
-              <p className="text-muted-foreground">Client</p>
-              <p className="font-medium text-foreground">Client ID: {invoice.clientId}</p>
+              <p className="text-muted-foreground">Firm</p>
+              <p className="font-medium text-foreground">{branding?.name}</p>
+              <p className="text-xs text-muted-foreground mt-1">{branding?.email}</p>
             </div>
             <div>
               <p className="text-muted-foreground">Due Date</p>

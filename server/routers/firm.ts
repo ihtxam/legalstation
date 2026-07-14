@@ -8,6 +8,7 @@ import {
   createFirmMember,
   createInvitation,
   getFirmById,
+  getFirmBySlug,
   getFirmMember,
   getFirmMemberByUserId,
   getFirmMembers,
@@ -23,6 +24,19 @@ export const firmRouter = router({
     if (!member) return null;
     const firm = await getFirmById(member.firmId);
     return firm ? { firm, member } : null;
+  }),
+
+  // Get firm branding (logo, name) - accessible to clients
+  branding: protectedProcedure.query(async ({ ctx }) => {
+    const member = await getFirmMemberByUserId(ctx.user.id);
+    if (!member) return null;
+    const firm = await getFirmById(member.firmId);
+    if (!firm) return null;
+    return {
+      name: firm.name,
+      logoUrl: firm.logoUrl,
+      email: firm.email,
+    };
   }),
 
   // Create a new firm (onboarding)
@@ -138,7 +152,4 @@ export const firmRouter = router({
     }),
 });
 
-async function getFirmBySlug(slug: string) {
-  const { getFirmBySlug: _getFirmBySlug } = await import("../db");
-  return _getFirmBySlug(slug);
-}
+

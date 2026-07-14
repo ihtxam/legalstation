@@ -24,6 +24,7 @@ export default function ClientPortalPage() {
   const { isAuthenticated, loading, user } = useAuth();
   const [, navigate] = useLocation();
   const [selectedCaseId, setSelectedCaseId] = useState<number | null>(null);
+  const { data: branding } = trpc.firm.branding.useQuery(undefined, { enabled: isAuthenticated });
 
   useEffect(() => {
     if (!loading && !isAuthenticated) startLogin();
@@ -78,11 +79,16 @@ export default function ClientPortalPage() {
     <LexLayout breadcrumb={[{ label: "My Cases" }]}>
       <div className="p-6 max-w-6xl mx-auto space-y-6">
         {/* Header */}
-        <div>
-          <h1 className="text-3xl font-bold text-foreground">My Cases</h1>
-          <p className="text-muted-foreground mt-2">
-            View your legal cases, documents, and updates
-          </p>
+        <div className="flex items-start gap-4">
+          {branding?.logoUrl && (
+            <img src={branding.logoUrl} alt="Firm logo" className="h-12 w-auto object-contain" />
+          )}
+          <div>
+            <h1 className="text-3xl font-bold text-foreground">My Cases</h1>
+            <p className="text-muted-foreground mt-2">
+              View your legal cases, documents, and updates from {branding?.name}
+            </p>
+          </div>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">

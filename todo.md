@@ -174,8 +174,8 @@
 ## Phase 10: Settings Enhancements
 - [x] Add logo upload feature to Firm settings tab
 - [x] Store logo URL in firm table
-- [ ] Display logo on invoices
-- [ ] Display logo on client portal
+- [x] Display logo on invoices
+- [x] Display logo on client portal
 - [x] Add save confirmation toast notification
 - [x] Highlight unsaved changes in form fields
 - [ ] Add email invitation feature in Team settings tab
