@@ -11,13 +11,18 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { Plus, Edit2, Pause, RotateCcw } from "lucide-react";
+import { Plus, Edit2, Pause, RotateCcw, Search, X } from "lucide-react";
 
 export default function SuperadminDashboard() {
   const { user } = useAuth();
   const [, navigate] = useLocation();
   const [showCreateFirm, setShowCreateFirm] = useState(false);
   const [showCreatePlan, setShowCreatePlan] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [filterPlan, setFilterPlan] = useState("");
+  const [filterStatus, setFilterStatus] = useState("");
+  const [filterBilling, setFilterBilling] = useState("");
+  const [sortBy, setSortBy] = useState<"name" | "status" | "plan">("name");
 
   // Check if user is superadmin
   useEffect(() => {
@@ -56,6 +61,45 @@ export default function SuperadminDashboard() {
     },
     onError: (err) => toast.error(err.message),
   });
+
+  // Filter and sort firms
+  const filteredFirms = firms?.filter((firm) => {
+    const matchesSearch = searchQuery === "" || 
+      firm.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (firm.email?.toLowerCase().includes(searchQuery.toLowerCase()) ?? false);
+    const matchesPlan = filterPlan === "" || firm.subscription?.planId.toString() === filterPlan;
+    const matchesStatus = filterStatus === "" || firm.subscription?.status === filterStatus;
+    const matchesBilling = filterBilling === "" || firm.subscription?.billingCycle === filterBilling;
+    return matchesSearch && matchesPlan && matchesStatus && matchesBilling;
+  }).sort((a, b) => {
+    if (sortBy === "name") return a.name.localeCompare(b.name);
+    if (sortBy === "status") return (a.subscription?.status || "").localeCompare(b.subscription?.status || "");
+    if (sortBy === "plan") {
+      const planA = plans?.find(p => p.id === a.subscription?.planId)?.name || "";
+      const planB = plans?.find(p => p.id === b.subscription?.planId)?.name || "";
+      return planA.localeCompare(planB);
+    }
+    return 0;
+  }) || [];
+
+  const hasActiveFilters = searchQuery || filterPlan || filterStatus || filterBilling;
+
+  const resetFilters = () => {
+    setSearchQuery("");
+    setFilterPlan("");
+    setFilterStatus("");
+    setFilterBilling("");
+  };
+
+  const getUniqueStatuses = () => {
+    const statuses = new Set(firms?.map(f => f.subscription?.status).filter(Boolean));
+    return Array.from(statuses);
+  };
+
+  const getUniqueBillingCycles = () => {
+    const cycles = new Set(firms?.map(f => f.subscription?.billingCycle).filter(Boolean));
+    return Array.from(cycles);
+  };
 
   const handleCreateFirm = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -180,11 +224,106 @@ export default function SuperadminDashboard() {
             </Dialog>
           </div>
 
+          {/* Search and Filter Bar */}
+          <div className="bg-card border border-border rounded-lg p-4 mb-6 space-y-4">
+            {/* Search */}
+            <div className="relative">
+              <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Search by firm name or email..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-10"
+              />
+            </div>
+
+            {/* Filters and Sort */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-3">
+              <div>
+                <Label className="text-xs text-muted-foreground mb-2 block">Plan</Label>
+                <Select value={filterPlan} onValueChange={setFilterPlan}>
+                  <SelectTrigger className="h-9">
+                    <SelectValue placeholder="All plans" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="">All plans</SelectItem>
+                    {plans?.map((plan) => (
+                      <SelectItem key={plan.id} value={plan.id.toString()}>
+                        {plan.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div>
+                <Label className="text-xs text-muted-foreground mb-2 block">Status</Label>
+                <Select value={filterStatus} onValueChange={setFilterStatus}>
+                  <SelectTrigger className="h-9">
+                    <SelectValue placeholder="All statuses" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="">All statuses</SelectItem>
+                    {getUniqueStatuses().map((status) => (
+                      <SelectItem key={status} value={status || ""}>
+                        {status || "Inactive"}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div>
+                <Label className="text-xs text-muted-foreground mb-2 block">Billing Cycle</Label>
+                <Select value={filterBilling} onValueChange={setFilterBilling}>
+                  <SelectTrigger className="h-9">
+                    <SelectValue placeholder="All cycles" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="">All cycles</SelectItem>
+                    {getUniqueBillingCycles().map((cycle) => (
+                      <SelectItem key={cycle} value={cycle || ""}>
+                        {cycle ? cycle.charAt(0).toUpperCase() + cycle.slice(1) : "—"}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div>
+                <Label className="text-xs text-muted-foreground mb-2 block">Sort By</Label>
+                <Select value={sortBy} onValueChange={(v) => setSortBy(v as any)}>
+                  <SelectTrigger className="h-9">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="name">Name</SelectItem>
+                    <SelectItem value="status">Status</SelectItem>
+                    <SelectItem value="plan">Plan</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="flex items-end">
+                <div className="text-xs text-muted-foreground">
+                  {filteredFirms.length} of {firms?.length || 0} firms
+                </div>
+              </div>
+            </div>
+
+            {hasActiveFilters && (
+              <Button variant="outline" onClick={resetFilters} className="w-full gap-2" size="sm">
+                <X className="h-4 w-4" />
+                Clear All Filters
+              </Button>
+            )}
+          </div>
+
           {firmsLoading ? (
             <div className="text-center py-8 text-muted-foreground">Loading firms...</div>
-          ) : firms && firms.length > 0 ? (
+          ) : filteredFirms.length > 0 ? (
             <div className="grid gap-4">
-              {firms.map((firm) => (
+              {filteredFirms.map((firm) => (
                 <Card key={firm.id}>
                   <CardHeader className="pb-3">
                     <div className="flex items-start justify-between">
@@ -246,7 +385,7 @@ export default function SuperadminDashboard() {
           ) : (
             <Card>
               <CardContent className="pt-6 text-center text-muted-foreground">
-                No firms yet. Create one to get started.
+                {hasActiveFilters ? "No firms match your filters. Try adjusting your search criteria." : "No firms yet. Create one to get started."}
               </CardContent>
             </Card>
           )}

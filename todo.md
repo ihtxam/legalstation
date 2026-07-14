@@ -181,3 +181,14 @@
 - [x] Add email invitation feature in Team settings tab
 - [x] Enhance superadmin panel for merchant/firm creation
 - [x] Add merchant management dashboard
+
+## Phase 11: Superadmin Search & Filtering
+- [x] Add search by firm name and email
+- [x] Add filter by subscription plan
+- [x] Add filter by account status (active/suspended/inactive)
+- [x] Add filter by billing cycle (monthly/yearly)
+- [x] Add sort controls (by name, status, plan)
+- [x] Add firm count display with filters applied
+- [x] Add clear filters button
+- [x] Add responsive filter UI
+- [x] Update empty state for filtered results
