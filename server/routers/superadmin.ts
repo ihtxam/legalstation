@@ -349,6 +349,59 @@ export const superadminRouter = router({
       };
     }),
 
+  // Get superadmin dashboard statistics
+  getStats: protectedProcedure.query(async ({ ctx }) => {
+    if (!await isSuperadmin(ctx.user.id)) throw new TRPCError({ code: "FORBIDDEN" });
+    const db = await getDb();
+    if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+
+    // Get all firms
+    const allFirms = await db.select().from(firms);
+    
+    // Get active firms (with active subscription)
+    const activeFirmsResult = await db
+      .select()
+      .from(firms)
+      .innerJoin(firmSubscriptions, eq(firms.id, firmSubscriptions.firmId))
+      .where(eq(firmSubscriptions.status, "active"));
+    
+    const activeFirmsCount = activeFirmsResult.length;
+    
+    // Get total users
+    const allUsers = await db.select().from(users);
+    const totalUsers = allUsers.length;
+    
+    // Get total revenue from all active subscriptions
+    const activeSubscriptions = await db
+      .select()
+      .from(firmSubscriptions)
+      .where(eq(firmSubscriptions.status, "active"));
+    
+    let totalRevenue = 0;
+    for (const sub of activeSubscriptions) {
+      const plan = await db
+        .select()
+        .from(subscriptionPlans)
+        .where(eq(subscriptionPlans.id, sub.planId))
+        .limit(1);
+      
+      if (plan[0]) {
+        const price = sub.billingCycle === "yearly" 
+          ? parseFloat(plan[0].yearlyPrice as string)
+          : parseFloat(plan[0].monthlyPrice as string);
+        totalRevenue += price;
+      }
+    }
+
+    return {
+      totalFirms: allFirms.length,
+      activeFirms: activeFirmsCount,
+      totalUsers,
+      totalRevenue,
+      activeSubscriptions: activeSubscriptions.length,
+    };
+  }),
+
   // Setup superadmin by email
   setupSuperadminByEmail: protectedProcedure
     .input(z.object({ email: z.string().email() }))

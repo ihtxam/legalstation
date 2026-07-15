@@ -11,7 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { Plus, Edit2, Pause, RotateCcw, Search, X } from "lucide-react";
+import { Plus, Edit2, Pause, RotateCcw, Search, X, Users, TrendingUp, Building2, DollarSign } from "lucide-react";
 
 export default function SuperadminDashboard() {
   const { user } = useAuth();
@@ -34,13 +34,52 @@ export default function SuperadminDashboard() {
     }
   }, [user, navigate]);
 
+  // Format currency
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat("de-CH", { style: "currency", currency: "CHF" }).format(amount);
+  };
+
   // Queries
+  const { data: stats, isLoading: statsLoading } = trpc.superadmin.getStats.useQuery();
   const { data: firms, isLoading: firmsLoading, refetch: refetchFirms } = trpc.superadmin.listFirms.useQuery();
   const { data: plans, isLoading: plansLoading, refetch: refetchPlans } = trpc.superadmin.listPlans.useQuery();
   const { data: firmDetail, isLoading: firmDetailLoading } = trpc.superadmin.getFirmDetail.useQuery(
     { firmId: selectedFirmId! },
     { enabled: !!selectedFirmId }
   );
+
+  // Stat cards data
+  const statCards = [
+    {
+      label: "Total Firms",
+      value: stats?.totalFirms ?? 0,
+      icon: Building2,
+      color: "text-blue-600",
+      bg: "bg-blue-50",
+    },
+    {
+      label: "Active Firms",
+      value: stats?.activeFirms ?? 0,
+      icon: TrendingUp,
+      color: "text-green-600",
+      bg: "bg-green-50",
+    },
+    {
+      label: "Total Users",
+      value: stats?.totalUsers ?? 0,
+      icon: Users,
+      color: "text-purple-600",
+      bg: "bg-purple-50",
+    },
+    {
+      label: "Total Revenue (CHF)",
+      value: formatCurrency(stats?.totalRevenue ?? 0),
+      icon: DollarSign,
+      color: "text-amber-600",
+      bg: "bg-amber-50",
+      isNumeric: false,
+    },
+  ];
 
   // Mutations
   const createFirmMutation = trpc.superadmin.createFirm.useMutation({
@@ -166,6 +205,32 @@ export default function SuperadminDashboard() {
 
       {/* Main Content */}
       <div className="container mx-auto px-4 py-8">
+        {/* Summary Stats */}
+        <div className="mb-12">
+          <h2 className="text-2xl font-bold mb-6">Platform Overview</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            {statCards.map(({ label, value, icon: Icon, color, bg }) => (
+              <Card key={label} className="border-border shadow-none">
+                <CardContent className="p-5">
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <p className="text-muted-foreground text-xs font-medium uppercase tracking-wide mb-1">{label}</p>
+                      {statsLoading ? (
+                        <div className="h-8 w-20 bg-muted rounded animate-pulse" />
+                      ) : (
+                        <p className="text-3xl font-bold text-foreground">{value}</p>
+                      )}
+                    </div>
+                    <div className={`w-9 h-9 rounded-lg ${bg} flex items-center justify-center`}>
+                      <Icon className={`w-4.5 h-4.5 ${color}`} />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+
         {/* Firms Section */}
         <div className="mb-12">
           <div className="mb-6 flex items-center justify-between">

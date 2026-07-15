@@ -205,3 +205,15 @@
 - [x] Add pagination controls to firm list (10 items per page)
 - [x] Add page number buttons and prev/next controls
 - [x] Add firm count display with pagination info
+
+## Phase 13: Superadmin Dashboard Summary
+- [x] Add getStats endpoint to superadmin router
+- [x] Query total firms, active firms, total users, total revenue
+- [x] Add summary stat cards to superadmin dashboard
+- [x] Display Total Firms card with Building2 icon
+- [x] Display Active Firms card with TrendingUp icon
+- [x] Display Total Users card with Users icon
+- [x] Display Total Revenue (CHF) card with DollarSign icon
+- [x] Add loading skeletons for stat cards
+- [x] Format revenue as Swiss currency (CHF)
+- [x] Add "Platform Overview" section header
