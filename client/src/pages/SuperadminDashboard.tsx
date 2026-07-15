@@ -113,9 +113,9 @@ export default function SuperadminDashboard() {
     const matchesSearch = searchQuery === "" || 
       firm.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       (firm.email?.toLowerCase().includes(searchQuery.toLowerCase()) ?? false);
-    const matchesPlan = filterPlan === "" || firm.subscription?.planId.toString() === filterPlan;
-    const matchesStatus = filterStatus === "" || firm.subscription?.status === filterStatus;
-    const matchesBilling = filterBilling === "" || firm.subscription?.billingCycle === filterBilling;
+    const matchesPlan = filterPlan === "" || filterPlan === "all" || firm.subscription?.planId.toString() === filterPlan;
+    const matchesStatus = filterStatus === "" || filterStatus === "all" || firm.subscription?.status === filterStatus;
+    const matchesBilling = filterBilling === "" || filterBilling === "all" || firm.subscription?.billingCycle === filterBilling;
     return matchesSearch && matchesPlan && matchesStatus && matchesBilling;
   }).sort((a, b) => {
     if (sortBy === "name") return a.name.localeCompare(b.name);
@@ -328,7 +328,7 @@ export default function SuperadminDashboard() {
                     <SelectValue placeholder="All plans" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">All plans</SelectItem>
+                    <SelectItem value="all">All plans</SelectItem>
                     {plans?.map((plan) => (
                       <SelectItem key={plan.id} value={plan.id.toString()}>
                         {plan.name}
@@ -345,9 +345,9 @@ export default function SuperadminDashboard() {
                     <SelectValue placeholder="All statuses" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">All statuses</SelectItem>
+                    <SelectItem value="all">All statuses</SelectItem>
                     {getUniqueStatuses().map((status) => (
-                      <SelectItem key={status} value={status || ""}>
+                      <SelectItem key={status} value={status || "inactive"}>
                         {status || "Inactive"}
                       </SelectItem>
                     ))}
@@ -362,9 +362,9 @@ export default function SuperadminDashboard() {
                     <SelectValue placeholder="All cycles" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">All cycles</SelectItem>
+                    <SelectItem value="all">All cycles</SelectItem>
                     {getUniqueBillingCycles().map((cycle) => (
-                      <SelectItem key={cycle} value={cycle || ""}>
+                      <SelectItem key={cycle} value={cycle || "other"}>
                         {cycle ? cycle.charAt(0).toUpperCase() + cycle.slice(1) : "—"}
                       </SelectItem>
                     ))}

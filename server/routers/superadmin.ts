@@ -10,17 +10,14 @@ import { eq, and, desc } from "drizzle-orm";
  * All procedures require superadmin role
  */
 
-const isSuperadmin = async (userId: number) => {
-  const db = await getDb();
-  if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
-  const user = await db.select().from(users).where(eq(users.id, userId)).limit(1);
-  return user[0]?.role === "superadmin";
+const isSuperadmin = (userRole: string) => {
+  return userRole === "superadmin";
 };
 
 export const superadminRouter = router({
   // ─── Firms Management ─────────────────────────────────────────────────────
   listFirms: protectedProcedure.query(async ({ ctx }) => {
-    if (!await isSuperadmin(ctx.user.id)) throw new TRPCError({ code: "FORBIDDEN" });
+    if (!isSuperadmin(ctx.user.role)) throw new TRPCError({ code: "FORBIDDEN" });
     const db = await getDb();
     if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
 
@@ -57,7 +54,7 @@ export const superadminRouter = router({
       })
     )
     .mutation(async ({ ctx, input }) => {
-      if (!await isSuperadmin(ctx.user.id)) throw new TRPCError({ code: "FORBIDDEN" });
+      if (!isSuperadmin(ctx.user.role)) throw new TRPCError({ code: "FORBIDDEN" });
       const db = await getDb();
       if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
 
@@ -109,7 +106,7 @@ export const superadminRouter = router({
   getFirmDetails: protectedProcedure
     .input(z.object({ firmId: z.number() }))
     .query(async ({ ctx, input }) => {
-      if (!await isSuperadmin(ctx.user.id)) throw new TRPCError({ code: "FORBIDDEN" });
+      if (!isSuperadmin(ctx.user.role)) throw new TRPCError({ code: "FORBIDDEN" });
       const db = await getDb();
       if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
 
@@ -138,7 +135,7 @@ export const superadminRouter = router({
       })
     )
     .mutation(async ({ ctx, input }) => {
-      if (!await isSuperadmin(ctx.user.id)) throw new TRPCError({ code: "FORBIDDEN" });
+      if (!isSuperadmin(ctx.user.role)) throw new TRPCError({ code: "FORBIDDEN" });
       const db = await getDb();
       if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
 
@@ -170,7 +167,7 @@ export const superadminRouter = router({
   suspendFirm: protectedProcedure
     .input(z.object({ firmId: z.number() }))
     .mutation(async ({ ctx, input }) => {
-      if (!await isSuperadmin(ctx.user.id)) throw new TRPCError({ code: "FORBIDDEN" });
+      if (!isSuperadmin(ctx.user.role)) throw new TRPCError({ code: "FORBIDDEN" });
       const db = await getDb();
       if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
 
@@ -184,7 +181,7 @@ export const superadminRouter = router({
 
   // ─── Subscription Plans Management ────────────────────────────────────────
   listPlans: protectedProcedure.query(async ({ ctx }) => {
-    if (!await isSuperadmin(ctx.user.id)) throw new TRPCError({ code: "FORBIDDEN" });
+    if (!isSuperadmin(ctx.user.role)) throw new TRPCError({ code: "FORBIDDEN" });
     const db = await getDb();
     if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
 
@@ -203,7 +200,7 @@ export const superadminRouter = router({
       })
     )
     .mutation(async ({ ctx, input }) => {
-      if (!await isSuperadmin(ctx.user.id)) throw new TRPCError({ code: "FORBIDDEN" });
+      if (!isSuperadmin(ctx.user.role)) throw new TRPCError({ code: "FORBIDDEN" });
       const db = await getDb();
       if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
 
@@ -233,7 +230,7 @@ export const superadminRouter = router({
       })
     )
     .mutation(async ({ ctx, input }) => {
-      if (!await isSuperadmin(ctx.user.id)) throw new TRPCError({ code: "FORBIDDEN" });
+      if (!isSuperadmin(ctx.user.role)) throw new TRPCError({ code: "FORBIDDEN" });
       const db = await getDb();
       if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
 
@@ -284,7 +281,7 @@ export const superadminRouter = router({
   getFirmDetail: protectedProcedure
     .input(z.object({ firmId: z.number() }))
     .query(async ({ ctx, input }) => {
-      if (!await isSuperadmin(ctx.user.id)) throw new TRPCError({ code: "FORBIDDEN" });
+      if (!isSuperadmin(ctx.user.role)) throw new TRPCError({ code: "FORBIDDEN" });
       const db = await getDb();
       if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
 
@@ -351,7 +348,7 @@ export const superadminRouter = router({
 
   // Get superadmin dashboard statistics
   getStats: protectedProcedure.query(async ({ ctx }) => {
-    if (!await isSuperadmin(ctx.user.id)) throw new TRPCError({ code: "FORBIDDEN" });
+    if (!isSuperadmin(ctx.user.role)) throw new TRPCError({ code: "FORBIDDEN" });
     const db = await getDb();
     if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
 
