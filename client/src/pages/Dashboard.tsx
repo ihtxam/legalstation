@@ -6,12 +6,13 @@ import { StatusBadge } from "@/components/StatusBadge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
-import { Briefcase, Receipt, TrendingUp, Clock, AlertTriangle, ArrowRight, Calendar } from "lucide-react";
+import { Briefcase, Receipt, TrendingUp, Clock, AlertTriangle, ArrowRight, Calendar, Crown } from "lucide-react";
 import { useEffect } from "react";
 import { useLocation } from "wouter";
 import { CASE_TYPE_LABELS } from "@shared/types";
 import { format } from "date-fns";
 import { PaymentInstallmentTimeline } from "@/components/PaymentInstallmentTimeline";
+import { toast } from "sonner";
 
 function formatCHF(amount: number) {
   return new Intl.NumberFormat("de-CH", { style: "currency", currency: "CHF" }).format(amount);
@@ -20,7 +21,22 @@ function formatCHF(amount: number) {
 function LawyerDashboard() {
   const { data: stats, isLoading } = trpc.dashboard.lawyerStats.useQuery();
   const { data: activity, isLoading: activityLoading } = trpc.dashboard.recentActivity.useQuery();
+  const { user } = useAuth();
   const [, navigate] = useLocation();
+
+  // Setup superadmin mutation
+  const setupSuperadminMutation = trpc.superadmin.setupSuperadmin.useMutation({
+    onSuccess: () => {
+      toast.success("You have been promoted to superadmin!");
+      setTimeout(() => navigate("/superadmin"), 1000);
+    },
+    onError: (err) => {
+      toast.error(err.message || "Failed to setup superadmin");
+    },
+  });
+
+  // Check if user is admin but not superadmin (eligible for setup)
+  const canSetupSuperadmin = user?.role === "admin";
 
   const statCards = [
     { label: "Open Cases", value: stats?.openCases ?? 0, icon: Briefcase, color: "text-blue-600", bg: "bg-blue-50" },
@@ -31,6 +47,30 @@ function LawyerDashboard() {
 
   return (
     <div className="p-6 space-y-6 max-w-6xl mx-auto">
+      {/* Setup Superadmin Card */}
+      {canSetupSuperadmin && (
+        <Card className="border-amber-200 bg-amber-50">
+          <CardContent className="p-5">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <Crown className="h-5 w-5 text-amber-600" />
+                <div>
+                  <p className="font-semibold text-amber-900">Become a Superadmin</p>
+                  <p className="text-sm text-amber-800">Manage all firms, subscriptions, and platform settings</p>
+                </div>
+              </div>
+              <Button
+                onClick={() => setupSuperadminMutation.mutate()}
+                disabled={setupSuperadminMutation.isPending}
+                className="bg-amber-600 hover:bg-amber-700"
+              >
+                {setupSuperadminMutation.isPending ? "Setting up..." : "Activate"}
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Stat cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {statCards.map(({ label, value, icon: Icon, color, bg }) => (

@@ -23,6 +23,9 @@ export default function SuperadminDashboard() {
   const [filterStatus, setFilterStatus] = useState("");
   const [filterBilling, setFilterBilling] = useState("");
   const [sortBy, setSortBy] = useState<"name" | "status" | "plan">("name");
+  const [selectedFirmId, setSelectedFirmId] = useState<number | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
 
   // Check if user is superadmin
   useEffect(() => {
@@ -34,6 +37,10 @@ export default function SuperadminDashboard() {
   // Queries
   const { data: firms, isLoading: firmsLoading, refetch: refetchFirms } = trpc.superadmin.listFirms.useQuery();
   const { data: plans, isLoading: plansLoading, refetch: refetchPlans } = trpc.superadmin.listPlans.useQuery();
+  const { data: firmDetail, isLoading: firmDetailLoading } = trpc.superadmin.getFirmDetail.useQuery(
+    { firmId: selectedFirmId! },
+    { enabled: !!selectedFirmId }
+  );
 
   // Mutations
   const createFirmMutation = trpc.superadmin.createFirm.useMutation({
@@ -83,6 +90,16 @@ export default function SuperadminDashboard() {
   }) || [];
 
   const hasActiveFilters = searchQuery || filterPlan || filterStatus || filterBilling;
+
+  // Pagination
+  const totalPages = Math.ceil(filteredFirms.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const paginatedFirms = filteredFirms.slice(startIndex, startIndex + itemsPerPage);
+
+  // Reset to page 1 when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery, filterPlan, filterStatus, filterBilling, sortBy]);
 
   const resetFilters = () => {
     setSearchQuery("");
@@ -321,9 +338,9 @@ export default function SuperadminDashboard() {
 
           {firmsLoading ? (
             <div className="text-center py-8 text-muted-foreground">Loading firms...</div>
-          ) : filteredFirms.length > 0 ? (
+          ) : paginatedFirms.length > 0 ? (
             <div className="grid gap-4">
-              {filteredFirms.map((firm) => (
+              {paginatedFirms.map((firm) => (
                 <Card key={firm.id}>
                   <CardHeader className="pb-3">
                     <div className="flex items-start justify-between">
@@ -366,6 +383,13 @@ export default function SuperadminDashboard() {
                     <div className="flex gap-2">
                       <Button
                         size="sm"
+                        variant="default"
+                        onClick={() => setSelectedFirmId(firm.id)}
+                      >
+                        View Details
+                      </Button>
+                      <Button
+                        size="sm"
                         variant="outline"
                         onClick={() => suspendFirmMutation.mutate({ firmId: firm.id })}
                         disabled={firm.subscription?.status === "suspended" || suspendFirmMutation.isPending}
@@ -389,7 +413,158 @@ export default function SuperadminDashboard() {
               </CardContent>
             </Card>
           )}
+
+          {/* Pagination Controls */}
+          {filteredFirms.length > itemsPerPage && (
+            <div className="flex items-center justify-between mt-6 pt-6 border-t">
+              <div className="text-sm text-muted-foreground">
+                Showing {startIndex + 1} to {Math.min(startIndex + itemsPerPage, filteredFirms.length)} of {filteredFirms.length} firms
+              </div>
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+                  disabled={currentPage === 1}
+                >
+                  Previous
+                </Button>
+                <div className="flex items-center gap-1">
+                  {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                    <Button
+                      key={page}
+                      variant={currentPage === page ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => setCurrentPage(page)}
+                      className="w-10"
+                    >
+                      {page}
+                    </Button>
+                  ))}
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
+                  disabled={currentPage === totalPages}
+                >
+                  Next
+                </Button>
+              </div>
+            </div>
+          )}
         </div>
+
+        {/* Firm Detail Modal */}
+        <Dialog open={!!selectedFirmId} onOpenChange={(open) => !open && setSelectedFirmId(null)}>
+          <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>{firmDetail?.firm.name}</DialogTitle>
+              <DialogDescription>{firmDetail?.firm.email}</DialogDescription>
+            </DialogHeader>
+
+            {firmDetailLoading ? (
+              <div className="text-center py-8">Loading firm details...</div>
+            ) : firmDetail ? (
+              <div className="space-y-6">
+                {/* Subscription Info */}
+                <div className="border rounded-lg p-4">
+                  <h3 className="font-semibold mb-3">Subscription Information</h3>
+                  <div className="grid grid-cols-2 gap-4 text-sm">
+                    <div>
+                      <p className="text-muted-foreground">Plan</p>
+                      <p className="font-medium">{firmDetail.plan?.name || "—"}</p>
+                    </div>
+                    <div>
+                      <p className="text-muted-foreground">Status</p>
+                      <Badge variant={firmDetail.subscription?.status === "active" ? "default" : "destructive"}>
+                        {firmDetail.subscription?.status || "inactive"}
+                      </Badge>
+                    </div>
+                    <div>
+                      <p className="text-muted-foreground">Billing Cycle</p>
+                      <p className="font-medium capitalize">{firmDetail.subscription?.billingCycle || "—"}</p>
+                    </div>
+                    <div>
+                      <p className="text-muted-foreground">Max Users</p>
+                      <p className="font-medium">{firmDetail.plan?.maxUsers || "—"}</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Usage Metrics */}
+                <div className="border rounded-lg p-4">
+                  <h3 className="font-semibold mb-3">Usage Metrics</h3>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="bg-muted p-3 rounded">
+                      <p className="text-muted-foreground text-sm">Total Cases</p>
+                      <p className="text-2xl font-bold">{firmDetail.usageMetrics.totalCases}</p>
+                    </div>
+                    <div className="bg-muted p-3 rounded">
+                      <p className="text-muted-foreground text-sm">Total Clients</p>
+                      <p className="text-2xl font-bold">{firmDetail.usageMetrics.totalClients}</p>
+                    </div>
+                    <div className="bg-muted p-3 rounded">
+                      <p className="text-muted-foreground text-sm">Total Documents</p>
+                      <p className="text-2xl font-bold">{firmDetail.usageMetrics.totalDocuments}</p>
+                    </div>
+                    <div className="bg-muted p-3 rounded">
+                      <p className="text-muted-foreground text-sm">Total Messages</p>
+                      <p className="text-2xl font-bold">{firmDetail.usageMetrics.totalMessages}</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Billing History */}
+                <div className="border rounded-lg p-4">
+                  <h3 className="font-semibold mb-3">Recent Billing History</h3>
+                  {firmDetail.billingHistory.length > 0 ? (
+                    <div className="space-y-2 max-h-48 overflow-y-auto">
+                      {firmDetail.billingHistory.map((invoice: any) => (
+                        <div key={invoice.id} className="flex justify-between items-center text-sm border-b pb-2">
+                          <div>
+                            <p className="font-medium">Invoice #{invoice.invoiceNumber}</p>
+                            <p className="text-muted-foreground text-xs">{new Date(invoice.createdAt).toLocaleDateString()}</p>
+                          </div>
+                          <div className="text-right">
+                            <p className="font-medium">${invoice.totalAmount}</p>
+                            <Badge variant={invoice.status === "paid" ? "default" : "secondary"}>
+                              {invoice.status}
+                            </Badge>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-muted-foreground text-sm">No billing history yet</p>
+                  )}
+                </div>
+
+                {/* Recent Activity */}
+                <div className="border rounded-lg p-4">
+                  <h3 className="font-semibold mb-3">Recent Activity</h3>
+                  {firmDetail.recentActivity.length > 0 ? (
+                    <div className="space-y-2 max-h-48 overflow-y-auto">
+                      {firmDetail.recentActivity.map((activity: any) => (
+                        <div key={activity.id} className="flex justify-between items-start text-sm border-b pb-2">
+                          <div>
+                            <p className="font-medium">{activity.eventType}</p>
+                            <p className="text-muted-foreground text-xs">{new Date(activity.createdAt).toLocaleString()}</p>
+                          </div>
+                          {activity.description && (
+                            <p className="text-muted-foreground text-xs max-w-xs text-right">{activity.description}</p>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-muted-foreground text-sm">No recent activity</p>
+                  )}
+                </div>
+              </div>
+            ) : null}
+          </DialogContent>
+        </Dialog>
 
         {/* Plans Section */}
         <div>

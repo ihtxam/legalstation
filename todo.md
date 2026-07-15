@@ -192,3 +192,16 @@
 - [x] Add clear filters button
 - [x] Add responsive filter UI
 - [x] Update empty state for filtered results
+
+## Phase 12: Superadmin Setup & Firm Details
+- [x] Add setupSuperadmin endpoint to promote current admin
+- [x] Add setupSuperadminByEmail endpoint for email-based setup
+- [x] Add "Become a Superadmin" card to admin dashboard
+- [x] Add getFirmDetail endpoint with billing history and usage metrics
+- [x] Add firm detail modal with subscription info
+- [x] Add usage metrics display (cases, clients, documents, messages)
+- [x] Add billing history section in modal
+- [x] Add recent activity section in modal
+- [x] Add pagination controls to firm list (10 items per page)
+- [x] Add page number buttons and prev/next controls
+- [x] Add firm count display with pagination info

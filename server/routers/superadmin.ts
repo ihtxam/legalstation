@@ -279,4 +279,121 @@ export const superadminRouter = router({
 
     return { success: true, message: "You have been designated as superadmin." };
   }),
+
+  // Get firm detail with billing history, usage metrics, and activity
+  getFirmDetail: protectedProcedure
+    .input(z.object({ firmId: z.number() }))
+    .query(async ({ ctx, input }) => {
+      if (!await isSuperadmin(ctx.user.id)) throw new TRPCError({ code: "FORBIDDEN" });
+      const db = await getDb();
+      if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+
+      // Get firm and subscription
+      const firm = await db.select().from(firms).where(eq(firms.id, input.firmId)).limit(1);
+      if (!firm[0]) throw new TRPCError({ code: "NOT_FOUND" });
+
+      const sub = await db
+        .select()
+        .from(firmSubscriptions)
+        .where(eq(firmSubscriptions.firmId, input.firmId))
+        .limit(1);
+
+      const plan = sub[0]
+        ? await db.select().from(subscriptionPlans).where(eq(subscriptionPlans.id, sub[0].planId)).limit(1)
+        : null;
+
+      // Get billing history (invoices)
+      const { invoices: invoicesTable } = await import("../../drizzle/schema");
+      const billingHistory = await db
+        .select()
+        .from(invoicesTable)
+        .where(eq(invoicesTable.firmId, input.firmId))
+        .orderBy(desc(invoicesTable.createdAt))
+        .limit(20);
+
+      // Get usage metrics
+      const { cases: casesTable, clients: clientsTable, documents: documentsTable, messages: messagesTable } = await import("../../drizzle/schema");
+      
+      const caseCount = await db.select().from(casesTable).where(eq(casesTable.firmId, input.firmId));
+      const clientCount = await db.select().from(clientsTable).where(eq(clientsTable.firmId, input.firmId));
+      const documentCount = await db.select().from(documentsTable).where(eq(documentsTable.firmId, input.firmId));
+      const messageCount = await db.select().from(messagesTable).where(eq(messagesTable.firmId, input.firmId));
+
+      // Get recent activity from cases
+      const { caseEvents: caseEventsTable } = await import("../../drizzle/schema");
+      const casesForFirm = await db.select().from(casesTable).where(eq(casesTable.firmId, input.firmId));
+      const caseIds = casesForFirm.map(c => c.id);
+      
+      let recentActivity: any[] = [];
+      if (caseIds.length > 0) {
+        recentActivity = await db
+          .select()
+          .from(caseEventsTable)
+          .where(eq(caseEventsTable.caseId, caseIds[0]))
+          .orderBy(desc(caseEventsTable.createdAt))
+          .limit(10);
+      }
+
+      return {
+        firm: firm[0],
+        subscription: sub[0],
+        plan: plan?.[0],
+        billingHistory,
+        usageMetrics: {
+          totalCases: caseCount.length,
+          totalClients: clientCount.length,
+          totalDocuments: documentCount.length,
+          totalMessages: messageCount.length,
+        },
+        recentActivity,
+      };
+    }),
+
+  // Setup superadmin by email
+  setupSuperadminByEmail: protectedProcedure
+    .input(z.object({ email: z.string().email() }))
+    .mutation(async ({ ctx, input }) => {
+      const db = await getDb();
+      if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+
+      const existingSuperadmin = await db
+        .select()
+        .from(users)
+        .where(eq(users.role, "superadmin"))
+        .limit(1);
+
+      if (existingSuperadmin[0] && existingSuperadmin[0].id !== ctx.user.id) {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "Only existing superadmins can designate new superadmins.",
+        });
+      }
+
+      const targetUser = await db
+        .select()
+        .from(users)
+        .where(eq(users.email, input.email))
+        .limit(1);
+
+      if (!targetUser[0]) {
+        const openId = `superadmin-${input.email}-${Date.now()}`;
+        await db.insert(users).values({
+          openId,
+          email: input.email,
+          name: "Admin",
+          role: "superadmin",
+          loginMethod: "oauth",
+        });
+        return {
+          success: true,
+          message: `Superadmin account created for ${input.email}. User can now log in via Manus OAuth.`,
+        };
+      } else {
+        await db.update(users).set({ role: "superadmin" }).where(eq(users.id, targetUser[0].id));
+        return {
+          success: true,
+          message: `${input.email} has been promoted to superadmin.`,
+        };
+      }
+    }),
 });
