@@ -1,5 +1,19 @@
+import { GetObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import type { Express } from "express";
 import { ENV } from "./env";
+import { storageGetSignedUrl, storageReadLocal } from "../storage";
+
+function getS3Client() {
+  return new S3Client({
+    region: ENV.s3.region,
+    endpoint: ENV.s3.endpoint || undefined,
+    forcePathStyle: ENV.s3.forcePathStyle,
+    credentials: {
+      accessKeyId: ENV.s3.accessKeyId,
+      secretAccessKey: ENV.s3.secretAccessKey,
+    },
+  });
+}
 
 export function registerStorageProxy(app: Express) {
   app.get("/manus-storage/*", async (req, res) => {
@@ -9,35 +23,47 @@ export function registerStorageProxy(app: Express) {
       return;
     }
 
-    if (!ENV.forgeApiUrl || !ENV.forgeApiKey) {
-      res.status(500).send("Storage proxy not configured");
-      return;
-    }
-
     try {
-      const forgeUrl = new URL(
-        "v1/storage/presign/get",
-        ENV.forgeApiUrl.replace(/\/+$/, "") + "/",
-      );
-      forgeUrl.searchParams.set("path", key);
-
-      const forgeResp = await fetch(forgeUrl, {
-        headers: { Authorization: `Bearer ${ENV.forgeApiKey}` },
-      });
-
-      if (!forgeResp.ok) {
-        const body = await forgeResp.text().catch(() => "");
-        console.error(`[StorageProxy] forge error: ${forgeResp.status} ${body}`);
-        res.status(502).send("Storage backend error");
+      if (ENV.storageBackend === "local") {
+        const data = await storageReadLocal(key);
+        if (!data) {
+          res.status(404).send("Not found");
+          return;
+        }
+        res.set("Cache-Control", "private, max-age=3600");
+        res.send(data);
         return;
       }
 
-      const { url } = (await forgeResp.json()) as { url: string };
-      if (!url) {
-        res.status(502).send("Empty signed URL from backend");
+      if (ENV.storageBackend === "s3") {
+        if (!ENV.s3.accessKeyId || !ENV.s3.secretAccessKey) {
+          res.status(500).send("S3 storage not configured");
+          return;
+        }
+        // Stream through the app so browsers never need the internal MinIO host.
+        const client = getS3Client();
+        const obj = await client.send(
+          new GetObjectCommand({ Bucket: ENV.s3.bucket, Key: key }),
+        );
+        if (obj.ContentType) res.set("Content-Type", obj.ContentType);
+        if (obj.ContentLength != null) res.set("Content-Length", String(obj.ContentLength));
+        res.set("Cache-Control", "private, max-age=3600");
+        const body = obj.Body;
+        if (!body) {
+          res.status(404).send("Not found");
+          return;
+        }
+        const bytes = await body.transformToByteArray();
+        res.send(Buffer.from(bytes));
         return;
       }
 
+      if (!ENV.forgeApiUrl || !ENV.forgeApiKey) {
+        res.status(500).send("Storage proxy not configured");
+        return;
+      }
+
+      const url = await storageGetSignedUrl(key);
       res.set("Cache-Control", "no-store");
       res.redirect(307, url);
     } catch (err) {

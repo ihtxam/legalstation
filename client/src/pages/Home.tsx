@@ -1,9 +1,12 @@
 import { useAuth } from "@/_core/hooks/useAuth";
 import { startLogin } from "@/const";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { trpc } from "@/lib/trpc";
 import { Scale, Shield, FileText, MessageSquare, Receipt, Users, ArrowRight, Check } from "lucide-react";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useLocation } from "wouter";
+import { toast } from "sonner";
 
 const features = [
   { icon: Users, title: "Client Management", desc: "Manage individual and corporate clients with full onboarding flows and profile management." },
@@ -17,6 +20,17 @@ const features = [
 export default function Home() {
   const { isAuthenticated, loading } = useAuth();
   const [, navigate] = useLocation();
+  const { data: devLoginEnabled } = trpc.auth.devLoginEnabled.useQuery();
+  const utils = trpc.useUtils();
+  const [devEmail, setDevEmail] = useState("admin@lexflow.test");
+  const devLogin = trpc.auth.devLogin.useMutation({
+    onSuccess: async () => {
+      await utils.auth.me.invalidate();
+      toast.success("Signed in (dev)");
+      navigate("/dashboard");
+    },
+    onError: (err) => toast.error(err.message),
+  });
 
   useEffect(() => {
     if (!loading && isAuthenticated) {
@@ -70,6 +84,32 @@ export default function Home() {
               <ArrowRight className="w-4 h-4 ml-2" />
             </Button>
           </div>
+          {devLoginEnabled ? (
+            <form
+              className="mt-8 mx-auto max-w-md flex flex-col sm:flex-row gap-3 items-stretch"
+              onSubmit={(e) => {
+                e.preventDefault();
+                devLogin.mutate({ email: devEmail, name: "LexFlow Admin" });
+              }}
+            >
+              <Input
+                type="email"
+                value={devEmail}
+                onChange={(e) => setDevEmail(e.target.value)}
+                placeholder="dev@example.com"
+                className="bg-white/10 border-white/30 text-white placeholder:text-white/50"
+                required
+              />
+              <Button
+                type="submit"
+                size="lg"
+                disabled={devLogin.isPending}
+                className="bg-[var(--color-gold)] text-[var(--color-navy)] hover:bg-[var(--color-gold-light)] font-semibold"
+              >
+                {devLogin.isPending ? "Signing in…" : "Dev sign-in"}
+              </Button>
+            </form>
+          ) : null}
           <div className="flex items-center justify-center gap-6 mt-10 text-white/60 text-sm">
             {["CHF billing & VAT", "Stripe payments", "Role-based access"].map(item => (
               <span key={item} className="flex items-center gap-1.5">
