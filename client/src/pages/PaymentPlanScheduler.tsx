@@ -16,16 +16,31 @@ interface Installment {
   amount: number;
 }
 
-export default function PaymentPlanScheduler({ invoiceId, totalAmount }: { invoiceId: number; totalAmount: number }) {
-  const { user } = useAuth();
+export default function PaymentPlanScheduler({
+  invoiceId,
+  totalAmount,
+  onCreated,
+}: {
+  invoiceId: number;
+  totalAmount: number;
+  onCreated?: () => void;
+}) {
+  useAuth();
   const [scheduleType, setScheduleType] = useState<"monthly" | "custom">("monthly");
   const [monthCount, setMonthCount] = useState("3");
   const [installments, setInstallments] = useState<Installment[]>([]);
+  const [autoGenerateInvoices, setAutoGenerateInvoices] = useState(true);
 
   const createPaymentPlanMutation = trpc.paymentPlans.create.useMutation({
-    onSuccess: () => {
-      toast.success("Payment plan created");
+    onSuccess: (data) => {
+      const genCount = data.generatedInvoiceIds?.length ?? 0;
+      toast.success(
+        genCount > 0
+          ? `Payment plan created · ${genCount} installment invoice(s) generated`
+          : "Payment plan created"
+      );
       setInstallments([]);
+      onCreated?.();
     },
     onError: (err) => toast.error(err.message),
   });
@@ -92,13 +107,18 @@ export default function PaymentPlanScheduler({ invoiceId, totalAmount }: { invoi
 
     createPaymentPlanMutation.mutate({
       invoiceId,
-      name: `${monthCount}-Month Payment Plan`,
+      name: scheduleType === "monthly" ? `${monthCount}-Month Payment Plan` : "Custom Payment Plan",
       installmentCount: installments.length,
       intervalDays,
+      autoGenerateInvoices,
+      generateDueNow: autoGenerateInvoices,
       installments: installments.map((inst, idx) => ({
         installmentNumber: idx + 1,
         amount: inst.amount,
-        daysFromNow: Math.floor((new Date(inst.dueDate).getTime() - Date.now()) / (1000 * 60 * 60 * 24)),
+        daysFromNow: Math.max(
+          0,
+          Math.floor((new Date(inst.dueDate).getTime() - Date.now()) / (1000 * 60 * 60 * 24))
+        ),
       })),
     });
   };
@@ -212,6 +232,19 @@ export default function PaymentPlanScheduler({ invoiceId, totalAmount }: { invoi
             </div>
           </div>
         )}
+
+        <div className="flex items-center gap-2">
+          <input
+            id="autoGenerateInvoices"
+            type="checkbox"
+            checked={autoGenerateInvoices}
+            onChange={(e) => setAutoGenerateInvoices(e.target.checked)}
+            className="h-4 w-4"
+          />
+          <Label htmlFor="autoGenerateInvoices">
+            Auto-generate installment invoices when due
+          </Label>
+        </div>
 
         {/* Create Button */}
         {installments.length > 0 && (

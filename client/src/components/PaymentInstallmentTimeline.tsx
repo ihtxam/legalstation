@@ -7,21 +7,26 @@ interface Installment {
   id: number;
   installmentNumber: number;
   amount: number;
-  daysFromNow: number;
-  status: "pending" | "paid" | "overdue";
+  daysFromNow?: number;
+  status: "pending" | "paid" | "overdue" | "failed";
   dueDate: Date;
+  generatedInvoiceId?: number | null;
 }
 
 interface PaymentInstallmentTimelineProps {
   invoiceNumber: string;
   installments: Installment[];
   totalAmount: number;
+  onGenerateInvoice?: (installmentId: number) => void;
+  generatingId?: number | null;
 }
 
 export function PaymentInstallmentTimeline({
   invoiceNumber,
   installments,
   totalAmount,
+  onGenerateInvoice,
+  generatingId,
 }: PaymentInstallmentTimelineProps) {
   if (!installments || installments.length === 0) {
     return null;
@@ -127,16 +132,30 @@ export function PaymentInstallmentTimeline({
                   </div>
 
                   {/* Status Message */}
-                  {isPending && installment.daysFromNow > 0 && (
+                  {isPending && (installment.daysFromNow ?? 0) > 0 && (
                     <div className="text-xs text-slate-500 mt-2">
                       Due in {installment.daysFromNow} day{installment.daysFromNow !== 1 ? "s" : ""}
                     </div>
                   )}
-                  {isOverdue && (
+                  {isOverdue && installment.daysFromNow != null && (
                     <div className="text-xs text-red-600 mt-2 font-medium">
                       Overdue by {Math.abs(installment.daysFromNow)} day{Math.abs(installment.daysFromNow) !== 1 ? "s" : ""}
                     </div>
                   )}
+                  {installment.generatedInvoiceId ? (
+                    <div className="text-xs text-muted-foreground mt-2">
+                      Invoice #{installment.generatedInvoiceId} generated
+                    </div>
+                  ) : onGenerateInvoice && !isPaid ? (
+                    <button
+                      type="button"
+                      className="text-xs text-[var(--color-navy)] underline mt-2 disabled:opacity-50"
+                      disabled={generatingId === installment.id}
+                      onClick={() => onGenerateInvoice(installment.id)}
+                    >
+                      {generatingId === installment.id ? "Generating…" : "Generate invoice now"}
+                    </button>
+                  ) : null}
                 </div>
               </div>
             );

@@ -119,7 +119,7 @@
 - [x] Payment plan creation: lawyers define schedule (e.g., 50% upfront, 50% on completion)
 - [x] Payment plan UI: PaymentPlanScheduler component (monthly/custom intervals)
 - [x] Payment plan visualization on invoice detail page (PaymentInstallmentTimeline component)
-- [ ] Auto-generate scheduled invoices based on plan
+- [x] Auto-generate scheduled invoices based on plan
 - [x] Adyen integration: payment link per invoice
 - [x] Payment status tracking: pending, paid, overdue, cancelled
 

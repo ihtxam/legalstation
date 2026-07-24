@@ -16,6 +16,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Separator } from "@/components/ui/separator";
 import { Plus, Trash2, FileText, Send, CheckCircle, Download, CreditCard, CheckCircle2 } from "lucide-react";
+import PaymentPlanScheduler from "@/pages/PaymentPlanScheduler";
+import { PaymentInstallmentTimeline } from "@/components/PaymentInstallmentTimeline";
 
 function formatCHF(amount: string | number) {
   return new Intl.NumberFormat("de-CH", { style: "currency", currency: "CHF" }).format(Number(amount));
@@ -312,6 +314,17 @@ export default function InvoiceDetailPage() {
   const generatePdf = trpc.invoicePdf.generate.useMutation({
     onError: (e) => toast.error(e.message || "Failed to generate PDF"),
   });
+  const { data: paymentPlans, refetch: refetchPlans } = trpc.paymentPlans.listByInvoice.useQuery(
+    { invoiceId },
+    { enabled: isAuthenticated && !isNaN(invoiceId) }
+  );
+  const generateInstallment = trpc.paymentPlans.generateInstallmentInvoice.useMutation({
+    onSuccess: () => {
+      toast.success("Installment invoice generated");
+      void refetchPlans();
+    },
+    onError: (e) => toast.error(e.message),
+  });
 
   const downloadServerPdf = async () => {
     try {
@@ -429,6 +442,42 @@ export default function InvoiceDetailPage() {
               </div>
             </div>
           </div>
+        )}
+
+        {/* Payment plans */}
+        {paymentPlans && paymentPlans.length > 0 ? (
+          <div className="space-y-4">
+            {paymentPlans.map((plan) => (
+              <PaymentInstallmentTimeline
+                key={plan.id}
+                invoiceNumber={invoice.invoiceNumber}
+                totalAmount={parseFloat(String(plan.totalAmount))}
+                generatingId={generateInstallment.isPending ? generateInstallment.variables?.installmentId ?? null : null}
+                onGenerateInvoice={(installmentId) =>
+                  generateInstallment.mutate({ installmentId })
+                }
+                installments={(plan.installments || []).map((inst) => {
+                  const due = new Date(inst.dueDate);
+                  const daysFromNow = Math.ceil((due.getTime() - Date.now()) / (1000 * 60 * 60 * 24));
+                  return {
+                    id: inst.id,
+                    installmentNumber: inst.installmentNumber,
+                    amount: parseFloat(String(inst.amount)),
+                    status: inst.status,
+                    dueDate: due,
+                    daysFromNow,
+                    generatedInvoiceId: inst.generatedInvoiceId,
+                  };
+                })}
+              />
+            ))}
+          </div>
+        ) : (
+          <PaymentPlanScheduler
+            invoiceId={invoiceId}
+            totalAmount={total}
+            onCreated={() => void refetchPlans()}
+          />
         )}
 
         {/* Payment section */}

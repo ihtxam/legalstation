@@ -341,6 +341,8 @@ export const paymentPlans = mysqlTable("payment_plans", {
   totalAmount: decimal("totalAmount", { precision: 12, scale: 2 }).notNull(),
   installmentCount: int("installmentCount").notNull(),
   intervalDays: int("intervalDays").notNull(), // 30 for monthly, 0 for one-time
+  /** When true, due installments auto-create child invoices */
+  autoGenerateInvoices: boolean("autoGenerateInvoices").notNull().default(true),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
 });
 
@@ -357,6 +359,8 @@ export const paymentInstallments = mysqlTable("payment_installments", {
   status: mysqlEnum("status", ["pending", "paid", "overdue", "failed"]).notNull().default("pending"),
   paidAt: timestamp("paidAt"),
   adyenPaymentId: varchar("adyenPaymentId", { length: 255 }),
+  /** Child invoice created for this installment (when auto-generate is on) */
+  generatedInvoiceId: int("generatedInvoiceId"),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 });

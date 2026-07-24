@@ -14,6 +14,8 @@ import { getStripe } from "../stripe";
 import { getDb } from "../db";
 import { invoices } from "../../drizzle/schema";
 import { eq, and } from "drizzle-orm";
+import { processDuePaymentPlanInstallments } from "../paymentPlanInvoices";
+import { ENV } from "./env";
 
 function isPortAvailable(port: number): Promise<boolean> {
   return new Promise(resolve => {
@@ -57,6 +59,26 @@ async function startServer() {
 
   registerStorageProxy(app);
   registerOAuthRoutes(app);
+
+  // Scheduled jobs (heartbeat / cron). Path convention: /api/scheduled/*
+  app.post("/api/scheduled/payment-plan-invoices", async (req, res) => {
+    try {
+      const secret = process.env.SCHEDULED_JOB_SECRET || ENV.cookieSecret;
+      const provided =
+        req.get("x-scheduled-job-secret") ||
+        (typeof req.query.secret === "string" ? req.query.secret : undefined);
+      if (secret && provided !== secret) {
+        return res.status(401).json({ error: "Unauthorized" });
+      }
+      // System actor: use OWNER user id 0 semantics — pass 1 as fallback creator
+      const createdByUserId = Number(process.env.SCHEDULED_JOB_USER_ID || 1);
+      const result = await processDuePaymentPlanInstallments(createdByUserId);
+      return res.json({ ok: true, ...result });
+    } catch (err: any) {
+      console.error("[Scheduled] payment-plan-invoices", err);
+      return res.status(500).json({ error: err.message ?? "Job failed" });
+    }
+  });
 
   // Stripe webhook — must be raw body BEFORE json middleware
   app.post("/api/stripe/webhook", express.raw({ type: "application/json" }), async (req: any, res: any) => {
