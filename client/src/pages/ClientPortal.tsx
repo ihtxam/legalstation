@@ -19,8 +19,10 @@ import {
 } from "lucide-react";
 import { format } from "date-fns";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
 
 export default function ClientPortalPage() {
+  const { t } = useTranslation();
   const { isAuthenticated, loading, user } = useAuth();
   const [, navigate] = useLocation();
   const [selectedCaseId, setSelectedCaseId] = useState<number | null>(null);
@@ -70,7 +72,7 @@ export default function ClientPortalPage() {
     { enabled: isAuthenticated && !!selectedCaseId }
   );
 
-  if (loading) return <LexLayout title="My Cases"><Skeleton className="h-64 w-full" /></LexLayout>;
+  if (loading) return <LexLayout title={t("portal.title")}><Skeleton className="h-64 w-full" /></LexLayout>;
 
   const clientCases = cases || [];
   const activeCase = selectedCaseId
@@ -78,17 +80,17 @@ export default function ClientPortalPage() {
     : null;
 
   return (
-    <LexLayout breadcrumb={[{ label: "My Cases" }]}>
+    <LexLayout breadcrumb={[{ label: t("portal.title") }]}>
       <div className="p-6 max-w-6xl mx-auto space-y-6">
         {/* Header */}
         <div className="flex items-start gap-4">
           {branding?.logoUrl && (
-            <img src={branding.logoUrl} alt="Firm logo" className="h-12 w-auto object-contain" />
+            <img src={branding.logoUrl} alt={t("settings.logo")} className="h-12 w-auto object-contain" />
           )}
           <div>
-            <h1 className="text-3xl font-bold text-foreground">My Cases</h1>
+            <h1 className="text-3xl font-bold text-foreground">{t("portal.title")}</h1>
             <p className="text-muted-foreground mt-2">
-              View your legal cases, documents, and updates from {branding?.name}
+              {t("portal.subtitle", { firm: branding?.name ?? "" })}
             </p>
           </div>
         </div>
@@ -99,7 +101,7 @@ export default function ClientPortalPage() {
             <div className="bg-card border border-border rounded-xl overflow-hidden">
               <div className="p-4 border-b border-border bg-muted/40">
                 <h2 className="font-semibold text-foreground text-sm">
-                  Cases ({clientCases.length})
+                  {t("portal.casesCount", { count: clientCases.length })}
                 </h2>
               </div>
               <div className="divide-y divide-border max-h-96 overflow-y-auto">
@@ -109,7 +111,7 @@ export default function ClientPortalPage() {
                   </div>
                 ) : clientCases.length === 0 ? (
                   <div className="p-4 text-center text-muted-foreground text-sm">
-                    No cases yet
+                    {t("portal.empty")}
                   </div>
                 ) : (
                   clientCases.map((c) => (
@@ -139,7 +141,7 @@ export default function ClientPortalPage() {
               <div className="bg-card border border-border rounded-xl p-12 text-center">
                 <FileText className="w-12 h-12 text-muted-foreground/40 mx-auto mb-4" />
                 <p className="text-muted-foreground font-medium">
-                  Select a case to view details
+                  {t("portal.selectCase")}
                 </p>
               </div>
             ) : caseLoading ? (
@@ -155,7 +157,7 @@ export default function ClientPortalPage() {
                         {activeCase.title}
                       </h2>
                       <p className="text-sm text-muted-foreground mt-1">
-                        Reference: {activeCase.referenceNumber}
+                        {t("portal.referencePrefix")} {activeCase.referenceNumber}
                       </p>
                     </div>
                     <Badge
@@ -165,7 +167,7 @@ export default function ClientPortalPage() {
                           : "bg-gray-100 text-gray-700 border-gray-200"
                       }
                     >
-                      {activeCase.status}
+                      {t(`common.${activeCase.status}`)}
                     </Badge>
                   </div>
 
@@ -179,7 +181,7 @@ export default function ClientPortalPage() {
                     <div className="flex items-center gap-2 mt-4 text-sm text-muted-foreground">
                       <Calendar className="w-4 h-4" />
                       <span>
-                        Deadline:{" "}
+                        {t("portal.deadline")}:{" "}
                         {format(new Date(activeCase.deadline), "dd MMM yyyy")}
                       </span>
                     </div>
@@ -191,15 +193,15 @@ export default function ClientPortalPage() {
                   <TabsList className="grid w-full grid-cols-3">
                     <TabsTrigger value="documents" className="flex items-center gap-2">
                       <FileText className="w-4 h-4" />
-                      <span className="hidden sm:inline">Documents</span>
+                      <span className="hidden sm:inline">{t("portal.documents")}</span>
                     </TabsTrigger>
                     <TabsTrigger value="updates" className="flex items-center gap-2">
                       <AlertCircle className="w-4 h-4" />
-                      <span className="hidden sm:inline">Updates</span>
+                      <span className="hidden sm:inline">{t("portal.updates")}</span>
                     </TabsTrigger>
                     <TabsTrigger value="messages" className="flex items-center gap-2">
                       <MessageSquare className="w-4 h-4" />
-                      <span className="hidden sm:inline">Messages</span>
+                      <span className="hidden sm:inline">{t("portal.messages")}</span>
                       {messages && messages.length > 0 && (
                         <Badge variant="secondary" className="ml-1 h-5 w-5 p-0 flex items-center justify-center text-xs">
                           {messages.length}
@@ -239,7 +241,7 @@ export default function ClientPortalPage() {
                             {
                               onSuccess: async (result: any) => {
                                 refetchDocs();
-                                toast.success("Document uploaded successfully");
+                                toast.success(t("docs.uploaded"));
                                 if (result.documentId) {
                                   setSummariesLoading((prev) => ({ ...prev, [result.documentId]: true }));
                                   try {
@@ -255,21 +257,21 @@ export default function ClientPortalPage() {
                                     if (summary) {
                                       setSummaries((prev) => ({ ...prev, [result.documentId]: summary }));
                                     }
-                                    toast.success("Document analysis complete");
+                                    toast.success(t("docs.analysisComplete"));
                                   } catch {
-                                    toast.error("Document analysis failed");
+                                    toast.error(t("docs.analysisFailed"));
                                   } finally {
                                     setSummariesLoading((prev) => ({ ...prev, [result.documentId]: false }));
                                   }
                                 }
                               },
                               onError: () => {
-                                toast.error("Failed to register document");
+                                toast.error(t("docs.registerFailed"));
                               },
                             }
                           );
                         } catch (error) {
-                          toast.error("Failed to upload document");
+                          toast.error(t("docs.uploadFailed"));
                         }
                       }}
                       onToggleVisibility={(id, visibility) => {
@@ -300,7 +302,7 @@ export default function ClientPortalPage() {
                       <CaseStatusTimeline events={events.map((e: any) => ({ id: e.event.id, eventType: e.event.eventType, createdAt: e.event.createdAt }))} isLoading={false} />
                     ) : (
                       <div className="text-center py-8 text-muted-foreground">
-                        No updates yet
+                        {t("portal.noUpdates")}
                       </div>
                     )}
                   </TabsContent>
@@ -313,7 +315,7 @@ export default function ClientPortalPage() {
                           <div key={msg.id} className="border border-border rounded-lg p-4">
                             <div className="flex items-start justify-between gap-2 mb-2">
                               <p className="font-medium text-sm text-foreground">
-                                {msg.senderName || "Message"}
+                                {msg.senderName || t("messages.message")}
                               </p>
                               <p className="text-xs text-muted-foreground">
                                 {format(new Date(msg.createdAt), "dd MMM yyyy HH:mm")}
@@ -325,7 +327,7 @@ export default function ClientPortalPage() {
                       </div>
                     ) : (
                       <div className="text-center py-8 text-muted-foreground">
-                        No messages yet
+                        {t("messages.noMessages")}
                       </div>
                     )}
                   </TabsContent>

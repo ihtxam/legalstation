@@ -11,12 +11,14 @@ import { useEffect, useState } from "react";
 import { useLocation } from "wouter";
 import { toast } from "sonner";
 import { format } from "date-fns";
+import { useTranslation } from "react-i18next";
 
 function formatCHF(amount: string | number) {
   return new Intl.NumberFormat("de-CH", { style: "currency", currency: "CHF" }).format(Number(amount));
 }
 
 export default function InvoicesPage() {
+  const { t } = useTranslation();
   const { isAuthenticated, loading } = useAuth();
   const [, navigate] = useLocation();
   const [statusFilter, setStatusFilter] = useState<string>("all");
@@ -33,15 +35,15 @@ export default function InvoicesPage() {
     : [];
 
   return (
-    <LexLayout title="Billing" breadcrumb={[{ label: "Billing" }]}>
+    <LexLayout title={t("invoices.billing")} breadcrumb={[{ label: t("invoices.billing") }]}>
       <div className="p-6 space-y-5 max-w-6xl mx-auto">
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-xl font-semibold text-foreground">Invoices</h2>
-            <p className="text-muted-foreground text-sm mt-0.5">{allInvoices.length} total invoices</p>
+            <h2 className="text-xl font-semibold text-foreground">{t("invoices.title")}</h2>
+            <p className="text-muted-foreground text-sm mt-0.5">{t("invoices.count", { count: allInvoices.length })}</p>
           </div>
           <Button className="bg-[var(--color-navy)] hover:bg-[var(--color-navy-light)] text-white" onClick={() => navigate("/invoices/new")}>
-            <Plus className="w-4 h-4 mr-1.5" /> New invoice
+            <Plus className="w-4 h-4 mr-1.5" /> {t("invoices.new")}
           </Button>
         </div>
 
@@ -49,12 +51,12 @@ export default function InvoicesPage() {
           <Select value={statusFilter} onValueChange={setStatusFilter}>
             <SelectTrigger className="w-44"><SelectValue /></SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All statuses</SelectItem>
-              <SelectItem value="draft">Draft</SelectItem>
-              <SelectItem value="sent">Sent</SelectItem>
-              <SelectItem value="paid">Paid</SelectItem>
-              <SelectItem value="overdue">Overdue</SelectItem>
-              <SelectItem value="cancelled">Cancelled</SelectItem>
+              <SelectItem value="all">{t("common.allStatuses")}</SelectItem>
+              <SelectItem value="draft">{t("common.draft")}</SelectItem>
+              <SelectItem value="sent">{t("common.sent")}</SelectItem>
+              <SelectItem value="paid">{t("common.paid")}</SelectItem>
+              <SelectItem value="overdue">{t("common.overdue")}</SelectItem>
+              <SelectItem value="cancelled">{t("common.cancelled")}</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -65,17 +67,17 @@ export default function InvoicesPage() {
           ) : !allInvoices.length ? (
             <div className="py-16 text-center">
               <Receipt className="w-10 h-10 text-muted-foreground/40 mx-auto mb-3" />
-              <p className="text-muted-foreground font-medium">No invoices yet</p>
+              <p className="text-muted-foreground font-medium">{t("invoices.empty")}</p>
             </div>
           ) : (
             <table className="w-full">
               <thead>
                 <tr className="border-b border-border bg-muted/40">
-                  <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wide">Invoice</th>
-                  <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wide">Client</th>
-                  <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wide">Amount</th>
-                  <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wide">Status</th>
-                  <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wide">Due date</th>
+                  <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wide">{t("invoices.colInvoice")}</th>
+                  <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wide">{t("invoices.colClient")}</th>
+                  <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wide">{t("invoices.colAmount")}</th>
+                  <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wide">{t("invoices.colStatus")}</th>
+                  <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wide">{t("invoices.colDue")}</th>
                   <th className="px-4 py-3" />
                 </tr>
               </thead>
@@ -91,7 +93,7 @@ export default function InvoicesPage() {
                     </td>
                     <td className="px-4 py-3.5">
                       <p className="font-semibold text-foreground text-sm">{formatCHF(invoice.total)}</p>
-                      <p className="text-xs text-muted-foreground">incl. {Number(invoice.vatRate)}% VAT</p>
+                      <p className="text-xs text-muted-foreground">{t("invoices.includingVat", { rate: Number(invoice.vatRate) })}</p>
                     </td>
                     <td className="px-4 py-3.5"><StatusBadge status={invoice.status} /></td>
                     <td className="px-4 py-3.5 text-sm text-muted-foreground">{format(invoice.dueDate, "dd MMM yyyy")}</td>

@@ -14,8 +14,10 @@ import { useEffect, useState } from "react";
 import { useLocation } from "wouter";
 import { toast } from "sonner";
 import { format } from "date-fns";
+import { useTranslation } from "react-i18next";
 
 export default function ClientsPage() {
+  const { t } = useTranslation();
   const { isAuthenticated, loading } = useAuth();
   const [, navigate] = useLocation();
   const [search, setSearch] = useState("");
@@ -34,7 +36,7 @@ export default function ClientsPage() {
   );
 
   const createClient = trpc.clients.create.useMutation({
-    onSuccess: () => { toast.success("Client created"); setShowCreate(false); refetch(); },
+    onSuccess: () => { toast.success(t("clients.created")); setShowCreate(false); refetch(); },
     onError: (e) => toast.error(e.message),
   });
 
@@ -42,20 +44,20 @@ export default function ClientsPage() {
 
   const displayName = (c: typeof clients extends (infer T)[] | undefined ? T : never) => {
     if (!c) return "";
-    return c.type === "company" ? (c.companyName ?? "Unnamed Company") : `${c.firstName ?? ""} ${c.lastName ?? ""}`.trim() || "Unnamed Client";
+    return c.type === "company" ? (c.companyName ?? t("clients.unnamedCompany")) : `${c.firstName ?? ""} ${c.lastName ?? ""}`.trim() || t("clients.unnamedClient");
   };
 
   return (
-    <LexLayout title="Clients" breadcrumb={[{ label: "Clients" }]}>
+    <LexLayout title={t("clients.title")} breadcrumb={[{ label: t("clients.title") }]}>
       <div className="p-6 space-y-5 max-w-6xl mx-auto">
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-xl font-semibold text-foreground">Clients</h2>
-            <p className="text-muted-foreground text-sm mt-0.5">{clients?.length ?? 0} total clients</p>
+            <h2 className="text-xl font-semibold text-foreground">{t("clients.title")}</h2>
+            <p className="text-muted-foreground text-sm mt-0.5">{t("clients.count", { count: clients?.length ?? 0 })}</p>
           </div>
           <Button className="bg-[var(--color-navy)] hover:bg-[var(--color-navy-light)] text-white" onClick={() => setShowCreate(true)}>
-            <Plus className="w-4 h-4 mr-1.5" /> New client
+            <Plus className="w-4 h-4 mr-1.5" /> {t("clients.new")}
           </Button>
         </div>
 
@@ -63,23 +65,23 @@ export default function ClientsPage() {
         <div className="flex items-center gap-3 flex-wrap">
           <div className="relative flex-1 min-w-48">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-            <Input className="pl-9" placeholder="Search clients…" value={search} onChange={e => setSearch(e.target.value)} />
+            <Input className="pl-9" placeholder={t("clients.search")} value={search} onChange={e => setSearch(e.target.value)} />
           </div>
           <Select value={typeFilter} onValueChange={(v: any) => setTypeFilter(v)}>
             <SelectTrigger className="w-40"><SelectValue /></SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All types</SelectItem>
-              <SelectItem value="individual">Individual</SelectItem>
-              <SelectItem value="company">Company</SelectItem>
+              <SelectItem value="all">{t("common.allTypes")}</SelectItem>
+              <SelectItem value="individual">{t("common.individual")}</SelectItem>
+              <SelectItem value="company">{t("common.company")}</SelectItem>
             </SelectContent>
           </Select>
           <Select value={statusFilter} onValueChange={(v: any) => setStatusFilter(v)}>
             <SelectTrigger className="w-40"><SelectValue /></SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All statuses</SelectItem>
-              <SelectItem value="invited">Invited</SelectItem>
-              <SelectItem value="active">Active</SelectItem>
-              <SelectItem value="inactive">Inactive</SelectItem>
+              <SelectItem value="all">{t("common.allStatuses")}</SelectItem>
+              <SelectItem value="invited">{t("common.invited")}</SelectItem>
+              <SelectItem value="active">{t("common.active")}</SelectItem>
+              <SelectItem value="inactive">{t("common.inactive")}</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -93,18 +95,18 @@ export default function ClientsPage() {
           ) : !clients?.length ? (
             <div className="py-16 text-center">
               <User className="w-10 h-10 text-muted-foreground/40 mx-auto mb-3" />
-              <p className="text-muted-foreground font-medium">No clients yet</p>
-              <p className="text-muted-foreground text-sm mt-1">Add your first client to get started</p>
+              <p className="text-muted-foreground font-medium">{t("clients.empty")}</p>
+              <p className="text-muted-foreground text-sm mt-1">{t("clients.emptyHint")}</p>
             </div>
           ) : (
             <table className="w-full">
               <thead>
                 <tr className="border-b border-border bg-muted/40">
-                  <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wide">Client</th>
-                  <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wide">Type</th>
-                  <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wide">Contact</th>
-                  <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wide">Status</th>
-                  <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wide">Added</th>
+                  <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wide">{t("common.client")}</th>
+                  <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wide">{t("clients.colType")}</th>
+                  <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wide">{t("clients.colContact")}</th>
+                  <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wide">{t("clients.colStatus")}</th>
+                  <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wide">{t("clients.colCreated")}</th>
                   <th className="px-4 py-3" />
                 </tr>
               </thead>
@@ -122,7 +124,7 @@ export default function ClientsPage() {
                         </div>
                       </div>
                     </td>
-                    <td className="px-4 py-3.5 text-sm text-muted-foreground capitalize">{c.type}</td>
+                    <td className="px-4 py-3.5 text-sm text-muted-foreground">{t(`common.${c.type}`)}</td>
                     <td className="px-4 py-3.5">
                       <div className="space-y-0.5">
                         {c.email && <p className="text-xs text-muted-foreground flex items-center gap-1"><Mail className="w-3 h-3" />{c.email}</p>}
@@ -143,44 +145,44 @@ export default function ClientsPage() {
       {/* Create client dialog */}
       <Dialog open={showCreate} onOpenChange={setShowCreate}>
         <DialogContent className="max-w-lg">
-          <DialogHeader><DialogTitle>New Client</DialogTitle></DialogHeader>
+          <DialogHeader><DialogTitle>{t("clients.new")}</DialogTitle></DialogHeader>
           <div className="space-y-4 py-2">
             <div>
-              <Label>Client type</Label>
+              <Label>{t("common.type")}</Label>
               <Select value={form.type} onValueChange={(v: any) => setForm(f => ({ ...f, type: v }))}>
                 <SelectTrigger className="mt-1.5"><SelectValue /></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="individual">Individual</SelectItem>
-                  <SelectItem value="company">Company</SelectItem>
+                  <SelectItem value="individual">{t("common.individual")}</SelectItem>
+                  <SelectItem value="company">{t("common.company")}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
             {form.type === "individual" ? (
               <div className="grid grid-cols-2 gap-3">
-                <div><Label>First name</Label><Input className="mt-1.5" value={form.firstName} onChange={e => setForm(f => ({ ...f, firstName: e.target.value }))} /></div>
-                <div><Label>Last name</Label><Input className="mt-1.5" value={form.lastName} onChange={e => setForm(f => ({ ...f, lastName: e.target.value }))} /></div>
+                <div><Label>{t("clients.firstName")}</Label><Input className="mt-1.5" value={form.firstName} onChange={e => setForm(f => ({ ...f, firstName: e.target.value }))} /></div>
+                <div><Label>{t("clients.lastName")}</Label><Input className="mt-1.5" value={form.lastName} onChange={e => setForm(f => ({ ...f, lastName: e.target.value }))} /></div>
               </div>
             ) : (
               <div className="space-y-3">
-                <div><Label>Company name</Label><Input className="mt-1.5" value={form.companyName} onChange={e => setForm(f => ({ ...f, companyName: e.target.value }))} /></div>
-                <div><Label>Contact person</Label><Input className="mt-1.5" value={form.contactPerson} onChange={e => setForm(f => ({ ...f, contactPerson: e.target.value }))} /></div>
+                <div><Label>{t("clients.companyName")}</Label><Input className="mt-1.5" value={form.companyName} onChange={e => setForm(f => ({ ...f, companyName: e.target.value }))} /></div>
+                <div><Label>{t("clients.contactPerson")}</Label><Input className="mt-1.5" value={form.contactPerson} onChange={e => setForm(f => ({ ...f, contactPerson: e.target.value }))} /></div>
               </div>
             )}
             <div className="grid grid-cols-2 gap-3">
-              <div><Label>Email</Label><Input type="email" className="mt-1.5" value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))} /></div>
-              <div><Label>Phone</Label><Input className="mt-1.5" value={form.phone} onChange={e => setForm(f => ({ ...f, phone: e.target.value }))} /></div>
+              <div><Label>{t("clients.email")}</Label><Input type="email" className="mt-1.5" value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))} /></div>
+              <div><Label>{t("clients.phone")}</Label><Input className="mt-1.5" value={form.phone} onChange={e => setForm(f => ({ ...f, phone: e.target.value }))} /></div>
             </div>
-            <div><Label>Address</Label><Input className="mt-1.5" value={form.address} onChange={e => setForm(f => ({ ...f, address: e.target.value }))} /></div>
+            <div><Label>{t("clients.address")}</Label><Input className="mt-1.5" value={form.address} onChange={e => setForm(f => ({ ...f, address: e.target.value }))} /></div>
             <div className="grid grid-cols-2 gap-3">
-              <div><Label>City</Label><Input className="mt-1.5" value={form.city} onChange={e => setForm(f => ({ ...f, city: e.target.value }))} /></div>
-              <div><Label>Postal code</Label><Input className="mt-1.5" value={form.postalCode} onChange={e => setForm(f => ({ ...f, postalCode: e.target.value }))} /></div>
+              <div><Label>{t("clients.city")}</Label><Input className="mt-1.5" value={form.city} onChange={e => setForm(f => ({ ...f, city: e.target.value }))} /></div>
+              <div><Label>{t("clients.postalCode")}</Label><Input className="mt-1.5" value={form.postalCode} onChange={e => setForm(f => ({ ...f, postalCode: e.target.value }))} /></div>
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setShowCreate(false)}>Cancel</Button>
+            <Button variant="outline" onClick={() => setShowCreate(false)}>{t("common.cancel")}</Button>
             <Button className="bg-[var(--color-navy)] hover:bg-[var(--color-navy-light)] text-white" disabled={createClient.isPending}
               onClick={() => createClient.mutate({ ...form, email: form.email || undefined })}>
-              {createClient.isPending ? "Creating…" : "Create client"}
+              {createClient.isPending ? t("common.creating") : t("common.create")}
             </Button>
           </DialogFooter>
         </DialogContent>

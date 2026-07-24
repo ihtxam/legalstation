@@ -44,7 +44,7 @@ export default function SettingsPage() {
   });
   const disableTotp = trpc.auth.disableTotp.useMutation({
     onSuccess: async () => {
-      toast.success("2FA disabled");
+      toast.success(t("settings.totpDisabled"));
       setTotpCode("");
       await refresh();
     },
@@ -53,7 +53,7 @@ export default function SettingsPage() {
   const setLocaleMutation = trpc.auth.setLocale.useMutation({
     onSuccess: (r) => {
       setAppLocale(r.locale);
-      toast.success("Language updated");
+      toast.success(t("settings.languageUpdated"));
     },
     onError: (e) => toast.error(e.message),
   });
@@ -74,7 +74,7 @@ export default function SettingsPage() {
 
   const updateFirm = trpc.firm.update.useMutation({
     onSuccess: () => { 
-      toast.success("Firm settings saved"); 
+      toast.success(t("settings.firmSaved"));
       setOriginalForm(firmForm);
       setHasChanges(false);
       refetch(); 
@@ -83,7 +83,7 @@ export default function SettingsPage() {
   });
   const invite = trpc.firm.invite.useMutation({
     onSuccess: () => { 
-      toast.success("Invitation sent! Team member will receive an email with the join link."); 
+      toast.success(t("settings.inviteSent"));
       setInviteEmail(""); 
       setInviteRole("lawyer");
     },
@@ -140,41 +140,41 @@ export default function SettingsPage() {
         setFirmForm(f => ({ ...f, logoUrl: data.url }));
         setLogoFile(null);
         setHasChanges(true);
-        toast.success("Logo uploaded successfully");
+        toast.success(t("settings.logoUploaded"));
       }
     } catch (e) {
-      toast.error("Failed to upload logo");
+      toast.error(t("settings.logoUploadFailed"));
     }
   };
 
   return (
-    <LexLayout title="Settings" breadcrumb={[{ label: "Settings" }]}>
+    <LexLayout title={t("settings.title")} breadcrumb={[{ label: t("settings.title") }]}>
       <div className="p-6 max-w-3xl mx-auto">
         <Tabs defaultValue="firm">
           <TabsList className="bg-muted mb-6 flex flex-wrap h-auto">
-            <TabsTrigger value="firm"><Building2 className="w-4 h-4 mr-1.5" />Firm</TabsTrigger>
-            <TabsTrigger value="team"><Users className="w-4 h-4 mr-1.5" />Team</TabsTrigger>
-            <TabsTrigger value="security"><Shield className="w-4 h-4 mr-1.5" />Security</TabsTrigger>
-            <TabsTrigger value="language"><Languages className="w-4 h-4 mr-1.5" />{t("common.language")}</TabsTrigger>
+            <TabsTrigger value="firm"><Building2 className="w-4 h-4 mr-1.5" />{t("settings.tabFirm")}</TabsTrigger>
+            <TabsTrigger value="team"><Users className="w-4 h-4 mr-1.5" />{t("settings.tabTeam")}</TabsTrigger>
+            <TabsTrigger value="security"><Shield className="w-4 h-4 mr-1.5" />{t("settings.tabSecurity")}</TabsTrigger>
+            <TabsTrigger value="language"><Languages className="w-4 h-4 mr-1.5" />{t("settings.tabLanguage")}</TabsTrigger>
           </TabsList>
 
           <TabsContent value="firm">
             <div className="bg-card border border-border rounded-xl p-6 space-y-4">
-              <h3 className="font-semibold text-foreground">Firm Settings</h3>
-              <div><Label>Firm name</Label><Input className={`mt-1.5 ${getFieldHighlight('name')}`} value={firmForm.name} onChange={e => setFirmForm(f => ({ ...f, name: e.target.value }))} /></div>
-              <div><Label>Address</Label><Input className={`mt-1.5 ${getFieldHighlight('address')}`} value={firmForm.address} onChange={e => setFirmForm(f => ({ ...f, address: e.target.value }))} /></div>
+              <h3 className="font-semibold text-foreground">{t("settings.firmSettings")}</h3>
+              <div><Label>{t("settings.firmName")}</Label><Input className={`mt-1.5 ${getFieldHighlight('name')}`} value={firmForm.name} onChange={e => setFirmForm(f => ({ ...f, name: e.target.value }))} /></div>
+              <div><Label>{t("settings.address")}</Label><Input className={`mt-1.5 ${getFieldHighlight('address')}`} value={firmForm.address} onChange={e => setFirmForm(f => ({ ...f, address: e.target.value }))} /></div>
               <div className="grid grid-cols-2 gap-3">
-                <div><Label>Email</Label><Input type="email" className={`mt-1.5 ${getFieldHighlight('email')}`} value={firmForm.email} onChange={e => setFirmForm(f => ({ ...f, email: e.target.value }))} /></div>
-                <div><Label>Phone</Label><Input className={`mt-1.5 ${getFieldHighlight('phone')}`} value={firmForm.phone} onChange={e => setFirmForm(f => ({ ...f, phone: e.target.value }))} /></div>
+                <div><Label>{t("settings.email")}</Label><Input type="email" className={`mt-1.5 ${getFieldHighlight('email')}`} value={firmForm.email} onChange={e => setFirmForm(f => ({ ...f, email: e.target.value }))} /></div>
+                <div><Label>{t("settings.phone")}</Label><Input className={`mt-1.5 ${getFieldHighlight('phone')}`} value={firmForm.phone} onChange={e => setFirmForm(f => ({ ...f, phone: e.target.value }))} /></div>
               </div>
-              <div><Label>VAT/UID Number</Label><Input className={`mt-1.5 ${getFieldHighlight('vatNumber')}`} placeholder="CHE-123.456.789 MWST" value={firmForm.vatNumber} onChange={e => setFirmForm(f => ({ ...f, vatNumber: e.target.value }))} /></div>
+              <div><Label>{t("settings.vatNumber")}</Label><Input className={`mt-1.5 ${getFieldHighlight('vatNumber')}`} placeholder="CHE-123.456.789 MWST" value={firmForm.vatNumber} onChange={e => setFirmForm(f => ({ ...f, vatNumber: e.target.value }))} /></div>
               <div>
-                <Label>Logo</Label>
+                <Label>{t("settings.logo")}</Label>
                 <div className="mt-1.5 flex gap-3 items-end">
                   <div className="flex-1">
                     {logoPreview ? (
                       <div className="relative w-24 h-24 bg-muted rounded-lg overflow-hidden border border-border flex items-center justify-center">
-                        <img src={logoPreview} alt="Logo preview" className="max-w-full max-h-full object-contain" />
+                        <img src={logoPreview} alt={t("settings.logoPreview")} className="max-w-full max-h-full object-contain" />
                         <button onClick={() => { setLogoPreview(""); setLogoFile(null); setFirmForm(f => ({ ...f, logoUrl: "" })); }} className="absolute top-1 right-1 bg-red-500 text-white p-1 rounded hover:bg-red-600">
                           <X className="w-3 h-3" />
                         </button>
@@ -186,12 +186,12 @@ export default function SettingsPage() {
                       </label>
                     )}
                   </div>
-                  {logoFile && <Button onClick={handleLogoUpload} className="bg-blue-600 hover:bg-blue-700 text-white">Upload</Button>}
+                  {logoFile && <Button onClick={handleLogoUpload} className="bg-blue-600 hover:bg-blue-700 text-white">{t("docs.upload")}</Button>}
                 </div>
               </div>
               <Button className={`${hasChanges ? 'bg-blue-600 hover:bg-blue-700' : 'bg-[var(--color-navy)] hover:bg-[var(--color-navy-light)]'} text-white`} disabled={updateFirm.isPending || !hasChanges}
                 onClick={() => updateFirm.mutate({ name: firmForm.name, address: firmForm.address, email: firmForm.email || null, phone: firmForm.phone, vatNumber: firmForm.vatNumber || null, logoUrl: firmForm.logoUrl || null })}>
-                {updateFirm.isPending ? "Saving…" : hasChanges ? "Save unsaved changes" : "No changes"}
+                {updateFirm.isPending ? t("settings.saving") : hasChanges ? t("settings.saveUnsavedChanges") : t("settings.noChanges")}
               </Button>
             </div>
           </TabsContent>
@@ -200,13 +200,13 @@ export default function SettingsPage() {
             <div className="bg-card border border-border rounded-xl p-6 space-y-4">
               <h3 className="font-semibold text-foreground">{t("twoFactor.title")}</h3>
               <p className="text-sm text-muted-foreground">
-                Optional authenticator-app 2FA after Manus login.
+                {t("settings.securityHint")}
               </p>
               {user?.totpEnabled ? (
                 <div className="space-y-3">
                   <p className="text-sm text-green-700">{t("twoFactor.enabled")}</p>
                   <Input
-                    placeholder="Authenticator code"
+                    placeholder={t("settings.authenticatorCode")}
                     value={totpCode}
                     onChange={(e) => setTotpCode(e.target.value)}
                   />
@@ -230,7 +230,7 @@ export default function SettingsPage() {
                       <img src={totpSetup.qrDataUrl} alt="2FA QR" className="w-48 h-48 border rounded" />
                       <p className="text-xs font-mono break-all text-muted-foreground">{totpSetup.secret}</p>
                       <Input
-                        placeholder="Authenticator code"
+                        placeholder={t("settings.authenticatorCode")}
                         value={totpCode}
                         onChange={(e) => setTotpCode(e.target.value)}
                       />
@@ -249,7 +249,10 @@ export default function SettingsPage() {
 
           <TabsContent value="language">
             <div className="bg-card border border-border rounded-xl p-6 space-y-4">
-              <h3 className="font-semibold text-foreground">{t("common.language")}</h3>
+              <div>
+                <h3 className="font-semibold text-foreground">{t("settings.languageHeading")}</h3>
+                <p className="text-sm text-muted-foreground mt-1">{t("settings.languageHint")}</p>
+              </div>
               <Select value={locale} onValueChange={(v: "en" | "fr" | "de") => setLocale(v)}>
                 <SelectTrigger className="max-w-xs">
                   <SelectValue />
@@ -273,27 +276,27 @@ export default function SettingsPage() {
             <div className="space-y-4">
               <div className="bg-card border border-border rounded-xl p-6 space-y-4">
                 <div>
-                  <h3 className="font-semibold text-foreground mb-2">Invite Team Member</h3>
-                  <p className="text-sm text-muted-foreground">Send an invitation email to add a new team member. They'll receive a link to join your firm.</p>
+                  <h3 className="font-semibold text-foreground mb-2">{t("settings.inviteMember")}</h3>
+                  <p className="text-sm text-muted-foreground">{t("settings.inviteHint")}</p>
                 </div>
                 <div className="flex gap-3">
-                  <Input className="flex-1" placeholder="Email address" value={inviteEmail} onChange={e => setInviteEmail(e.target.value)} />
+                  <Input className="flex-1" placeholder={t("settings.inviteEmail")} value={inviteEmail} onChange={e => setInviteEmail(e.target.value)} />
                   <select className="border border-input rounded-md px-3 text-sm bg-background" value={inviteRole} onChange={e => setInviteRole(e.target.value as any)}>
-                    <option value="lawyer">Lawyer</option>
-                    <option value="assistant">Assistant</option>
+                    <option value="lawyer">{t("settings.lawyer")}</option>
+                    <option value="assistant">{t("settings.assistant")}</option>
                   </select>
                   <Button className="bg-[var(--color-navy)] hover:bg-[var(--color-navy-light)] text-white shrink-0" disabled={!inviteEmail || invite.isPending}
                     onClick={() => invite.mutate({ email: inviteEmail, role: inviteRole })}>
-                    {invite.isPending ? "Sending..." : <><Send className="w-4 h-4 mr-1.5" /> Invite</> }
+                    {invite.isPending ? t("settings.sending") : <><Send className="w-4 h-4 mr-1.5" /> {t("settings.sendInvite")}</> }
                   </Button>
                 </div>
               </div>
               <div className="bg-card border border-border rounded-xl overflow-hidden">
                 <div className="px-5 py-3.5 border-b border-border bg-muted/40">
-                  <h3 className="font-semibold text-sm text-foreground">Team Members ({members?.length ?? 0})</h3>
+                  <h3 className="font-semibold text-sm text-foreground">{t("settings.teamMembers", { count: members?.length ?? 0 })}</h3>
                 </div>
                 {!members?.length ? (
-                  <div className="p-6 text-center text-muted-foreground text-sm">No team members</div>
+                  <div className="p-6 text-center text-muted-foreground text-sm">{t("settings.noTeamMembers")}</div>
                 ) : (
                   <div className="divide-y divide-border">
                     {members.map(({ member, user }) => (

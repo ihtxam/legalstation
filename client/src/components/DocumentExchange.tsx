@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { format } from "date-fns";
 import { DocumentSummaryCard } from "./DocumentSummaryCard";
 import { DocumentVersionHistory } from "./DocumentVersionHistory";
+import { useTranslation } from "react-i18next";
 
 interface DocumentExchangeProps {
   docs: any[];
@@ -33,6 +34,7 @@ export function DocumentExchange({
   summaries = {},
   summariesLoading = {},
 }: DocumentExchangeProps) {
+  const { t } = useTranslation();
   const [showUpload, setShowUpload] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [dragActive, setDragActive] = useState(false);
@@ -65,9 +67,9 @@ export function DocumentExchange({
       await onUpload(selectedFile);
       setSelectedFile(null);
       setShowUpload(false);
-      toast.success("Document uploaded successfully");
+      toast.success(t("docs.uploaded"));
     } catch (error) {
-      toast.error("Failed to upload document");
+      toast.error(t("docs.uploadFailed"));
     } finally {
       setUploading(false);
     }
@@ -91,7 +93,7 @@ export function DocumentExchange({
             className="bg-[var(--color-navy)] hover:bg-[var(--color-navy-light)] text-white"
             onClick={() => setShowUpload(true)}
           >
-            <Upload className="w-3.5 h-3.5 mr-1.5" /> Upload Document
+            <Upload className="w-3.5 h-3.5 mr-1.5" /> {t("docs.uploadDocument")}
           </Button>
         </div>
       )}
@@ -106,10 +108,10 @@ export function DocumentExchange({
       ) : !docs?.length ? (
         <div className="py-12 text-center">
           <FileText className="w-10 h-10 text-muted-foreground/40 mx-auto mb-3" />
-          <p className="text-muted-foreground text-sm">No documents shared yet</p>
+          <p className="text-muted-foreground text-sm">{t("docs.empty")}</p>
           {canUpload && (
             <p className="text-xs text-muted-foreground mt-2">
-              Upload your first document to get started
+              {t("docs.emptyHint")}
             </p>
           )}
         </div>
@@ -142,11 +144,11 @@ export function DocumentExchange({
                     >
                       {doc.visibility === "shared" ? (
                         <>
-                          <Globe className="w-3 h-3 mr-1" /> Shared
+                          <Globe className="w-3 h-3 mr-1" /> {t("docs.shared")}
                         </>
                       ) : (
                         <>
-                          <Lock className="w-3 h-3 mr-1" /> Private
+                          <Lock className="w-3 h-3 mr-1" /> {t("docs.private")}
                         </>
                       )}
                     </Badge>
@@ -161,7 +163,7 @@ export function DocumentExchange({
                 <div className="flex items-center gap-1 shrink-0">
                   {/* Download */}
                   <button
-                    title="Download document"
+                    title={t("docs.download")}
                     onClick={() => onDownload(doc.id, doc.name)}
                     className="p-2 text-muted-foreground hover:text-foreground hover:bg-muted rounded transition-colors"
                   >
@@ -169,7 +171,7 @@ export function DocumentExchange({
                   </button>
 
                   <button
-                    title="Version history"
+                    title={t("docs.versionHistory")}
                     onClick={() => setVersionDocId(doc.id)}
                     className="p-2 text-muted-foreground hover:text-foreground hover:bg-muted rounded transition-colors"
                   >
@@ -179,7 +181,7 @@ export function DocumentExchange({
                   {/* Share (if user can manage) */}
                   {canShare && (
                     <button
-                      title="Manage sharing"
+                      title={t("docs.manageSharing")}
                       onClick={() => {
                         setSelectedDoc(doc);
                         setShowShareDialog(true);
@@ -193,11 +195,11 @@ export function DocumentExchange({
                   {/* Delete (if user can manage) */}
                   {canShare && (
                     <button
-                      title="Delete document"
+                      title={t("docs.delete")}
                       onClick={() => {
-                        if (confirm("Delete this document?")) {
+                        if (confirm(t("docs.deleteConfirm"))) {
                           onDelete(doc.id);
-                          toast.success("Document deleted");
+                          toast.success(t("docs.deleted"));
                         }
                       }}
                       className="p-2 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded transition-colors"
@@ -223,7 +225,7 @@ export function DocumentExchange({
       <Dialog open={showUpload} onOpenChange={setShowUpload}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Upload Document</DialogTitle>
+            <DialogTitle>{t("docs.uploadDocument")}</DialogTitle>
           </DialogHeader>
 
           <div className="space-y-4 py-4">
@@ -260,10 +262,10 @@ export function DocumentExchange({
                 <div className="space-y-2">
                   <Upload className="w-8 h-8 text-muted-foreground mx-auto" />
                   <p className="text-sm font-medium text-foreground">
-                    Drag and drop your document here
+                    {t("docs.dropPrompt")}
                   </p>
                   <p className="text-xs text-muted-foreground">
-                    or click to browse
+                    {t("docs.browseHint")}
                   </p>
                 </div>
               )}
@@ -272,21 +274,21 @@ export function DocumentExchange({
                 onClick={() => fileInputRef.current?.click()}
                 className="mt-4 text-sm text-[var(--color-navy)] hover:underline"
               >
-                Browse files
+                {t("docs.browseFiles")}
               </button>
             </div>
           </div>
 
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowUpload(false)}>
-              Cancel
+              {t("common.cancel")}
             </Button>
             <Button
               disabled={!selectedFile || uploading}
               onClick={handleUpload}
               className="bg-[var(--color-navy)] hover:bg-[var(--color-navy-light)] text-white"
             >
-              {uploading ? "Uploading..." : "Upload"}
+              {uploading ? t("docs.uploading") : t("docs.upload")}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -297,7 +299,7 @@ export function DocumentExchange({
         <Dialog open={showShareDialog} onOpenChange={setShowShareDialog}>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Manage Document Sharing</DialogTitle>
+              <DialogTitle>{t("docs.manageSharing")}</DialogTitle>
             </DialogHeader>
 
             <div className="space-y-4 py-4">
@@ -315,10 +317,10 @@ export function DocumentExchange({
                         <Globe className="w-4 h-4 text-teal-600" />
                         <div>
                           <p className="text-sm font-medium text-foreground">
-                            Shared with Client
+                            {t("docs.shared")}
                           </p>
                           <p className="text-xs text-muted-foreground">
-                            Client can view and download
+                            {t("docs.clientCanView")}
                           </p>
                         </div>
                       </>
@@ -327,10 +329,10 @@ export function DocumentExchange({
                         <Lock className="w-4 h-4 text-purple-600" />
                         <div>
                           <p className="text-sm font-medium text-foreground">
-                            Private
+                            {t("docs.private")}
                           </p>
                           <p className="text-xs text-muted-foreground">
-                            Only visible to firm members
+                            {t("docs.firmOnly")}
                           </p>
                         </div>
                       </>
@@ -347,27 +349,26 @@ export function DocumentExchange({
                           : "shared"
                       );
                       setShowShareDialog(false);
-                      toast.success("Document sharing updated");
+                      toast.success(t("docs.sharingUpdated"));
                     }}
                   >
                     {selectedDoc.visibility === "shared"
-                      ? "Make Private"
-                      : "Share"}
+                      ? t("docs.makePrivate")
+                      : t("docs.share")}
                   </Button>
                 </div>
               </div>
 
               <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
                 <p className="text-xs text-blue-900">
-                  💡 Shared documents are visible to all clients assigned to this
-                  case.
+                  💡 {t("docs.sharingHint")}
                 </p>
               </div>
             </div>
 
             <DialogFooter>
               <Button variant="outline" onClick={() => setShowShareDialog(false)}>
-                Close
+                {t("common.close")}
               </Button>
             </DialogFooter>
           </DialogContent>

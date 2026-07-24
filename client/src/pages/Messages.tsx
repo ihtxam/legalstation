@@ -10,8 +10,10 @@ import { useEffect, useState } from "react";
 import { useLocation } from "wouter";
 import { toast } from "sonner";
 import { format } from "date-fns";
+import { useTranslation } from "react-i18next";
 
 export default function MessagesPage() {
+  const { t } = useTranslation();
   const { isAuthenticated, loading } = useAuth();
   const [, navigate] = useLocation();
   const { data: cases, isLoading } = trpc.cases.list.useQuery(undefined, { enabled: isAuthenticated });
@@ -39,24 +41,24 @@ export default function MessagesPage() {
   const selectedCase = cases?.find(c => c.id === selectedCaseId);
 
   return (
-    <LexLayout title="Messages" breadcrumb={[{ label: "Messages" }]}>
+    <LexLayout title={t("messages.title")} breadcrumb={[{ label: t("messages.title") }]}>
       <div className="flex h-full" style={{ height: "calc(100vh - 65px)" }}>
         {/* Case list sidebar */}
         <div className="w-72 border-r border-border bg-card flex flex-col shrink-0">
           <div className="p-4 border-b border-border">
-            <h3 className="font-semibold text-sm text-foreground">Conversations</h3>
+            <h3 className="font-semibold text-sm text-foreground">{t("messages.conversations")}</h3>
           </div>
           <div className="flex-1 overflow-auto">
             {isLoading ? (
               <div className="p-3 space-y-2">{[1,2,3].map(i => <Skeleton key={i} className="h-14 w-full" />)}</div>
             ) : !cases?.length ? (
-              <div className="p-6 text-center text-muted-foreground text-sm">No cases yet</div>
+              <div className="p-6 text-center text-muted-foreground text-sm">{t("messages.emptyCases")}</div>
             ) : (
               cases.map(c => (
                 <button key={c.id} onClick={() => setSelectedCaseId(c.id)}
                   className={`w-full text-left px-4 py-3.5 border-b border-border hover:bg-accent transition-colors ${selectedCaseId === c.id ? "bg-accent" : ""}`}>
                   <p className="font-medium text-sm text-foreground truncate">{c.title}</p>
-                  <p className="text-xs text-muted-foreground mt-0.5 capitalize">{c.status}</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">{t(`common.${c.status}`)}</p>
                 </button>
               ))
             )}
@@ -69,7 +71,7 @@ export default function MessagesPage() {
             <div className="flex-1 flex items-center justify-center">
               <div className="text-center">
                 <MessageSquare className="w-10 h-10 text-muted-foreground/40 mx-auto mb-3" />
-                <p className="text-muted-foreground">Select a case to view messages</p>
+                <p className="text-muted-foreground">{t("messages.selectCase")}</p>
               </div>
             </div>
           ) : (
@@ -79,7 +81,7 @@ export default function MessagesPage() {
               </div>
               <div className="flex-1 overflow-auto p-6 space-y-4">
                 {!msgs?.length ? (
-                  <div className="text-center py-12 text-muted-foreground text-sm">No messages yet. Start the conversation.</div>
+                  <div className="text-center py-12 text-muted-foreground text-sm">{t("messages.noMessages")}</div>
                 ) : (
                   msgs.map(({ message, sender }) => (
                     <div key={message.id} className="flex gap-3">
@@ -103,7 +105,7 @@ export default function MessagesPage() {
                 <div className="flex gap-3">
                   <Textarea
                     className="flex-1 resize-none min-h-0 h-10"
-                    placeholder="Type a message…"
+                    placeholder={t("messages.placeholder")}
                     value={newMessage}
                     onChange={e => setNewMessage(e.target.value)}
                     onKeyDown={e => {

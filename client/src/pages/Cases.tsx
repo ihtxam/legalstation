@@ -17,8 +17,23 @@ import { useLocation } from "wouter";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { CASE_TYPE_LABELS, CASE_STATUS_LABELS } from "@shared/types";
+import { useTranslation } from "react-i18next";
+
+const CASE_TYPE_I18N_KEYS: Record<string, string> = {
+  civil: "cases.typeCivil",
+  criminal: "cases.typeCriminal",
+  corporate: "cases.typeCorporate",
+  family: "cases.typeFamily",
+  real_estate: "cases.typeRealEstate",
+  employment: "cases.typeEmployment",
+  tax: "cases.typeTax",
+  immigration: "cases.typeImmigration",
+  intellectual_property: "cases.typeIntellectualProperty",
+  other: "cases.typeOther",
+};
 
 export default function CasesPage() {
+  const { t } = useTranslation();
   const { isAuthenticated, loading } = useAuth();
   const [, navigate] = useLocation();
   const [search, setSearch] = useState("");
@@ -35,7 +50,7 @@ export default function CasesPage() {
     { enabled: isAuthenticated }
   );
   const createCase = trpc.cases.create.useMutation({
-    onSuccess: () => { toast.success("Case created"); setShowCreate(false); refetch(); },
+    onSuccess: () => { toast.success(t("cases.created")); setShowCreate(false); refetch(); },
     onError: (e) => toast.error(e.message),
   });
 
@@ -45,36 +60,37 @@ export default function CasesPage() {
     if (activeTab === "open") return c.status === "open" || c.status === "pending";
     return c.status === "closed" || c.status === "archived";
   }) ?? [];
+  const activeTabLabel = activeTab === "open" ? t("common.open").toLowerCase() : t("common.closed").toLowerCase();
 
   return (
-    <LexLayout title="Cases" breadcrumb={[{ label: "Cases" }]}>
+    <LexLayout title={t("cases.title")} breadcrumb={[{ label: t("cases.title") }]}>
       <div className="p-6 space-y-5 max-w-6xl mx-auto">
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-xl font-semibold text-foreground">Cases</h2>
-            <p className="text-muted-foreground text-sm mt-0.5">{filteredCases.length} {activeTab} cases</p>
+            <h2 className="text-xl font-semibold text-foreground">{t("cases.title")}</h2>
+            <p className="text-muted-foreground text-sm mt-0.5">{t("cases.count", { count: filteredCases.length, tab: activeTabLabel })}</p>
           </div>
           <Button className="bg-[var(--color-navy)] hover:bg-[var(--color-navy-light)] text-white" onClick={() => setShowCreate(true)}>
-            <Plus className="w-4 h-4 mr-1.5" /> New case
+            <Plus className="w-4 h-4 mr-1.5" /> {t("cases.new")}
           </Button>
         </div>
 
         <div className="flex items-center gap-3 flex-wrap">
           <Tabs value={activeTab} onValueChange={(v: any) => setActiveTab(v)}>
             <TabsList className="bg-muted">
-              <TabsTrigger value="open">Open & Pending</TabsTrigger>
-              <TabsTrigger value="closed">Closed & Archived</TabsTrigger>
+              <TabsTrigger value="open">{t("cases.openPending")}</TabsTrigger>
+              <TabsTrigger value="closed">{t("cases.closedArchived")}</TabsTrigger>
             </TabsList>
           </Tabs>
           <div className="relative flex-1 min-w-48">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-            <Input className="pl-9" placeholder="Search cases…" value={search} onChange={e => setSearch(e.target.value)} />
+            <Input className="pl-9" placeholder={t("cases.search")} value={search} onChange={e => setSearch(e.target.value)} />
           </div>
           <Select value={statusFilter} onValueChange={setStatusFilter}>
             <SelectTrigger className="w-40"><SelectValue /></SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All statuses</SelectItem>
-              {Object.entries(CASE_STATUS_LABELS).map(([v, l]) => <SelectItem key={v} value={v}>{l}</SelectItem>)}
+              <SelectItem value="all">{t("common.allStatuses")}</SelectItem>
+              {Object.keys(CASE_STATUS_LABELS).map((v) => <SelectItem key={v} value={v}>{t(`common.${v}`)}</SelectItem>)}
             </SelectContent>
           </Select>
         </div>
@@ -85,17 +101,17 @@ export default function CasesPage() {
           ) : !filteredCases.length ? (
             <div className="py-16 text-center">
               <Briefcase className="w-10 h-10 text-muted-foreground/40 mx-auto mb-3" />
-              <p className="text-muted-foreground font-medium">No {activeTab} cases</p>
+              <p className="text-muted-foreground font-medium">{t("cases.empty", { tab: activeTabLabel })}</p>
             </div>
           ) : (
             <table className="w-full">
               <thead>
                 <tr className="border-b border-border bg-muted/40">
-                  <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wide">Case</th>
-                  <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wide">Type</th>
-                  <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wide">Status</th>
-                  <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wide">Deadline</th>
-                  <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wide">Opened</th>
+                  <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wide">{t("cases.colCase")}</th>
+                  <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wide">{t("cases.colType")}</th>
+                  <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wide">{t("cases.colStatus")}</th>
+                  <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wide">{t("cases.colDeadline")}</th>
+                  <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wide">{t("cases.colOpened")}</th>
                   <th className="px-4 py-3" />
                 </tr>
               </thead>
@@ -104,9 +120,9 @@ export default function CasesPage() {
                   <tr key={c.id} className="hover:bg-accent/50 transition-colors cursor-pointer" onClick={() => navigate(`/cases/${c.id}`)}>
                     <td className="px-4 py-3.5">
                       <p className="font-medium text-foreground text-sm">{c.title}</p>
-                      {c.referenceNumber && <p className="text-xs text-muted-foreground mt-0.5">Ref: {c.referenceNumber}</p>}
+                      {c.referenceNumber && <p className="text-xs text-muted-foreground mt-0.5">{t("cases.referencePrefix")} {c.referenceNumber}</p>}
                     </td>
-                    <td className="px-4 py-3.5 text-sm text-muted-foreground">{CASE_TYPE_LABELS[c.type]}</td>
+                    <td className="px-4 py-3.5 text-sm text-muted-foreground">{t(CASE_TYPE_I18N_KEYS[c.type] ?? "cases.typeOther")}</td>
                     <td className="px-4 py-3.5"><StatusBadge status={c.status} /></td>
                     <td className="px-4 py-3.5 text-sm text-muted-foreground">
                       {c.deadline ? <span className="flex items-center gap-1"><Calendar className="w-3.5 h-3.5" />{format(c.deadline, "dd MMM yyyy")}</span> : "—"}
@@ -123,30 +139,30 @@ export default function CasesPage() {
 
       <Dialog open={showCreate} onOpenChange={setShowCreate}>
         <DialogContent className="max-w-lg">
-          <DialogHeader><DialogTitle>New Case</DialogTitle></DialogHeader>
+          <DialogHeader><DialogTitle>{t("cases.new")}</DialogTitle></DialogHeader>
           <div className="space-y-4 py-2">
-            <div><Label>Title <span className="text-destructive">*</span></Label><Input className="mt-1.5" value={form.title} onChange={e => setForm(f => ({ ...f, title: e.target.value }))} /></div>
+            <div><Label>{t("cases.formTitle")} <span className="text-destructive">*</span></Label><Input className="mt-1.5" value={form.title} onChange={e => setForm(f => ({ ...f, title: e.target.value }))} /></div>
             <div className="grid grid-cols-2 gap-3">
-              <div><Label>Reference number</Label><Input className="mt-1.5" placeholder="e.g. 2024-001" value={form.referenceNumber} onChange={e => setForm(f => ({ ...f, referenceNumber: e.target.value }))} /></div>
+              <div><Label>{t("cases.formReference")}</Label><Input className="mt-1.5" placeholder="e.g. 2024-001" value={form.referenceNumber} onChange={e => setForm(f => ({ ...f, referenceNumber: e.target.value }))} /></div>
               <div>
-                <Label>Type</Label>
+                <Label>{t("cases.formType")}</Label>
                 <Select value={form.type} onValueChange={(v: any) => setForm(f => ({ ...f, type: v }))}>
                   <SelectTrigger className="mt-1.5"><SelectValue /></SelectTrigger>
-                  <SelectContent>{Object.entries(CASE_TYPE_LABELS).map(([v, l]) => <SelectItem key={v} value={v}>{l}</SelectItem>)}</SelectContent>
+                  <SelectContent>{Object.keys(CASE_TYPE_LABELS).map((v) => <SelectItem key={v} value={v}>{t(CASE_TYPE_I18N_KEYS[v] ?? "cases.typeOther")}</SelectItem>)}</SelectContent>
                 </Select>
               </div>
             </div>
-            <div><Label>Description</Label><Textarea className="mt-1.5" rows={3} value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} /></div>
+            <div><Label>{t("cases.formDescription")}</Label><Textarea className="mt-1.5" rows={3} value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} /></div>
             <div className="grid grid-cols-2 gap-3">
-              <div><Label>Court name</Label><Input className="mt-1.5" value={form.courtName} onChange={e => setForm(f => ({ ...f, courtName: e.target.value }))} /></div>
-              <div><Label>Deadline</Label><Input type="date" className="mt-1.5" value={form.deadline} onChange={e => setForm(f => ({ ...f, deadline: e.target.value }))} /></div>
+              <div><Label>{t("cases.formCourt")}</Label><Input className="mt-1.5" value={form.courtName} onChange={e => setForm(f => ({ ...f, courtName: e.target.value }))} /></div>
+              <div><Label>{t("cases.formDeadline")}</Label><Input type="date" className="mt-1.5" value={form.deadline} onChange={e => setForm(f => ({ ...f, deadline: e.target.value }))} /></div>
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setShowCreate(false)}>Cancel</Button>
+            <Button variant="outline" onClick={() => setShowCreate(false)}>{t("common.cancel")}</Button>
             <Button className="bg-[var(--color-navy)] hover:bg-[var(--color-navy-light)] text-white" disabled={!form.title || createCase.isPending}
               onClick={() => createCase.mutate({ ...form, deadline: form.deadline ? new Date(form.deadline).getTime() : undefined, referenceNumber: form.referenceNumber || undefined, description: form.description || undefined, courtName: form.courtName || undefined })}>
-              {createCase.isPending ? "Creating…" : "Create case"}
+              {createCase.isPending ? t("common.creating") : t("common.create")}
             </Button>
           </DialogFooter>
         </DialogContent>
