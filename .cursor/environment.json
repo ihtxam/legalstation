@@ -1,0 +1,26 @@
+{
+  "name": "lexflow-cloud",
+  "build": {
+    "dockerfile": "Dockerfile",
+    "context": ".."
+  },
+  "install": "bash scripts/dev-setup.sh --install-only",
+  "start": "bash scripts/cloud-start.sh",
+  "terminals": [
+    {
+      "name": "dev",
+      "command": "pnpm dev",
+      "description": "LexFlow Express + Vite dev server on port 3000"
+    }
+  ],
+  "ports": [
+    {
+      "name": "web",
+      "port": 3000
+    },
+    {
+      "name": "mysql",
+      "port": 3306
+    }
+  ]
+}
