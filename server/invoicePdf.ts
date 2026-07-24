@@ -1,5 +1,5 @@
 import { jsPDF } from "jspdf";
-import { formatCurrency } from "../shared/utils";
+import { formatCurrency, formatDateSwiss } from "../shared/utils";
 
 export interface InvoicePdfData {
   invoiceNumber: string;
@@ -7,12 +7,14 @@ export interface InvoicePdfData {
   dueDate: Date;
   firmName: string;
   firmAddress: string;
+  firmPhone?: string;
+  firmEmail?: string;
   firmVatId: string;
   clientName: string;
   clientAddress: string;
   clientEmail: string;
-  caseTitle: string;
-  caseReference: string;
+  caseTitle?: string;
+  caseReference?: string;
   items: Array<{
     description: string;
     quantity: number;
@@ -23,15 +25,18 @@ export interface InvoicePdfData {
   vatRate: number;
   vatAmount: number;
   total: number;
+  currency?: string;
   notes?: string;
-  logoUrl?: string;
+  /** Data URL or remote URL (remote URLs should be pre-fetched as data URLs) */
+  logoDataUrl?: string;
   paymentUrl?: string;
 }
 
 /**
- * Generate invoice PDF
+ * Render an invoice PDF with firm letterhead.
+ * Pure function — no DB access.
  */
-export async function generateInvoicePdf(data: InvoicePdfData): Promise<Buffer> {
+export async function renderInvoicePdf(data: InvoicePdfData): Promise<Buffer> {
   const doc = new jsPDF({
     orientation: "portrait",
     unit: "mm",
@@ -42,150 +47,208 @@ export async function generateInvoicePdf(data: InvoicePdfData): Promise<Buffer> 
   const pageHeight = doc.internal.pageSize.getHeight();
   const margin = 15;
   const contentWidth = pageWidth - 2 * margin;
+  const currency = data.currency ?? "CHF";
 
-  let yPosition = margin;
+  let y = margin;
 
-  // ─── Header with Logo ───────────────────────────────────────────────────────
-  if (data.logoUrl) {
+  // ─── Letterhead ────────────────────────────────────────────────────────────
+  let textX = margin;
+  if (data.logoDataUrl) {
     try {
-      doc.addImage(data.logoUrl, "PNG", margin, yPosition, 30, 15);
-      yPosition += 20;
-    } catch (e) {
-      console.warn("Failed to load logo image");
-      yPosition += 5;
+      const format = data.logoDataUrl.includes("image/jpeg") || data.logoDataUrl.includes("image/jpg")
+        ? "JPEG"
+        : "PNG";
+      doc.addImage(data.logoDataUrl, format, margin, y, 28, 14);
+      textX = margin + 34;
+    } catch {
+      // Logo optional — continue without it
     }
   }
 
-  // ─── Invoice Title ──────────────────────────────────────────────────────────
-  doc.setFontSize(24);
   doc.setFont("helvetica", "bold");
-  doc.text("INVOICE", margin, yPosition);
-  yPosition += 12;
+  doc.setFontSize(14);
+  doc.setTextColor(0, 31, 63); // navy
+  doc.text(data.firmName, textX, y + 5);
 
-  // ─── Invoice Details ────────────────────────────────────────────────────────
-  doc.setFontSize(10);
-  doc.setFont("helvetica", "normal");
-  doc.text(`Invoice #: ${data.invoiceNumber}`, margin, yPosition);
-  yPosition += 6;
-  doc.text(`Issue Date: ${data.issueDate.toLocaleDateString()}`, margin, yPosition);
-  yPosition += 6;
-  doc.text(`Due Date: ${data.dueDate.toLocaleDateString()}`, margin, yPosition);
-  yPosition += 12;
-
-  // ─── Firm & Client Info ─────────────────────────────────────────────────────
-  doc.setFont("helvetica", "bold");
-  doc.text("FROM:", margin, yPosition);
-  yPosition += 6;
-  doc.setFont("helvetica", "normal");
-  doc.text(data.firmName, margin, yPosition);
-  yPosition += 5;
-  doc.setFontSize(9);
-  doc.text(data.firmAddress, margin, yPosition);
-  yPosition += 5;
-  doc.text(`VAT ID: ${data.firmVatId}`, margin, yPosition);
-  yPosition += 10;
-
-  doc.setFontSize(10);
-  doc.setFont("helvetica", "bold");
-  doc.text("BILL TO:", margin, yPosition);
-  yPosition += 6;
-  doc.setFont("helvetica", "normal");
-  doc.text(data.clientName, margin, yPosition);
-  yPosition += 5;
-  doc.setFontSize(9);
-  doc.text(data.clientAddress, margin, yPosition);
-  yPosition += 5;
-  doc.text(data.clientEmail, margin, yPosition);
-  yPosition += 10;
-
-  // ─── Case Information ───────────────────────────────────────────────────────
-  doc.setFontSize(10);
-  doc.setFont("helvetica", "bold");
-  doc.text("CASE INFORMATION:", margin, yPosition);
-  yPosition += 6;
-  doc.setFont("helvetica", "normal");
-  doc.text(`Case: ${data.caseTitle}`, margin, yPosition);
-  yPosition += 5;
-  doc.text(`Reference: ${data.caseReference}`, margin, yPosition);
-  yPosition += 12;
-
-  // ─── Items Table ────────────────────────────────────────────────────────────
-  const tableTop = yPosition;
-  const colWidths = {
-    description: contentWidth * 0.5,
-    quantity: contentWidth * 0.15,
-    unitPrice: contentWidth * 0.175,
-    total: contentWidth * 0.175,
-  };
-
-  doc.setFontSize(10);
-  doc.setFont("helvetica", "bold");
-  doc.text("Description", margin, tableTop);
-  doc.text("Qty", margin + colWidths.description, tableTop);
-  doc.text("Unit Price", margin + colWidths.description + colWidths.quantity, tableTop);
-  doc.text("Total", margin + colWidths.description + colWidths.quantity + colWidths.unitPrice, tableTop);
-
-  yPosition = tableTop + 8;
   doc.setFont("helvetica", "normal");
   doc.setFontSize(9);
-
-  // Draw items
-  data.items.forEach((item) => {
-    doc.text(item.description, margin, yPosition);
-    doc.text(item.quantity.toString(), margin + colWidths.description, yPosition);
-    doc.text(formatCurrency(item.unitPrice), margin + colWidths.description + colWidths.quantity, yPosition);
-    doc.text(formatCurrency(item.total), margin + colWidths.description + colWidths.quantity + colWidths.unitPrice, yPosition);
-    yPosition += 6;
+  doc.setTextColor(60, 60, 60);
+  const firmLines = [
+    data.firmAddress,
+    data.firmPhone,
+    data.firmEmail,
+    data.firmVatId ? `UID/VAT: ${data.firmVatId}` : undefined,
+  ].filter(Boolean) as string[];
+  firmLines.forEach((line, i) => {
+    doc.text(line, textX, y + 11 + i * 4);
   });
 
-  yPosition += 6;
+  y += Math.max(22, 11 + firmLines.length * 4) + 6;
 
-  // ─── Totals ─────────────────────────────────────────────────────────────────
-  const totalsX = margin + colWidths.description + colWidths.quantity;
+  // Accent rule
+  doc.setDrawColor(184, 148, 58); // gold
+  doc.setLineWidth(0.6);
+  doc.line(margin, y, pageWidth - margin, y);
+  y += 10;
+
+  // ─── Title + meta ──────────────────────────────────────────────────────────
   doc.setFont("helvetica", "bold");
-  doc.setFontSize(10);
-  doc.text("Subtotal:", totalsX, yPosition);
-  doc.text(formatCurrency(data.subtotal), margin + contentWidth - 30, yPosition, { align: "right" });
-  yPosition += 6;
+  doc.setFontSize(20);
+  doc.setTextColor(0, 31, 63);
+  doc.text("INVOICE", margin, y);
 
-  doc.text(`VAT (${data.vatRate}%):`, totalsX, yPosition);
-  doc.text(formatCurrency(data.vatAmount), margin + contentWidth - 30, yPosition, { align: "right" });
-  yPosition += 8;
-
-  doc.setFontSize(12);
-  doc.text("TOTAL:", totalsX, yPosition);
-  doc.text(formatCurrency(data.total), margin + contentWidth - 30, yPosition, { align: "right" });
-  yPosition += 12;
-
-  // ─── Notes ──────────────────────────────────────────────────────────────────
-  if (data.notes) {
-    doc.setFontSize(9);
-    doc.setFont("helvetica", "bold");
-    doc.text("Notes:", margin, yPosition);
-    yPosition += 5;
-    doc.setFont("helvetica", "normal");
-    const splitNotes = doc.splitTextToSize(data.notes, contentWidth);
-    doc.text(splitNotes, margin, yPosition);
-    yPosition += splitNotes.length * 5 + 5;
-  }
-
-  // ─── Payment Link (QR Code or URL) ──────────────────────────────────────────
-  if (data.paymentUrl) {
-    yPosition = pageHeight - 30;
-    doc.setFontSize(9);
-    doc.setFont("helvetica", "bold");
-    doc.text("Payment Link:", margin, yPosition);
-    yPosition += 5;
-    doc.setFont("helvetica", "normal");
-    doc.setTextColor(0, 0, 255);
-    doc.textWithLink(data.paymentUrl, margin, yPosition, { pageNumber: 1 });
-    doc.setTextColor(0, 0, 0);
-  }
-
-  // ─── Footer ─────────────────────────────────────────────────────────────────
-  doc.setFontSize(8);
   doc.setFont("helvetica", "normal");
-  doc.text(`Generated on ${new Date().toLocaleDateString()}`, margin, pageHeight - 10);
+  doc.setFontSize(10);
+  doc.setTextColor(40, 40, 40);
+  const metaX = pageWidth - margin;
+  doc.text(`No. ${data.invoiceNumber}`, metaX, y, { align: "right" });
+  doc.text(`Issued: ${formatDateSwiss(data.issueDate)}`, metaX, y + 5, { align: "right" });
+  doc.text(`Due: ${formatDateSwiss(data.dueDate)}`, metaX, y + 10, { align: "right" });
+  y += 18;
+
+  // ─── Bill to ───────────────────────────────────────────────────────────────
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(9);
+  doc.setTextColor(100, 100, 100);
+  doc.text("BILL TO", margin, y);
+  y += 5;
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(11);
+  doc.setTextColor(20, 20, 20);
+  doc.text(data.clientName, margin, y);
+  y += 5;
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(9);
+  doc.setTextColor(60, 60, 60);
+  if (data.clientAddress) {
+    const addrLines = doc.splitTextToSize(data.clientAddress, contentWidth * 0.5);
+    doc.text(addrLines, margin, y);
+    y += addrLines.length * 4;
+  }
+  if (data.clientEmail) {
+    doc.text(data.clientEmail, margin, y);
+    y += 4;
+  }
+  y += 6;
+
+  // ─── Case info ─────────────────────────────────────────────────────────────
+  if (data.caseTitle || data.caseReference) {
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(9);
+    doc.setTextColor(100, 100, 100);
+    doc.text("CASE", margin, y);
+    y += 5;
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(9);
+    doc.setTextColor(40, 40, 40);
+    if (data.caseTitle) {
+      doc.text(data.caseTitle, margin, y);
+      y += 4;
+    }
+    if (data.caseReference) {
+      doc.text(`Ref: ${data.caseReference}`, margin, y);
+      y += 4;
+    }
+    y += 4;
+  }
+
+  // ─── Items table ───────────────────────────────────────────────────────────
+  const cols = {
+    desc: contentWidth * 0.5,
+    qty: contentWidth * 0.12,
+    unit: contentWidth * 0.19,
+    total: contentWidth * 0.19,
+  };
+
+  doc.setFillColor(245, 247, 250);
+  doc.rect(margin, y, contentWidth, 8, "F");
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(9);
+  doc.setTextColor(40, 40, 40);
+  doc.text("Description", margin + 2, y + 5.5);
+  doc.text("Qty", margin + cols.desc + 2, y + 5.5);
+  doc.text("Unit", margin + cols.desc + cols.qty + 2, y + 5.5);
+  doc.text("Amount", pageWidth - margin - 2, y + 5.5, { align: "right" });
+  y += 10;
+
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(9);
+  for (const item of data.items) {
+    if (y > pageHeight - 50) {
+      doc.addPage();
+      y = margin;
+    }
+    const descLines = doc.splitTextToSize(item.description, cols.desc - 4);
+    doc.text(descLines, margin + 2, y);
+    doc.text(String(item.quantity), margin + cols.desc + 2, y);
+    doc.text(formatCurrency(item.unitPrice, currency), margin + cols.desc + cols.qty + 2, y);
+    doc.text(formatCurrency(item.total, currency), pageWidth - margin - 2, y, { align: "right" });
+    y += Math.max(6, descLines.length * 4) + 2;
+  }
+
+  y += 4;
+  doc.setDrawColor(220, 220, 220);
+  doc.line(margin + cols.desc, y, pageWidth - margin, y);
+  y += 8;
+
+  // ─── Totals ────────────────────────────────────────────────────────────────
+  const totalsX = margin + cols.desc;
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(10);
+  doc.text("Subtotal", totalsX, y);
+  doc.text(formatCurrency(data.subtotal, currency), pageWidth - margin, y, { align: "right" });
+  y += 6;
+  doc.text(`VAT (${data.vatRate}%)`, totalsX, y);
+  doc.text(formatCurrency(data.vatAmount, currency), pageWidth - margin, y, { align: "right" });
+  y += 8;
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(12);
+  doc.setTextColor(0, 31, 63);
+  doc.text("TOTAL", totalsX, y);
+  doc.text(formatCurrency(data.total, currency), pageWidth - margin, y, { align: "right" });
+  y += 12;
+  doc.setTextColor(40, 40, 40);
+
+  // ─── Notes ─────────────────────────────────────────────────────────────────
+  if (data.notes) {
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(9);
+    doc.text("Notes", margin, y);
+    y += 5;
+    doc.setFont("helvetica", "normal");
+    const noteLines = doc.splitTextToSize(data.notes, contentWidth);
+    doc.text(noteLines, margin, y);
+    y += noteLines.length * 4 + 6;
+  }
+
+  // ─── Payment link ──────────────────────────────────────────────────────────
+  if (data.paymentUrl) {
+    if (y > pageHeight - 25) {
+      doc.addPage();
+      y = margin;
+    }
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(9);
+    doc.text("Pay online:", margin, y);
+    y += 5;
+    doc.setFont("helvetica", "normal");
+    doc.setTextColor(0, 70, 160);
+    const linkLines = doc.splitTextToSize(data.paymentUrl, contentWidth);
+    doc.textWithLink(linkLines[0], margin, y, { url: data.paymentUrl });
+    doc.setTextColor(40, 40, 40);
+  }
+
+  // ─── Footer ────────────────────────────────────────────────────────────────
+  doc.setFontSize(8);
+  doc.setTextColor(140, 140, 140);
+  doc.text(
+    `${data.firmName} · Generated ${formatDateSwiss(new Date())} · LexFlow`,
+    margin,
+    pageHeight - 8
+  );
 
   return Buffer.from(doc.output("arraybuffer"));
 }
+
+/** @deprecated Use renderInvoicePdf */
+export const generateInvoicePdf = renderInvoicePdf;

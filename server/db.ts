@@ -498,6 +498,14 @@ export async function getInvoiceById(id: number, firmId: number) {
   return result[0];
 }
 
+/** Lookup invoice by id only (caller must enforce tenant/client access). */
+export async function getInvoiceByIdOnly(id: number) {
+  const db = await getDb();
+  if (!db) return undefined;
+  const result = await db.select().from(invoices).where(eq(invoices.id, id)).limit(1);
+  return result[0];
+}
+
 export async function updateInvoice(id: number, firmId: number, data: Partial<InsertInvoice>) {
   const db = await getDb();
   if (!db) throw new Error("DB unavailable");

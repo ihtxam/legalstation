@@ -9,6 +9,8 @@ interface EmailPayload {
   htmlContent: string;
   sender: { email: string; name: string };
   replyTo?: { email: string; name?: string };
+  /** Brevo attachment payloads (base64 content) */
+  attachment?: Array<{ name: string; content: string }>;
 }
 
 export async function sendEmail(payload: EmailPayload): Promise<{ messageId: string }> {

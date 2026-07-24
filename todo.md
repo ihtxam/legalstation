@@ -57,7 +57,7 @@
 - [x] Client invoice view: outstanding balance on dashboard
 - [x] Stripe Checkout integration: payment link per invoice
 - [x] Stripe webhook: checkout.session.completed → mark invoice paid
-- [ ] Server-side PDF generation with firm letterhead
+- [x] Server-side PDF generation with firm letterhead
 
 ## Phase 8: Dashboards
 - [x] Lawyer dashboard: open/pending cases, pending/overdue invoices, total revenue
@@ -82,7 +82,7 @@
 - [ ] Case assignment UI (add/remove lawyers and clients in case detail)
 - [ ] Document version history viewer UI
 - [ ] Audit log viewer page for admins
-- [ ] Invoice PDF with firm letterhead (server-side generation)
+- [x] Invoice PDF with firm letterhead (server-side generation)
 - [ ] Full admin analytics dashboard
 
 ## Critical MVP Fixes (Phase 10)
