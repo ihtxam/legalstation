@@ -16,6 +16,7 @@ import { paymentPlansRouter } from "./routers/paymentPlans";
 import { settingsRouter } from "./routers/settings";
 import { adyenRouter } from "./routers/adyen";
 import { documentAnalysisRouter } from "./routers/documentAnalysis";
+import { timeEntriesRouter } from "./routers/timeEntries";
 
 export const appRouter = router({
   system: systemRouter,
@@ -41,6 +42,7 @@ export const appRouter = router({
   adyen: adyenRouter,
   documentAnalysis: documentAnalysisRouter,
   invoicePdf: invoicePdfRouter,
+  timeEntries: timeEntriesRouter,
 });
 
 export type AppRouter = typeof appRouter;

@@ -144,8 +144,8 @@
 - [x] Time analytics: total hours, billable hours, utilization rate
 - [x] Daily time breakdown with date grouping
 - [x] Firm analytics for admins (all lawyers' time data)
-- [ ] Add time entries to invoices (simplified integration)
-- [ ] Time entry submission workflow (draft → submitted → billed)
+- [x] Add time entries to invoices (simplified integration)
+- [x] Time entry submission workflow (draft → submitted → billed)
 
 ## Phase 8: Enhanced Client Portal
 - [x] Improved document exchange UI with drag-and-drop upload (DocumentExchange component)

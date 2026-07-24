@@ -1,4 +1,4 @@
-import { and, desc, eq, inArray, isNull, or, sql } from "drizzle-orm";
+import { and, desc, eq, gte, inArray, isNull, lte, or, sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
 import {
   caseAssignments,
@@ -26,11 +26,15 @@ import {
   InsertInvoiceItem,
   InsertMessage,
   InsertMessageRead,
+  InsertTimeEntry,
+  InsertLawyerRate,
   invitations,
   invoiceItems,
   invoices,
+  lawyerRates,
   messageReads,
   messages,
+  timeEntries,
   InsertUser,
   users,
 } from "../drizzle/schema";
@@ -512,10 +516,118 @@ export async function updateInvoice(id: number, firmId: number, data: Partial<In
   await db.update(invoices).set(data).where(and(eq(invoices.id, id), eq(invoices.firmId, firmId)));
 }
 
-export async function createInvoiceItem(data: InsertInvoiceItem) {
+export async function createInvoiceItem(data: InsertInvoiceItem): Promise<number> {
   const db = await getDb();
   if (!db) throw new Error("DB unavailable");
-  await db.insert(invoiceItems).values(data);
+  const [result] = await db.insert(invoiceItems).values(data);
+  return Number((result as { insertId?: number }).insertId ?? 0);
+}
+
+// ─── Time entry helpers ───────────────────────────────────────────────────────
+export async function createTimeEntry(data: InsertTimeEntry): Promise<number> {
+  const db = await getDb();
+  if (!db) throw new Error("DB unavailable");
+  const [result] = await db.insert(timeEntries).values(data);
+  return Number((result as { insertId?: number }).insertId ?? 0);
+}
+
+export async function getTimeEntriesByFirm(
+  firmId: number,
+  filters?: {
+    lawyerId?: number;
+    caseId?: number;
+    status?: "draft" | "submitted" | "billed";
+    from?: Date;
+    to?: Date;
+  }
+) {
+  const db = await getDb();
+  if (!db) return [];
+  const conditions = [eq(timeEntries.firmId, firmId)];
+  if (filters?.lawyerId) conditions.push(eq(timeEntries.lawyerId, filters.lawyerId));
+  if (filters?.caseId) conditions.push(eq(timeEntries.caseId, filters.caseId));
+  if (filters?.status) conditions.push(eq(timeEntries.status, filters.status));
+  if (filters?.from) conditions.push(gte(timeEntries.date, filters.from));
+  if (filters?.to) conditions.push(lte(timeEntries.date, filters.to));
+  return db
+    .select()
+    .from(timeEntries)
+    .where(and(...conditions))
+    .orderBy(desc(timeEntries.date));
+}
+
+export async function getTimeEntryById(id: number, firmId: number) {
+  const db = await getDb();
+  if (!db) return undefined;
+  const result = await db
+    .select()
+    .from(timeEntries)
+    .where(and(eq(timeEntries.id, id), eq(timeEntries.firmId, firmId)))
+    .limit(1);
+  return result[0];
+}
+
+export async function updateTimeEntry(
+  id: number,
+  firmId: number,
+  data: Partial<InsertTimeEntry>
+) {
+  const db = await getDb();
+  if (!db) throw new Error("DB unavailable");
+  await db
+    .update(timeEntries)
+    .set(data)
+    .where(and(eq(timeEntries.id, id), eq(timeEntries.firmId, firmId)));
+}
+
+export async function deleteTimeEntry(id: number, firmId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("DB unavailable");
+  await db
+    .delete(timeEntries)
+    .where(and(eq(timeEntries.id, id), eq(timeEntries.firmId, firmId)));
+}
+
+export async function getCurrentLawyerRate(firmId: number, lawyerId: number) {
+  const db = await getDb();
+  if (!db) return undefined;
+  const result = await db
+    .select()
+    .from(lawyerRates)
+    .where(
+      and(
+        eq(lawyerRates.firmId, firmId),
+        eq(lawyerRates.lawyerId, lawyerId),
+        isNull(lawyerRates.effectiveTo)
+      )
+    )
+    .orderBy(desc(lawyerRates.effectiveFrom))
+    .limit(1);
+  return result[0];
+}
+
+export async function upsertLawyerRate(
+  firmId: number,
+  lawyerId: number,
+  hourlyRate: number
+) {
+  const db = await getDb();
+  if (!db) throw new Error("DB unavailable");
+  const current = await getCurrentLawyerRate(firmId, lawyerId);
+  if (current) {
+    await db
+      .update(lawyerRates)
+      .set({ effectiveTo: new Date() })
+      .where(eq(lawyerRates.id, current.id));
+  }
+  const data: InsertLawyerRate = {
+    firmId,
+    lawyerId,
+    hourlyRate: hourlyRate.toFixed(2),
+    effectiveFrom: new Date(),
+  };
+  const [result] = await db.insert(lawyerRates).values(data);
+  return Number((result as { insertId?: number }).insertId ?? 0);
 }
 
 export async function getInvoiceItems(invoiceId: number) {
