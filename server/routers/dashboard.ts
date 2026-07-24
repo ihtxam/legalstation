@@ -66,5 +66,62 @@ export const dashboardRouter = router({
       .limit(20);
     return recentEvents;
   }),
+
+  /** Firm-admin analytics: cases, billing, messaging volume. */
+  adminAnalytics: protectedProcedure.query(async ({ ctx }) => {
+    const member = await getFirmMemberByUserId(ctx.user.id);
+    if (!member || member.firmRole !== "admin") {
+      throw new TRPCError({ code: "FORBIDDEN", message: "Admin only" });
+    }
+    const allCases = await getCasesByFirm(member.firmId);
+    const allInvoices = await getInvoicesByFirm(member.firmId);
+    const unread = await getUnreadMessageCount(ctx.user.id, member.firmId);
+
+    const casesByStatus = {
+      open: allCases.filter((c) => c.status === "open").length,
+      pending: allCases.filter((c) => c.status === "pending").length,
+      closed: allCases.filter((c) => c.status === "closed").length,
+      archived: allCases.filter((c) => c.status === "archived").length,
+    };
+
+    const invoicesByStatus = {
+      draft: allInvoices.filter((r) => r.invoice.status === "draft").length,
+      sent: allInvoices.filter((r) => r.invoice.status === "sent").length,
+      paid: allInvoices.filter((r) => r.invoice.status === "paid").length,
+      overdue: allInvoices.filter((r) => r.invoice.status === "overdue").length,
+      cancelled: allInvoices.filter((r) => r.invoice.status === "cancelled").length,
+    };
+
+    const paidRevenue = allInvoices
+      .filter((r) => r.invoice.status === "paid")
+      .reduce((sum, r) => sum + Number(r.invoice.total), 0);
+    const outstanding = allInvoices
+      .filter((r) => r.invoice.status === "sent" || r.invoice.status === "overdue")
+      .reduce((sum, r) => sum + Number(r.invoice.total), 0);
+
+    const revenueByMonth: Record<string, number> = {};
+    for (const row of allInvoices) {
+      if (row.invoice.status !== "paid" || !row.invoice.paidAt) continue;
+      const key = new Date(row.invoice.paidAt).toISOString().slice(0, 7);
+      revenueByMonth[key] = (revenueByMonth[key] || 0) + Number(row.invoice.total);
+    }
+
+    return {
+      totals: {
+        cases: allCases.length,
+        invoices: allInvoices.length,
+        clients: new Set(allInvoices.map((r) => r.invoice.clientId)).size,
+        unreadMessages: unread,
+        paidRevenue,
+        outstanding,
+      },
+      casesByStatus,
+      invoicesByStatus,
+      revenueByMonth: Object.entries(revenueByMonth)
+        .sort(([a], [b]) => a.localeCompare(b))
+        .slice(-12)
+        .map(([month, total]) => ({ month, total })),
+    };
+  }),
 });
 

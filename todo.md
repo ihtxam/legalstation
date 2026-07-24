@@ -76,14 +76,14 @@
 - [x] Print styles for invoice PDF
 
 ## Post-MVP Enhancements
-- [ ] Email notifications for messages and document uploads (requires email provider)
-- [ ] 2FA optional login
-- [ ] Multi-language UI (FR / DE / EN)
-- [ ] Case assignment UI (add/remove lawyers and clients in case detail)
-- [ ] Document version history viewer UI
-- [ ] Audit log viewer page for admins
+- [x] Email notifications for messages and document uploads (requires email provider)
+- [x] 2FA optional login
+- [x] Multi-language UI (FR / DE / EN)
+- [x] Case assignment UI (add/remove lawyers and clients in case detail)
+- [x] Document version history viewer UI
+- [x] Audit log viewer page for admins
 - [x] Invoice PDF with firm letterhead (server-side generation)
-- [ ] Full admin analytics dashboard
+- [x] Full admin analytics dashboard
 
 ## Critical MVP Fixes (Phase 10)
 - [x] Brevo API integration: send firm invite, client invite, and message notification emails
@@ -169,7 +169,7 @@
 - [x] Display analysis results in client portal
 - [x] Update documents.register to return documentId for analysis triggering
 - [x] Test with various document types (PDF, Word, text)
-- [ ] Trigger analysis automatically on document upload (post-MVP)
+- [x] Trigger analysis automatically on document upload (post-MVP)
 
 ## Phase 10: Settings Enhancements
 - [x] Add logo upload feature to Firm settings tab

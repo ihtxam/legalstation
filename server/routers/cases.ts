@@ -209,10 +209,34 @@ export const casesRouter = router({
       const clients = await getClientsByFirm(member.firmId);
       const assignments = await getCaseAssignments(input.caseId);
       
+      const availableLawyers = lawyers.filter(
+        (l) => !assignments.some((a) => a.userId === l.member.userId && a.assignmentType === "lawyer")
+      );
+      const availableClients = clients.filter(
+        (c) => !assignments.some((a) => a.clientId === c.id)
+      );
+
+      const enrichedAssignments = assignments.map((a) => {
+        if (a.assignmentType === "lawyer") {
+          const match = lawyers.find((l) => l.member.userId === a.userId);
+          return {
+            ...a,
+            displayName: match?.user.name || match?.user.email || `User #${a.userId}`,
+          };
+        }
+        const match = clients.find((c) => c.id === a.clientId);
+        const displayName = match
+          ? match.type === "company"
+            ? match.companyName || `Client #${a.clientId}`
+            : [match.firstName, match.lastName].filter(Boolean).join(" ") || `Client #${a.clientId}`
+          : `Client #${a.clientId}`;
+        return { ...a, displayName };
+      });
+
       return {
-        availableLawyers: lawyers.filter(l => !assignments.some(a => a.userId === l.member.userId && a.assignmentType === "lawyer")),
-        availableClients: clients.filter(c => !assignments.some(a => a.clientId === c.id)),
-        currentAssignments: assignments,
+        availableLawyers,
+        availableClients,
+        currentAssignments: enrichedAssignments,
       };
     }),
 

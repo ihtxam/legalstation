@@ -1,6 +1,5 @@
 import { useAuth } from "@/_core/hooks/useAuth";
 import { trpc } from "@/lib/trpc";
-import { startLogin } from "@/const";
 import { Link, useLocation } from "wouter";
 import { cn } from "@/lib/utils";
 import {
@@ -14,38 +13,16 @@ import {
   LogOut,
   Scale,
   ChevronRight,
+  BarChart3,
+  Shield,
   Bell,
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { useEffect, useState } from "react";
-
-const navItems = [
-  { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/cases", label: "Cases", icon: Briefcase },
-  { href: "/clients", label: "Clients", icon: Users },
-  { href: "/messages", label: "Messages", icon: MessageSquare },
-  { href: "/invoices", label: "Billing", icon: Receipt },
-];
-
-const clientNavItems = [
-  { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/client-portal", label: "My Cases", icon: Briefcase },
-  { href: "/messages", label: "Messages", icon: MessageSquare },
-  { href: "/invoices", label: "Invoices", icon: Receipt },
-];
-
-const lawyerNavItems = [
-  { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/cases", label: "Cases", icon: Briefcase },
-  { href: "/clients", label: "Clients", icon: Users },
-  { href: "/messages", label: "Messages", icon: MessageSquare },
-  { href: "/invoices", label: "Billing", icon: Receipt },
-  { href: "/time-reports", label: "Time Reports", icon: FileText },
-];
+import { useState } from "react";
+import { useTranslation } from "react-i18next";
 
 interface LexLayoutProps {
   children: React.ReactNode;
@@ -54,6 +31,7 @@ interface LexLayoutProps {
 }
 
 export default function LexLayout({ children, title, breadcrumb }: LexLayoutProps) {
+  const { t } = useTranslation();
   const { user, logout } = useAuth();
   const [location] = useLocation();
   const { data: firmData } = trpc.firm.myFirm.useQuery();
@@ -61,7 +39,39 @@ export default function LexLayout({ children, title, breadcrumb }: LexLayoutProp
   const [sidebarOpen, setSidebarOpen] = useState(true);
 
   const isClient = !firmData;
+  const isAdmin = firmData?.member?.firmRole === "admin";
   const isSuperadmin = user?.role === "superadmin";
+
+  const clientNavItems = [
+    { href: "/dashboard", label: t("nav.dashboard"), icon: LayoutDashboard },
+    { href: "/client-portal", label: t("nav.myCases"), icon: Briefcase },
+    { href: "/messages", label: t("nav.messages"), icon: MessageSquare },
+    { href: "/invoices", label: t("nav.invoices"), icon: Receipt },
+  ];
+
+  const lawyerNavItems = [
+    { href: "/dashboard", label: t("nav.dashboard"), icon: LayoutDashboard },
+    { href: "/cases", label: t("nav.cases"), icon: Briefcase },
+    { href: "/clients", label: t("nav.clients"), icon: Users },
+    { href: "/messages", label: t("nav.messages"), icon: MessageSquare },
+    { href: "/invoices", label: t("nav.billing"), icon: Receipt },
+    { href: "/time-reports", label: t("nav.timeReports"), icon: FileText },
+    ...(isAdmin
+      ? [
+          { href: "/analytics", label: t("nav.analytics"), icon: BarChart3 },
+          { href: "/audit", label: t("nav.auditLog"), icon: Shield },
+        ]
+      : []),
+  ];
+
+  const navItems = [
+    { href: "/dashboard", label: t("nav.dashboard"), icon: LayoutDashboard },
+    { href: "/cases", label: t("nav.cases"), icon: Briefcase },
+    { href: "/clients", label: t("nav.clients"), icon: Users },
+    { href: "/messages", label: t("nav.messages"), icon: MessageSquare },
+    { href: "/invoices", label: t("nav.billing"), icon: Receipt },
+  ];
+
   const items = isClient ? clientNavItems : isSuperadmin ? navItems : lawyerNavItems;
 
   const initials = user?.name
@@ -130,13 +140,13 @@ export default function LexLayout({ children, title, breadcrumb }: LexLayoutProp
               location === "/settings" ? "bg-white/15 text-white" : "text-white/65 hover:bg-white/10 hover:text-white"
             )}>
               <Settings className="w-4 h-4 shrink-0" />
-              {sidebarOpen && <span>Settings</span>}
+              {sidebarOpen && <span>{t("nav.settings")}</span>}
             </div>
           </Link>
           <div className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-white/65 hover:bg-white/10 hover:text-white cursor-pointer transition-all duration-150"
             onClick={logout}>
             <LogOut className="w-4 h-4 shrink-0" />
-            {sidebarOpen && <span className="text-sm font-medium">Sign out</span>}
+            {sidebarOpen && <span className="text-sm font-medium">{t("nav.signOut")}</span>}
           </div>
           <Separator className="bg-white/10 my-2" />
           <div className="flex items-center gap-3 px-3 py-2">

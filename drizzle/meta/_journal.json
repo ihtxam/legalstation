@@ -57,6 +57,13 @@
       "when": 1784934600000,
       "tag": "0007_payment_plan_autogen",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "5",
+      "when": 1784935200000,
+      "tag": "0008_totp_locale",
+      "breakpoints": true
     }
   ]
 }

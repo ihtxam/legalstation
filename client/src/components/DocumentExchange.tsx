@@ -1,11 +1,12 @@
 import { useState, useRef } from "react";
-import { FileText, Upload, Download, Lock, Globe, Trash2, Share2, Eye, Copy, CheckCircle } from "lucide-react";
+import { FileText, Upload, Download, Lock, Globe, Trash2, Share2, History, CheckCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { DocumentSummaryCard } from "./DocumentSummaryCard";
+import { DocumentVersionHistory } from "./DocumentVersionHistory";
 
 interface DocumentExchangeProps {
   docs: any[];
@@ -38,6 +39,7 @@ export function DocumentExchange({
   const [uploading, setUploading] = useState(false);
   const [selectedDoc, setSelectedDoc] = useState<any | null>(null);
   const [showShareDialog, setShowShareDialog] = useState(false);
+  const [versionDocId, setVersionDocId] = useState<number | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleDrag = (e: React.DragEvent) => {
@@ -164,6 +166,14 @@ export function DocumentExchange({
                     className="p-2 text-muted-foreground hover:text-foreground hover:bg-muted rounded transition-colors"
                   >
                     <Download className="w-4 h-4" />
+                  </button>
+
+                  <button
+                    title="Version history"
+                    onClick={() => setVersionDocId(doc.id)}
+                    className="p-2 text-muted-foreground hover:text-foreground hover:bg-muted rounded transition-colors"
+                  >
+                    <History className="w-4 h-4" />
                   </button>
 
                   {/* Share (if user can manage) */}
@@ -363,6 +373,14 @@ export function DocumentExchange({
           </DialogContent>
         </Dialog>
       )}
+
+      <DocumentVersionHistory
+        documentId={versionDocId}
+        open={versionDocId != null}
+        onOpenChange={(open) => {
+          if (!open) setVersionDocId(null);
+        }}
+      />
     </div>
   );
 }

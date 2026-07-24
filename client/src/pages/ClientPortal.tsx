@@ -63,6 +63,8 @@ export default function ClientPortalPage() {
   const deleteDocument = trpc.documents.delete.useMutation();
   const logDocAccess = trpc.documents.logAccess.useMutation();
   const registerDocument = trpc.documents.register.useMutation();
+  const analyzeDocument = trpc.documentAnalysis.analyzeDocument.useMutation();
+  const utils = trpc.useUtils();
   const { refetch: refetchDocs } = trpc.documents.list.useQuery(
     { caseId: selectedCaseId! },
     { enabled: isAuthenticated && !!selectedCaseId }
@@ -232,20 +234,33 @@ export default function ClientPortalPage() {
                               size: file.size,
                               fileKey,
                               fileUrl,
+                              visibility: "shared",
                             },
                             {
                               onSuccess: async (result: any) => {
                                 refetchDocs();
                                 toast.success("Document uploaded successfully");
-                                // Trigger AI analysis if document was created
                                 if (result.documentId) {
                                   setSummariesLoading((prev) => ({ ...prev, [result.documentId]: true }));
-                                  toast.loading("Analyzing document with AI...");
-                                  // Simulate analysis completion
-                                  setTimeout(() => {
-                                    setSummariesLoading((prev) => ({ ...prev, [result.documentId]: false }));
+                                  try {
+                                    await analyzeDocument.mutateAsync({
+                                      documentId: result.documentId,
+                                      documentUrl: fileUrl,
+                                      fileName: file.name,
+                                      mimeType: file.type || "application/octet-stream",
+                                    });
+                                    const summary = await utils.documentAnalysis.getSummary.fetch({
+                                      documentId: result.documentId,
+                                    });
+                                    if (summary) {
+                                      setSummaries((prev) => ({ ...prev, [result.documentId]: summary }));
+                                    }
                                     toast.success("Document analysis complete");
-                                  }, 2000);
+                                  } catch {
+                                    toast.error("Document analysis failed");
+                                  } finally {
+                                    setSummariesLoading((prev) => ({ ...prev, [result.documentId]: false }));
+                                  }
                                 }
                               },
                               onError: () => {

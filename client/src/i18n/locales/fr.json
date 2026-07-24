@@ -1,0 +1,31 @@
+{
+  "nav": {
+    "dashboard": "Tableau de bord",
+    "cases": "Dossiers",
+    "clients": "Clients",
+    "messages": "Messages",
+    "billing": "Facturation",
+    "invoices": "Factures",
+    "timeReports": "Temps",
+    "myCases": "Mes dossiers",
+    "settings": "Paramètres",
+    "analytics": "Analytique",
+    "auditLog": "Journal d'audit",
+    "signOut": "Déconnexion"
+  },
+  "common": {
+    "loading": "Chargement…",
+    "save": "Enregistrer",
+    "cancel": "Annuler",
+    "language": "Langue"
+  },
+  "twoFactor": {
+    "title": "Authentification à deux facteurs",
+    "challenge": "Entrez le code de votre application d'authentification",
+    "verify": "Vérifier",
+    "enable": "Activer la 2FA",
+    "disable": "Désactiver la 2FA",
+    "enabled": "La 2FA est activée",
+    "setup": "Scannez ce QR code, puis saisissez un code pour activer la 2FA"
+  }
+}

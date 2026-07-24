@@ -1,0 +1,31 @@
+{
+  "nav": {
+    "dashboard": "Dashboard",
+    "cases": "Cases",
+    "clients": "Clients",
+    "messages": "Messages",
+    "billing": "Billing",
+    "invoices": "Invoices",
+    "timeReports": "Time Reports",
+    "myCases": "My Cases",
+    "settings": "Settings",
+    "analytics": "Analytics",
+    "auditLog": "Audit log",
+    "signOut": "Sign out"
+  },
+  "common": {
+    "loading": "Loading…",
+    "save": "Save",
+    "cancel": "Cancel",
+    "language": "Language"
+  },
+  "twoFactor": {
+    "title": "Two-factor authentication",
+    "challenge": "Enter the code from your authenticator app",
+    "verify": "Verify",
+    "enable": "Enable 2FA",
+    "disable": "Disable 2FA",
+    "enabled": "2FA is enabled",
+    "setup": "Scan this QR code, then enter a code to enable 2FA"
+  }
+}

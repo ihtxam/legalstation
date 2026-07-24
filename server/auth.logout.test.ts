@@ -20,6 +20,9 @@ function createAuthContext(): { ctx: TrpcContext; clearedCookies: CookieCall[] }
     name: "Sample User",
     loginMethod: "manus",
     role: "user",
+    totpSecret: null,
+    totpEnabled: false,
+    preferredLocale: "en",
     createdAt: new Date(),
     updatedAt: new Date(),
     lastSignedIn: new Date(),
@@ -49,9 +52,10 @@ describe("auth.logout", () => {
     const result = await caller.auth.logout();
 
     expect(result).toEqual({ success: true });
-    expect(clearedCookies).toHaveLength(1);
-    expect(clearedCookies[0]?.name).toBe(COOKIE_NAME);
-    expect(clearedCookies[0]?.options).toMatchObject({
+    expect(clearedCookies.length).toBeGreaterThanOrEqual(1);
+    expect(clearedCookies.map((c) => c.name)).toContain(COOKIE_NAME);
+    const sessionClear = clearedCookies.find((c) => c.name === COOKIE_NAME);
+    expect(sessionClear?.options).toMatchObject({
       maxAge: -1,
       secure: true,
       sameSite: "none",

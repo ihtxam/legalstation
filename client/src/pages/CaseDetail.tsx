@@ -23,6 +23,7 @@ import { useLocation, useParams } from "wouter";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { CASE_TYPE_LABELS } from "@shared/types";
+import { DocumentVersionHistory } from "@/components/DocumentVersionHistory";
 
 function CaseTimeline({ caseId, isInternal }: { caseId: number; isInternal: boolean }) {
   const { data: events, isLoading, refetch } = trpc.cases.getEvents.useQuery({ caseId });
@@ -132,8 +133,11 @@ function CaseDocuments({ caseId, firmId }: { caseId: number; firmId: number }) {
   
   const updateVisibility = trpc.documents.updateVisibility.useMutation({ onSuccess: () => refetch() });
   const logAccess = trpc.documents.logAccess.useMutation();
+  const analyzeDocument = trpc.documentAnalysis.analyzeDocument.useMutation({
+    onSuccess: () => toast.success("Document analysis complete"),
+    onError: (e) => toast.error(e.message || "Analysis failed"),
+  });
   const register = trpc.documents.register.useMutation({
-    onSuccess: () => { setShowUpload(false); setSelectedFile(null); refetch(); toast.success("Document uploaded"); },
     onError: (e: any) => toast.error(e.message),
   });
 
@@ -193,21 +197,38 @@ function CaseDocuments({ caseId, firmId }: { caseId: number; firmId: number }) {
             <Button disabled={!selectedFile || register.isPending}
               onClick={async () => {
                 if (!selectedFile) return;
+                const file = selectedFile;
                 const formData = new FormData();
-                formData.append('file', selectedFile);
+                formData.append('file', file);
                 formData.append('caseId', caseId.toString());
                 const res = await fetch('/api/upload', { method: 'POST', body: formData });
                 const { fileKey, fileUrl } = await res.json();
-                register.mutate({
+                const result = await register.mutateAsync({
                   caseId,
-                  name: selectedFile.name,
-                  originalName: selectedFile.name,
-                  mimeType: selectedFile.type,
-                  size: selectedFile.size,
+                  name: file.name,
+                  originalName: file.name,
+                  mimeType: file.type,
+                  size: file.size,
                   fileKey,
                   fileUrl,
                   folderId: folderId ? parseInt(folderId) : undefined,
                 });
+                setShowUpload(false);
+                setSelectedFile(null);
+                refetch();
+                toast.success("Document uploaded");
+                if (result.documentId) {
+                  toast.loading("Analyzing document…", { id: "doc-analysis" });
+                  analyzeDocument.mutate(
+                    {
+                      documentId: result.documentId,
+                      documentUrl: fileUrl,
+                      fileName: file.name,
+                      mimeType: file.type || "application/octet-stream",
+                    },
+                    { onSettled: () => toast.dismiss("doc-analysis") }
+                  );
+                }
               }}>
               Upload
             </Button>
@@ -219,30 +240,42 @@ function CaseDocuments({ caseId, firmId }: { caseId: number; firmId: number }) {
 }
 
 function DocList({ docs, onToggle, onLog }: { docs: any[]; onToggle: (v: any) => void; onLog: (v: any) => void }) {
+  const [versionDocId, setVersionDocId] = useState<number | null>(null);
   return (
-    <div className="bg-card border border-border rounded-xl divide-y divide-border overflow-hidden">
-      {docs.map(({ doc }) => (
-        <div key={doc.id} className="flex items-center gap-3 px-4 py-3 hover:bg-accent/50 transition-colors">
-          <FileText className="w-4 h-4 text-muted-foreground shrink-0" />
-          <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium text-foreground truncate">{doc.name}</p>
-            <p className="text-xs text-muted-foreground">{(doc.size / 1024).toFixed(1)} KB · v{doc.currentVersion}</p>
+    <>
+      <div className="bg-card border border-border rounded-xl divide-y divide-border overflow-hidden">
+        {docs.map(({ doc }) => (
+          <div key={doc.id} className="flex items-center gap-3 px-4 py-3 hover:bg-accent/50 transition-colors">
+            <FileText className="w-4 h-4 text-muted-foreground shrink-0" />
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-medium text-foreground truncate">{doc.name}</p>
+              <p className="text-xs text-muted-foreground">{(doc.size / 1024).toFixed(1)} KB · v{doc.currentVersion}</p>
+            </div>
+            <StatusBadge status={doc.visibility} />
+            <div className="flex items-center gap-1">
+              <button title="Toggle visibility" onClick={() => onToggle({ id: doc.id, visibility: doc.visibility === "internal" ? "shared" : "internal" })}
+                className="p-1.5 text-muted-foreground hover:text-foreground rounded transition-colors">
+                {doc.visibility === "internal" ? <Lock className="w-3.5 h-3.5" /> : <Globe className="w-3.5 h-3.5" />}
+              </button>
+              <button title="Version history" onClick={() => setVersionDocId(doc.id)}
+                className="p-1.5 text-muted-foreground hover:text-foreground rounded transition-colors text-xs underline">
+                History
+              </button>
+              <a href={doc.fileUrl} target="_blank" rel="noopener noreferrer"
+                onClick={() => onLog({ documentId: doc.id, action: "download" })}
+                className="p-1.5 text-muted-foreground hover:text-foreground rounded transition-colors">
+                <Download className="w-3.5 h-3.5" />
+              </a>
+            </div>
           </div>
-          <StatusBadge status={doc.visibility} />
-          <div className="flex items-center gap-1">
-            <button title="Toggle visibility" onClick={() => onToggle({ id: doc.id, visibility: doc.visibility === "internal" ? "shared" : "internal" })}
-              className="p-1.5 text-muted-foreground hover:text-foreground rounded transition-colors">
-              {doc.visibility === "internal" ? <Lock className="w-3.5 h-3.5" /> : <Globe className="w-3.5 h-3.5" />}
-            </button>
-            <a href={doc.fileUrl} target="_blank" rel="noopener noreferrer"
-              onClick={() => onLog({ documentId: doc.id, action: "download" })}
-              className="p-1.5 text-muted-foreground hover:text-foreground rounded transition-colors">
-              <Download className="w-3.5 h-3.5" />
-            </a>
-          </div>
-        </div>
-      ))}
-    </div>
+        ))}
+      </div>
+      <DocumentVersionHistory
+        documentId={versionDocId}
+        open={versionDocId != null}
+        onOpenChange={(open) => { if (!open) setVersionDocId(null); }}
+      />
+    </>
   );
 }
 
@@ -335,7 +368,9 @@ function CaseAssignments({ caseId }: { caseId: number }) {
           <div className="bg-card border border-border rounded-lg divide-y divide-border">
             {lawyerAssignments.map(a => (
               <div key={a.id} className="flex items-center justify-between px-4 py-3">
-                <span className="text-sm font-medium text-foreground">User #{a.userId}</span>
+                <span className="text-sm font-medium text-foreground">
+                  {(a as any).displayName || `User #${a.userId}`}
+                </span>
                 <button onClick={() => removeLawyer.mutate({ caseId, lawyerId: a.userId! })} className="text-muted-foreground hover:text-destructive transition-colors">
                   <X className="w-4 h-4" />
                 </button>
@@ -383,7 +418,9 @@ function CaseAssignments({ caseId }: { caseId: number }) {
           <div className="bg-card border border-border rounded-lg divide-y divide-border">
             {clientAssignments.map(a => (
               <div key={a.id} className="flex items-center justify-between px-4 py-3">
-                <span className="text-sm font-medium text-foreground">Client #{a.clientId}</span>
+                <span className="text-sm font-medium text-foreground">
+                  {(a as any).displayName || `Client #${a.clientId}`}
+                </span>
                 <button onClick={() => removeClient.mutate({ caseId, clientId: a.clientId! })} className="text-muted-foreground hover:text-destructive transition-colors">
                   <X className="w-4 h-4" />
                 </button>

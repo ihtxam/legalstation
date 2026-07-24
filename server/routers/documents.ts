@@ -12,10 +12,14 @@ import {
   getDocumentVersions,
   getFirmMemberByUserId,
   getClientByUserId,
+  getCaseById,
   pruneOldVersions,
   updateDocument,
 } from "../db";
 import { protectedProcedure, router } from "../_core/trpc";
+import { sendDocumentUploadNotificationEmail } from "../email";
+import { getCaseNotificationRecipients } from "../caseNotifications";
+
 
 export const documentsRouter = router({
   getFolders: protectedProcedure
@@ -75,6 +79,26 @@ export const documentsRouter = router({
           uploadedByUserId: ctx.user.id,
         });
         await createDocumentAuditEntry({ documentId: doc.id, userId: ctx.user.id, action: "upload" });
+
+        const caseRow = await getCaseById(input.caseId, member.firmId);
+        const { caseTitle, recipients } = await getCaseNotificationRecipients(
+          input.caseId,
+          ctx.user.id
+        );
+        const origin = String(ctx.req.headers.origin || "");
+        const caseUrl = `${origin}/cases/${input.caseId}`;
+        const uploaderName = ctx.user.name || "A team member";
+        await Promise.allSettled(
+          recipients.map((r) =>
+            sendDocumentUploadNotificationEmail(
+              r.email,
+              uploaderName,
+              caseTitle || caseRow?.title || `Case ${input.caseId}`,
+              input.name,
+              caseUrl
+            )
+          )
+        );
       }
       return { success: true, documentId: doc?.id || null };
     }),

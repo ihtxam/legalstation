@@ -7,6 +7,9 @@ import NotFound from "@/pages/NotFound";
 import { Route, Switch } from "wouter";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
+import { TwoFactorChallenge } from "./components/TwoFactorChallenge";
+import { setAppLocale } from "./i18n";
+import { trpc } from "./lib/trpc";
 import Home from "./pages/Home";
 import Dashboard from "./pages/Dashboard";
 import ClientsPage from "./pages/Clients";
@@ -23,17 +26,36 @@ import SuperadminDashboard from "./pages/SuperadminDashboard";
 import AdminSettings from "./pages/AdminSettings";
 import ClientPortalPage from "./pages/ClientPortal";
 import TimeReportsPage from "./pages/TimeReports";
+import AuditLogPage from "./pages/AuditLog";
+import AdminAnalyticsPage from "./pages/AdminAnalytics";
 
 function Router() {
-  const { user } = useAuth();
+  const { user, refresh } = useAuth();
   const [location, navigate] = useLocation();
+  const utils = trpc.useUtils();
 
-  // Redirect superadmin to /superadmin
+  useEffect(() => {
+    if (user?.preferredLocale === "fr" || user?.preferredLocale === "de" || user?.preferredLocale === "en") {
+      setAppLocale(user.preferredLocale);
+    }
+  }, [user?.preferredLocale]);
+
   useEffect(() => {
     if (user?.role === "superadmin" && !location.startsWith("/superadmin") && !location.startsWith("/admin")) {
       navigate("/superadmin");
     }
   }, [user?.role, location, navigate]);
+
+  if (user?.requires2fa) {
+    return (
+      <TwoFactorChallenge
+        onVerified={async () => {
+          await utils.auth.me.invalidate();
+          refresh?.();
+        }}
+      />
+    );
+  }
 
   return (
     <Switch>
@@ -54,6 +76,8 @@ function Router() {
       <Route path="/admin/settings" component={AdminSettings} />
       <Route path="/client-portal" component={ClientPortalPage} />
       <Route path="/time-reports" component={TimeReportsPage} />
+      <Route path="/audit" component={AuditLogPage} />
+      <Route path="/analytics" component={AdminAnalyticsPage} />
       <Route path="/404" component={NotFound} />
       <Route component={NotFound} />
     </Switch>

@@ -1,0 +1,31 @@
+{
+  "nav": {
+    "dashboard": "Dashboard",
+    "cases": "Fälle",
+    "clients": "Klienten",
+    "messages": "Nachrichten",
+    "billing": "Abrechnung",
+    "invoices": "Rechnungen",
+    "timeReports": "Zeiterfassung",
+    "myCases": "Meine Fälle",
+    "settings": "Einstellungen",
+    "analytics": "Analysen",
+    "auditLog": "Audit-Protokoll",
+    "signOut": "Abmelden"
+  },
+  "common": {
+    "loading": "Laden…",
+    "save": "Speichern",
+    "cancel": "Abbrechen",
+    "language": "Sprache"
+  },
+  "twoFactor": {
+    "title": "Zwei-Faktor-Authentifizierung",
+    "challenge": "Geben Sie den Code aus Ihrer Authenticator-App ein",
+    "verify": "Bestätigen",
+    "enable": "2FA aktivieren",
+    "disable": "2FA deaktivieren",
+    "enabled": "2FA ist aktiviert",
+    "setup": "Scannen Sie diesen QR-Code und geben Sie danach einen Code ein"
+  }
+}

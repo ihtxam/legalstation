@@ -6,12 +6,16 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { Building2, Users, Send, Upload, X } from "lucide-react";
+import { Building2, Users, Send, Upload, X, Shield, Languages } from "lucide-react";
+import { useTranslation } from "react-i18next";
+import { setAppLocale } from "@/i18n";
 
 export default function SettingsPage() {
-  const { isAuthenticated, loading } = useAuth();
+  const { t } = useTranslation();
+  const { isAuthenticated, loading, user, refresh } = useAuth();
   const { data: firmData, refetch } = trpc.firm.myFirm.useQuery(undefined, { enabled: isAuthenticated });
   const { data: members } = trpc.firm.members.useQuery(undefined, { enabled: isAuthenticated && !!firmData });
   const [firmForm, setFirmForm] = useState({ name: "", address: "", email: "", phone: "", vatNumber: "", logoUrl: "" });
@@ -21,6 +25,44 @@ export default function SettingsPage() {
   const [logoPreview, setLogoPreview] = useState<string>("");
   const [hasChanges, setHasChanges] = useState(false);
   const [originalForm, setOriginalForm] = useState({ name: "", address: "", email: "", phone: "", vatNumber: "", logoUrl: "" });
+  const [totpSetup, setTotpSetup] = useState<{ qrDataUrl: string; secret: string } | null>(null);
+  const [totpCode, setTotpCode] = useState("");
+  const [locale, setLocale] = useState<"en" | "fr" | "de">("en");
+
+  const setupTotp = trpc.auth.setupTotp.useMutation({
+    onSuccess: (data) => setTotpSetup({ qrDataUrl: data.qrDataUrl, secret: data.secret }),
+    onError: (e) => toast.error(e.message),
+  });
+  const enableTotp = trpc.auth.enableTotp.useMutation({
+    onSuccess: async () => {
+      toast.success(t("twoFactor.enabled"));
+      setTotpSetup(null);
+      setTotpCode("");
+      await refresh();
+    },
+    onError: (e) => toast.error(e.message),
+  });
+  const disableTotp = trpc.auth.disableTotp.useMutation({
+    onSuccess: async () => {
+      toast.success("2FA disabled");
+      setTotpCode("");
+      await refresh();
+    },
+    onError: (e) => toast.error(e.message),
+  });
+  const setLocaleMutation = trpc.auth.setLocale.useMutation({
+    onSuccess: (r) => {
+      setAppLocale(r.locale);
+      toast.success("Language updated");
+    },
+    onError: (e) => toast.error(e.message),
+  });
+
+  useEffect(() => {
+    if (user?.preferredLocale === "fr" || user?.preferredLocale === "de" || user?.preferredLocale === "en") {
+      setLocale(user.preferredLocale);
+    }
+  }, [user?.preferredLocale]);
 
   const getFieldDirty = (field: string) => {
     return originalForm[field as keyof typeof originalForm] !== firmForm[field as keyof typeof firmForm];
@@ -109,9 +151,11 @@ export default function SettingsPage() {
     <LexLayout title="Settings" breadcrumb={[{ label: "Settings" }]}>
       <div className="p-6 max-w-3xl mx-auto">
         <Tabs defaultValue="firm">
-          <TabsList className="bg-muted mb-6">
+          <TabsList className="bg-muted mb-6 flex flex-wrap h-auto">
             <TabsTrigger value="firm"><Building2 className="w-4 h-4 mr-1.5" />Firm</TabsTrigger>
             <TabsTrigger value="team"><Users className="w-4 h-4 mr-1.5" />Team</TabsTrigger>
+            <TabsTrigger value="security"><Shield className="w-4 h-4 mr-1.5" />Security</TabsTrigger>
+            <TabsTrigger value="language"><Languages className="w-4 h-4 mr-1.5" />{t("common.language")}</TabsTrigger>
           </TabsList>
 
           <TabsContent value="firm">
@@ -148,6 +192,79 @@ export default function SettingsPage() {
               <Button className={`${hasChanges ? 'bg-blue-600 hover:bg-blue-700' : 'bg-[var(--color-navy)] hover:bg-[var(--color-navy-light)]'} text-white`} disabled={updateFirm.isPending || !hasChanges}
                 onClick={() => updateFirm.mutate({ name: firmForm.name, address: firmForm.address, email: firmForm.email || null, phone: firmForm.phone, vatNumber: firmForm.vatNumber || null, logoUrl: firmForm.logoUrl || null })}>
                 {updateFirm.isPending ? "Saving…" : hasChanges ? "Save unsaved changes" : "No changes"}
+              </Button>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="security">
+            <div className="bg-card border border-border rounded-xl p-6 space-y-4">
+              <h3 className="font-semibold text-foreground">{t("twoFactor.title")}</h3>
+              <p className="text-sm text-muted-foreground">
+                Optional authenticator-app 2FA after Manus login.
+              </p>
+              {user?.totpEnabled ? (
+                <div className="space-y-3">
+                  <p className="text-sm text-green-700">{t("twoFactor.enabled")}</p>
+                  <Input
+                    placeholder="Authenticator code"
+                    value={totpCode}
+                    onChange={(e) => setTotpCode(e.target.value)}
+                  />
+                  <Button
+                    variant="outline"
+                    disabled={totpCode.length < 6 || disableTotp.isPending}
+                    onClick={() => disableTotp.mutate({ code: totpCode })}
+                  >
+                    {t("twoFactor.disable")}
+                  </Button>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {!totpSetup ? (
+                    <Button onClick={() => setupTotp.mutate()} disabled={setupTotp.isPending}>
+                      {t("twoFactor.enable")}
+                    </Button>
+                  ) : (
+                    <>
+                      <p className="text-sm text-muted-foreground">{t("twoFactor.setup")}</p>
+                      <img src={totpSetup.qrDataUrl} alt="2FA QR" className="w-48 h-48 border rounded" />
+                      <p className="text-xs font-mono break-all text-muted-foreground">{totpSetup.secret}</p>
+                      <Input
+                        placeholder="Authenticator code"
+                        value={totpCode}
+                        onChange={(e) => setTotpCode(e.target.value)}
+                      />
+                      <Button
+                        disabled={totpCode.length < 6 || enableTotp.isPending}
+                        onClick={() => enableTotp.mutate({ code: totpCode })}
+                      >
+                        {t("twoFactor.verify")}
+                      </Button>
+                    </>
+                  )}
+                </div>
+              )}
+            </div>
+          </TabsContent>
+
+          <TabsContent value="language">
+            <div className="bg-card border border-border rounded-xl p-6 space-y-4">
+              <h3 className="font-semibold text-foreground">{t("common.language")}</h3>
+              <Select value={locale} onValueChange={(v: "en" | "fr" | "de") => setLocale(v)}>
+                <SelectTrigger className="max-w-xs">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="en">English</SelectItem>
+                  <SelectItem value="fr">Français</SelectItem>
+                  <SelectItem value="de">Deutsch</SelectItem>
+                </SelectContent>
+              </Select>
+              <Button
+                onClick={() => setLocaleMutation.mutate({ locale })}
+                disabled={setLocaleMutation.isPending}
+              >
+                {t("common.save")}
               </Button>
             </div>
           </TabsContent>

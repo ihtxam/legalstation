@@ -17,6 +17,10 @@ export const users = mysqlTable("users", {
   email: varchar("email", { length: 320 }),
   loginMethod: varchar("loginMethod", { length: 64 }),
   role: mysqlEnum("role", ["user", "admin", "superadmin"]).default("user").notNull(),
+  /** Optional TOTP 2FA (base32 secret); enabled via totpEnabled */
+  totpSecret: varchar("totpSecret", { length: 128 }),
+  totpEnabled: boolean("totpEnabled").notNull().default(false),
+  preferredLocale: varchar("preferredLocale", { length: 5 }).default("en"),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
   lastSignedIn: timestamp("lastSignedIn").defaultNow().notNull(),

@@ -7,8 +7,10 @@ import {
   getMessagesByCase,
   getUnreadMessageCount,
   markMessageRead,
+  getClientByUserId,
 } from "../db";
 import { protectedProcedure, router } from "../_core/trpc";
+import { getCaseNotificationRecipients } from "../caseNotifications";
 
 export const messagesRouter = router({
   list: protectedProcedure
@@ -25,27 +27,40 @@ export const messagesRouter = router({
     }))
     .mutation(async ({ ctx, input }) => {
       const member = await getFirmMemberByUserId(ctx.user.id);
-      if (!member) throw new TRPCError({ code: "UNAUTHORIZED" });
+      const client = member ? null : await getClientByUserId(ctx.user.id);
+      if (!member && !client) throw new TRPCError({ code: "UNAUTHORIZED" });
+
+      const firmId = member?.firmId ?? client!.firmId;
       await createMessage({
         caseId: input.caseId,
-        firmId: member.firmId,
+        firmId,
         senderUserId: ctx.user.id,
         content: input.content,
         parentMessageId: input.parentMessageId,
       });
-      
-      // Send notification email (fire-and-forget)
-      sendMessageNotificationEmail(
-        "case-participants@lexflow.ch", // TODO: Get actual recipient emails from case assignments
-        ctx.user.name || "Your colleague",
-        `Case ${input.caseId}`,
-        input.content.substring(0, 100),
-        `${ctx.req.headers.origin}/cases/${input.caseId}`
-      ).catch(err => {
-        console.error("[Email] Failed to send message notification:", err.message);
-      });
-      
-      return { success: true };
+
+      const { caseTitle, recipients } = await getCaseNotificationRecipients(
+        input.caseId,
+        ctx.user.id
+      );
+      const origin = String(ctx.req.headers.origin || "");
+      const caseUrl = `${origin}/cases/${input.caseId}`;
+      const preview = input.content.substring(0, 100);
+      const senderName = ctx.user.name || "A colleague";
+
+      await Promise.allSettled(
+        recipients.map((r) =>
+          sendMessageNotificationEmail(
+            r.email,
+            senderName,
+            caseTitle,
+            preview,
+            caseUrl
+          )
+        )
+      );
+
+      return { success: true, notified: recipients.length };
     }),
 
   markRead: protectedProcedure
