@@ -1,0 +1,54 @@
+name: Deploy to Hetzner
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths-ignore:
+      - "**.md"
+      - "todo.md"
+      - "template.json"
+
+concurrency:
+  group: hetzner-production
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    name: SSH deploy
+    runs-on: ubuntu-latest
+    if: ${{ secrets.HETZNER_HOST != '' }}
+    steps:
+      - name: Deploy over SSH
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.HETZNER_HOST }}
+          username: ${{ secrets.HETZNER_USER }}
+          key: ${{ secrets.HETZNER_SSH_KEY }}
+          port: ${{ secrets.HETZNER_PORT }}
+          script_stop: true
+          script: |
+            set -euo pipefail
+            APP_DIR="${{ secrets.HETZNER_APP_DIR }}"
+            APP_DIR="${APP_DIR:-/opt/lexflow}"
+            cd "$APP_DIR"
+            git fetch origin main
+            git checkout main
+            git pull --ff-only origin main
+            bash deploy/hetzner-deploy.sh
+
+  smoke-build:
+    name: Cloud smoke (build image)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      - name: Build app image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: false
+          tags: lexflow:ci
+          build-args: |
+            VITE_APP_ID=lexflow

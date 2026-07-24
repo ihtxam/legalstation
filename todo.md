@@ -91,7 +91,12 @@
 - [x] Test case assignment workflow end-to-end
 
 ## Deployment & Data Protection (Phase 11)
-- [ ] Deployment mode support: DEPLOYMENT_MODE env flag (saas | on_premise)
+- [x] Deployment mode support: DEPLOYMENT_MODE env flag (saas | on_premise)
+- [x] Docker Compose stack for cloud testing (MySQL + MinIO + app)
+- [x] Hetzner production overlay (Caddy TLS) + bootstrap/deploy scripts
+- [x] GitHub Actions deploy workflow (SSH secrets)
+- [x] Storage backends: forge | s3 | local
+- [x] /api/health + ENABLE_DEV_LOGIN for smoke tests
 - [ ] Single-tenant mode for on-prem deployments
 - [ ] License module for on-prem (offline validation, grace period)
 - [ ] Encryption at rest configuration (Postgres TDE, S3 SSE)

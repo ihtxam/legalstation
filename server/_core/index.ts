@@ -13,7 +13,8 @@ import { storagePut } from "../storage";
 import { getStripe } from "../stripe";
 import { getDb } from "../db";
 import { invoices } from "../../drizzle/schema";
-import { eq, and } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
+import { ENV } from "./env";
 
 function isPortAvailable(port: number): Promise<boolean> {
   return new Promise(resolve => {
@@ -57,6 +58,28 @@ async function startServer() {
 
   registerStorageProxy(app);
   registerOAuthRoutes(app);
+
+  app.get("/api/health", async (_req, res) => {
+    let database: "ok" | "unavailable" = "unavailable";
+    try {
+      const db = await getDb();
+      if (db) {
+        await db.execute(sql`SELECT 1`);
+        database = "ok";
+      }
+    } catch {
+      database = "unavailable";
+    }
+    const status = database === "ok" ? 200 : 503;
+    res.status(status).json({
+      ok: database === "ok",
+      service: "lexflow",
+      deploymentMode: ENV.deploymentMode,
+      storageBackend: ENV.storageBackend,
+      database,
+      time: new Date().toISOString(),
+    });
+  });
 
   // Stripe webhook — must be raw body BEFORE json middleware
   app.post("/api/stripe/webhook", express.raw({ type: "application/json" }), async (req: any, res: any) => {
