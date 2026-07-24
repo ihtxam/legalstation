@@ -4,6 +4,7 @@ import { z } from "zod";
 import { sendFirmInviteEmail, sendClientInviteEmail } from "../email";
 import {
   acceptInvitation,
+  countFirms,
   createFirm,
   createFirmMember,
   createInvitation,
@@ -16,6 +17,8 @@ import {
   updateFirm,
 } from "../db";
 import { protectedProcedure, router } from "../_core/trpc";
+import { isSingleTenant } from "../deployment";
+import { evaluateLicense } from "../license";
 
 export const firmRouter = router({
   // Get current user's firm context
@@ -52,6 +55,24 @@ export const firmRouter = router({
     .mutation(async ({ ctx, input }) => {
       const existing = await getFirmMemberByUserId(ctx.user.id);
       if (existing) throw new TRPCError({ code: "CONFLICT", message: "Already a member of a firm" });
+
+      if (isSingleTenant()) {
+        const firmCount = await countFirms();
+        if (firmCount > 0) {
+          throw new TRPCError({
+            code: "FORBIDDEN",
+            message: "Single-tenant / on-premise mode allows only one firm workspace",
+          });
+        }
+        const license = evaluateLicense();
+        if (!license.valid) {
+          throw new TRPCError({
+            code: "FORBIDDEN",
+            message: `License invalid: ${license.reason ?? "unknown"}`,
+          });
+        }
+      }
+
       const slug = input.name.toLowerCase().replace(/[^a-z0-9]/g, "-").replace(/-+/g, "-").slice(0, 80) + "-" + nanoid(6);
       await createFirm({ name: input.name, slug, address: input.address, phone: input.phone, email: input.email, website: input.website, vatNumber: input.vatNumber });
       const firm = await getFirmBySlug(slug);

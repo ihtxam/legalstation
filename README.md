@@ -76,12 +76,15 @@ shared/     Shared types/constants
 drizzle/    MySQL schema + migrations
 ```
 
+## Deployment modes
+
+| Mode | Env | Behavior |
+|------|-----|----------|
+| SaaS (default) | `DEPLOYMENT_MODE=saas` | Multi-tenant firms |
+| On-premise | `DEPLOYMENT_MODE=on_premise` | Single-tenant + offline `LICENSE_KEY` (grace period supported) |
+
+See `docs/` for DPA, TOMs, residency certificate, backup policy, pentest checklist, and sales sheet.
+
 ## What’s next
 
-Open items live in [`todo.md`](todo.md). Highest-value remaining work:
-
-1. Server-side invoice PDF with firm letterhead
-2. Auto-generate scheduled invoices from payment plans
-3. Time entry → invoice integration + submission workflow
-4. Deployment modes (`saas` / `on_premise`) and Swiss DPA / TOMs docs
-5. Broader document-analysis testing (PDF / Word / text)
+Track remaining work in [`todo.md`](todo.md).

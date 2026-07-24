@@ -17,9 +17,11 @@ import { settingsRouter } from "./routers/settings";
 import { adyenRouter } from "./routers/adyen";
 import { documentAnalysisRouter } from "./routers/documentAnalysis";
 import { timeEntriesRouter } from "./routers/timeEntries";
+import { deploymentRouter } from "./routers/deployment";
 
 export const appRouter = router({
   system: systemRouter,
+  deployment: deploymentRouter,
   auth: router({
     me: publicProcedure.query(opts => opts.ctx.user),
     logout: publicProcedure.mutation(({ ctx }) => {

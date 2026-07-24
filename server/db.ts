@@ -150,6 +150,43 @@ export async function getFirmById(id: number) {
   return result[0];
 }
 
+export async function countFirms(): Promise<number> {
+  const db = await getDb();
+  if (!db) return 0;
+  const result = await db.select({ count: sql<number>`COUNT(*)` }).from(firms);
+  return Number(result[0]?.count ?? 0);
+}
+
+export async function exportDocumentAuditLog(opts: {
+  firmId: number;
+  from?: Date;
+  to?: Date;
+  limit?: number;
+}) {
+  const db = await getDb();
+  if (!db) return [];
+  const conditions = [eq(documents.firmId, opts.firmId)];
+  if (opts.from) conditions.push(gte(documentAuditLog.createdAt, opts.from));
+  if (opts.to) conditions.push(lte(documentAuditLog.createdAt, opts.to));
+  return db
+    .select({
+      id: documentAuditLog.id,
+      documentId: documentAuditLog.documentId,
+      userId: documentAuditLog.userId,
+      action: documentAuditLog.action,
+      ipAddress: documentAuditLog.ipAddress,
+      userAgent: documentAuditLog.userAgent,
+      createdAt: documentAuditLog.createdAt,
+      documentName: documents.name,
+      caseId: documents.caseId,
+    })
+    .from(documentAuditLog)
+    .innerJoin(documents, eq(documentAuditLog.documentId, documents.id))
+    .where(and(...conditions))
+    .orderBy(desc(documentAuditLog.createdAt))
+    .limit(opts.limit ?? 1000);
+}
+
 export async function updateFirm(id: number, data: Partial<InsertFirm>) {
   const db = await getDb();
   if (!db) throw new Error("DB unavailable");

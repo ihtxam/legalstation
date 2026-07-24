@@ -91,18 +91,18 @@
 - [x] Test case assignment workflow end-to-end
 
 ## Deployment & Data Protection (Phase 11)
-- [ ] Deployment mode support: DEPLOYMENT_MODE env flag (saas | on_premise)
-- [ ] Single-tenant mode for on-prem deployments
-- [ ] License module for on-prem (offline validation, grace period)
-- [ ] Encryption at rest configuration (Postgres TDE, S3 SSE)
-- [ ] Per-tenant data encryption keys (DEK/KEK)
-- [ ] Audit log export for SIEM integration
-- [ ] Swiss DPA template (FR/DE bilingual)
-- [ ] Technical & organizational measures (TOMs) documentation
-- [ ] Data residency certificate template
-- [ ] Backup encryption + offsite policy
-- [ ] Penetration test readiness checklist
-- [ ] Sales sheet for Swiss law firms
+- [x] Deployment mode support: DEPLOYMENT_MODE env flag (saas | on_premise)
+- [x] Single-tenant mode for on-prem deployments
+- [x] License module for on-prem (offline validation, grace period)
+- [x] Encryption at rest configuration (MySQL/MariaDB TDE flags, S3 SSE)
+- [x] Per-tenant data encryption keys (DEK/KEK)
+- [x] Audit log export for SIEM integration
+- [x] Swiss DPA template (FR/DE bilingual)
+- [x] Technical & organizational measures (TOMs) documentation
+- [x] Data residency certificate template
+- [x] Backup encryption + offsite policy
+- [x] Penetration test readiness checklist
+- [x] Sales sheet for Swiss law firms
 
 
 ## Phase 4: SaaS Multi-Tenant & Superadmin

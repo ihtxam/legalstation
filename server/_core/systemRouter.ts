@@ -1,6 +1,8 @@
 import { z } from "zod";
 import { notifyOwner } from "./notification";
 import { adminProcedure, publicProcedure, router } from "./trpc";
+import { deploymentPublicInfo } from "../deployment";
+import { evaluateLicense } from "../license";
 
 export const systemRouter = router({
   health: publicProcedure
@@ -11,6 +13,8 @@ export const systemRouter = router({
     )
     .query(() => ({
       ok: true,
+      deployment: deploymentPublicInfo(),
+      license: evaluateLicense(),
     })),
 
   notifyOwner: adminProcedure
