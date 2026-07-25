@@ -1,0 +1,41 @@
+services:
+  mysql:
+    image: mysql:8.0
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root}
+      MYSQL_DATABASE: lexflow
+      MYSQL_USER: lexflow
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-lexflow}
+    volumes:
+      - lexflow_prod_mysql:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-uroot", "-p${MYSQL_ROOT_PASSWORD:-root}"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+
+  app:
+    build: .
+    restart: unless-stopped
+    ports:
+      - "${PORT:-3000}:3000"
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      DATABASE_URL: mysql://lexflow:${MYSQL_PASSWORD:-lexflow}@mysql:3306/lexflow
+      JWT_SECRET: ${JWT_SECRET:?set JWT_SECRET}
+      DEPLOYMENT_MODE: ${DEPLOYMENT_MODE:-saas}
+      VITE_APP_ID: ${VITE_APP_ID:-}
+      VITE_OAUTH_PORTAL_URL: ${VITE_OAUTH_PORTAL_URL:-}
+      OAUTH_SERVER_URL: ${OAUTH_SERVER_URL:-}
+      BREVO_API_KEY: ${BREVO_API_KEY:-}
+      DEMO_AUTH_ENABLED: ${DEMO_AUTH_ENABLED:-false}
+      DEMO_AUTH_ALLOW_PRODUCTION: ${DEMO_AUTH_ALLOW_PRODUCTION:-false}
+      RUN_DB_MIGRATE: "false"
+    depends_on:
+      mysql:
+        condition: service_healthy
+
+volumes:
+  lexflow_prod_mysql:

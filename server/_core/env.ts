@@ -14,6 +14,10 @@ export const ENV = {
   forgeApiKey: process.env.BUILT_IN_FORGE_API_KEY ?? "",
   brevoApiKey: process.env.BREVO_API_KEY ?? "",
 
+  /** Passwordless demo login + seed (dev/demo hosts only by default) */
+  demoAuthEnabled: boolEnv(process.env.DEMO_AUTH_ENABLED),
+  demoAuthAllowProduction: boolEnv(process.env.DEMO_AUTH_ALLOW_PRODUCTION),
+
   /** saas | on_premise */
   deploymentMode: process.env.DEPLOYMENT_MODE ?? "saas",
   /** Force single-tenant even in saas (rare) */

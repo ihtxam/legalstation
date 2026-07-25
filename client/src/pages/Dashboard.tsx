@@ -2,61 +2,56 @@ import { useAuth } from "@/_core/hooks/useAuth";
 import { startLogin } from "@/const";
 import { trpc } from "@/lib/trpc";
 import LexLayout from "@/components/LexLayout";
-import { StatusBadge } from "@/components/StatusBadge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
-import { Briefcase, Receipt, TrendingUp, Clock, AlertTriangle, ArrowRight, Calendar, Crown } from "lucide-react";
+import { Briefcase, Receipt, Clock, AlertTriangle, ArrowRight, Crown } from "lucide-react";
 import { useEffect } from "react";
 import { useLocation } from "wouter";
-import { CASE_TYPE_LABELS } from "@shared/types";
-import { format } from "date-fns";
 import { PaymentInstallmentTimeline } from "@/components/PaymentInstallmentTimeline";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
 
 function formatCHF(amount: number) {
   return new Intl.NumberFormat("de-CH", { style: "currency", currency: "CHF" }).format(amount);
 }
 
 function LawyerDashboard() {
+  const { t } = useTranslation();
   const { data: stats, isLoading } = trpc.dashboard.lawyerStats.useQuery();
-  const { data: activity, isLoading: activityLoading } = trpc.dashboard.recentActivity.useQuery();
   const { user } = useAuth();
   const [, navigate] = useLocation();
 
-  // Setup superadmin mutation
   const setupSuperadminMutation = trpc.superadmin.setupSuperadmin.useMutation({
     onSuccess: () => {
-      toast.success("You have been promoted to superadmin!");
+      toast.success(t("dashboard.promoted"));
       setTimeout(() => navigate("/superadmin"), 1000);
     },
     onError: (err) => {
-      toast.error(err.message || "Failed to setup superadmin");
+      toast.error(err.message || t("dashboard.setupFailed"));
     },
   });
 
-  // Check if user is admin but not superadmin (eligible for setup)
   const canSetupSuperadmin = user?.role === "admin";
 
   const statCards = [
-    { label: "Open Cases", value: stats?.openCases ?? 0, icon: Briefcase, color: "text-blue-600", bg: "bg-blue-50" },
-    { label: "Pending Cases", value: stats?.pendingCases ?? 0, icon: Clock, color: "text-amber-600", bg: "bg-amber-50" },
-    { label: "Pending Invoices", value: stats?.pendingInvoices ?? 0, icon: Receipt, color: "text-purple-600", bg: "bg-purple-50" },
-    { label: "Overdue Invoices", value: stats?.overdueInvoices ?? 0, icon: AlertTriangle, color: "text-red-600", bg: "bg-red-50" },
+    { label: t("dashboard.openCases"), value: stats?.openCases ?? 0, icon: Briefcase, color: "text-blue-600", bg: "bg-blue-50" },
+    { label: t("dashboard.pendingCases"), value: stats?.pendingCases ?? 0, icon: Clock, color: "text-amber-600", bg: "bg-amber-50" },
+    { label: t("dashboard.pendingInvoices"), value: stats?.pendingInvoices ?? 0, icon: Receipt, color: "text-purple-600", bg: "bg-purple-50" },
+    { label: t("dashboard.overdueInvoices"), value: stats?.overdueInvoices ?? 0, icon: AlertTriangle, color: "text-red-600", bg: "bg-red-50" },
   ];
 
   return (
     <div className="p-6 space-y-6 max-w-6xl mx-auto">
-      {/* Setup Superadmin Card */}
       {canSetupSuperadmin && (
         <Card className="border-amber-200 bg-amber-50">
           <CardContent className="p-5">
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between gap-4 flex-wrap">
               <div className="flex items-center gap-3">
                 <Crown className="h-5 w-5 text-amber-600" />
                 <div>
-                  <p className="font-semibold text-amber-900">Become a Superadmin</p>
-                  <p className="text-sm text-amber-800">Manage all firms, subscriptions, and platform settings</p>
+                  <p className="font-semibold text-amber-900">{t("dashboard.becomeSuperadmin")}</p>
+                  <p className="text-sm text-amber-800">{t("dashboard.becomeSuperadminDesc")}</p>
                 </div>
               </div>
               <Button
@@ -64,14 +59,13 @@ function LawyerDashboard() {
                 disabled={setupSuperadminMutation.isPending}
                 className="bg-amber-600 hover:bg-amber-700"
               >
-                {setupSuperadminMutation.isPending ? "Setting up..." : "Activate"}
+                {setupSuperadminMutation.isPending ? t("dashboard.settingUp") : t("dashboard.activate")}
               </Button>
             </div>
           </CardContent>
         </Card>
       )}
 
-      {/* Stat cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {statCards.map(({ label, value, icon: Icon, color, bg }) => (
           <Card key={label} className="border-border shadow-none">
@@ -89,19 +83,16 @@ function LawyerDashboard() {
           </Card>
         ))}
       </div>
-
-      {/* Recent Activity - TODO: fix date formatting issue */}
     </div>
   );
 }
 
 function ClientDashboard() {
+  const { t } = useTranslation();
   const { data: stats, isLoading } = trpc.dashboard.clientStats.useQuery();
   const { data: invoices } = trpc.invoices.list.useQuery();
   const [, navigate] = useLocation();
 
-  // Get payment plans for first outstanding invoice
-  // Note: invoices list returns different structures for firm members vs clients
   const outstandingInvoices = invoices?.filter(inv => {
     const inv_obj = (inv as any).invoice || inv;
     return inv_obj.status !== "paid";
@@ -120,10 +111,10 @@ function ClientDashboard() {
     <div className="p-6 space-y-6 max-w-4xl mx-auto">
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {[
-          { label: "My Cases", value: stats?.totalCases ?? 0, icon: Briefcase, color: "text-blue-600", bg: "bg-blue-50", href: "/cases" },
-          { label: "Open Cases", value: stats?.openCases ?? 0, icon: Clock, color: "text-amber-600", bg: "bg-amber-50", href: "/cases" },
-          { label: "Unread Messages", value: stats?.unreadMessages ?? 0, icon: Receipt, color: "text-purple-600", bg: "bg-purple-50", href: "/messages" },
-          { label: "Outstanding Bills", value: stats?.pendingInvoices ?? 0, icon: AlertTriangle, color: "text-red-600", bg: "bg-red-50", href: "/invoices" },
+          { label: t("dashboard.myCases"), value: stats?.totalCases ?? 0, icon: Briefcase, color: "text-blue-600", bg: "bg-blue-50", href: "/cases" },
+          { label: t("dashboard.openCases"), value: stats?.openCases ?? 0, icon: Clock, color: "text-amber-600", bg: "bg-amber-50", href: "/cases" },
+          { label: t("dashboard.unreadMessages"), value: stats?.unreadMessages ?? 0, icon: Receipt, color: "text-purple-600", bg: "bg-purple-50", href: "/messages" },
+          { label: t("dashboard.outstandingBills"), value: stats?.pendingInvoices ?? 0, icon: AlertTriangle, color: "text-red-600", bg: "bg-red-50", href: "/invoices" },
         ].map(({ label, value, icon: Icon, color, bg, href }) => (
           <Card key={label} className="border-border shadow-none cursor-pointer hover:shadow-sm transition-shadow" onClick={() => navigate(href)}>
             <CardContent className="p-5">
@@ -142,19 +133,18 @@ function ClientDashboard() {
       </div>
       {stats?.outstandingBalance !== undefined && stats.outstandingBalance > 0 && (
         <Card className="border-amber-200 bg-amber-50 shadow-none">
-          <CardContent className="p-5 flex items-center justify-between">
+          <CardContent className="p-5 flex items-center justify-between gap-4 flex-wrap">
             <div>
-              <p className="font-semibold text-amber-800">Outstanding Balance</p>
+              <p className="font-semibold text-amber-800">{t("dashboard.outstandingBalance")}</p>
               <p className="text-amber-700 text-2xl font-bold font-serif mt-1">{formatCHF(stats.outstandingBalance)}</p>
             </div>
             <Button className="bg-amber-700 hover:bg-amber-800 text-white" onClick={() => navigate("/invoices")}>
-              View invoices <ArrowRight className="w-4 h-4 ml-1.5" />
+              {t("dashboard.viewInvoices")} <ArrowRight className="w-4 h-4 ml-1.5" />
             </Button>
           </CardContent>
         </Card>
       )}
 
-      {/* Payment Plan Timeline for first outstanding invoice */}
       {outstandingInvoices.length > 0 && !paymentPlansQuery.isLoading && paymentPlansQuery.data && paymentPlansQuery.data.length > 0 && (
         <div className="mt-6">
           {paymentPlansQuery.data.map((plan: any) => {
@@ -185,6 +175,7 @@ function ClientDashboard() {
 }
 
 export default function Dashboard() {
+  const { t } = useTranslation();
   const { isAuthenticated, loading } = useAuth();
   const [, navigate] = useLocation();
   const { data: firmData, isLoading: firmLoading } = trpc.firm.myFirm.useQuery(undefined, { enabled: isAuthenticated });
@@ -197,15 +188,14 @@ export default function Dashboard() {
     if (!loading && !firmLoading && isAuthenticated && firmData === null) {
       navigate("/onboarding");
     }
-  }, [firmData, firmLoading, loading, isAuthenticated]);
+  }, [firmData, firmLoading, loading, isAuthenticated, navigate]);
 
-  // Don't render any dashboard until we know the user's status
   if (loading || firmLoading || !isAuthenticated) return null;
 
   const isFirmMember = firmData !== null && firmData !== undefined;
 
   return (
-    <LexLayout title="Dashboard">
+    <LexLayout title={t("dashboard.title")}>
       {isFirmMember ? <LawyerDashboard /> : <ClientDashboard />}
     </LexLayout>
   );

@@ -11,6 +11,8 @@
     "check": "tsc --noEmit",
     "format": "prettier --write .",
     "test": "vitest run",
+    "test:smoke": "vitest run server/smoke.e2e.test.ts server/demoAuth.test.ts",
+    "seed:demo": "tsx scripts/seed-demo.ts",
     "db:up": "docker compose up -d mysql",
     "db:down": "docker compose down",
     "db:push": "drizzle-kit generate && drizzle-kit migrate"

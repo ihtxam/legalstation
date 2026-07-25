@@ -60,6 +60,9 @@ async function startServer() {
   registerStorageProxy(app);
   registerOAuthRoutes(app);
 
+  const { registerDemoAuthRoutes } = await import("../demo/demoAuth");
+  registerDemoAuthRoutes(app);
+
   // Scheduled jobs (heartbeat / cron). Path convention: /api/scheduled/*
   app.post("/api/scheduled/payment-plan-invoices", async (req, res) => {
     try {
