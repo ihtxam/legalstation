@@ -90,14 +90,7 @@ export function registerDemoAuthRoutes(app: Express) {
         expiresInMs: ONE_YEAR_MS,
       });
 
-      const base = getSessionCookieOptions(req);
-      // Browsers reject SameSite=None without Secure; use Lax on plain HTTP.
-      const cookieOptions = {
-        ...base,
-        sameSite: base.secure ? ("none" as const) : ("lax" as const),
-        secure: Boolean(base.secure),
-      };
-
+      const cookieOptions = getSessionCookieOptions(req);
       res.cookie(COOKIE_NAME, sessionToken, { ...cookieOptions, maxAge: ONE_YEAR_MS });
       return res.json({
         ok: true,

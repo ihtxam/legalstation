@@ -1,3 +1,4 @@
+import { ensureRandomUUID } from "@/lib/randomId";
 import { trpc } from "@/lib/trpc";
 import { COOKIE_NAME, UNAUTHED_ERR_MSG } from '@shared/const';
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -8,6 +9,9 @@ import App from "./App";
 import { startLogin } from "./const";
 import "./index.css";
 import "./i18n";
+
+// HTTP (non-localhost) hosts lack crypto.randomUUID in some browsers.
+ensureRandomUUID();
 
 const queryClient = new QueryClient();
 
