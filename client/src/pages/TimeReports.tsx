@@ -570,7 +570,9 @@ export default function TimeReportsPage() {
                             : "—"}
                         </TableCell>
                         <TableCell>
-                          <Badge variant={statusBadgeVariant(entry.status)}>{entry.status}</Badge>
+                          <Badge variant={statusBadgeVariant(entry.status)}>
+                            {t(`common.${entry.status}`, { defaultValue: entry.status })}
+                          </Badge>
                         </TableCell>
                         <TableCell>
                           {entry.status !== "billed" && (
@@ -656,7 +658,9 @@ export default function TimeReportsPage() {
                               )}
                             </TableCell>
                             <TableCell>
-                              <Badge variant={statusBadgeVariant(entry.status)}>{entry.status}</Badge>
+                              <Badge variant={statusBadgeVariant(entry.status)}>
+                                {t(`common.${entry.status}`, { defaultValue: entry.status })}
+                              </Badge>
                             </TableCell>
                           </TableRow>
                         ))}
