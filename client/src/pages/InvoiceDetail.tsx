@@ -18,6 +18,7 @@ import { Separator } from "@/components/ui/separator";
 import { Plus, Trash2, FileText, Send, CheckCircle, Download, CreditCard, CheckCircle2 } from "lucide-react";
 import PaymentPlanScheduler from "@/pages/PaymentPlanScheduler";
 import { PaymentInstallmentTimeline } from "@/components/PaymentInstallmentTimeline";
+import { useTranslation } from "react-i18next";
 
 function formatCHF(amount: string | number) {
   return new Intl.NumberFormat("de-CH", { style: "currency", currency: "CHF" }).format(Number(amount));
@@ -31,10 +32,11 @@ interface LineItem {
 }
 
 function StripePayButton({ invoiceId }: { invoiceId: number }) {
+  const { t } = useTranslation();
   const createSession = trpc.stripe.createCheckoutSession.useMutation({
     onSuccess: (data) => {
       if (data.url) {
-        toast.success("Redirecting to secure payment…");
+        toast.success(t("invoiceDetail.payNow"));
         window.open(data.url, "_blank");
       }
     },
@@ -43,19 +45,20 @@ function StripePayButton({ invoiceId }: { invoiceId: number }) {
   return (
     <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 flex items-center justify-between gap-4">
       <div>
-        <p className="font-medium text-blue-900 text-sm">Pay online with card</p>
+        <p className="font-medium text-blue-900 text-sm">{t("invoiceDetail.payNow")}</p>
         <p className="text-xs text-blue-700 mt-0.5">Secure payment via Stripe. Accepted: Visa, Mastercard, Amex.</p>
       </div>
       <Button className="bg-blue-600 hover:bg-blue-700 text-white shrink-0" disabled={createSession.isPending}
         onClick={() => createSession.mutate({ invoiceId })}>
         <CreditCard className="w-4 h-4 mr-1.5" />
-        {createSession.isPending ? "Preparing…" : "Pay now"}
+        {createSession.isPending ? t("common.loading") : t("invoiceDetail.payNow")}
       </Button>
     </div>
   );
 }
 
 function NewInvoiceForm() {
+  const { t } = useTranslation();
   const [, navigate] = useLocation();
   const { data: clients } = trpc.clients.list.useQuery();
   const { data: cases } = trpc.cases.list.useQuery();
@@ -68,7 +71,7 @@ function NewInvoiceForm() {
   const [showPreview, setShowPreview] = useState(false);
 
   const createInvoice = trpc.invoices.create.useMutation({
-    onSuccess: (inv) => { toast.success("Invoice created"); navigate(`/invoices/${inv?.id}`); },
+    onSuccess: (inv) => { toast.success(t("invoiceDetail.created")); navigate(`/invoices/${inv?.id}`); },
     onError: (e) => toast.error(e.message),
   });
 
@@ -82,7 +85,7 @@ function NewInvoiceForm() {
     setItems(prev => prev.map((item, idx) => idx === i ? { ...item, [field]: value } : item));
 
   return (
-    <LexLayout breadcrumb={[{ label: "Billing", href: "/invoices" }, { label: "New Invoice" }]}>
+    <LexLayout breadcrumb={[{ label: t("nav.billing"), href: "/invoices" }, { label: t("invoiceDetail.newInvoice") }]}>
       <div className="p-6 max-w-3xl mx-auto space-y-6">
         <div className="bg-card border border-border rounded-xl p-6 space-y-4">
           <h3 className="font-semibold text-foreground">Invoice Details</h3>
@@ -90,7 +93,7 @@ function NewInvoiceForm() {
             <div>
               <Label>Client <span className="text-destructive">*</span></Label>
               <Select value={clientId?.toString() ?? ""} onValueChange={v => setClientId(parseInt(v))}>
-                <SelectTrigger className="mt-1.5"><SelectValue placeholder="Select client" /></SelectTrigger>
+                <SelectTrigger className="mt-1.5"><SelectValue placeholder={t("invoiceDetail.selectClient")} /></SelectTrigger>
                 <SelectContent>
                   {clients?.map(c => (
                     <SelectItem key={c.id} value={c.id.toString()}>
@@ -103,7 +106,7 @@ function NewInvoiceForm() {
             <div>
               <Label>Case <span className="text-destructive">*</span></Label>
               <Select value={caseId?.toString() ?? ""} onValueChange={v => setCaseId(parseInt(v))}>
-                <SelectTrigger className="mt-1.5"><SelectValue placeholder="Select case" /></SelectTrigger>
+                <SelectTrigger className="mt-1.5"><SelectValue placeholder={t("invoiceDetail.optionalCase")} /></SelectTrigger>
                 <SelectContent>
                   {cases?.map(c => (
                     <SelectItem key={c.id} value={c.id.toString()}>
@@ -114,11 +117,11 @@ function NewInvoiceForm() {
               </Select>
             </div>
             <div>
-              <Label>Due Date</Label>
+              <Label>{t("invoiceDetail.dueDate")}</Label>
               <Input type="date" value={dueDate} onChange={e => setDueDate(e.target.value)} className="mt-1.5" />
             </div>
             <div>
-              <Label>VAT Rate (%)</Label>
+              <Label>{t("invoiceDetail.vatRate")}</Label>
               <Select value={vatRate} onValueChange={setVatRate}>
                 <SelectTrigger className="mt-1.5"><SelectValue /></SelectTrigger>
                 <SelectContent>
@@ -295,6 +298,7 @@ function NewInvoiceForm() {
 }
 
 function AdyenPayButton({ invoiceId, existingUrl }: { invoiceId: number; existingUrl?: string | null }) {
+  const { t } = useTranslation();
   const createLink = trpc.adyen.createPaymentLink.useMutation({
     onSuccess: (data) => {
       if (data.paymentUrl) {
@@ -326,6 +330,7 @@ function AdyenPayButton({ invoiceId, existingUrl }: { invoiceId: number; existin
 }
 
 export default function InvoiceDetailPage() {
+  const { t } = useTranslation();
   const [location] = useLocation();
   const isNewInvoice = location === "/invoices/new";
   const id = isNewInvoice ? "new" : location.split("/").pop();
@@ -341,7 +346,7 @@ export default function InvoiceDetailPage() {
   // Only fetch if viewing existing invoice
   const { data: invoiceData, isLoading, refetch } = trpc.invoices.get.useQuery({ id: invoiceId }, { enabled: isAuthenticated && !isNaN(invoiceId) });
   const updateStatus = trpc.invoices.updateStatus.useMutation({
-    onSuccess: () => { refetch(); toast.success("Invoice updated"); },
+    onSuccess: () => { refetch(); toast.success(t("invoiceDetail.updated")); },
     onError: (e) => toast.error(e.message),
   });
   const generatePdf = trpc.invoicePdf.generate.useMutation({
@@ -377,15 +382,15 @@ export default function InvoiceDetailPage() {
       a.click();
       a.remove();
       URL.revokeObjectURL(url);
-      toast.success("PDF downloaded");
+      toast.success(t("invoiceDetail.downloadPdf"));
     } catch {
       // toast handled by mutation onError
     }
   };
 
   if (isNewInvoice) return <NewInvoiceForm />;
-  if (isLoading) return <LexLayout title="Invoice"><div className="p-6"><Skeleton className="h-64 w-full" /></div></LexLayout>;
-  if (!invoiceData) return <LexLayout title="Not Found"><div className="p-6 text-center text-muted-foreground">Invoice not found</div></LexLayout>;
+  if (isLoading) return <LexLayout title={t("invoiceDetail.title")}><div className="p-6"><Skeleton className="h-64 w-full" /></div></LexLayout>;
+  if (!invoiceData) return <LexLayout title={t("common.notFound")}><div className="p-6 text-center text-muted-foreground">{t("invoiceDetail.notFound")}</div></LexLayout>;
 
   const invoice = invoiceData;
   const subtotal = invoice.items?.reduce((s: number, i: any) => s + (i.quantity * (typeof i.unitPrice === 'string' ? parseFloat(i.unitPrice) : i.unitPrice)), 0) ?? 0;
@@ -393,7 +398,7 @@ export default function InvoiceDetailPage() {
   const total = subtotal + vatAmount;
 
   return (
-    <LexLayout breadcrumb={[{ label: "Billing", href: "/invoices" }, { label: `Invoice #${invoice.invoiceNumber}` }]}>
+    <LexLayout breadcrumb={[{ label: t("nav.billing"), href: "/invoices" }, { label: `${t("invoiceDetail.title")} #${invoice.invoiceNumber}` }]}>
       <div className="p-6 max-w-4xl mx-auto space-y-6">
         {/* Header */}
         <div className="bg-card border border-border rounded-xl p-6">
@@ -540,7 +545,7 @@ export default function InvoiceDetailPage() {
             onClick={() => void downloadServerPdf()}
           >
             <Download className="w-4 h-4 mr-1.5" />
-            {generatePdf.isPending ? "Generating…" : "Download PDF"}
+            {generatePdf.isPending ? t("common.loading") : t("invoiceDetail.downloadPdf")}
           </Button>
           {isFirmMember && invoice.status === "draft" && (
             <Button className="bg-[var(--color-navy)] hover:bg-[var(--color-navy-light)] text-white" onClick={() => updateStatus.mutate({ id: invoiceId, status: "sent" })}>

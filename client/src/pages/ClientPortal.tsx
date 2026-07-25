@@ -39,6 +39,7 @@ import {
 import { format } from "date-fns";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
+import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { CASE_TYPE_LABELS } from "@shared/types";
 
 export default function ClientPortalPage() {
@@ -206,13 +207,16 @@ export default function ClientPortalPage() {
               </p>
             </div>
           </div>
-          <Button
-            className="bg-[var(--color-navy)] hover:bg-[var(--color-navy-light)] text-white"
-            onClick={() => setShowLitige(true)}
-          >
-            <Plus className="w-4 h-4 mr-1.5" />
-            {t("portal.announceLitige")}
-          </Button>
+          <div className="flex items-center gap-3 flex-wrap">
+            <LanguageSwitcher />
+            <Button
+              className="bg-[var(--color-navy)] hover:bg-[var(--color-navy-light)] text-white"
+              onClick={() => setShowLitige(true)}
+            >
+              <Plus className="w-4 h-4 mr-1.5" />
+              {t("portal.announceLitige")}
+            </Button>
+          </div>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">

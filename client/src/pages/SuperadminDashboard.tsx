@@ -194,7 +194,7 @@ export default function SuperadminDashboard() {
 
   const createFirmMutation = trpc.superadmin.createFirm.useMutation({
     onSuccess: (data) => {
-      toast.success(data.credentialsSent ? "Firm created — credentials emailed" : "Firm created");
+      toast.success(data.credentialsSent ? t("superadmin.firmCreatedEmailed") : t("superadmin.firmCreated"));
       setLastCreatedCreds({ loginUrl: data.loginUrl, temporaryPassword: data.temporaryPassword });
       setShowCreateFirm(false);
       refetchFirms();
@@ -203,35 +203,35 @@ export default function SuperadminDashboard() {
   });
   const sendCredentialsMutation = trpc.superadmin.sendFirmCredentials.useMutation({
     onSuccess: () => {
-      toast.success("Credentials sent");
+      toast.success(t("superadmin.credentialsSent"));
       refetchFirms();
     },
     onError: (err) => toast.error(err.message),
   });
   const setSubdomainMutation = trpc.superadmin.setSubdomainStatus.useMutation({
     onSuccess: () => {
-      toast.success("Subdomain updated");
+      toast.success(t("superadmin.subdomainUpdated"));
       refetchFirms();
     },
     onError: (err) => toast.error(err.message),
   });
   const suspendFirmMutation = trpc.superadmin.suspendFirm.useMutation({
     onSuccess: () => {
-      toast.success("Firm suspended");
+      toast.success(t("superadmin.firmSuspended"));
       refetchFirms();
     },
     onError: (err) => toast.error(err.message),
   });
   const reactivateFirmMutation = trpc.superadmin.reactivateFirm.useMutation({
     onSuccess: () => {
-      toast.success("Firm reactivated");
+      toast.success(t("superadmin.firmReactivated"));
       refetchFirms();
     },
     onError: (err) => toast.error(err.message),
   });
   const updateFirmMutation = trpc.superadmin.updateFirm.useMutation({
     onSuccess: () => {
-      toast.success("Firm updated");
+      toast.success(t("superadmin.firmUpdated"));
       setShowEditFirm(false);
       refetchFirms();
     },
@@ -239,14 +239,14 @@ export default function SuperadminDashboard() {
   });
   const updateSubMutation = trpc.superadmin.updateFirmSubscription.useMutation({
     onSuccess: () => {
-      toast.success("Subscription updated");
+      toast.success(t("superadmin.subscriptionUpdated"));
       refetchFirms();
     },
     onError: (err) => toast.error(err.message),
   });
   const createPlanMutation = trpc.superadmin.createPlan.useMutation({
     onSuccess: () => {
-      toast.success("Plan created");
+      toast.success(t("superadmin.planCreated"));
       setShowCreatePlan(false);
       refetchPlans();
     },
@@ -254,7 +254,7 @@ export default function SuperadminDashboard() {
   });
   const updatePlanMutation = trpc.superadmin.updatePlan.useMutation({
     onSuccess: () => {
-      toast.success("Plan updated");
+      toast.success(t("superadmin.planUpdated"));
       setEditingPlan(null);
       refetchPlans();
     },
@@ -278,7 +278,7 @@ export default function SuperadminDashboard() {
   });
   const updatePlatformMutation = trpc.superadmin.updatePlatformSettings.useMutation({
     onSuccess: () => {
-      toast.success("Platform settings saved");
+      toast.success(t("superadmin.platformSaved"));
       refetchPlatform();
     },
     onError: (err) => toast.error(err.message),
@@ -297,7 +297,7 @@ export default function SuperadminDashboard() {
   });
   const demoteMutation = trpc.superadmin.demoteSuperadmin.useMutation({
     onSuccess: () => {
-      toast.success("Superadmin demoted");
+      toast.success(t("superadmin.demoted"));
       refetchUsers();
     },
     onError: (err) => toast.error(err.message),
@@ -344,7 +344,7 @@ export default function SuperadminDashboard() {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
     if (!createPlanId) {
-      toast.error("Select a subscription plan");
+      toast.error(t("superadmin.selectPlan"));
       return;
     }
     createFirmMutation.mutate({
@@ -417,11 +417,11 @@ export default function SuperadminDashboard() {
     if (localeIt) supported.push("it");
     if (localeAr) supported.push("ar");
     if (!supported.length) {
-      toast.error("Enable at least one language");
+      toast.error(t("superadmin.enableOneLanguage"));
       return;
     }
     if (!supported.includes(defaultLocale)) {
-      toast.error("Default language must be enabled");
+      toast.error(t("superadmin.defaultMustBeEnabled"));
       return;
     }
     updatePlatformMutation.mutate({
@@ -734,7 +734,7 @@ export default function SuperadminDashboard() {
                       <Label>Plan</Label>
                       <Select value={createPlanId} onValueChange={setCreatePlanId}>
                         <SelectTrigger className="mt-1">
-                          <SelectValue placeholder="Select a plan" />
+                          <SelectValue placeholder={t("superadmin.selectPlanPlaceholder")} />
                         </SelectTrigger>
                         <SelectContent>
                           {plans?.map((plan) => (
@@ -762,7 +762,7 @@ export default function SuperadminDashboard() {
                       Send login credentials email now
                     </label>
                     <Button type="submit" disabled={createFirmMutation.isPending} className="w-full">
-                      {createFirmMutation.isPending ? "Creating…" : "Create firm"}
+                      {createFirmMutation.isPending ? t("superadmin.creatingFirm") : t("superadmin.createFirm")}
                     </Button>
                   </form>
                 </DialogContent>
@@ -775,7 +775,7 @@ export default function SuperadminDashboard() {
                   <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                   <Input
                     className="pl-10"
-                    placeholder="Search name, email, slug…"
+                    placeholder={t("superadmin.searchFirms")}
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                   />
@@ -856,7 +856,7 @@ export default function SuperadminDashboard() {
                           onClick={() => impersonateMutation.mutate({ firmId: firm.id })}
                           disabled={impersonateMutation.isPending}
                         >
-                          <LogIn className="h-3.5 w-3.5 mr-1" /> Login as admin
+                          <LogIn className="h-3.5 w-3.5 mr-1" /> {t("superadmin.loginAsAdmin")}
                         </Button>
                         <Button
                           size="sm"
@@ -927,7 +927,7 @@ export default function SuperadminDashboard() {
                       disabled={impersonateMutation.isPending}
                     >
                       <LogIn className="h-4 w-4 mr-1.5" />
-                      {impersonateMutation.isPending ? "Opening…" : "Login as firm admin"}
+                      {impersonateMutation.isPending ? t("superadmin.openingAsAdmin") : t("superadmin.loginAsAdmin")}
                     </Button>
                     <div className="grid grid-cols-2 gap-3">
                       <div>
@@ -1093,7 +1093,7 @@ export default function SuperadminDashboard() {
           <TabsContent value="plans" className="space-y-4">
             <div className="flex items-center justify-between gap-3 flex-wrap">
               <div>
-                <h2 className="text-xl font-semibold">Subscription plans</h2>
+                <h2 className="text-xl font-semibold">{t("superadmin.plansTitle")}</h2>
                 <p className="text-sm text-muted-foreground">Global SaaS tiers for law firms</p>
               </div>
               <div className="flex gap-2">
@@ -1206,7 +1206,7 @@ export default function SuperadminDashboard() {
             <Dialog open={!!editingPlan} onOpenChange={(o) => !o && setEditingPlan(null)}>
               <DialogContent>
                 <DialogHeader>
-                  <DialogTitle>Edit plan</DialogTitle>
+                  <DialogTitle>{t("superadmin.editPlan")}</DialogTitle>
                   <DialogDescription>Update pricing, limits, and feature list</DialogDescription>
                 </DialogHeader>
                 {editingPlan && (
@@ -1330,7 +1330,7 @@ export default function SuperadminDashboard() {
                       Active plan
                     </label>
                     <Button type="submit" className="w-full" disabled={updatePlanMutation.isPending}>
-                      {updatePlanMutation.isPending ? "Saving…" : "Save plan"}
+                      {updatePlanMutation.isPending ? t("superadmin.savingPlan") : t("superadmin.savePlan")}
                     </Button>
                   </form>
                 )}
@@ -1381,7 +1381,7 @@ export default function SuperadminDashboard() {
               <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
               <Input
                 className="pl-10"
-                placeholder="Search users…"
+                placeholder={t("superadmin.searchUsers")}
                 value={userSearch}
                 onChange={(e) => setUserSearch(e.target.value)}
               />
@@ -1528,7 +1528,7 @@ export default function SuperadminDashboard() {
                       className="mt-1"
                       value={adyenApiKey}
                       onChange={(e) => setAdyenApiKey(e.target.value)}
-                      placeholder="Leave blank to keep existing"
+                      placeholder={t("superadmin.leaveBlank")}
                     />
                   </div>
                   <div>
@@ -1542,7 +1542,7 @@ export default function SuperadminDashboard() {
                       className="mt-1"
                       value={adyenClientKey}
                       onChange={(e) => setAdyenClientKey(e.target.value)}
-                      placeholder="Leave blank to keep existing"
+                      placeholder={t("superadmin.leaveBlank")}
                     />
                   </div>
                 </CardContent>
@@ -1555,7 +1555,7 @@ export default function SuperadminDashboard() {
                 <p className="text-muted-foreground">
                   Status:{" "}
                   <Badge variant={system?.brevoConfigured ? "default" : "secondary"}>
-                    {system?.brevoConfigured ? "Configured" : "Not configured"}
+                    {system?.brevoConfigured ? t("superadmin.configured") : t("superadmin.notConfigured")}
                   </Badge>
                 </p>
                 <p className="text-xs text-muted-foreground">

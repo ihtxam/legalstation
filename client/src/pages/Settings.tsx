@@ -187,18 +187,24 @@ export default function SettingsPage() {
     }
   };
 
+  const isFirmStaff = Boolean(firmData?.member);
+
   return (
     <LexLayout title={t("settings.title")} breadcrumb={[{ label: t("settings.title") }]}>
       <div className="p-6 max-w-3xl mx-auto">
-        <Tabs defaultValue="firm">
+        <Tabs defaultValue={isFirmStaff ? "firm" : "language"}>
           <TabsList className="bg-muted mb-6 flex flex-wrap h-auto">
-            <TabsTrigger value="firm"><Building2 className="w-4 h-4 mr-1.5" />{t("settings.tabFirm")}</TabsTrigger>
-            <TabsTrigger value="team"><Users className="w-4 h-4 mr-1.5" />{t("settings.tabTeam")}</TabsTrigger>
+            {isFirmStaff && (
+              <>
+                <TabsTrigger value="firm"><Building2 className="w-4 h-4 mr-1.5" />{t("settings.tabFirm")}</TabsTrigger>
+                <TabsTrigger value="team"><Users className="w-4 h-4 mr-1.5" />{t("settings.tabTeam")}</TabsTrigger>
+              </>
+            )}
             <TabsTrigger value="security"><Shield className="w-4 h-4 mr-1.5" />{t("settings.tabSecurity")}</TabsTrigger>
             <TabsTrigger value="language"><Languages className="w-4 h-4 mr-1.5" />{t("settings.tabLanguage")}</TabsTrigger>
           </TabsList>
 
-          <TabsContent value="firm">
+          {isFirmStaff && <TabsContent value="firm">
             <div className="bg-card border border-border rounded-xl p-6 space-y-4">
               <h3 className="font-semibold text-foreground">{t("settings.firmSettings")}</h3>
               <div><Label>{t("settings.firmName")}</Label><Input className={`mt-1.5 ${getFieldHighlight('name')}`} value={firmForm.name} onChange={e => setFirmForm(f => ({ ...f, name: e.target.value }))} /></div>
@@ -234,7 +240,7 @@ export default function SettingsPage() {
                 {updateFirm.isPending ? t("settings.saving") : hasChanges ? t("settings.saveUnsavedChanges") : t("settings.noChanges")}
               </Button>
             </div>
-          </TabsContent>
+          </TabsContent>}
 
           <TabsContent value="security">
             <div className="bg-card border border-border rounded-xl p-6 space-y-4">
@@ -314,7 +320,7 @@ export default function SettingsPage() {
             </div>
           </TabsContent>
 
-          <TabsContent value="team">
+          {isFirmStaff && <TabsContent value="team">
             <div className="space-y-4">
               <div className="bg-card border border-border rounded-xl p-6 space-y-4">
                 <div>
@@ -374,7 +380,7 @@ export default function SettingsPage() {
                 )}
               </div>
             </div>
-          </TabsContent>
+          </TabsContent>}
         </Tabs>
       </div>
     </LexLayout>

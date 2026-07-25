@@ -25,18 +25,20 @@ import { format } from "date-fns";
 import { CASE_TYPE_LABELS } from "@shared/types";
 import { DocumentVersionHistory } from "@/components/DocumentVersionHistory";
 import CaseTimePanel from "@/components/CaseTimePanel";
+import { useTranslation } from "react-i18next";
 
 function CaseTimeline({ caseId, isInternal }: { caseId: number; isInternal: boolean }) {
+  const { t } = useTranslation();
   const { data: events, isLoading, refetch } = trpc.cases.getEvents.useQuery({ caseId });
   const [showAdd, setShowAdd] = useState(false);
   const [noteContent, setNoteContent] = useState("");
   const [noteVisibility, setNoteVisibility] = useState<"internal" | "shared">("internal");
   const addNote = trpc.cases.addNote.useMutation({
-    onSuccess: () => { setNoteContent(""); setShowAdd(false); refetch(); toast.success("Note added"); },
+    onSuccess: () => { setNoteContent(""); setShowAdd(false); refetch(); toast.success(t("caseDetail.noteAdded")); },
     onError: (e) => toast.error(e.message),
   });
   const deleteNote = trpc.cases.deleteNote.useMutation({
-    onSuccess: () => { refetch(); toast.success("Note deleted"); },
+    onSuccess: () => { refetch(); toast.success(t("caseDetail.noteDeleted")); },
     onError: (e) => toast.error(e.message),
   });
 
@@ -47,7 +49,7 @@ function CaseTimeline({ caseId, isInternal }: { caseId: number; isInternal: bool
       {isInternal && (
         <div className="flex justify-end">
           <Button size="sm" className="bg-[var(--color-navy)] hover:bg-[var(--color-navy-light)] text-white" onClick={() => setShowAdd(true)}>
-            <Plus className="w-3.5 h-3.5 mr-1.5" /> Add note
+            <Plus className="w-3.5 h-3.5 mr-1.5" /> {t("caseDetail.addNote")}
           </Button>
         </div>
       )}
@@ -100,13 +102,13 @@ function CaseTimeline({ caseId, isInternal }: { caseId: number; isInternal: bool
         <DialogContent>
           <DialogHeader><DialogTitle>Add Note</DialogTitle></DialogHeader>
           <div className="space-y-4 py-2">
-            <Input placeholder="Title (optional)" />
-            <Textarea placeholder="Note content..." value={noteContent} onChange={e => setNoteContent(e.target.value)} />
+            <Input placeholder={t("caseDetail.noteTitle")} />
+            <Textarea placeholder={t("caseDetail.noteContent")} value={noteContent} onChange={e => setNoteContent(e.target.value)} />
             <div className="flex items-center justify-between">
               <Label>Visibility</Label>
               <div className="flex items-center gap-2">
                 <span className={`text-xs font-medium ${noteVisibility === "internal" ? "text-purple-600" : "text-teal-600"}`}>
-                  {noteVisibility === "internal" ? "Internal only" : "Shared with client"}
+                  {noteVisibility === "internal" ? t("caseDetail.internalOnly") : t("caseDetail.sharedWithClient")}
                 </span>
                 <Switch checked={noteVisibility === "shared"} onCheckedChange={v => setNoteVisibility(v ? "shared" : "internal")} />
               </div>
@@ -126,6 +128,7 @@ function CaseTimeline({ caseId, isInternal }: { caseId: number; isInternal: bool
 }
 
 function CaseDocuments({ caseId, firmId }: { caseId: number; firmId: number }) {
+  const { t } = useTranslation();
   const { data: docs, isLoading, refetch } = trpc.documents.list.useQuery({ caseId });
   const { data: docRequests, refetch: refetchRequests } = trpc.documentRequests.list.useQuery({ caseId });
   const [showUpload, setShowUpload] = useState(false);
@@ -140,15 +143,15 @@ function CaseDocuments({ caseId, firmId }: { caseId: number; firmId: number }) {
   const updateVisibility = trpc.documents.updateVisibility.useMutation({ onSuccess: () => refetch() });
   const logAccess = trpc.documents.logAccess.useMutation();
   const analyzeDocument = trpc.documentAnalysis.analyzeDocument.useMutation({
-    onSuccess: () => toast.success("Document analysis complete"),
-    onError: (e) => toast.error(e.message || "Analysis failed"),
+    onSuccess: () => toast.success(t("docs.analysisComplete")),
+    onError: (e) => toast.error(e.message || t("docs.analysisFailed")),
   });
   const register = trpc.documents.register.useMutation({
     onError: (e: any) => toast.error(e.message),
   });
   const createDocRequest = trpc.documentRequests.create.useMutation({
     onSuccess: () => {
-      toast.success("Document request sent to client");
+      toast.success(t("caseDetail.requestSent"));
       setShowRequest(false);
       setRequestTitle("");
       setRequestDescription("");
@@ -159,7 +162,7 @@ function CaseDocuments({ caseId, firmId }: { caseId: number; firmId: number }) {
   });
   const cancelDocRequest = trpc.documentRequests.cancel.useMutation({
     onSuccess: () => {
-      toast.success("Request cancelled");
+      toast.success(t("caseDetail.requestCancelled"));
       void refetchRequests();
     },
     onError: (e) => toast.error(e.message),
@@ -168,7 +171,7 @@ function CaseDocuments({ caseId, firmId }: { caseId: number; firmId: number }) {
   const groupedDocs = (docs ?? []).reduce((acc: any[], item: any) => {
     const folder = acc.find(g => g.folder.id === item.doc?.folderId);
     if (folder) folder.docs.push(item);
-    else acc.push({ folder: { id: item.doc?.folderId || 0, name: "Uncategorized" }, docs: [item] });
+    else acc.push({ folder: { id: item.doc?.folderId || 0, name: t("caseDetail.uncategorized") }, docs: [item] });
     return acc;
   }, [] as any[]);
   const unfoldered = groupedDocs.find(g => g.folder.id === 0)?.docs ?? [];
@@ -187,7 +190,7 @@ function CaseDocuments({ caseId, firmId }: { caseId: number; firmId: number }) {
 
       {pendingRequests.length > 0 && (
         <div className="rounded-lg border border-border bg-muted/30 p-4 space-y-2">
-          <p className="text-sm font-semibold">Pending client document requests</p>
+          <p className="text-sm font-semibold">{t("caseDetail.pendingDocRequests")}</p>
           {pendingRequests.map((req) => (
             <div key={req.id} className="flex items-start justify-between gap-3 bg-card border border-border rounded-md p-3">
               <div>
@@ -232,7 +235,7 @@ function CaseDocuments({ caseId, firmId }: { caseId: number; firmId: number }) {
           ))}
           {unfoldered.length > 0 && (
             <div>
-              <p className="text-sm font-semibold text-muted-foreground mb-2">Unfiled</p>
+              <p className="text-sm font-semibold text-muted-foreground mb-2">{t("caseDetail.unfiled")}</p>
               <DocList docs={unfoldered} onToggle={updateVisibility.mutate} onLog={logAccess.mutate} />
             </div>
           )}
@@ -244,7 +247,7 @@ function CaseDocuments({ caseId, firmId }: { caseId: number; firmId: number }) {
           <div className="space-y-4 py-2">
             <input ref={fileInputRef} type="file" className="hidden" onChange={e => setSelectedFile(e.target.files?.[0] || null)} />
             <Button variant="outline" onClick={() => fileInputRef.current?.click()}>
-              {selectedFile ? selectedFile.name : "Choose file"}
+              {selectedFile ? selectedFile.name : t("caseDetail.chooseFile")}
             </Button>
           </div>
           <DialogFooter>
@@ -271,9 +274,9 @@ function CaseDocuments({ caseId, firmId }: { caseId: number; firmId: number }) {
                 setShowUpload(false);
                 setSelectedFile(null);
                 refetch();
-                toast.success("Document uploaded");
+                toast.success(t("caseDetail.docUploaded"));
                 if (result.documentId) {
-                  toast.loading("Analyzing document…", { id: "doc-analysis" });
+                  toast.loading(t("caseDetail.analyzing"), { id: "doc-analysis" });
                   analyzeDocument.mutate(
                     {
                       documentId: result.documentId,
@@ -354,6 +357,7 @@ function CaseDocuments({ caseId, firmId }: { caseId: number; firmId: number }) {
 }
 
 function DocList({ docs, onToggle, onLog }: { docs: any[]; onToggle: (v: any) => void; onLog: (v: any) => void }) {
+  const { t } = useTranslation();
   const [versionDocId, setVersionDocId] = useState<number | null>(null);
   return (
     <>
@@ -367,11 +371,11 @@ function DocList({ docs, onToggle, onLog }: { docs: any[]; onToggle: (v: any) =>
             </div>
             <StatusBadge status={doc.visibility} />
             <div className="flex items-center gap-1">
-              <button title="Toggle visibility" onClick={() => onToggle({ id: doc.id, visibility: doc.visibility === "internal" ? "shared" : "internal" })}
+              <button title={t("caseDetail.toggleVisibility")} onClick={() => onToggle({ id: doc.id, visibility: doc.visibility === "internal" ? "shared" : "internal" })}
                 className="p-1.5 text-muted-foreground hover:text-foreground rounded transition-colors">
                 {doc.visibility === "internal" ? <Lock className="w-3.5 h-3.5" /> : <Globe className="w-3.5 h-3.5" />}
               </button>
-              <button title="Version history" onClick={() => setVersionDocId(doc.id)}
+              <button title={t("caseDetail.versionHistory")} onClick={() => setVersionDocId(doc.id)}
                 className="p-1.5 text-muted-foreground hover:text-foreground rounded transition-colors text-xs underline">
                 History
               </button>
@@ -394,6 +398,7 @@ function DocList({ docs, onToggle, onLog }: { docs: any[]; onToggle: (v: any) =>
 }
 
 function CaseMessages({ caseId }: { caseId: number }) {
+  const { t } = useTranslation();
   const { data: msgs, refetch } = trpc.messages.list.useQuery({ caseId });
   const [newMessage, setNewMessage] = useState("");
   const sendMsg = trpc.messages.send.useMutation({
@@ -426,7 +431,7 @@ function CaseMessages({ caseId }: { caseId: number }) {
         ))}
       </div>
       <div className="flex gap-3">
-        <Textarea className="flex-1 resize-none h-10 min-h-0" placeholder="Type a message…" value={newMessage} onChange={e => setNewMessage(e.target.value)}
+        <Textarea className="flex-1 resize-none h-10 min-h-0" placeholder={t("caseDetail.typeMessage")} value={newMessage} onChange={e => setNewMessage(e.target.value)}
           onKeyDown={e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); if (newMessage.trim()) sendMsg.mutate({ caseId, content: newMessage.trim() }); } }} />
         <Button className="bg-[var(--color-navy)] hover:bg-[var(--color-navy-light)] text-white shrink-0" disabled={!newMessage.trim() || sendMsg.isPending}
           onClick={() => sendMsg.mutate({ caseId, content: newMessage.trim() })}>
@@ -438,6 +443,7 @@ function CaseMessages({ caseId }: { caseId: number }) {
 }
 
 function CaseAssignments({ caseId }: { caseId: number }) {
+  const { t } = useTranslation();
   const { data: options, refetch } = trpc.cases.getAssignmentOptions.useQuery({ caseId });
   const [showAddLawyer, setShowAddLawyer] = useState(false);
   const [showAddClient, setShowAddClient] = useState(false);
@@ -445,19 +451,19 @@ function CaseAssignments({ caseId }: { caseId: number }) {
   const [selectedClient, setSelectedClient] = useState("");
   
   const assignLawyer = trpc.cases.assignLawyer.useMutation({
-    onSuccess: () => { setSelectedLawyer(""); setShowAddLawyer(false); refetch(); toast.success("Lawyer assigned"); },
+    onSuccess: () => { setSelectedLawyer(""); setShowAddLawyer(false); refetch(); toast.success(t("caseDetail.lawyerAssigned")); },
     onError: (e) => toast.error(e.message),
   });
   const assignClient = trpc.cases.assignClient.useMutation({
-    onSuccess: () => { setSelectedClient(""); setShowAddClient(false); refetch(); toast.success("Client assigned"); },
+    onSuccess: () => { setSelectedClient(""); setShowAddClient(false); refetch(); toast.success(t("caseDetail.clientAssigned")); },
     onError: (e) => toast.error(e.message),
   });
   const removeLawyer = trpc.cases.removeLawyer.useMutation({
-    onSuccess: () => { refetch(); toast.success("Lawyer removed"); },
+    onSuccess: () => { refetch(); toast.success(t("caseDetail.lawyerRemoved")); },
     onError: (e) => toast.error(e.message),
   });
   const removeClient = trpc.cases.removeClient.useMutation({
-    onSuccess: () => { refetch(); toast.success("Client removed"); },
+    onSuccess: () => { refetch(); toast.success(t("caseDetail.clientRemoved")); },
     onError: (e) => toast.error(e.message),
   });
 
@@ -471,7 +477,7 @@ function CaseAssignments({ caseId }: { caseId: number }) {
       {/* Lawyers */}
       <div>
         <div className="flex items-center justify-between mb-3">
-          <h3 className="font-semibold text-foreground">Assigned Lawyers</h3>
+          <h3 className="font-semibold text-foreground">{t("caseDetail.assignedLawyers")}</h3>
           <Button size="sm" className="bg-[var(--color-navy)] hover:bg-[var(--color-navy-light)] text-white" onClick={() => setShowAddLawyer(true)}>
             <Plus className="w-3.5 h-3.5 mr-1.5" /> Add lawyer
           </Button>
@@ -497,7 +503,7 @@ function CaseAssignments({ caseId }: { caseId: number }) {
             <DialogHeader><DialogTitle>Assign Lawyer</DialogTitle></DialogHeader>
             <div className="space-y-4 py-2">
               <Select value={selectedLawyer} onValueChange={setSelectedLawyer}>
-                <SelectTrigger><SelectValue placeholder="Select a lawyer" /></SelectTrigger>
+                <SelectTrigger><SelectValue placeholder={t("caseDetail.selectLawyer")} /></SelectTrigger>
                 <SelectContent>
                   {options.availableLawyers.map(l => (
                     <SelectItem key={l.member.id} value={l.member.userId.toString()}>
@@ -521,7 +527,7 @@ function CaseAssignments({ caseId }: { caseId: number }) {
       {/* Clients */}
       <div>
         <div className="flex items-center justify-between mb-3">
-          <h3 className="font-semibold text-foreground">Assigned Clients</h3>
+          <h3 className="font-semibold text-foreground">{t("caseDetail.assignedClients")}</h3>
           <Button size="sm" className="bg-[var(--color-navy)] hover:bg-[var(--color-navy-light)] text-white" onClick={() => setShowAddClient(true)}>
             <Plus className="w-3.5 h-3.5 mr-1.5" /> Add client
           </Button>
@@ -547,7 +553,7 @@ function CaseAssignments({ caseId }: { caseId: number }) {
             <DialogHeader><DialogTitle>Assign Client</DialogTitle></DialogHeader>
             <div className="space-y-4 py-2">
               <Select value={selectedClient} onValueChange={setSelectedClient}>
-                <SelectTrigger><SelectValue placeholder="Select a client" /></SelectTrigger>
+                <SelectTrigger><SelectValue placeholder={t("caseDetail.selectClient")} /></SelectTrigger>
                 <SelectContent>
                   {options.availableClients.map(c => (
                     <SelectItem key={c.id} value={c.id.toString()}>
@@ -572,6 +578,7 @@ function CaseAssignments({ caseId }: { caseId: number }) {
 }
 
 export default function CaseDetailPage() {
+  const { t } = useTranslation();
   const { id } = useParams<{ id: string }>();
   const caseId = parseInt(id);
   const { isAuthenticated, loading } = useAuth();
@@ -582,7 +589,7 @@ export default function CaseDetailPage() {
   const { data: caseData, isLoading, refetch } = trpc.cases.get.useQuery({ id: caseId }, { enabled: isAuthenticated && !isNaN(caseId) });
   const { data: firmData } = trpc.firm.myFirm.useQuery(undefined, { enabled: isAuthenticated });
   const updateCase = trpc.cases.update.useMutation({
-    onSuccess: () => { setEditStatus(false); refetch(); toast.success("Case updated"); },
+    onSuccess: () => { setEditStatus(false); refetch(); toast.success(t("caseDetail.caseUpdated")); },
     onError: (e) => toast.error(e.message),
   });
 
@@ -591,11 +598,11 @@ export default function CaseDetailPage() {
 
   const isInternal = firmData && ["admin", "lawyer", "assistant"].includes(firmData.member.firmRole);
 
-  if (isLoading) return <LexLayout title="Case"><div className="p-6"><Skeleton className="h-64 w-full" /></div></LexLayout>;
-  if (!caseData) return <LexLayout title="Not Found"><div className="p-6 text-center text-muted-foreground">Case not found</div></LexLayout>;
+  if (isLoading) return <LexLayout title={t("caseDetail.title")}><div className="p-6"><Skeleton className="h-64 w-full" /></div></LexLayout>;
+  if (!caseData) return <LexLayout title={t("common.notFound")}><div className="p-6 text-center text-muted-foreground">{t("caseDetail.notFound")}</div></LexLayout>;
 
   return (
-    <LexLayout breadcrumb={[{ label: "Cases", href: "/cases" }, { label: caseData.title }]}>
+    <LexLayout breadcrumb={[{ label: t("caseDetail.breadcrumb"), href: "/cases" }, { label: caseData.title }]}>
       <div className="p-6 max-w-5xl mx-auto space-y-6">
         {/* Case header */}
         <div className="bg-card border border-border rounded-xl p-6">
@@ -606,19 +613,19 @@ export default function CaseDetailPage() {
                 <StatusBadge status={caseData.status} />
               </div>
               <div className="flex items-center gap-4 text-sm text-muted-foreground flex-wrap">
-                {caseData.referenceNumber && <span>Ref: <span className="font-medium text-foreground">{caseData.referenceNumber}</span></span>}
-                <span>Type: <span className="font-medium text-foreground">{CASE_TYPE_LABELS[caseData.type]}</span></span>
+                {caseData.referenceNumber && <span>{t("caseDetail.reference")}: <span className="font-medium text-foreground">{caseData.referenceNumber}</span></span>}
+                <span>{t("common.type")}: <span className="font-medium text-foreground">{CASE_TYPE_LABELS[caseData.type]}</span></span>
                 {caseData.deadline && (
                   <span className="flex items-center gap-1">
                     <Calendar className="w-3.5 h-3.5" />
-                    Deadline: <span className="font-medium text-foreground">{format(caseData.deadline, "dd MMM yyyy")}</span>
+                    {t("caseDetail.deadline")}: <span className="font-medium text-foreground">{format(caseData.deadline, "dd MMM yyyy")}</span>
                   </span>
                 )}
               </div>
             </div>
             {isInternal && (
               <Button size="sm" variant="outline" onClick={() => setEditStatus(true)}>
-                <Edit2 className="w-3.5 h-3.5 mr-1.5" /> Edit
+                <Edit2 className="w-3.5 h-3.5 mr-1.5" /> {t("common.edit")}
               </Button>
             )}
           </div>
@@ -627,23 +634,23 @@ export default function CaseDetailPage() {
         {/* Edit dialog */}
         <Dialog open={editStatus} onOpenChange={setEditStatus}>
           <DialogContent>
-            <DialogHeader><DialogTitle>Update Case Status</DialogTitle></DialogHeader>
+            <DialogHeader><DialogTitle>{t("caseDetail.status")}</DialogTitle></DialogHeader>
             <div className="space-y-4 py-2">
               <Select value={newStatus} onValueChange={setNewStatus}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="open">Open</SelectItem>
-                  <SelectItem value="pending">Pending</SelectItem>
-                  <SelectItem value="closed">Closed</SelectItem>
-                  <SelectItem value="archived">Archived</SelectItem>
+                  <SelectItem value="open">{t("common.open")}</SelectItem>
+                  <SelectItem value="pending">{t("common.pending")}</SelectItem>
+                  <SelectItem value="closed">{t("common.closed")}</SelectItem>
+                  <SelectItem value="archived">{t("common.archived")}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
             <DialogFooter>
-              <Button variant="outline" onClick={() => setEditStatus(false)}>Cancel</Button>
+              <Button variant="outline" onClick={() => setEditStatus(false)}>{t("common.cancel")}</Button>
               <Button className="bg-[var(--color-navy)] hover:bg-[var(--color-navy-light)] text-white" disabled={newStatus === caseData.status || updateCase.isPending}
                 onClick={() => updateCase.mutate({ id: caseId, status: newStatus as any })}>
-                Update
+                {t("common.save")}
               </Button>
             </DialogFooter>
           </DialogContent>
@@ -652,11 +659,11 @@ export default function CaseDetailPage() {
         {/* Tabs */}
         <Tabs defaultValue="timeline" className="bg-card border border-border rounded-xl p-6">
           <TabsList className="bg-muted">
-            <TabsTrigger value="timeline"><Clock className="w-3.5 h-3.5 mr-1.5" />Timeline</TabsTrigger>
-            <TabsTrigger value="time"><Clock className="w-3.5 h-3.5 mr-1.5" />Time</TabsTrigger>
-            <TabsTrigger value="documents"><FileText className="w-3.5 h-3.5 mr-1.5" />Documents</TabsTrigger>
-            <TabsTrigger value="messages"><MessageSquare className="w-3.5 h-3.5 mr-1.5" />Messages</TabsTrigger>
-            <TabsTrigger value="assignments"><Users className="w-3.5 h-3.5 mr-1.5" />Assignments</TabsTrigger>
+            <TabsTrigger value="timeline"><Clock className="w-3.5 h-3.5 mr-1.5" />{t("common.notes")}</TabsTrigger>
+            <TabsTrigger value="time"><Clock className="w-3.5 h-3.5 mr-1.5" />{t("common.time")}</TabsTrigger>
+            <TabsTrigger value="documents"><FileText className="w-3.5 h-3.5 mr-1.5" />{t("common.documents")}</TabsTrigger>
+            <TabsTrigger value="messages"><MessageSquare className="w-3.5 h-3.5 mr-1.5" />{t("nav.messages")}</TabsTrigger>
+            <TabsTrigger value="assignments"><Users className="w-3.5 h-3.5 mr-1.5" />{t("common.team")}</TabsTrigger>
           </TabsList>
           <TabsContent value="timeline" className="mt-4">
             <CaseTimeline caseId={caseId} isInternal={!!isInternal} />
@@ -665,7 +672,7 @@ export default function CaseDetailPage() {
             {isInternal ? (
               <CaseTimePanel caseId={caseId} />
             ) : (
-              <div className="text-center text-muted-foreground py-8">Time tracking is available to firm staff only</div>
+              <div className="text-center text-muted-foreground py-8">{t("caseDetail.noLawyers")}</div>
             )}
           </TabsContent>
           <TabsContent value="documents" className="mt-4">
@@ -675,7 +682,7 @@ export default function CaseDetailPage() {
             <CaseMessages caseId={caseId} />
           </TabsContent>
           <TabsContent value="assignments" className="mt-4">
-            {isInternal ? <CaseAssignments caseId={caseId} /> : <div className="text-center text-muted-foreground py-8">Only lawyers can manage assignments</div>}
+            {isInternal ? <CaseAssignments caseId={caseId} /> : <div className="text-center text-muted-foreground py-8">{t("caseDetail.noLawyers")}</div>}
           </TabsContent>
         </Tabs>
       </div>
