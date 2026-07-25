@@ -380,9 +380,13 @@ export const firmSubscriptions = mysqlTable("firm_subscriptions", {
   firmId: int("firmId").notNull(),
   planId: int("planId").notNull(),
   billingCycle: mysqlEnum("billingCycle", ["monthly", "yearly"]).notNull().default("monthly"),
-  status: mysqlEnum("status", ["active", "past_due", "cancelled", "suspended"]).notNull().default("active"),
+  status: mysqlEnum("status", ["trialing", "active", "past_due", "cancelled", "suspended"])
+    .notNull()
+    .default("active"),
   currentPeriodStart: timestamp("currentPeriodStart").notNull(),
   currentPeriodEnd: timestamp("currentPeriodEnd").notNull(),
+  /** When set, firm is in (or was in) a trial window ending at this time */
+  trialEndsAt: timestamp("trialEndsAt"),
   cancelledAt: timestamp("cancelledAt"),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),

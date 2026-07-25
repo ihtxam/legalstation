@@ -35,6 +35,7 @@ import { caseTasksRouter } from "./routers/caseTasks";
 import { clientActivitiesRouter } from "./routers/clientActivities";
 import { firmLeadsRouter } from "./routers/firmLeads";
 import { firmPagesRouter } from "./routers/firmPages";
+import { signupRouter } from "./routers/signup";
 import { updateUserById } from "./db";
 import {
   TWO_FACTOR_COOKIE,
@@ -209,6 +210,7 @@ export const appRouter = router({
   timeEntries: timeEntriesRouter,
   documentRequests: documentRequestsRouter,
   leads: leadsRouter,
+  signup: signupRouter,
   matterStages: matterStagesRouter,
   caseTasks: caseTasksRouter,
   clientActivities: clientActivitiesRouter,

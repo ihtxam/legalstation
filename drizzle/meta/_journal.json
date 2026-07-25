@@ -85,6 +85,13 @@
       "when": 1785010000000,
       "tag": "0011_crm_matter_tasks",
       "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "5",
+      "when": 1785096400000,
+      "tag": "0012_firm_trial_signup",
+      "breakpoints": true
     }
   ]
 }

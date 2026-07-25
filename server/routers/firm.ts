@@ -20,7 +20,7 @@ import {
   getUserByEmail,
   updateFirm,
 } from "../db";
-import { clients, users } from "../../drizzle/schema";
+import { clients, firmSubscriptions, subscriptionPlans, users } from "../../drizzle/schema";
 import { resolveFirmContext } from "../access";
 import { getSessionCookieOptions } from "../_core/cookies";
 import { sdk } from "../_core/sdk";
@@ -94,7 +94,56 @@ export const firmRouter = router({
     const member = await getFirmMemberByUserId(ctx.user.id);
     if (!member) return null;
     const firm = await getFirmById(member.firmId);
-    return firm ? { firm, member } : null;
+    if (!firm) return null;
+
+    const db = await getDb();
+    let subscription: {
+      status: string;
+      trialEndsAt: Date | null;
+      currentPeriodEnd: Date | null;
+      planName: string | null;
+      trialActive: boolean;
+      trialExpired: boolean;
+      trialDaysLeft: number;
+    } | null = null;
+
+    if (db) {
+      const [row] = await db
+        .select({
+          status: firmSubscriptions.status,
+          trialEndsAt: firmSubscriptions.trialEndsAt,
+          currentPeriodEnd: firmSubscriptions.currentPeriodEnd,
+          planName: subscriptionPlans.name,
+        })
+        .from(firmSubscriptions)
+        .leftJoin(subscriptionPlans, eq(firmSubscriptions.planId, subscriptionPlans.id))
+        .where(eq(firmSubscriptions.firmId, firm.id))
+        .limit(1);
+
+      if (row) {
+        const now = Date.now();
+        const trialEndsAt = row.trialEndsAt ?? null;
+        const trialActive =
+          row.status === "trialing" && !!trialEndsAt && trialEndsAt.getTime() > now;
+        const trialExpired =
+          row.status === "trialing" && !!trialEndsAt && trialEndsAt.getTime() <= now;
+        const trialDaysLeft =
+          trialEndsAt && trialEndsAt.getTime() > now
+            ? Math.max(0, Math.ceil((trialEndsAt.getTime() - now) / (24 * 60 * 60 * 1000)))
+            : 0;
+        subscription = {
+          status: row.status,
+          trialEndsAt,
+          currentPeriodEnd: row.currentPeriodEnd,
+          planName: row.planName,
+          trialActive,
+          trialExpired,
+          trialDaysLeft,
+        };
+      }
+    }
+
+    return { firm, member, subscription };
   }),
 
   // Get firm branding (logo, name, colors) - accessible to firm members and clients
