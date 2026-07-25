@@ -10,8 +10,9 @@ import {
   invitations,
   firmMembers,
   superadminAuditLog,
+  agencySettings,
 } from "../../drizzle/schema";
-import { eq, and, desc, asc } from "drizzle-orm";
+import { eq, and, desc, asc, ne } from "drizzle-orm";
 import { ENV } from "../_core/env";
 import {
   generateTemporaryPassword,
@@ -21,6 +22,24 @@ import {
 import { isReservedSubdomain, firmLoginUrl, getAppBaseUrl } from "../tenant";
 import { sendFirmCredentialsEmail } from "../email";
 import { nanoid } from "nanoid";
+
+async function upsertAgencySetting(key: string, value: string) {
+  const db = await getDb();
+  if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+  await db
+    .insert(agencySettings)
+    .values({ key, value })
+    .onDuplicateKeyUpdate({ set: { value } });
+}
+
+async function getAgencySettingsMap(): Promise<Record<string, string>> {
+  const db = await getDb();
+  if (!db) return {};
+  const rows = await db.select().from(agencySettings);
+  const map: Record<string, string> = {};
+  for (const row of rows) map[row.key] = row.value;
+  return map;
+}
 
 async function uniqueFirmSlug(base: string): Promise<string> {
   const db = await getDb();
@@ -657,4 +676,284 @@ export const superadminRouter = router({
         loginUrl: `${getAppBaseUrl(ctx.req)}/platform/login`,
       };
     }),
+
+  demoteSuperadmin: superadminProcedure
+    .input(z.object({ userId: z.number() }))
+    .mutation(async ({ ctx, input }) => {
+      if (input.userId === ctx.user.id) {
+        throw new TRPCError({ code: "BAD_REQUEST", message: "You cannot demote yourself" });
+      }
+      const db = await getDb();
+      if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+
+      const remaining = await db
+        .select()
+        .from(users)
+        .where(and(eq(users.role, "superadmin"), ne(users.id, input.userId)));
+      if (remaining.length === 0) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "At least one superadmin must remain",
+        });
+      }
+
+      await db.update(users).set({ role: "user" }).where(eq(users.id, input.userId));
+      await audit(ctx.user.id, "demote_superadmin", "user", input.userId);
+      return { success: true };
+    }),
+
+  updateFirm: superadminProcedure
+    .input(
+      z.object({
+        firmId: z.number(),
+        name: z.string().min(2).optional(),
+        email: z.string().email().optional(),
+        address: z.string().optional().nullable(),
+        phone: z.string().optional().nullable(),
+        vatNumber: z.string().optional().nullable(),
+        defaultCurrency: z.string().length(3).optional(),
+        defaultVatRate: z.number().min(0).max(100).optional(),
+        customDomain: z.string().max(255).optional().nullable(),
+        slug: z.string().min(2).max(50).regex(/^[a-z0-9-]+$/).optional(),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const db = await getDb();
+      if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+
+      const [firm] = await db.select().from(firms).where(eq(firms.id, input.firmId)).limit(1);
+      if (!firm) throw new TRPCError({ code: "NOT_FOUND" });
+
+      if (input.slug && input.slug !== firm.slug) {
+        if (isReservedSubdomain(input.slug)) {
+          throw new TRPCError({ code: "BAD_REQUEST", message: "Subdomain reserved" });
+        }
+        const clash = await db.select().from(firms).where(eq(firms.slug, input.slug)).limit(1);
+        if (clash[0]) throw new TRPCError({ code: "CONFLICT", message: "Slug already taken" });
+      }
+
+      await db
+        .update(firms)
+        .set({
+          name: input.name,
+          email: input.email,
+          address: input.address === undefined ? undefined : input.address,
+          phone: input.phone === undefined ? undefined : input.phone,
+          vatNumber: input.vatNumber === undefined ? undefined : input.vatNumber,
+          defaultCurrency: input.defaultCurrency?.toUpperCase(),
+          defaultVatRate:
+            input.defaultVatRate != null ? input.defaultVatRate.toFixed(2) : undefined,
+          customDomain: input.customDomain === undefined ? undefined : input.customDomain,
+          slug: input.slug,
+        })
+        .where(eq(firms.id, input.firmId));
+
+      await audit(ctx.user.id, "update_firm", "firm", input.firmId, input);
+      return { success: true };
+    }),
+
+  listUsers: superadminProcedure
+    .input(
+      z
+        .object({
+          role: z.enum(["user", "admin", "superadmin"]).optional(),
+          search: z.string().optional(),
+          limit: z.number().int().min(1).max(200).default(100),
+        })
+        .optional()
+    )
+    .query(async ({ input }) => {
+      const db = await getDb();
+      if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+
+      let rows = await db.select().from(users).orderBy(desc(users.createdAt)).limit(input?.limit ?? 100);
+      if (input?.role) rows = rows.filter((u) => u.role === input.role);
+      if (input?.search) {
+        const q = input.search.toLowerCase();
+        rows = rows.filter(
+          (u) =>
+            (u.email || "").toLowerCase().includes(q) ||
+            (u.name || "").toLowerCase().includes(q)
+        );
+      }
+      return rows.map((u) => ({
+        id: u.id,
+        name: u.name,
+        email: u.email,
+        role: u.role,
+        loginMethod: u.loginMethod,
+        preferredLocale: u.preferredLocale,
+        mustChangePassword: u.mustChangePassword,
+        createdAt: u.createdAt,
+        lastSignedIn: u.lastSignedIn,
+      }));
+    }),
+
+  listAuditLog: superadminProcedure
+    .input(z.object({ limit: z.number().int().min(1).max(200).default(50) }).optional())
+    .query(async ({ input }) => {
+      const db = await getDb();
+      if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+      return db
+        .select()
+        .from(superadminAuditLog)
+        .orderBy(desc(superadminAuditLog.createdAt))
+        .limit(input?.limit ?? 50);
+    }),
+
+  getSystemStatus: superadminProcedure.query(async () => {
+    const settings = await getAgencySettingsMap();
+    return {
+      deploymentMode: ENV.deploymentMode,
+      singleTenant: ENV.singleTenant,
+      dataResidency: ENV.dataResidency,
+      appUrl: ENV.appUrl || null,
+      appBaseDomain: ENV.appBaseDomain || null,
+      brevoConfigured: Boolean(ENV.brevoApiKey),
+      oauthConfigured: Boolean(ENV.oAuthServerUrl && ENV.appId),
+      demoAuthEnabled: ENV.demoAuthEnabled,
+      demoAuthAllowProduction: ENV.demoAuthAllowProduction,
+      forgeConfigured: Boolean(ENV.forgeApiKey),
+      bootstrapSecretConfigured: Boolean(ENV.superadminBootstrapSecret),
+      platformName: settings.agency_name || "LexFlow",
+      defaultLocale: settings.default_locale || "en",
+      supportedLocales: (() => {
+        try {
+          return JSON.parse(settings.supported_locales || '["en","fr","de"]') as string[];
+        } catch {
+          return ["en", "fr", "de"];
+        }
+      })(),
+      supportEmail: settings.support_email || null,
+    };
+  }),
+
+  getPlatformSettings: superadminProcedure.query(async () => {
+    const settings = await getAgencySettingsMap();
+    let vatRates = { standard: 8.1, reduced: 2.6, special: 3.8, zero: 0 };
+    try {
+      vatRates = { ...vatRates, ...JSON.parse(settings.vat_rates || "{}") };
+    } catch {
+      /* defaults */
+    }
+    let supportedLocales = ["en", "fr", "de"];
+    try {
+      supportedLocales = JSON.parse(settings.supported_locales || '["en","fr","de"]');
+    } catch {
+      /* defaults */
+    }
+    return {
+      agencyName: settings.agency_name || "LexFlow",
+      logoUrl: settings.logo_url || "",
+      supportEmail: settings.support_email || "",
+      defaultLocale: (settings.default_locale as "en" | "fr" | "de") || "en",
+      supportedLocales,
+      vatRates,
+      adyen: {
+        apiKeySet: Boolean(settings.adyen_api_key),
+        merchantAccount: settings.adyen_merchant_account || "",
+        clientKeySet: Boolean(settings.adyen_client_key),
+      },
+    };
+  }),
+
+  updatePlatformSettings: superadminProcedure
+    .input(
+      z.object({
+        agencyName: z.string().min(1).max(120).optional(),
+        logoUrl: z.string().url().optional().or(z.literal("")),
+        supportEmail: z.string().email().optional().or(z.literal("")),
+        defaultLocale: z.enum(["en", "fr", "de"]).optional(),
+        supportedLocales: z.array(z.enum(["en", "fr", "de"])).min(1).optional(),
+        vatRates: z
+          .object({
+            standard: z.number().min(0).max(100),
+            reduced: z.number().min(0).max(100),
+            special: z.number().min(0).max(100),
+            zero: z.number().min(0).max(100),
+          })
+          .optional(),
+        adyenApiKey: z.string().optional(),
+        adyenMerchantAccount: z.string().optional(),
+        adyenClientKey: z.string().optional(),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      if (input.agencyName !== undefined) await upsertAgencySetting("agency_name", input.agencyName);
+      if (input.logoUrl !== undefined) await upsertAgencySetting("logo_url", input.logoUrl);
+      if (input.supportEmail !== undefined) await upsertAgencySetting("support_email", input.supportEmail);
+      if (input.defaultLocale !== undefined) await upsertAgencySetting("default_locale", input.defaultLocale);
+      if (input.supportedLocales !== undefined) {
+        await upsertAgencySetting("supported_locales", JSON.stringify(input.supportedLocales));
+      }
+      if (input.vatRates !== undefined) {
+        await upsertAgencySetting("vat_rates", JSON.stringify(input.vatRates));
+      }
+      if (input.adyenApiKey) await upsertAgencySetting("adyen_api_key", input.adyenApiKey);
+      if (input.adyenMerchantAccount !== undefined) {
+        await upsertAgencySetting("adyen_merchant_account", input.adyenMerchantAccount);
+      }
+      if (input.adyenClientKey) await upsertAgencySetting("adyen_client_key", input.adyenClientKey);
+
+      await audit(ctx.user.id, "update_platform_settings", "settings", undefined, {
+        keys: Object.keys(input),
+      });
+      return { success: true };
+    }),
+
+  seedDefaultPlans: superadminProcedure.mutation(async ({ ctx }) => {
+    const db = await getDb();
+    if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+
+    const existing = await db.select().from(subscriptionPlans).limit(1);
+    if (existing[0]) {
+      return { created: 0, message: "Plans already exist" };
+    }
+
+    const defaults = [
+      {
+        name: "Starter",
+        description: "Solo practitioners and small teams",
+        maxUsers: 3,
+        monthlyPrice: "149.00",
+        yearlyPrice: "1490.00",
+        features: JSON.stringify(["Cases", "Clients", "Documents", "Time tracking"]),
+        sortOrder: 1,
+      },
+      {
+        name: "Professional",
+        description: "Growing firms with billing and portal",
+        maxUsers: 15,
+        monthlyPrice: "399.00",
+        yearlyPrice: "3990.00",
+        features: JSON.stringify([
+          "Everything in Starter",
+          "Client portal",
+          "Invoices & payments",
+          "AI document analysis",
+        ]),
+        sortOrder: 2,
+      },
+      {
+        name: "Enterprise",
+        description: "Multi-office firms with priority support",
+        maxUsers: 100,
+        monthlyPrice: "999.00",
+        yearlyPrice: "9990.00",
+        features: JSON.stringify([
+          "Everything in Professional",
+          "Custom domain",
+          "SSO-ready",
+          "Dedicated support",
+        ]),
+        sortOrder: 3,
+      },
+    ];
+
+    for (const plan of defaults) {
+      await db.insert(subscriptionPlans).values(plan);
+    }
+    await audit(ctx.user.id, "seed_default_plans", "plan", undefined, { count: defaults.length });
+    return { created: defaults.length, message: "Default plans created" };
+  }),
 });

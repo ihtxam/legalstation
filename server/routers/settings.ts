@@ -3,13 +3,19 @@ import { protectedProcedure, router } from "../_core/trpc";
 import { TRPCError } from "@trpc/server";
 import { getFirmMemberByUserId, getDb } from "../db";
 import { agencySettings } from "../../drizzle/schema";
-import { eq } from "drizzle-orm";
+
+async function requirePlatformOrFirmAdmin(userId: number, role: string) {
+  if (role === "superadmin") return;
+  const member = await getFirmMemberByUserId(userId);
+  if (!member || member.firmRole !== "admin") {
+    throw new TRPCError({ code: "FORBIDDEN" });
+  }
+}
 
 export const settingsRouter = router({
   // ─── Get All Agency Settings ────────────────────────────────────────────────
   getAll: protectedProcedure.query(async ({ ctx }) => {
-    const member = await getFirmMemberByUserId(ctx.user.id);
-    if (!member || member.firmRole !== "admin") throw new TRPCError({ code: "FORBIDDEN" });
+    await requirePlatformOrFirmAdmin(ctx.user.id, ctx.user.role);
 
     const db = await getDb();
     if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database unavailable" });
@@ -32,13 +38,11 @@ export const settingsRouter = router({
       })
     )
     .mutation(async ({ ctx, input }) => {
-      const member = await getFirmMemberByUserId(ctx.user.id);
-      if (!member || member.firmRole !== "admin") throw new TRPCError({ code: "FORBIDDEN" });
+      await requirePlatformOrFirmAdmin(ctx.user.id, ctx.user.role);
 
       const db = await getDb();
       if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database unavailable" });
 
-      // Update or insert Adyen settings
       if (input.apiKey) {
         await db
           .insert(agencySettings)
@@ -65,8 +69,7 @@ export const settingsRouter = router({
   updateLogo: protectedProcedure
     .input(z.object({ logoUrl: z.string().url() }))
     .mutation(async ({ ctx, input }) => {
-      const member = await getFirmMemberByUserId(ctx.user.id);
-      if (!member || member.firmRole !== "admin") throw new TRPCError({ code: "FORBIDDEN" });
+      await requirePlatformOrFirmAdmin(ctx.user.id, ctx.user.role);
 
       const db = await getDb();
       if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database unavailable" });
@@ -90,8 +93,7 @@ export const settingsRouter = router({
       })
     )
     .mutation(async ({ ctx, input }) => {
-      const member = await getFirmMemberByUserId(ctx.user.id);
-      if (!member || member.firmRole !== "admin") throw new TRPCError({ code: "FORBIDDEN" });
+      await requirePlatformOrFirmAdmin(ctx.user.id, ctx.user.role);
 
       const db = await getDb();
       if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database unavailable" });
