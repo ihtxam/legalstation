@@ -55,6 +55,7 @@ export const appRouter = router({
         loginMethod: ctx.user.loginMethod,
         role: ctx.user.role,
         preferredLocale: ctx.user.preferredLocale || "en",
+        mustChangePassword: Boolean(ctx.user.mustChangePassword),
         totpEnabled,
         requires2fa,
         createdAt: ctx.user.createdAt,

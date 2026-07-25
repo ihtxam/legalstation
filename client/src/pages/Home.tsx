@@ -40,9 +40,10 @@ export default function Home() {
         credentials: "include",
         body: JSON.stringify({ email }),
       });
-      if (!res.ok) throw new Error((await res.json().catch(() => ({}))).error || "Demo login failed");
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || "Demo login failed");
       await refresh();
-      navigate("/dashboard");
+      navigate(data?.user?.role === "superadmin" ? "/superadmin" : "/dashboard");
     } catch (err) {
       console.error(err);
       alert(err instanceof Error ? err.message : "Demo login failed");
@@ -72,10 +73,15 @@ export default function Home() {
           </div>
           <span className="font-serif font-semibold text-xl text-foreground tracking-tight">LexFlow</span>
         </div>
-        <Button onClick={() => startLogin()} className="bg-[var(--color-navy)] hover:bg-[var(--color-navy-light)] text-white">
-          {t("home.signIn")}
-          <ArrowRight className="w-4 h-4 ml-1.5" />
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button variant="ghost" onClick={() => navigate("/platform/login")} className="text-muted-foreground">
+            Platform
+          </Button>
+          <Button onClick={() => startLogin()} className="bg-[var(--color-navy)] hover:bg-[var(--color-navy-light)] text-white">
+            {t("home.signIn")}
+            <ArrowRight className="w-4 h-4 ml-1.5" />
+          </Button>
+        </div>
       </nav>
 
       <section className="relative overflow-hidden">

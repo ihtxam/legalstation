@@ -28,6 +28,7 @@ import {
   InsertMessageRead,
   InsertTimeEntry,
   InsertLawyerRate,
+  InsertActiveTimer,
   invitations,
   invoiceItems,
   invoices,
@@ -35,6 +36,7 @@ import {
   messageReads,
   messages,
   timeEntries,
+  activeTimers,
   InsertUser,
   users,
 } from "../drizzle/schema";
@@ -130,6 +132,17 @@ export async function getUserById(id: number) {
   const db = await getDb();
   if (!db) return undefined;
   const result = await db.select().from(users).where(eq(users.id, id)).limit(1);
+  return result[0];
+}
+
+export async function getUserByEmail(email: string) {
+  const db = await getDb();
+  if (!db) return undefined;
+  const result = await db
+    .select()
+    .from(users)
+    .where(eq(users.email, email.toLowerCase()))
+    .limit(1);
   return result[0];
 }
 
@@ -571,6 +584,60 @@ export async function createInvoiceItem(data: InsertInvoiceItem): Promise<number
   if (!db) throw new Error("DB unavailable");
   const [result] = await db.insert(invoiceItems).values(data);
   return Number((result as { insertId?: number }).insertId ?? 0);
+}
+
+// ─── Active timer helpers ─────────────────────────────────────────────────────
+export async function getActiveTimerForLawyer(firmId: number, lawyerId: number) {
+  const db = await getDb();
+  if (!db) return undefined;
+  const result = await db
+    .select()
+    .from(activeTimers)
+    .where(and(eq(activeTimers.firmId, firmId), eq(activeTimers.lawyerId, lawyerId)))
+    .limit(1);
+  return result[0];
+}
+
+export async function createActiveTimer(data: InsertActiveTimer) {
+  const db = await getDb();
+  if (!db) throw new Error("DB unavailable");
+  const [result] = await db.insert(activeTimers).values(data);
+  return Number((result as { insertId?: number }).insertId ?? 0);
+}
+
+export async function updateActiveTimer(
+  id: number,
+  firmId: number,
+  data: Partial<InsertActiveTimer>
+) {
+  const db = await getDb();
+  if (!db) throw new Error("DB unavailable");
+  await db
+    .update(activeTimers)
+    .set(data)
+    .where(and(eq(activeTimers.id, id), eq(activeTimers.firmId, firmId)));
+}
+
+export async function deleteActiveTimer(id: number, firmId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("DB unavailable");
+  await db
+    .delete(activeTimers)
+    .where(and(eq(activeTimers.id, id), eq(activeTimers.firmId, firmId)));
+}
+
+export function elapsedSecondsFromTimer(timer: {
+  startedAt: Date;
+  accumulatedSeconds: number;
+  isPaused: boolean;
+  pausedAt: Date | null;
+}): number {
+  let total = timer.accumulatedSeconds || 0;
+  if (!timer.isPaused) {
+    const start = new Date(timer.startedAt).getTime();
+    total += Math.max(0, Math.floor((Date.now() - start) / 1000));
+  }
+  return total;
 }
 
 // ─── Time entry helpers ───────────────────────────────────────────────────────

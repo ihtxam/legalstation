@@ -5,11 +5,10 @@ import LexLayout from "@/components/LexLayout";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
-import { Briefcase, Receipt, Clock, AlertTriangle, ArrowRight, Crown } from "lucide-react";
+import { Briefcase, Receipt, Clock, AlertTriangle, ArrowRight } from "lucide-react";
 import { useEffect } from "react";
 import { useLocation } from "wouter";
 import { PaymentInstallmentTimeline } from "@/components/PaymentInstallmentTimeline";
-import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 
 function formatCHF(amount: number) {
@@ -19,20 +18,7 @@ function formatCHF(amount: number) {
 function LawyerDashboard() {
   const { t } = useTranslation();
   const { data: stats, isLoading } = trpc.dashboard.lawyerStats.useQuery();
-  const { user } = useAuth();
   const [, navigate] = useLocation();
-
-  const setupSuperadminMutation = trpc.superadmin.setupSuperadmin.useMutation({
-    onSuccess: () => {
-      toast.success(t("dashboard.promoted"));
-      setTimeout(() => navigate("/superadmin"), 1000);
-    },
-    onError: (err) => {
-      toast.error(err.message || t("dashboard.setupFailed"));
-    },
-  });
-
-  const canSetupSuperadmin = user?.role === "admin";
 
   const statCards = [
     { label: t("dashboard.openCases"), value: stats?.openCases ?? 0, icon: Briefcase, color: "text-blue-600", bg: "bg-blue-50" },
@@ -43,29 +29,6 @@ function LawyerDashboard() {
 
   return (
     <div className="p-6 space-y-6 max-w-6xl mx-auto">
-      {canSetupSuperadmin && (
-        <Card className="border-amber-200 bg-amber-50">
-          <CardContent className="p-5">
-            <div className="flex items-center justify-between gap-4 flex-wrap">
-              <div className="flex items-center gap-3">
-                <Crown className="h-5 w-5 text-amber-600" />
-                <div>
-                  <p className="font-semibold text-amber-900">{t("dashboard.becomeSuperadmin")}</p>
-                  <p className="text-sm text-amber-800">{t("dashboard.becomeSuperadminDesc")}</p>
-                </div>
-              </div>
-              <Button
-                onClick={() => setupSuperadminMutation.mutate()}
-                disabled={setupSuperadminMutation.isPending}
-                className="bg-amber-600 hover:bg-amber-700"
-              >
-                {setupSuperadminMutation.isPending ? t("dashboard.settingUp") : t("dashboard.activate")}
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {statCards.map(({ label, value, icon: Icon, color, bg }) => (
           <Card key={label} className="border-border shadow-none">

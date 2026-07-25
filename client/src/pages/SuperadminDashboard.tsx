@@ -11,7 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { Plus, Edit2, Pause, RotateCcw, Search, X, Users, TrendingUp, Building2, DollarSign } from "lucide-react";
+import { Plus, Edit2, Pause, RotateCcw, Search, X, Users, TrendingUp, Building2, DollarSign, Mail, CheckCircle2 } from "lucide-react";
 
 export default function SuperadminDashboard() {
   const { user } = useAuth();
@@ -25,6 +25,10 @@ export default function SuperadminDashboard() {
   const [sortBy, setSortBy] = useState<"name" | "status" | "plan">("name");
   const [selectedFirmId, setSelectedFirmId] = useState<number | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
+  const [createPlanId, setCreatePlanId] = useState("");
+  const [createBilling, setCreateBilling] = useState<"monthly" | "yearly">("monthly");
+  const [sendCredentials, setSendCredentials] = useState(true);
+  const [lastCreatedCreds, setLastCreatedCreds] = useState<{ loginUrl: string; temporaryPassword?: string } | null>(null);
   const itemsPerPage = 10;
 
   // Check if user is superadmin
@@ -83,9 +87,29 @@ export default function SuperadminDashboard() {
 
   // Mutations
   const createFirmMutation = trpc.superadmin.createFirm.useMutation({
-    onSuccess: () => {
-      toast.success("Firm created successfully");
+    onSuccess: (data) => {
+      toast.success(data.credentialsSent ? "Firm created — credentials emailed" : "Firm created");
+      setLastCreatedCreds({
+        loginUrl: data.loginUrl,
+        temporaryPassword: data.temporaryPassword,
+      });
       setShowCreateFirm(false);
+      refetchFirms();
+    },
+    onError: (err) => toast.error(err.message),
+  });
+
+  const sendCredentialsMutation = trpc.superadmin.sendFirmCredentials.useMutation({
+    onSuccess: () => {
+      toast.success("Credentials sent");
+      refetchFirms();
+    },
+    onError: (err) => toast.error(err.message),
+  });
+
+  const setSubdomainMutation = trpc.superadmin.setSubdomainStatus.useMutation({
+    onSuccess: () => {
+      toast.success("Subdomain status updated");
       refetchFirms();
     },
     onError: (err) => toast.error(err.message),
@@ -160,14 +184,23 @@ export default function SuperadminDashboard() {
   const handleCreateFirm = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
+    if (!createPlanId) {
+      toast.error("Select a subscription plan");
+      return;
+    }
     createFirmMutation.mutate({
       name: formData.get("firmName") as string,
       email: formData.get("firmEmail") as string,
+      ownerName: (formData.get("ownerName") as string) || undefined,
       address: formData.get("firmAddress") as string,
       phone: formData.get("firmPhone") as string,
       vatNumber: formData.get("vatNumber") as string,
-      planId: parseInt(formData.get("planId") as string),
-      billingCycle: (formData.get("billingCycle") as "monthly" | "yearly") || "monthly",
+      slug: (formData.get("firmSlug") as string) || undefined,
+      planId: parseInt(createPlanId, 10),
+      billingCycle: createBilling,
+      sendCredentials,
+      defaultCurrency: ((formData.get("defaultCurrency") as string) || "CHF").toUpperCase(),
+      defaultVatRate: parseFloat((formData.get("defaultVatRate") as string) || "8.1"),
     });
   };
 
@@ -205,6 +238,28 @@ export default function SuperadminDashboard() {
 
       {/* Main Content */}
       <div className="container mx-auto px-4 py-8">
+        {lastCreatedCreds && (
+          <Card className="mb-6 border-emerald-200 bg-emerald-50">
+            <CardContent className="p-4 text-sm space-y-1">
+              <p className="font-semibold text-emerald-900">Firm provisioned</p>
+              <p>
+                Login URL:{" "}
+                <a className="underline" href={lastCreatedCreds.loginUrl}>
+                  {lastCreatedCreds.loginUrl}
+                </a>
+              </p>
+              {lastCreatedCreds.temporaryPassword && (
+                <p>
+                  Temporary password (shown once):{" "}
+                  <code className="bg-white px-1 rounded">{lastCreatedCreds.temporaryPassword}</code>
+                </p>
+              )}
+              <Button size="sm" variant="ghost" onClick={() => setLastCreatedCreds(null)}>
+                Dismiss
+              </Button>
+            </CardContent>
+          </Card>
+        )}
         {/* Summary Stats */}
         <div className="mb-12">
           <h2 className="text-2xl font-bold mb-6">Platform Overview</h2>
@@ -256,8 +311,16 @@ export default function SuperadminDashboard() {
                     <Input id="firmName" name="firmName" required />
                   </div>
                   <div>
-                    <Label htmlFor="firmEmail">Firm Email</Label>
+                    <Label htmlFor="ownerName">Owner name</Label>
+                    <Input id="ownerName" name="ownerName" placeholder="Optional" />
+                  </div>
+                  <div>
+                    <Label htmlFor="firmEmail">Owner login email</Label>
                     <Input id="firmEmail" name="firmEmail" type="email" required />
+                  </div>
+                  <div>
+                    <Label htmlFor="firmSlug">Subdomain slug</Label>
+                    <Input id="firmSlug" name="firmSlug" placeholder="mueller-partner" />
                   </div>
                   <div>
                     <Label htmlFor="firmAddress">Address</Label>
@@ -271,9 +334,19 @@ export default function SuperadminDashboard() {
                     <Label htmlFor="vatNumber">VAT Number</Label>
                     <Input id="vatNumber" name="vatNumber" />
                   </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <Label htmlFor="defaultCurrency">Currency</Label>
+                      <Input id="defaultCurrency" name="defaultCurrency" defaultValue="CHF" maxLength={3} />
+                    </div>
+                    <div>
+                      <Label htmlFor="defaultVatRate">VAT %</Label>
+                      <Input id="defaultVatRate" name="defaultVatRate" defaultValue="8.1" />
+                    </div>
+                  </div>
                   <div>
-                    <Label htmlFor="planId">Subscription Plan</Label>
-                    <Select name="planId" required>
+                    <Label>Subscription Plan</Label>
+                    <Select value={createPlanId} onValueChange={setCreatePlanId}>
                       <SelectTrigger>
                         <SelectValue placeholder="Select a plan" />
                       </SelectTrigger>
@@ -287,8 +360,8 @@ export default function SuperadminDashboard() {
                     </Select>
                   </div>
                   <div>
-                    <Label htmlFor="billingCycle">Billing Cycle</Label>
-                    <Select name="billingCycle" defaultValue="monthly">
+                    <Label>Billing Cycle</Label>
+                    <Select value={createBilling} onValueChange={(v) => setCreateBilling(v as "monthly" | "yearly")}>
                       <SelectTrigger>
                         <SelectValue />
                       </SelectTrigger>
@@ -298,6 +371,14 @@ export default function SuperadminDashboard() {
                       </SelectContent>
                     </Select>
                   </div>
+                  <label className="flex items-center gap-2 text-sm">
+                    <input
+                      type="checkbox"
+                      checked={sendCredentials}
+                      onChange={(e) => setSendCredentials(e.target.checked)}
+                    />
+                    Send login credentials email now
+                  </label>
                   <Button type="submit" disabled={createFirmMutation.isPending}>
                     {createFirmMutation.isPending ? "Creating..." : "Create Firm"}
                   </Button>
@@ -437,15 +518,24 @@ export default function SuperadminDashboard() {
                         <p className="font-medium capitalize">{firm.subscription?.billingCycle || "—"}</p>
                       </div>
                       <div>
-                        <p className="text-muted-foreground">Address</p>
-                        <p className="font-medium text-xs">{firm.address || "—"}</p>
+                        <p className="text-muted-foreground">Subdomain</p>
+                        <p className="font-medium text-xs">
+                          {firm.slug}{" "}
+                          <Badge variant="outline" className="ml-1">
+                            {firm.subdomainStatus || "none"}
+                          </Badge>
+                        </p>
                       </div>
                       <div>
-                        <p className="text-muted-foreground">Phone</p>
-                        <p className="font-medium">{firm.phone || "—"}</p>
+                        <p className="text-muted-foreground">Credentials</p>
+                        <p className="font-medium text-xs">
+                          {firm.credentialsSentAt
+                            ? `Sent ${new Date(firm.credentialsSentAt).toLocaleDateString()}`
+                            : "Not sent"}
+                        </p>
                       </div>
                     </div>
-                    <div className="flex gap-2">
+                    <div className="flex gap-2 flex-wrap">
                       <Button
                         size="sm"
                         variant="default"
@@ -456,15 +546,33 @@ export default function SuperadminDashboard() {
                       <Button
                         size="sm"
                         variant="outline"
+                        onClick={() => sendCredentialsMutation.mutate({ firmId: firm.id })}
+                        disabled={sendCredentialsMutation.isPending}
+                      >
+                        <Mail className="h-4 w-4 mr-1" />
+                        Send credentials
+                      </Button>
+                      {firm.subdomainStatus !== "active" && (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() =>
+                            setSubdomainMutation.mutate({ firmId: firm.id, status: "active" })
+                          }
+                          disabled={setSubdomainMutation.isPending}
+                        >
+                          <CheckCircle2 className="h-4 w-4 mr-1" />
+                          Activate subdomain
+                        </Button>
+                      )}
+                      <Button
+                        size="sm"
+                        variant="outline"
                         onClick={() => suspendFirmMutation.mutate({ firmId: firm.id })}
                         disabled={firm.subscription?.status === "suspended" || suspendFirmMutation.isPending}
                       >
                         <Pause className="h-4 w-4 mr-1" />
                         {firm.subscription?.status === "suspended" ? "Suspended" : "Suspend"}
-                      </Button>
-                      <Button size="sm" variant="outline">
-                        <Edit2 className="h-4 w-4 mr-1" />
-                        Edit
                       </Button>
                     </div>
                   </CardContent>

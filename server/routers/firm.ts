@@ -30,7 +30,7 @@ export const firmRouter = router({
     return firm ? { firm, member } : null;
   }),
 
-  // Get firm branding (logo, name) - accessible to firm members and clients
+  // Get firm branding (logo, name, colors) - accessible to firm members and clients
   branding: protectedProcedure.query(async ({ ctx }) => {
     const firmCtx = await resolveFirmContext(ctx.user.id);
     if (!firmCtx) return null;
@@ -40,6 +40,15 @@ export const firmRouter = router({
       name: firm.name,
       logoUrl: firm.logoUrl,
       email: firm.email,
+      slug: firm.slug,
+      primaryColor: firm.primaryColor,
+      secondaryColor: firm.secondaryColor,
+      defaultCurrency: firm.defaultCurrency,
+      defaultVatRate: firm.defaultVatRate,
+      customDomain: firm.customDomain,
+      subdomainStatus: firm.subdomainStatus,
+      onboardingCompletedAt: firm.onboardingCompletedAt,
+      onboardingStep: firm.onboardingStep,
     };
   }),
 
@@ -75,7 +84,17 @@ export const firmRouter = router({
       }
 
       const slug = input.name.toLowerCase().replace(/[^a-z0-9]/g, "-").replace(/-+/g, "-").slice(0, 80) + "-" + nanoid(6);
-      await createFirm({ name: input.name, slug, address: input.address, phone: input.phone, email: input.email, website: input.website, vatNumber: input.vatNumber });
+      await createFirm({
+        name: input.name,
+        slug,
+        address: input.address,
+        phone: input.phone,
+        email: input.email,
+        website: input.website,
+        vatNumber: input.vatNumber,
+        subdomainStatus: "pending",
+        onboardingStep: 0,
+      });
       const firm = await getFirmBySlug(slug);
       if (!firm) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
       await createFirmMember({ firmId: firm.id, userId: ctx.user.id, firmRole: "admin" });
@@ -92,12 +111,84 @@ export const firmRouter = router({
       website: z.string().optional().nullable(),
       vatNumber: z.string().optional().nullable(),
       logoUrl: z.string().optional().nullable(),
+      defaultCurrency: z.string().length(3).optional(),
+      defaultVatRate: z.number().min(0).max(100).optional(),
+      primaryColor: z.string().regex(/^#[0-9A-Fa-f]{6}$/).optional().nullable(),
+      secondaryColor: z.string().regex(/^#[0-9A-Fa-f]{6}$/).optional().nullable(),
+      customDomain: z.string().max(255).optional().nullable(),
     }))
     .mutation(async ({ ctx, input }) => {
       const member = await getFirmMemberByUserId(ctx.user.id);
       if (!member || member.firmRole !== "admin") throw new TRPCError({ code: "FORBIDDEN" });
-      await updateFirm(member.firmId, input);
+      const { defaultVatRate, defaultCurrency, ...rest } = input;
+      await updateFirm(member.firmId, {
+        ...rest,
+        defaultCurrency: defaultCurrency?.toUpperCase(),
+        defaultVatRate: defaultVatRate != null ? defaultVatRate.toFixed(2) : undefined,
+      });
       return { success: true };
+    }),
+
+  /** Multi-step firm onboarding (name, branding, currency/tax, subdomain). */
+  completeOnboardingStep: protectedProcedure
+    .input(
+      z.object({
+        step: z.number().int().min(1).max(5),
+        name: z.string().min(2).max(255).optional(),
+        address: z.string().optional(),
+        phone: z.string().optional(),
+        email: z.string().email().optional(),
+        vatNumber: z.string().optional(),
+        logoUrl: z.string().optional().nullable(),
+        primaryColor: z.string().regex(/^#[0-9A-Fa-f]{6}$/).optional(),
+        secondaryColor: z.string().regex(/^#[0-9A-Fa-f]{6}$/).optional(),
+        defaultCurrency: z.string().length(3).optional(),
+        defaultVatRate: z.number().min(0).max(100).optional(),
+        slug: z.string().min(2).max(50).regex(/^[a-z0-9-]+$/).optional(),
+        customDomain: z.string().max(255).optional().nullable(),
+        finish: z.boolean().optional(),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const member = await getFirmMemberByUserId(ctx.user.id);
+      if (!member || member.firmRole !== "admin") throw new TRPCError({ code: "FORBIDDEN" });
+
+      const updates: Record<string, unknown> = {
+        onboardingStep: input.step,
+      };
+      if (input.name) updates.name = input.name;
+      if (input.address !== undefined) updates.address = input.address;
+      if (input.phone !== undefined) updates.phone = input.phone;
+      if (input.email !== undefined) updates.email = input.email;
+      if (input.vatNumber !== undefined) updates.vatNumber = input.vatNumber;
+      if (input.logoUrl !== undefined) updates.logoUrl = input.logoUrl;
+      if (input.primaryColor) updates.primaryColor = input.primaryColor;
+      if (input.secondaryColor) updates.secondaryColor = input.secondaryColor;
+      if (input.defaultCurrency) updates.defaultCurrency = input.defaultCurrency.toUpperCase();
+      if (input.defaultVatRate != null) updates.defaultVatRate = input.defaultVatRate.toFixed(2);
+      if (input.customDomain !== undefined) updates.customDomain = input.customDomain;
+
+      if (input.slug) {
+        const { isReservedSubdomain } = await import("../tenant");
+        if (isReservedSubdomain(input.slug)) {
+          throw new TRPCError({ code: "BAD_REQUEST", message: "This subdomain is reserved" });
+        }
+        const existing = await getFirmBySlug(input.slug);
+        if (existing && existing.id !== member.firmId) {
+          throw new TRPCError({ code: "CONFLICT", message: "Subdomain already taken" });
+        }
+        updates.slug = input.slug;
+        updates.subdomainStatus = "pending";
+      }
+
+      if (input.finish) {
+        updates.onboardingCompletedAt = new Date();
+        updates.onboardingStep = 5;
+        if (!updates.subdomainStatus) updates.subdomainStatus = "active";
+      }
+
+      await updateFirm(member.firmId, updates as any);
+      return { success: true, step: input.step, completed: Boolean(input.finish) };
     }),
 
   // Get all firm members

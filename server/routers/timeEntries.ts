@@ -15,6 +15,11 @@ import {
   updateTimeEntry,
   upsertLawyerRate,
   getInvoicesByFirm,
+  getActiveTimerForLawyer,
+  createActiveTimer,
+  updateActiveTimer,
+  deleteActiveTimer,
+  elapsedSecondsFromTimer,
 } from "../db";
 import {
   canTransitionTimeEntryStatus,
@@ -243,6 +248,157 @@ export const timeEntriesRouter = router({
     return {
       hourlyRate: rate ? parseFloat(String(rate.hourlyRate)) : null,
     };
+  }),
+
+  /** Server-persisted stopwatch for the current lawyer. */
+  activeTimer: protectedProcedure.query(async ({ ctx }) => {
+    const member = await requireFirmMember(ctx.user.id);
+    const timer = await getActiveTimerForLawyer(member.firmId, ctx.user.id);
+    if (!timer) return null;
+    return {
+      ...timer,
+      elapsedSeconds: elapsedSecondsFromTimer(timer),
+    };
+  }),
+
+  startTimer: protectedProcedure
+    .input(
+      z.object({
+        caseId: z.number(),
+        description: z.string().optional().default(""),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const member = await requireFirmMember(ctx.user.id);
+      if (!["admin", "lawyer", "assistant"].includes(member.firmRole)) {
+        throw new TRPCError({ code: "FORBIDDEN" });
+      }
+      const caseRow = await getCaseById(input.caseId, member.firmId);
+      if (!caseRow) throw new TRPCError({ code: "NOT_FOUND", message: "Case not found" });
+
+      const existing = await getActiveTimerForLawyer(member.firmId, ctx.user.id);
+      if (existing) {
+        throw new TRPCError({
+          code: "CONFLICT",
+          message: "A timer is already running. Stop or save it first.",
+        });
+      }
+
+      const id = await createActiveTimer({
+        firmId: member.firmId,
+        lawyerId: ctx.user.id,
+        caseId: input.caseId,
+        description: input.description || "",
+        startedAt: new Date(),
+        accumulatedSeconds: 0,
+        isPaused: false,
+        pausedAt: null,
+      });
+      return { id };
+    }),
+
+  pauseTimer: protectedProcedure.mutation(async ({ ctx }) => {
+    const member = await requireFirmMember(ctx.user.id);
+    const timer = await getActiveTimerForLawyer(member.firmId, ctx.user.id);
+    if (!timer) throw new TRPCError({ code: "NOT_FOUND", message: "No active timer" });
+    if (timer.isPaused) return { success: true };
+
+    const elapsed = elapsedSecondsFromTimer(timer);
+    await updateActiveTimer(timer.id, member.firmId, {
+      accumulatedSeconds: elapsed,
+      isPaused: true,
+      pausedAt: new Date(),
+      startedAt: timer.startedAt,
+    });
+    return { success: true, elapsedSeconds: elapsed };
+  }),
+
+  resumeTimer: protectedProcedure.mutation(async ({ ctx }) => {
+    const member = await requireFirmMember(ctx.user.id);
+    const timer = await getActiveTimerForLawyer(member.firmId, ctx.user.id);
+    if (!timer) throw new TRPCError({ code: "NOT_FOUND", message: "No active timer" });
+    if (!timer.isPaused) return { success: true };
+
+    await updateActiveTimer(timer.id, member.firmId, {
+      isPaused: false,
+      pausedAt: null,
+      startedAt: new Date(),
+      accumulatedSeconds: timer.accumulatedSeconds,
+    });
+    return { success: true };
+  }),
+
+  updateTimer: protectedProcedure
+    .input(
+      z.object({
+        caseId: z.number().optional(),
+        description: z.string().optional(),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const member = await requireFirmMember(ctx.user.id);
+      const timer = await getActiveTimerForLawyer(member.firmId, ctx.user.id);
+      if (!timer) throw new TRPCError({ code: "NOT_FOUND", message: "No active timer" });
+      if (input.caseId != null) {
+        const caseRow = await getCaseById(input.caseId, member.firmId);
+        if (!caseRow) throw new TRPCError({ code: "NOT_FOUND", message: "Case not found" });
+      }
+      await updateActiveTimer(timer.id, member.firmId, {
+        caseId: input.caseId,
+        description: input.description,
+      });
+      return { success: true };
+    }),
+
+  /** Stop timer and optionally save as a draft time entry. */
+  stopTimer: protectedProcedure
+    .input(
+      z.object({
+        save: z.boolean().default(true),
+        description: z.string().optional(),
+        billable: z.boolean().optional().default(true),
+        /** Manual override of duration in minutes (optional) */
+        durationMinutes: z.number().int().positive().optional(),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const member = await requireFirmMember(ctx.user.id);
+      const timer = await getActiveTimerForLawyer(member.firmId, ctx.user.id);
+      if (!timer) throw new TRPCError({ code: "NOT_FOUND", message: "No active timer" });
+
+      const elapsedSeconds = elapsedSecondsFromTimer(timer);
+      const minutes =
+        input.durationMinutes ??
+        Math.max(1, Math.round(elapsedSeconds / 60));
+
+      let entryId: number | null = null;
+      if (input.save) {
+        const rate = await getCurrentLawyerRate(member.firmId, ctx.user.id);
+        entryId = await createTimeEntry({
+          firmId: member.firmId,
+          caseId: timer.caseId,
+          lawyerId: ctx.user.id,
+          description: input.description ?? timer.description ?? "Timed work",
+          durationMinutes: minutes,
+          hourlyRate: rate ? String(rate.hourlyRate) : null,
+          billable: input.billable,
+          status: "draft",
+          date: new Date(),
+          startTime: timer.startedAt,
+          endTime: new Date(),
+        });
+      }
+
+      await deleteActiveTimer(timer.id, member.firmId);
+      return { success: true, entryId, durationMinutes: minutes, elapsedSeconds };
+    }),
+
+  discardTimer: protectedProcedure.mutation(async ({ ctx }) => {
+    const member = await requireFirmMember(ctx.user.id);
+    const timer = await getActiveTimerForLawyer(member.firmId, ctx.user.id);
+    if (!timer) return { success: true };
+    await deleteActiveTimer(timer.id, member.firmId);
+    return { success: true };
   }),
 
   /** Create a draft invoice from submitted billable time entries. */

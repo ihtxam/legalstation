@@ -14,6 +14,13 @@ export const ENV = {
   forgeApiKey: process.env.BUILT_IN_FORGE_API_KEY ?? "",
   brevoApiKey: process.env.BREVO_API_KEY ?? "",
 
+  /** Canonical public URL for emails / redirects (e.g. https://legal.webprintmedia.swiss) */
+  appUrl: process.env.APP_URL ?? "",
+  /** Apex domain for firm subdomains (e.g. webprintmedia.swiss → firm.webprintmedia.swiss) */
+  appBaseDomain: process.env.APP_BASE_DOMAIN ?? "",
+  /** One-time secret to bootstrap the first platform superadmin via /api/auth/bootstrap-superadmin */
+  superadminBootstrapSecret: process.env.SUPERADMIN_BOOTSTRAP_SECRET ?? "",
+
   /** Passwordless demo login + seed (dev/demo hosts only by default) */
   demoAuthEnabled: boolEnv(process.env.DEMO_AUTH_ENABLED),
   demoAuthAllowProduction: boolEnv(process.env.DEMO_AUTH_ALLOW_PRODUCTION),

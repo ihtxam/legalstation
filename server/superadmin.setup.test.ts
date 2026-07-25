@@ -10,8 +10,13 @@ function createAuthContext(userId: number, role: "user" | "superadmin" = "user")
     openId: `test-user-${userId}`,
     email: `test${userId}@example.com`,
     name: `Test User ${userId}`,
-    loginMethod: "manus",
+    loginMethod: "password",
     role,
+    passwordHash: null,
+    mustChangePassword: false,
+    totpSecret: null,
+    totpEnabled: false,
+    preferredLocale: "en",
     createdAt: new Date(),
     updatedAt: new Date(),
     lastSignedIn: new Date(),
@@ -32,18 +37,11 @@ function createAuthContext(userId: number, role: "user" | "superadmin" = "user")
 }
 
 describe("superadmin.setupSuperadmin", () => {
-  it("should be callable by authenticated users", async () => {
+  it("requires a bootstrap secret (no click-to-elevate)", async () => {
     const ctx = createAuthContext(999, "user");
     const caller = appRouter.createCaller(ctx);
 
-    // This test verifies the endpoint is accessible
-    // Note: actual database operations require a real DB connection
-    try {
-      await caller.superadmin.setupSuperadmin();
-    } catch (error: any) {
-      // Expected to fail without DB, but endpoint should be callable
-      expect(error).toBeDefined();
-    }
+    await expect(caller.superadmin.setupSuperadmin({ bootstrapSecret: "wrong" })).rejects.toThrow();
   });
 
   it("should require authentication", async () => {
@@ -59,8 +57,14 @@ describe("superadmin.setupSuperadmin", () => {
     };
 
     const caller = appRouter.createCaller(ctx);
+    await expect(
+      caller.superadmin.setupSuperadmin({ bootstrapSecret: "anything" })
+    ).rejects.toThrow();
+  });
 
-    // Should throw UNAUTHORIZED
-    await expect(caller.superadmin.setupSuperadmin()).rejects.toThrow();
+  it("blocks non-superadmins from listFirms", async () => {
+    const ctx = createAuthContext(1, "user");
+    const caller = appRouter.createCaller(ctx);
+    await expect(caller.superadmin.listFirms()).rejects.toThrow(/Superadmin/);
   });
 });

@@ -9,13 +9,16 @@ import {
   varchar,
 } from "drizzle-orm/mysql-core";
 
-// ─── Users (Manus OAuth, extended with firm role) ───────────────────────────
+// ─── Users (OAuth + email/password; platform role separate from firm role) ──
 export const users = mysqlTable("users", {
   id: int("id").autoincrement().primaryKey(),
   openId: varchar("openId", { length: 64 }).notNull().unique(),
   name: text("name"),
   email: varchar("email", { length: 320 }),
   loginMethod: varchar("loginMethod", { length: 64 }),
+  /** scrypt hash (salt:hex format); used for email/password SaaS login */
+  passwordHash: varchar("passwordHash", { length: 255 }),
+  mustChangePassword: boolean("mustChangePassword").notNull().default(false),
   role: mysqlEnum("role", ["user", "admin", "superadmin"]).default("user").notNull(),
   /** Optional TOTP 2FA (base32 secret); enabled via totpEnabled */
   totpSecret: varchar("totpSecret", { length: 128 }),
@@ -40,6 +43,20 @@ export const firms = mysqlTable("firms", {
   website: varchar("website", { length: 255 }),
   vatNumber: varchar("vatNumber", { length: 50 }),
   logoUrl: text("logoUrl"),
+  /** ISO 4217 default billing currency */
+  defaultCurrency: varchar("defaultCurrency", { length: 3 }).notNull().default("CHF"),
+  /** Default VAT / MWST rate percent (e.g. 8.10) */
+  defaultVatRate: decimal("defaultVatRate", { precision: 5, scale: 2 }).notNull().default("8.10"),
+  primaryColor: varchar("primaryColor", { length: 7 }).default("#001f3f"),
+  secondaryColor: varchar("secondaryColor", { length: 7 }).default("#c9a227"),
+  /** Optional vanity host, e.g. portal.mueller-law.ch */
+  customDomain: varchar("customDomain", { length: 255 }),
+  subdomainStatus: mysqlEnum("subdomainStatus", ["none", "pending", "active", "rejected"])
+    .notNull()
+    .default("none"),
+  onboardingStep: int("onboardingStep").notNull().default(0),
+  onboardingCompletedAt: timestamp("onboardingCompletedAt"),
+  credentialsSentAt: timestamp("credentialsSentAt"),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 });
@@ -411,6 +428,25 @@ export const superadminAuditLog = mysqlTable("superadmin_audit_log", {
 
 export type SuperadminAuditLog = typeof superadminAuditLog.$inferSelect;
 export type InsertSuperadminAuditLog = typeof superadminAuditLog.$inferInsert;
+
+// ─── Active Timers (server-persisted running stopwatch per lawyer) ───────────
+export const activeTimers = mysqlTable("active_timers", {
+  id: int("id").autoincrement().primaryKey(),
+  firmId: int("firmId").notNull(),
+  lawyerId: int("lawyerId").notNull(),
+  caseId: int("caseId").notNull(),
+  description: text("description").notNull().default(""),
+  startedAt: timestamp("startedAt").notNull(),
+  /** Accumulated seconds from previous pause segments */
+  accumulatedSeconds: int("accumulatedSeconds").notNull().default(0),
+  isPaused: boolean("isPaused").notNull().default(false),
+  pausedAt: timestamp("pausedAt"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type ActiveTimer = typeof activeTimers.$inferSelect;
+export type InsertActiveTimer = typeof activeTimers.$inferInsert;
 
 // ─── Time Tracking (timers, time entries for billable work) ──────────────────
 export const timeEntries = mysqlTable("time_entries", {

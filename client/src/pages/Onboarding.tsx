@@ -20,14 +20,16 @@ export default function OnboardingPage() {
 
   const { data: firmData, isLoading: firmLoading } = trpc.firm.myFirm.useQuery(undefined, { enabled: isAuthenticated });
   const createFirm = trpc.firm.create.useMutation({
-    onSuccess: () => { toast.success("Firm created successfully!"); navigate("/dashboard"); },
+    onSuccess: () => { toast.success("Firm created successfully!"); navigate("/firm-onboarding"); },
     onError: (e) => toast.error(e.message),
   });
 
   useEffect(() => {
     if (!loading && !isAuthenticated) startLogin();
-    if (!firmLoading && firmData) navigate("/dashboard");
-  }, [isAuthenticated, loading, firmData, firmLoading]);
+    if (!firmLoading && firmData) {
+      navigate(firmData.firm.onboardingCompletedAt ? "/dashboard" : "/firm-onboarding");
+    }
+  }, [isAuthenticated, loading, firmData, firmLoading, navigate]);
 
   if (loading || firmLoading) return null;
 

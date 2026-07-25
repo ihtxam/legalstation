@@ -7,22 +7,22 @@ function oauthConfigured(): boolean {
   return Boolean(import.meta.env.VITE_OAUTH_PORTAL_URL && import.meta.env.VITE_APP_ID);
 }
 
-// Start the Manus OAuth login. Call this from an event handler or effect at the
-// moment you want to navigate, e.g. `onClick={() => startLogin()}`.
-//
-// It has SIDE EFFECTS — it mints a one-time nonce, writes the __Host- state
-// cookie, and navigates immediately — so the cookie nonce always matches the
-// `state` it sends. Do NOT call it during render (no `href={startLogin()}` /
-// `loginUrl={...}`): each call overwrites the cookie, so a stray render-phase
-// call would desync it from an in-flight login and the callback would reject it
-// with "invalid oauth state". It returns void by design, so there is no URL to
-// stash across renders.
-export const startLogin = () => {
-  // Without Manus OAuth env (common on demo/HTTP hosts), send users home.
+/**
+ * Navigate to the SaaS login page (email/password).
+ * Use `portal: "platform"` for LexFlow superadmin login only.
+ */
+export const startLogin = (opts?: { portal?: "app" | "platform" }) => {
+  const portal = opts?.portal ?? "app";
+  const loginPath = portal === "platform" ? "/platform/login" : "/login";
+  if (window.location.pathname !== loginPath) {
+    window.location.href = loginPath;
+  }
+};
+
+/** Optional Manus OAuth sign-in (legacy / enterprise). */
+export const startOAuthLogin = () => {
   if (!oauthConfigured()) {
-    if (window.location.pathname !== "/") {
-      window.location.href = "/";
-    }
+    startLogin();
     return;
   }
 

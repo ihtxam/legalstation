@@ -24,6 +24,7 @@ import { toast } from "sonner";
 import { format } from "date-fns";
 import { CASE_TYPE_LABELS } from "@shared/types";
 import { DocumentVersionHistory } from "@/components/DocumentVersionHistory";
+import CaseTimePanel from "@/components/CaseTimePanel";
 
 function CaseTimeline({ caseId, isInternal }: { caseId: number; isInternal: boolean }) {
   const { data: events, isLoading, refetch } = trpc.cases.getEvents.useQuery({ caseId });
@@ -539,12 +540,20 @@ export default function CaseDetailPage() {
         <Tabs defaultValue="timeline" className="bg-card border border-border rounded-xl p-6">
           <TabsList className="bg-muted">
             <TabsTrigger value="timeline"><Clock className="w-3.5 h-3.5 mr-1.5" />Timeline</TabsTrigger>
+            <TabsTrigger value="time"><Clock className="w-3.5 h-3.5 mr-1.5" />Time</TabsTrigger>
             <TabsTrigger value="documents"><FileText className="w-3.5 h-3.5 mr-1.5" />Documents</TabsTrigger>
             <TabsTrigger value="messages"><MessageSquare className="w-3.5 h-3.5 mr-1.5" />Messages</TabsTrigger>
             <TabsTrigger value="assignments"><Users className="w-3.5 h-3.5 mr-1.5" />Assignments</TabsTrigger>
           </TabsList>
           <TabsContent value="timeline" className="mt-4">
             <CaseTimeline caseId={caseId} isInternal={!!isInternal} />
+          </TabsContent>
+          <TabsContent value="time" className="mt-4">
+            {isInternal ? (
+              <CaseTimePanel caseId={caseId} />
+            ) : (
+              <div className="text-center text-muted-foreground py-8">Time tracking is available to firm staff only</div>
+            )}
           </TabsContent>
           <TabsContent value="documents" className="mt-4">
             <CaseDocuments caseId={caseId} firmId={firmData?.firm.id ?? 0} />

@@ -101,6 +101,48 @@ export async function sendClientInviteEmail(
   });
 }
 
+export async function sendFirmCredentialsEmail(opts: {
+  email: string;
+  firmName: string;
+  ownerName: string;
+  loginUrl: string;
+  temporaryPassword: string;
+}): Promise<void> {
+  const { email, firmName, ownerName, loginUrl, temporaryPassword } = opts;
+  const htmlContent = `
+    <html>
+      <body style="font-family: Inter, sans-serif; color: #1a1a1a;">
+        <div style="max-width: 600px; margin: 0 auto; padding: 20px;">
+          <h2 style="color: #001f3f; margin-bottom: 20px;">Your LexFlow workspace is ready</h2>
+          <p>Hi ${ownerName},</p>
+          <p>Your law firm <strong>${firmName}</strong> has been provisioned on LexFlow.</p>
+          <p>Sign in with these credentials, then complete onboarding (branding, currency, taxes, subdomain):</p>
+          <div style="background-color: #f5f5f5; padding: 16px; border-radius: 8px; margin: 20px 0;">
+            <p style="margin: 0 0 8px;"><strong>Login URL:</strong> <a href="${loginUrl}">${loginUrl}</a></p>
+            <p style="margin: 0 0 8px;"><strong>Email:</strong> ${email}</p>
+            <p style="margin: 0;"><strong>Temporary password:</strong> <code style="font-size: 15px;">${temporaryPassword}</code></p>
+          </div>
+          <p style="color: #666; font-size: 14px;">You will be asked to change this password on first login. Do not share these credentials.</p>
+          <p style="margin: 30px 0;">
+            <a href="${loginUrl}" style="background-color: #001f3f; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block;">
+              Sign in to LexFlow
+            </a>
+          </p>
+          <hr style="border: none; border-top: 1px solid #ddd; margin: 30px 0;" />
+          <p style="color: #999; font-size: 12px;">LexFlow — Swiss Legal Practice Management</p>
+        </div>
+      </body>
+    </html>
+  `;
+
+  await sendEmail({
+    to: [{ email, name: ownerName }],
+    subject: `${firmName} — your LexFlow login credentials`,
+    htmlContent,
+    sender: { email: "noreply@lexflow.ch", name: "LexFlow" },
+  });
+}
+
 export async function sendMessageNotificationEmail(
   recipientEmail: string,
   senderName: string,
