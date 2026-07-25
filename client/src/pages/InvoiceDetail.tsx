@@ -1,4 +1,4 @@
-import { useState, useEffect, type Dispatch, type SetStateAction } from "react";
+import { useState, useEffect, useRef, type Dispatch, type SetStateAction } from "react";
 import { useLocation } from "wouter";
 import { toast } from "sonner";
 import { format } from "date-fns";
@@ -316,23 +316,53 @@ function NewInvoiceForm() {
     items: [{ description: "", billingType: "hourly", quantity: 1, unitPrice: 0 }],
   });
   const [showPreview, setShowPreview] = useState(false);
+  const [sendAfterCreate, setSendAfterCreate] = useState(false);
+  const sendAfterCreateRef = useRef(false);
 
-  const createInvoice = trpc.invoices.create.useMutation({
-    onSuccess: (inv) => {
-      toast.success(t("invoiceDetail.created"));
-      navigate(`/invoices/${inv?.id}`);
-    },
+  const sendInvoiceEmail = trpc.invoicePdf.sendEmail.useMutation({
     onError: (e) => toast.error(e.message),
   });
 
-  const { subtotal, vatAmount, total } = formTotals(form);
+  const createInvoice = trpc.invoices.create.useMutation({
+    onSuccess: async (inv) => {
+      const shouldSend = sendAfterCreateRef.current;
+      sendAfterCreateRef.current = false;
+      setSendAfterCreate(false);
+      if (!inv?.id) {
+        toast.success(t("invoiceDetail.created"));
+        return;
+      }
+      if (shouldSend) {
+        try {
+          await sendInvoiceEmail.mutateAsync({ invoiceId: inv.id });
+          toast.success(t("invoiceDetail.emailSent"));
+        } catch {
+          toast.success(t("invoiceDetail.created"));
+          toast.error(t("invoiceDetail.emailSendFailed"));
+        }
+      } else {
+        toast.success(t("invoiceDetail.created"));
+      }
+      navigate(`/invoices/${inv.id}`);
+    },
+    onError: (e) => {
+      sendAfterCreateRef.current = false;
+      setSendAfterCreate(false);
+      toast.error(e.message);
+    },
+  });
 
-  const submit = () => {
+  const { subtotal, vatAmount, total } = formTotals(form);
+  const creating = createInvoice.isPending || sendInvoiceEmail.isPending;
+
+  const submit = (andSend = false) => {
     const err = validateInvoiceForm(form, t);
     if (err) {
       toast.error(err);
       return;
     }
+    sendAfterCreateRef.current = andSend;
+    setSendAfterCreate(andSend);
     createInvoice.mutate({
       clientId: form.clientId!,
       caseId: form.caseId ?? undefined,
@@ -371,19 +401,23 @@ function NewInvoiceForm() {
           </div>
         </div>
 
-        <div className="flex gap-3 justify-end">
-          <Button variant="outline" onClick={() => window.history.back()}>
+        <div className="flex gap-3 justify-end flex-wrap">
+          <Button variant="outline" onClick={() => window.history.back()} disabled={creating}>
             {t("common.cancel")}
           </Button>
-          <Button variant="outline" onClick={() => setShowPreview(true)}>
+          <Button variant="outline" onClick={() => setShowPreview(true)} disabled={creating}>
             Preview
+          </Button>
+          <Button variant="outline" disabled={creating} onClick={() => submit(false)}>
+            {creating && !sendAfterCreate ? t("common.loading") : t("invoiceDetail.create")}
           </Button>
           <Button
             className="bg-[var(--color-navy)] hover:bg-[var(--color-navy-light)] text-white"
-            disabled={createInvoice.isPending}
-            onClick={submit}
+            disabled={creating}
+            onClick={() => submit(true)}
           >
-            {t("invoiceDetail.create")}
+            <Send className="w-4 h-4 me-1.5" />
+            {creating && sendAfterCreate ? t("common.loading") : t("invoiceDetail.createAndSend")}
           </Button>
         </div>
 
@@ -461,19 +495,30 @@ function NewInvoiceForm() {
                 </>
               )}
             </div>
-            <DialogFooter>
+            <DialogFooter className="flex-wrap gap-2">
               <Button variant="outline" onClick={() => setShowPreview(false)}>
                 {t("common.cancel")}
               </Button>
               <Button
-                className="bg-[var(--color-navy)] hover:bg-[var(--color-navy-light)] text-white"
-                disabled={createInvoice.isPending}
+                variant="outline"
+                disabled={creating}
                 onClick={() => {
                   setShowPreview(false);
-                  submit();
+                  submit(false);
                 }}
               >
                 {t("invoiceDetail.create")}
+              </Button>
+              <Button
+                className="bg-[var(--color-navy)] hover:bg-[var(--color-navy-light)] text-white"
+                disabled={creating}
+                onClick={() => {
+                  setShowPreview(false);
+                  submit(true);
+                }}
+              >
+                <Send className="w-4 h-4 me-1.5" />
+                {t("invoiceDetail.createAndSend")}
               </Button>
             </DialogFooter>
           </DialogContent>
@@ -562,6 +607,7 @@ export default function InvoiceDetailPage() {
   const canManageInvoices = Boolean(firmData?.capabilities?.canCreateInvoice);
   const [editing, setEditing] = useState(false);
   const [form, setForm] = useState<InvoiceFormState | null>(null);
+  const [showPaymentPlanForm, setShowPaymentPlanForm] = useState(false);
 
   const { data: clients } = trpc.clients.list.useQuery(undefined, {
     enabled: isAuthenticated && isFirmMember,
@@ -634,7 +680,16 @@ export default function InvoiceDetailPage() {
       a.click();
       a.remove();
       URL.revokeObjectURL(url);
-      toast.success(t("invoiceDetail.downloadPdf"));
+      if (result.includedQrBill) {
+        toast.success(t("invoiceDetail.pdfWithQr"));
+      } else {
+        toast.success(t("invoiceDetail.downloadPdf"));
+        const reason = result.qrBillSkipReason as string | null | undefined;
+        if (reason === "missing_iban") toast.warning(t("invoiceDetail.qrSkip.missing_iban"));
+        else if (reason === "invalid_iban") toast.warning(t("invoiceDetail.qrSkip.invalid_iban"));
+        else if (reason === "invalid_qr_iban") toast.warning(t("invoiceDetail.qrSkip.invalid_qr_iban"));
+        else if (reason === "render_failed") toast.warning(t("invoiceDetail.qrSkip.render_failed"));
+      }
     } catch {
       // toast handled by mutation onError
     }
@@ -886,8 +941,8 @@ export default function InvoiceDetailPage() {
                 <div className="flex items-center gap-3">
                   <CheckCircle2 className="w-5 h-5 text-blue-600" />
                   <div>
-                    <p className="font-medium text-blue-900 text-sm">Invoice sent to client</p>
-                    <p className="text-xs text-blue-700 mt-0.5">Email delivery confirmed</p>
+                    <p className="font-medium text-blue-900 text-sm">{t("invoiceDetail.sentBanner")}</p>
+                    <p className="text-xs text-blue-700 mt-0.5">{t("invoiceDetail.sentBannerHint")}</p>
                   </div>
                 </div>
               </div>
@@ -928,12 +983,46 @@ export default function InvoiceDetailPage() {
                   />
                 ))}
               </div>
-            ) : isFirmMember ? (
-              <PaymentPlanScheduler
-                invoiceId={invoiceId}
-                totalAmount={displayTotal}
-                onCreated={() => void refetchPlans()}
-              />
+            ) : isFirmMember && canManageInvoices ? (
+              showPaymentPlanForm ? (
+                <div className="space-y-3">
+                  <div className="flex justify-end">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setShowPaymentPlanForm(false)}
+                    >
+                      {t("common.cancel")}
+                    </Button>
+                  </div>
+                  <PaymentPlanScheduler
+                    invoiceId={invoiceId}
+                    totalAmount={displayTotal}
+                    onCreated={() => {
+                      setShowPaymentPlanForm(false);
+                      void refetchPlans();
+                    }}
+                  />
+                </div>
+              ) : (
+                <div className="bg-card border border-border rounded-xl p-4 flex items-center justify-between gap-4">
+                  <div>
+                    <p className="font-medium text-sm text-foreground">
+                      {t("invoiceDetail.paymentPlanOptional")}
+                    </p>
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                      {t("invoiceDetail.paymentPlanOptionalHint")}
+                    </p>
+                  </div>
+                  <Button
+                    variant="outline"
+                    className="shrink-0"
+                    onClick={() => setShowPaymentPlanForm(true)}
+                  >
+                    {t("invoiceDetail.createPaymentPlan")}
+                  </Button>
+                </div>
+              )
             ) : null}
 
             {invoice.status !== "paid" && invoice.status !== "cancelled" && (

@@ -71,6 +71,8 @@ export async function generateInvoicePdfFromDb(options: InvoicePdfOptions): Prom
   buffer: Buffer;
   filename: string;
   invoiceNumber: string;
+  includedQrBill: boolean;
+  qrBillSkipReason: string | null;
 }> {
   const invoice = await getInvoiceByIdOnly(options.invoiceId);
   if (!invoice) throw new Error("Invoice not found");
@@ -137,6 +139,8 @@ export async function generateInvoicePdfFromDb(options: InvoicePdfOptions): Prom
   };
 
   let buffer = await renderInvoicePdf(data);
+  let includedQrBill = false;
+  let qrBillSkipReason: string | null = null;
 
   if (options.includeSwissQrBill !== false) {
     const qr = await appendSwissQrBillPage(buffer, {
@@ -164,12 +168,16 @@ export async function generateInvoicePdfFromDb(options: InvoicePdfOptions): Prom
       invoiceNumber: invoice.invoiceNumber,
     });
     buffer = qr.buffer;
+    includedQrBill = qr.includedQrBill;
+    qrBillSkipReason = qr.skipReason;
   }
 
   return {
     buffer,
     filename: `invoice-${invoice.invoiceNumber}.pdf`,
     invoiceNumber: invoice.invoiceNumber,
+    includedQrBill,
+    qrBillSkipReason,
   };
 }
 

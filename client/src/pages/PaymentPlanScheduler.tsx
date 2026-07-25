@@ -31,8 +31,8 @@ export default function PaymentPlanScheduler({
   const [scheduleType, setScheduleType] = useState<"monthly" | "custom">("monthly");
   const [monthCount, setMonthCount] = useState("3");
   const [installments, setInstallments] = useState<Installment[]>([]);
-  /** Send first invoice now; generate & email later installments when due (e.g. +30 days). */
-  const [sendAndSchedule, setSendAndSchedule] = useState(true);
+  /** Opt-in: send first invoice now; generate & email later installments when due. */
+  const [sendAndSchedule, setSendAndSchedule] = useState(false);
 
   const createPaymentPlanMutation = trpc.paymentPlans.create.useMutation({
     onSuccess: (data) => {

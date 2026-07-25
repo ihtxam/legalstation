@@ -402,10 +402,25 @@ export const firmRouter = router({
       const { UPLOAD_HARD_MAX_BYTES } = await import("@shared/uploadPolicy");
       const normalizeIban = (v?: string | null) =>
         v == null ? v : v.replace(/\s+/g, "").toUpperCase() || null;
+      const { isIBANValid } = await import("swissqrbill/utils");
+      const nextIban = iban !== undefined ? normalizeIban(iban) : undefined;
+      const nextQrIban = qrIban !== undefined ? normalizeIban(qrIban) : undefined;
+      if (nextIban && !isIBANValid(nextIban)) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "IBAN is invalid. Swiss IBANs must be 21 characters (e.g. CH93 0076 2011 6238 5295 7).",
+        });
+      }
+      if (nextQrIban && !isIBANValid(nextQrIban)) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "QR-IBAN is invalid. It must be a valid 21-character Swiss QR-IBAN.",
+        });
+      }
       await updateFirm(member.firmId, {
         ...rest,
-        iban: iban !== undefined ? normalizeIban(iban) : undefined,
-        qrIban: qrIban !== undefined ? normalizeIban(qrIban) : undefined,
+        iban: nextIban,
+        qrIban: nextQrIban,
         creditorCountry:
           creditorCountry !== undefined
             ? creditorCountry

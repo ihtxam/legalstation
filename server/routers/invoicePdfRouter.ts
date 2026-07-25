@@ -50,6 +50,8 @@ export const invoicePdfRouter = router({
         buffer: result.buffer.toString("base64"),
         filename: result.filename,
         mimeType: "application/pdf",
+        includedQrBill: result.includedQrBill,
+        qrBillSkipReason: result.qrBillSkipReason,
       };
     }),
 

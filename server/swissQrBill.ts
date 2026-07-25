@@ -36,6 +36,36 @@ function cleanIban(value?: string | null): string | null {
   return cleaned.length >= 15 ? cleaned : null;
 }
 
+/** Helvetica (default QR font) is Latin-1–ish; strip combining marks / replacement chars. */
+export function toPdfSafeText(value: string, fallback = "—"): string {
+  const cleaned = value
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/\uFFFD/g, "")
+    .replace(/[^\x20-\x7E\u00A0-\u00FF]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+  return cleaned || fallback;
+}
+
+export type SwissQrSkipReason =
+  | "missing_iban"
+  | "invalid_iban"
+  | "invalid_qr_iban"
+  | "render_failed"
+  | null;
+
+export function getSwissQrBillSkipReason(firm: FirmQrCreditor): SwissQrSkipReason {
+  const qr = cleanIban(firm.qrIban);
+  const iban = cleanIban(firm.iban);
+  if (!qr && !iban) return "missing_iban";
+  if (qr && !isIBANValid(qr)) return "invalid_qr_iban";
+  if (!qr && iban && !isIBANValid(iban)) return "invalid_iban";
+  if (qr && isIBANValid(qr)) return null;
+  if (iban && isIBANValid(iban)) return null;
+  return "invalid_iban";
+}
+
 function parseFallbackStreet(address?: string | null): {
   street: string;
   buildingNumber?: string;
@@ -106,19 +136,31 @@ export function buildSwissQrBillData(opts: {
   if (!account) return null;
 
   const fallback = parseFallbackStreet(opts.firm.addressFallback);
-  const street = (opts.firm.street || fallback.street || "—").slice(0, 70);
-  const buildingNumber = opts.firm.buildingNumber || fallback.buildingNumber;
-  const zip = opts.firm.postalCode || fallback.postalCode || "0000";
-  const city = (opts.firm.city || fallback.city || "—").slice(0, 35);
+  const street = toPdfSafeText(
+    (opts.firm.street || fallback.street || "").slice(0, 70),
+    "Address"
+  );
+  const buildingNumberRaw = opts.firm.buildingNumber || fallback.buildingNumber;
+  const buildingNumber = buildingNumberRaw
+    ? toPdfSafeText(String(buildingNumberRaw), "")
+    : undefined;
+  const zip = toPdfSafeText(
+    String(opts.firm.postalCode || fallback.postalCode || "0000"),
+    "0000"
+  ).slice(0, 16);
+  const city = toPdfSafeText(
+    (opts.firm.city || fallback.city || "").slice(0, 35),
+    "City"
+  );
   const country = (opts.firm.country || "CH").slice(0, 2).toUpperCase();
 
   const reference = isQRIBAN(account)
     ? buildQrReference(opts.invoiceId, opts.invoiceNumber)
     : buildScorReference(opts.invoiceNumber);
 
-  const debtorStreet = (opts.debtor.address || "—").slice(0, 70);
-  const debtorZip = opts.debtor.postalCode || "0000";
-  const debtorCity = (opts.debtor.city || "—").slice(0, 35);
+  const debtorStreet = toPdfSafeText((opts.debtor.address || "").slice(0, 70), "Address");
+  const debtorZip = toPdfSafeText(String(opts.debtor.postalCode || "0000"), "0000").slice(0, 16);
+  const debtorCity = toPdfSafeText((opts.debtor.city || "").slice(0, 35), "City");
   const debtorCountry = (opts.debtor.country || "CH").slice(0, 2).toUpperCase();
 
   const currency = (opts.currency || "CHF").toUpperCase() === "EUR" ? "EUR" : "CHF";
@@ -127,10 +169,13 @@ export function buildSwissQrBillData(opts: {
     amount: Math.round(opts.amount * 100) / 100,
     currency,
     reference,
-    message: (opts.message || `Invoice ${opts.invoiceNumber}`).slice(0, 140),
+    message: toPdfSafeText(
+      (opts.message || `Invoice ${opts.invoiceNumber}`).slice(0, 140),
+      `Invoice ${opts.invoiceNumber}`
+    ),
     creditor: {
       account,
-      name: opts.firm.name.slice(0, 70),
+      name: toPdfSafeText(opts.firm.name.slice(0, 70), "Creditor"),
       address: street,
       buildingNumber: buildingNumber || undefined,
       zip,
@@ -138,7 +183,7 @@ export function buildSwissQrBillData(opts: {
       country,
     },
     debtor: {
-      name: opts.debtor.name.slice(0, 70),
+      name: toPdfSafeText(opts.debtor.name.slice(0, 70), "Debtor"),
       address: debtorStreet,
       zip: debtorZip,
       city: debtorCity,
@@ -187,16 +232,17 @@ export async function appendSwissQrBillPage(
     invoiceNumber: string;
     language?: "DE" | "EN" | "FR" | "IT" | "RM";
   }
-): Promise<{ buffer: Buffer; includedQrBill: boolean }> {
+): Promise<{ buffer: Buffer; includedQrBill: boolean; skipReason: SwissQrSkipReason }> {
+  const skipReason = getSwissQrBillSkipReason(opts.firm);
   const data = buildSwissQrBillData(opts);
-  if (!data) return { buffer: invoicePdf, includedQrBill: false };
+  if (!data) return { buffer: invoicePdf, includedQrBill: false, skipReason: skipReason || "missing_iban" };
 
   try {
     const qrPdf = await renderSwissQrBillPdf(data, opts.language || "EN");
     const merged = await mergePdfBuffers(invoicePdf, qrPdf);
-    return { buffer: merged, includedQrBill: true };
+    return { buffer: merged, includedQrBill: true, skipReason: null };
   } catch (err) {
     console.error("[SwissQR] Failed to append QR-bill page:", err);
-    return { buffer: invoicePdf, includedQrBill: false };
+    return { buffer: invoicePdf, includedQrBill: false, skipReason: "render_failed" };
   }
 }
