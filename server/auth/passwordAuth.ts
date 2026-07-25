@@ -53,6 +53,8 @@ async function issueSession(req: Request, res: Response, user: typeof users.$inf
 
   return {
     ok: true as const,
+    /** JWT for native / Bearer clients (also set as httpOnly cookie for web). */
+    sessionToken,
     redirectTo,
     mustChangePassword: Boolean(user.mustChangePassword),
     user: {

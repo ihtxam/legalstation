@@ -1,0 +1,59 @@
+{
+  "expo": {
+    "name": "LexFlow",
+    "slug": "lexflow",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "scheme": "lexflow",
+    "newArchEnabled": true,
+    "splash": {
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#0B1F3A"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "swiss.webprintmedia.lexflow",
+      "infoPlist": {
+        "NSCameraUsageDescription": "Scan and upload case documents with your camera.",
+        "NSPhotoLibraryUsageDescription": "Attach photos of documents to your cases."
+      }
+    },
+    "android": {
+      "package": "swiss.webprintmedia.lexflow",
+      "adaptiveIcon": {
+        "backgroundColor": "#0B1F3A",
+        "foregroundImage": "./assets/android-icon-foreground.png",
+        "backgroundImage": "./assets/android-icon-background.png",
+        "monochromeImage": "./assets/android-icon-monochrome.png"
+      },
+      "permissions": [
+        "android.permission.CAMERA",
+        "android.permission.READ_MEDIA_IMAGES"
+      ]
+    },
+    "web": {
+      "favicon": "./assets/favicon.png",
+      "bundler": "metro"
+    },
+    "plugins": [
+      "expo-router",
+      "expo-secure-store",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Allow LexFlow to attach photos of documents.",
+          "cameraPermission": "Allow LexFlow to scan documents with the camera."
+        }
+      ]
+    ],
+    "extra": {
+      "apiUrl": "https://legal.webprintmedia.swiss",
+      "router": {
+        "origin": false
+      }
+    }
+  }
+}

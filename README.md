@@ -35,6 +35,17 @@ pnpm dev
 | `pnpm test` | Vitest unit tests |
 | `pnpm db:push` | Generate + apply Drizzle migrations |
 | `pnpm format` | Prettier |
+| `pnpm mobile` | Start Expo React Native app (`mobile/`) |
+| `pnpm mobile:android` / `mobile:ios` | Expo Android / iOS |
+
+## Mobile app (Android & iOS)
+
+Expo React Native app in [`mobile/`](mobile/) — **one app** for firm staff and clients (role-based after login). Clients can view cases and **scan/upload documents**. See [`mobile/README.md`](mobile/README.md).
+
+```bash
+cd mobile && npm install --legacy-peer-deps
+EXPO_PUBLIC_API_URL=https://legal.webprintmedia.swiss npm start
+```
 
 ## Environment variables
 

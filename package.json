@@ -15,7 +15,10 @@
     "seed:demo": "tsx scripts/seed-demo.ts",
     "db:up": "docker compose up -d mysql",
     "db:down": "docker compose down",
-    "db:push": "drizzle-kit generate && drizzle-kit migrate"
+    "db:push": "drizzle-kit generate && drizzle-kit migrate",
+    "mobile": "npm --prefix mobile start",
+    "mobile:android": "npm --prefix mobile run android",
+    "mobile:ios": "npm --prefix mobile run ios"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.693.0",

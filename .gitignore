@@ -101,6 +101,14 @@ jspm_packages/
 tmp/
 temp/
 
+# Expo / React Native
+mobile/.expo/
+mobile/dist/
+mobile/web-build/
+mobile/ios/
+mobile/android/
+mobile/expo-env.d.ts
+
 # Database
 *.db
 *.sqlite

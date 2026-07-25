@@ -94,6 +94,7 @@ export function registerDemoAuthRoutes(app: Express) {
       res.cookie(COOKIE_NAME, sessionToken, { ...cookieOptions, maxAge: ONE_YEAR_MS });
       return res.json({
         ok: true,
+        sessionToken,
         user: {
           id: user.id,
           email: user.email,
