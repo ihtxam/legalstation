@@ -71,6 +71,12 @@ export const firms = mysqlTable("firms", {
   creditorPostalCode: varchar("creditorPostalCode", { length: 16 }),
   creditorCity: varchar("creditorCity", { length: 35 }),
   creditorCountry: varchar("creditorCountry", { length: 2 }).default("CH"),
+  /**
+   * JSON role × capability overrides for this firm.
+   * Shape: Partial<Record<capabilityId, Partial<Record<role, access>>>>
+   * null / empty = use platform defaults from ROLE_CAPABILITY_MATRIX.
+   */
+  roleCapabilityOverrides: text("roleCapabilityOverrides"),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 });

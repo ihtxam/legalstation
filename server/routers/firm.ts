@@ -149,7 +149,130 @@ export const firmRouter = router({
       }
     }
 
-    return { firm, member, subscription };
+    const { getMemberCapabilityFlags } = await import("../firmPermissions");
+    const capabilities = await getMemberCapabilityFlags(firm.id, member.firmRole);
+
+    return {
+      firm,
+      member,
+      subscription,
+      capabilities: {
+        canManageFirmSettings: capabilities.canManageFirmSettings,
+        canInviteStaff: capabilities.canInviteStaff,
+        canInviteClients: capabilities.canInviteClients,
+        canAccessAdminConsole: capabilities.canAccessAdminConsole,
+        canSeeFirmWideCases: capabilities.canSeeFirmWideCases,
+        canSeeFirmWideInvoices: capabilities.canSeeFirmWideInvoices,
+        canCreateInvoice: capabilities.canCreateInvoice,
+        hasOverrides: capabilities.hasOverrides,
+      },
+    };
+  }),
+
+  /** Effective role × function matrix for this firm (defaults + overrides). */
+  getRoleCapabilities: protectedProcedure.query(async ({ ctx }) => {
+    const member = await getFirmMemberByUserId(ctx.user.id);
+    if (!member) throw new TRPCError({ code: "FORBIDDEN" });
+    const { getFirmCapabilityMatrix } = await import("../firmPermissions");
+    const { canManageFirmSettings } = await import("@shared/roles");
+    const { matrix, hasOverrides } = await getFirmCapabilityMatrix(member.firmId);
+    const canEdit = canManageFirmSettings(member.firmRole, matrix);
+    return {
+      matrix,
+      hasOverrides,
+      canEdit,
+      editableRoles: ["subadmin", "lawyer", "assistant", "client"] as const,
+      lockedCells: [{ capabilityId: "firmSettings", role: "admin" as const }],
+    };
+  }),
+
+  /** Save admin edits to the authorization matrix. */
+  updateRoleCapabilities: protectedProcedure
+    .input(
+      z.object({
+        matrix: z.array(
+          z.object({
+            id: z.enum([
+              "firmSettings",
+              "inviteStaff",
+              "inviteClients",
+              "cmsAnalyticsAudit",
+              "allCases",
+              "assignedCases",
+              "allInvoices",
+              "caseInvoices",
+              "createEditInvoices",
+              "securityLanguage",
+            ]),
+            access: z.object({
+              admin: z.enum(["none", "view", "own", "full"]),
+              subadmin: z.enum(["none", "view", "own", "full"]),
+              lawyer: z.enum(["none", "view", "own", "full"]),
+              assistant: z.enum(["none", "view", "own", "full"]),
+              client: z.enum(["none", "view", "own", "full"]),
+            }),
+          })
+        ),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const member = await getFirmMemberByUserId(ctx.user.id);
+      if (!member) throw new TRPCError({ code: "FORBIDDEN" });
+      const { getFirmCapabilityMatrix } = await import("../firmPermissions");
+      const {
+        canManageFirmSettings,
+        diffRoleCapabilityOverrides,
+        mergeRoleCapabilityMatrix,
+        ROLE_CAPABILITY_MATRIX,
+      } = await import("@shared/roles");
+      const { matrix: current } = await getFirmCapabilityMatrix(member.firmId);
+      if (!canManageFirmSettings(member.firmRole, current)) {
+        throw new TRPCError({ code: "FORBIDDEN", message: "Only firm admins can edit roles" });
+      }
+
+      // Rebuild full rows (preserve label keys from defaults)
+      const byId = new Map(ROLE_CAPABILITY_MATRIX.map((r) => [r.id, r]));
+      const nextRows = input.matrix.map((row) => {
+        const base = byId.get(row.id);
+        if (!base) throw new TRPCError({ code: "BAD_REQUEST", message: `Unknown capability ${row.id}` });
+        return {
+          ...base,
+          access: {
+            ...row.access,
+            // Hard lock: admin always manages firm settings
+            ...(row.id === "firmSettings" ? { admin: "full" as const } : {}),
+          },
+        };
+      });
+
+      // Ensure every default capability is present
+      for (const base of ROLE_CAPABILITY_MATRIX) {
+        if (!nextRows.find((r) => r.id === base.id)) {
+          nextRows.push(base);
+        }
+      }
+
+      const overrides = diffRoleCapabilityOverrides(nextRows);
+      const payload = Object.keys(overrides).length ? JSON.stringify(overrides) : null;
+      await updateFirm(member.firmId, { roleCapabilityOverrides: payload });
+      return {
+        success: true as const,
+        matrix: mergeRoleCapabilityMatrix(overrides),
+        hasOverrides: Boolean(payload),
+      };
+    }),
+
+  resetRoleCapabilities: protectedProcedure.mutation(async ({ ctx }) => {
+    const member = await getFirmMemberByUserId(ctx.user.id);
+    if (!member) throw new TRPCError({ code: "FORBIDDEN" });
+    const { getFirmCapabilityMatrix } = await import("../firmPermissions");
+    const { canManageFirmSettings, ROLE_CAPABILITY_MATRIX } = await import("@shared/roles");
+    const { matrix: current } = await getFirmCapabilityMatrix(member.firmId);
+    if (!canManageFirmSettings(member.firmRole, current)) {
+      throw new TRPCError({ code: "FORBIDDEN", message: "Only firm admins can edit roles" });
+    }
+    await updateFirm(member.firmId, { roleCapabilityOverrides: null });
+    return { success: true as const, matrix: ROLE_CAPABILITY_MATRIX, hasOverrides: false };
   }),
 
   // Get firm branding (logo, name, colors) - accessible to firm members and clients
@@ -261,8 +384,11 @@ export const firmRouter = router({
     }))
     .mutation(async ({ ctx, input }) => {
       const member = await getFirmMemberByUserId(ctx.user.id);
-      const { isFirmAdminLike } = await import("@shared/roles");
-      if (!member || !isFirmAdminLike(member.firmRole)) throw new TRPCError({ code: "FORBIDDEN" });
+      if (!member) throw new TRPCError({ code: "FORBIDDEN" });
+      const { getFirmCapabilityMatrix } = await import("../firmPermissions");
+      const { canManageFirmSettings } = await import("@shared/roles");
+      const { matrix } = await getFirmCapabilityMatrix(member.firmId);
+      if (!canManageFirmSettings(member.firmRole, matrix)) throw new TRPCError({ code: "FORBIDDEN" });
       const {
         defaultVatRate,
         defaultCurrency,
@@ -407,18 +533,24 @@ export const firmRouter = router({
     }))
     .mutation(async ({ ctx, input }) => {
       const member = await getFirmMemberByUserId(ctx.user.id);
-      const { canInviteClient, canInviteStaff, isFirmAdminLike } = await import("@shared/roles");
+      const { canInviteClient, canInviteStaff, getInvitableRoles } = await import("@shared/roles");
       const { isAppLocale } = await import("@shared/locales");
+      const { getFirmCapabilityMatrix } = await import("../firmPermissions");
       if (!member) throw new TRPCError({ code: "FORBIDDEN" });
-
-      if (input.role === "client") {
-        if (!canInviteClient(member.firmRole)) throw new TRPCError({ code: "FORBIDDEN" });
-      } else if (input.role === "subadmin") {
-        // Only firm admin can invite subadmins
-        if (member.firmRole !== "admin") throw new TRPCError({ code: "FORBIDDEN" });
-      } else {
-        // lawyer / assistant invites: admin or subadmin
-        if (!canInviteStaff(member.firmRole)) throw new TRPCError({ code: "FORBIDDEN" });
+      const { matrix } = await getFirmCapabilityMatrix(member.firmId);
+      const allowed = getInvitableRoles(member.firmRole, matrix);
+      if (!allowed.includes(input.role)) {
+        throw new TRPCError({ code: "FORBIDDEN", message: "You cannot invite this role" });
+      }
+      // Keep explicit checks for clarity / safety
+      if (input.role === "client" && !canInviteClient(member.firmRole, matrix)) {
+        throw new TRPCError({ code: "FORBIDDEN" });
+      }
+      if (input.role !== "client" && input.role !== "subadmin" && !canInviteStaff(member.firmRole, matrix)) {
+        throw new TRPCError({ code: "FORBIDDEN" });
+      }
+      if (input.role === "subadmin" && member.firmRole !== "admin") {
+        throw new TRPCError({ code: "FORBIDDEN" });
       }
       const locale =
         input.emailLanguage && isAppLocale(input.emailLanguage)

@@ -16,6 +16,7 @@ import {
 } from "../db";
 import { protectedProcedure, router } from "../_core/trpc";
 import { canCreateInvoice, canSeeFirmWideInvoices } from "@shared/roles";
+import { getFirmCapabilityMatrix } from "../firmPermissions";
 
 export const invoicesRouter = router({
   list: protectedProcedure
@@ -25,8 +26,9 @@ export const invoicesRouter = router({
     .query(async ({ ctx, input }) => {
       const member = await getFirmMemberByUserId(ctx.user.id);
       if (member) {
+        const { matrix } = await getFirmCapabilityMatrix(member.firmId);
         let all = await getInvoicesByFirm(member.firmId);
-        if (!canSeeFirmWideInvoices(member.firmRole)) {
+        if (!canSeeFirmWideInvoices(member.firmRole, matrix)) {
           const assignedCaseIds = await getAssignedCaseIdsForUser(ctx.user.id);
           const assigned = new Set(assignedCaseIds);
           all = all.filter(
@@ -73,7 +75,8 @@ export const invoicesRouter = router({
     }))
     .mutation(async ({ ctx, input }) => {
       const member = await getFirmMemberByUserId(ctx.user.id);
-      if (!member || !canCreateInvoice(member.firmRole)) throw new TRPCError({ code: "FORBIDDEN" });
+      const { matrix } = member ? await getFirmCapabilityMatrix(member.firmId) : { matrix: undefined };
+      if (!member || !canCreateInvoice(member.firmRole, matrix)) throw new TRPCError({ code: "FORBIDDEN" });
       const invoiceNumber = await getNextInvoiceNumber(member.firmId);
       const subtotal = input.items.reduce((sum, item) => sum + item.quantity * item.unitPrice, 0);
       const vatAmount = subtotal * (input.vatRate / 100);
@@ -118,7 +121,8 @@ export const invoicesRouter = router({
     }))
     .mutation(async ({ ctx, input }) => {
       const member = await getFirmMemberByUserId(ctx.user.id);
-      if (!member || !canCreateInvoice(member.firmRole)) throw new TRPCError({ code: "FORBIDDEN" });
+      const matrixForStatus = member ? (await getFirmCapabilityMatrix(member.firmId)).matrix : undefined;
+      if (!member || !canCreateInvoice(member.firmRole, matrixForStatus)) throw new TRPCError({ code: "FORBIDDEN" });
       const updates: Record<string, unknown> = { status: input.status };
       if (input.status === "paid") updates.paidAt = new Date();
       await updateInvoice(input.id, member.firmId, updates as any);
@@ -143,7 +147,8 @@ export const invoicesRouter = router({
     }))
     .mutation(async ({ ctx, input }) => {
       const member = await getFirmMemberByUserId(ctx.user.id);
-      if (!member || !canCreateInvoice(member.firmRole)) throw new TRPCError({ code: "FORBIDDEN" });
+      const matrixForUpdate = member ? (await getFirmCapabilityMatrix(member.firmId)).matrix : undefined;
+      if (!member || !canCreateInvoice(member.firmRole, matrixForUpdate)) throw new TRPCError({ code: "FORBIDDEN" });
       const invoice = await getInvoiceById(input.id, member.firmId);
       if (!invoice) throw new TRPCError({ code: "NOT_FOUND" });
       if (invoice.status !== "draft") throw new TRPCError({ code: "BAD_REQUEST", message: "Only draft invoices can be edited" });

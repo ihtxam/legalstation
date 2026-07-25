@@ -1003,6 +1003,14 @@
     "notes": {
       "inviteStaff": "Le sous-admin peut inviter avocat/assistant/client, pas un autre admin.",
       "caseInvoices": "Les clients ne voient que leurs factures non brouillon. Jamais tout le plateforme."
-    }
+    },
+    "matrixHintEditable": "Modifiez les droits de chaque rôle pour votre cabinet, puis enregistrez. Les changements s’appliquent immédiatement.",
+    "customizedBadge": "Des autorisations personnalisées sont actives pour ce cabinet.",
+    "saveChanges": "Enregistrer les autorisations",
+    "saved": "Autorisations enregistrées",
+    "resetDefaults": "Rétablir les valeurs par défaut",
+    "resetConfirm": "Réinitialiser toutes les autorisations aux valeurs LexFlow ?",
+    "resetDone": "Autorisations réinitialisées",
+    "adminLocked": "L’accès admin aux paramètres du cabinet ne peut pas être retiré"
   }
 }

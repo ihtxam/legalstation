@@ -12,8 +12,6 @@ import { useLocation } from "wouter";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { useTranslation } from "react-i18next";
-import { canCreateInvoice } from "@shared/roles";
-
 function formatCHF(amount: string | number) {
   return new Intl.NumberFormat("de-CH", { style: "currency", currency: "CHF" }).format(Number(amount));
 }
@@ -24,7 +22,7 @@ export default function InvoicesPage() {
   const [, navigate] = useLocation();
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const { data: firmData } = trpc.firm.myFirm.useQuery(undefined, { enabled: isAuthenticated });
-  const showNewInvoice = canCreateInvoice(firmData?.member?.firmRole);
+  const showNewInvoice = Boolean(firmData?.capabilities?.canCreateInvoice);
 
   const { data: invoices, isLoading } = trpc.invoices.list.useQuery(
     { status: statusFilter !== "all" ? statusFilter as any : undefined },

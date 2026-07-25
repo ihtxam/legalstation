@@ -25,7 +25,6 @@ import { Separator } from "@/components/ui/separator";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { isFirmAdminLike } from "@shared/roles";
 
 interface LexLayoutProps {
   children: React.ReactNode;
@@ -50,7 +49,7 @@ export default function LexLayout({ children, title, breadcrumb }: LexLayoutProp
   const [sidebarOpen, setSidebarOpen] = useState(true);
 
   const isClient = !firmData;
-  const isAdmin = isFirmAdminLike(firmData?.member?.firmRole);
+  const isAdmin = Boolean(firmData?.capabilities?.canAccessAdminConsole);
   const isSuperadmin = user?.role === "superadmin";
 
   const clientNavItems = [

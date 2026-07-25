@@ -21,7 +21,6 @@ import {
   DEFAULT_MAX_UPLOAD_BYTES,
   parseAllowedExtensions,
 } from "@shared/uploadPolicy";
-import { isFirmAdminLike } from "@shared/roles";
 
 const UPLOAD_TYPE_OPTIONS = [...DEFAULT_ALLOWED_UPLOAD_EXTENSIONS];
 
@@ -31,8 +30,9 @@ export default function SettingsPage() {
   const { t } = useTranslation();
   const { isAuthenticated, loading, user, refresh } = useAuth();
   const { data: firmData, refetch } = trpc.firm.myFirm.useQuery(undefined, { enabled: isAuthenticated });
-  const canManageFirm = isFirmAdminLike(firmData?.member?.firmRole);
+  const canManageFirm = Boolean(firmData?.capabilities?.canManageFirmSettings);
   const isOwnerAdmin = firmData?.member?.firmRole === "admin";
+  const canInviteStaff = Boolean(firmData?.capabilities?.canInviteStaff);
   const { data: members } = trpc.firm.members.useQuery(undefined, {
     enabled: isAuthenticated && canManageFirm,
   });
@@ -553,7 +553,7 @@ export default function SettingsPage() {
 
           {canManageFirm && <TabsContent value="team">
             <div className="space-y-4">
-              <div className="bg-card border border-border rounded-xl p-6 space-y-4">
+              {canInviteStaff && <div className="bg-card border border-border rounded-xl p-6 space-y-4">
                 <div>
                   <h3 className="font-semibold text-foreground mb-2">{t("settings.inviteMember")}</h3>
                   <p className="text-sm text-muted-foreground">{t("settings.inviteHint")}</p>
@@ -621,7 +621,7 @@ export default function SettingsPage() {
                     {invite.isPending ? t("settings.sending") : <><Send className="w-4 h-4 mr-1.5" /> {t("settings.sendInvite")}</>}
                   </Button>
                 </div>
-              </div>
+              </div>}
               <div className="bg-card border border-border rounded-xl overflow-hidden">
                 <div className="px-5 py-3.5 border-b border-border bg-muted/40">
                   <h3 className="font-semibold text-sm text-foreground">{t("settings.teamMembers", { count: members?.length ?? 0 })}</h3>

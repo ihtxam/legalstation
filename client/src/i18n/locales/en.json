@@ -976,7 +976,7 @@
     "assistant": "Assistant",
     "client": "Client",
     "matrixTitle": "Roles & authorizations",
-    "matrixHint": "Default firm roles and what each can do. Users are created by invite into one of these roles — custom roles are not available yet.",
+    "matrixHint": "Default firm roles and what each can do. Users are created by invite into one of these roles.",
     "function": "Function",
     "howToCreateTitle": "Creating users",
     "howToCreateBody": "As admin (or sub-admin), open Settings → Team and invite a colleague with a role. Lawyers can invite clients from the client profile. Only the firm admin can invite a sub-admin.",
@@ -1003,6 +1003,14 @@
     "notes": {
       "inviteStaff": "Sub-admin can invite lawyer/assistant/client, not another admin.",
       "caseInvoices": "Clients see their own non-draft invoices only. Never platform-wide."
-    }
+    },
+    "matrixHintEditable": "Edit what each role can do for your firm, then save. Changes apply immediately to invitations and access checks.",
+    "customizedBadge": "Custom permissions are active for this firm.",
+    "saveChanges": "Save role permissions",
+    "saved": "Role permissions saved",
+    "resetDefaults": "Reset to defaults",
+    "resetConfirm": "Reset all role permissions to LexFlow defaults?",
+    "resetDone": "Role permissions reset to defaults",
+    "adminLocked": "Admin firm-settings access cannot be removed"
   }
 }

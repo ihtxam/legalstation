@@ -19,8 +19,6 @@ import { Plus, Trash2, Send, CheckCircle, Download, CreditCard, CheckCircle2, Pe
 import PaymentPlanScheduler from "@/pages/PaymentPlanScheduler";
 import { PaymentInstallmentTimeline } from "@/components/PaymentInstallmentTimeline";
 import { useTranslation } from "react-i18next";
-import { canCreateInvoice } from "@shared/roles";
-
 function formatCHF(amount: string | number) {
   return new Intl.NumberFormat("de-CH", { style: "currency", currency: "CHF" }).format(Number(amount));
 }
@@ -561,7 +559,7 @@ export default function InvoiceDetailPage() {
   const { data: branding } = trpc.firm.branding.useQuery(undefined, { enabled: isAuthenticated });
   const { data: firmData } = trpc.firm.myFirm.useQuery(undefined, { enabled: isAuthenticated });
   const isFirmMember = !!firmData;
-  const canManageInvoices = canCreateInvoice(firmData?.member?.firmRole);
+  const canManageInvoices = Boolean(firmData?.capabilities?.canCreateInvoice);
   const [editing, setEditing] = useState(false);
   const [form, setForm] = useState<InvoiceFormState | null>(null);
 

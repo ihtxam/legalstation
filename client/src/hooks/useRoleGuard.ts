@@ -2,12 +2,10 @@ import { useEffect } from "react";
 import { useLocation } from "wouter";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { trpc } from "@/lib/trpc";
-import { canCreateInvoice, isFirmAdminLike } from "@shared/roles";
-
 /**
  * Redirects unauthenticated users to login, and optionally enforces firm membership.
  * @param requireFirmMember - if true, clients (non-firm-members) are redirected to /dashboard
- * @param requireAdmin - if true, only admin/subadmin can access; others are redirected to /dashboard
+ * @param requireAdmin - if true, only roles with admin-console capability can access
  */
 export function useRoleGuard(options: { requireFirmMember?: boolean; requireAdmin?: boolean } = {}) {
   const { isAuthenticated, loading: authLoading } = useAuth();
@@ -16,6 +14,7 @@ export function useRoleGuard(options: { requireFirmMember?: boolean; requireAdmi
   });
   const [, navigate] = useLocation();
   const role = firmData?.member?.firmRole;
+  const caps = firmData?.capabilities;
 
   useEffect(() => {
     if (authLoading || firmLoading) return;
@@ -28,22 +27,22 @@ export function useRoleGuard(options: { requireFirmMember?: boolean; requireAdmi
       navigate("/dashboard");
       return;
     }
-    if (options.requireAdmin && !isFirmAdminLike(role)) {
+    if (options.requireAdmin && !caps?.canAccessAdminConsole) {
       navigate("/dashboard");
       return;
     }
-  }, [isAuthenticated, authLoading, firmData, firmLoading, options.requireFirmMember, options.requireAdmin, role, navigate]);
+  }, [isAuthenticated, authLoading, firmData, firmLoading, options.requireFirmMember, options.requireAdmin, caps?.canAccessAdminConsole, navigate]);
 
   return {
     loading: authLoading || firmLoading,
     firmData,
     isFirmMember: !!firmData,
-    isAdmin: isFirmAdminLike(role),
+    isAdmin: Boolean(caps?.canAccessAdminConsole || caps?.canManageFirmSettings),
     isSubadmin: role === "subadmin",
     isLawyer: role === "lawyer",
     isAssistant: role === "assistant",
-    canManageFirm: isFirmAdminLike(role),
-    canCreateInvoice: canCreateInvoice(role),
+    canManageFirm: Boolean(caps?.canManageFirmSettings),
+    canCreateInvoice: Boolean(caps?.canCreateInvoice),
     isClient: !firmData,
   };
 }

@@ -17,8 +17,6 @@ import ClientActivityPanel from "@/components/ClientActivityPanel";
 import { useTranslation } from "react-i18next";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { APP_LOCALES, APP_LOCALE_LABELS, isAppLocale, type AppLocale } from "@shared/locales";
-import { canInviteClient } from "@shared/roles";
-
 export default function ClientDetailPage() {
   const { t, i18n } = useTranslation();
   const { id } = useParams<{ id: string }>();
@@ -31,7 +29,7 @@ export default function ClientDetailPage() {
   const [inviteEmailLanguage, setInviteEmailLanguage] = useState<AppLocale>(
     isAppLocale(i18n.language) ? i18n.language : "en"
   );
-  const canSendClientInvite = canInviteClient(firmData?.member?.firmRole);
+  const canSendClientInvite = Boolean(firmData?.capabilities?.canInviteClients);
 
   const { data: client, isLoading, refetch } = trpc.clients.get.useQuery({ id: clientId }, { enabled: isAuthenticated && !isNaN(clientId) });
   const updateClient = trpc.clients.update.useMutation({

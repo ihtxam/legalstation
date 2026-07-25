@@ -1,8 +1,11 @@
 import { TRPCError } from "@trpc/server";
 import {
+  canCreateInvoice,
   canSeeFirmWideCases,
   canSeeFirmWideInvoices,
   isFirmAdminLike,
+  roleHasAccess,
+  type RoleCapabilityRow,
 } from "@shared/roles";
 import {
   getAssignedCaseIdsForUser,
@@ -14,6 +17,7 @@ import {
   getInvoiceById,
   getInvoiceByIdOnly,
 } from "./db";
+import { getFirmCapabilityMatrix } from "./firmPermissions";
 
 export type FirmContext =
   | { kind: "member"; firmId: number; member: NonNullable<Awaited<ReturnType<typeof getFirmMemberByUserId>>> }
@@ -33,14 +37,23 @@ export async function requireFirmContext(userId: number): Promise<FirmContext> {
   return ctx;
 }
 
+async function memberMatrix(firmId: number): Promise<RoleCapabilityRow[]> {
+  const { matrix } = await getFirmCapabilityMatrix(firmId);
+  return matrix;
+}
+
 export async function assertCaseAccess(userId: number, caseId: number) {
   const ctx = await requireFirmContext(userId);
   const caseRow = await getCaseById(caseId, ctx.firmId);
   if (!caseRow) throw new TRPCError({ code: "NOT_FOUND", message: "Case not found" });
 
   if (ctx.kind === "member") {
-    if (canSeeFirmWideCases(ctx.member.firmRole)) {
+    const matrix = await memberMatrix(ctx.firmId);
+    if (canSeeFirmWideCases(ctx.member.firmRole, matrix)) {
       return { ctx, caseRow, includeInternal: true as const };
+    }
+    if (!roleHasAccess(matrix, ctx.member.firmRole, "assignedCases", "view")) {
+      throw new TRPCError({ code: "FORBIDDEN", message: "Not allowed to access cases" });
     }
     const assignedIds = await getAssignedCaseIdsForUser(userId);
     if (!assignedIds.includes(caseId)) {
@@ -80,11 +93,16 @@ export async function assertInvoiceAccess(userId: number, invoiceId: number) {
     const invoice = await getInvoiceById(invoiceId, ctx.firmId);
     if (!invoice) throw new TRPCError({ code: "NOT_FOUND", message: "Invoice not found" });
 
-    if (canSeeFirmWideInvoices(ctx.member.firmRole)) {
+    const matrix = await memberMatrix(ctx.firmId);
+    if (canSeeFirmWideInvoices(ctx.member.firmRole, matrix)) {
       return { ctx, invoice };
     }
 
-    // Lawyer / assistant: invoices on assigned cases, or ones they created
+    if (!roleHasAccess(matrix, ctx.member.firmRole, "caseInvoices", "view")) {
+      throw new TRPCError({ code: "FORBIDDEN", message: "Invoice not available" });
+    }
+
+    // Own / assigned invoices
     if (invoice.createdByUserId === userId) {
       return { ctx, invoice };
     }
@@ -101,11 +119,10 @@ export async function assertInvoiceAccess(userId: number, invoiceId: number) {
   if (!invoice || invoice.firmId !== ctx.firmId || invoice.clientId !== ctx.client.id) {
     throw new TRPCError({ code: "NOT_FOUND", message: "Invoice not found" });
   }
-  // Clients may only view/pay non-draft invoices
   if (invoice.status === "draft") {
     throw new TRPCError({ code: "FORBIDDEN", message: "Invoice not available" });
   }
   return { ctx, invoice };
 }
 
-export { isFirmAdminLike };
+export { isFirmAdminLike, canCreateInvoice };

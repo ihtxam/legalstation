@@ -24,7 +24,7 @@ import {
 import { users } from "../../drizzle/schema";
 import { protectedProcedure, router } from "../_core/trpc";
 import { assertCaseAccess } from "../access";
-import { canSeeFirmWideCases, isFirmAdminLike } from "@shared/roles";
+import { canSeeFirmWideCases } from "@shared/roles";
 import { getCaseNotificationRecipients } from "../caseNotifications";
 import { sendCaseUpdateEmail } from "../email";
 import { getAppBaseUrl } from "../tenant";
@@ -45,7 +45,9 @@ export const casesRouter = router({
     .query(async ({ ctx, input }) => {
       const member = await getFirmMemberByUserId(ctx.user.id);
       if (member) {
-        let all = canSeeFirmWideCases(member.firmRole)
+        const { getFirmCapabilityMatrix } = await import("../firmPermissions");
+        const { matrix } = await getFirmCapabilityMatrix(member.firmId);
+        let all = canSeeFirmWideCases(member.firmRole, matrix)
           ? await getCasesByFirm(member.firmId)
           : await getCasesByAssignedUser(member.firmId, ctx.user.id);
         if (input?.search) {
@@ -86,7 +88,13 @@ export const casesRouter = router({
     }))
     .mutation(async ({ ctx, input }) => {
       const member = await requireFirmMember(ctx.user.id);
-      if (!isFirmAdminLike(member.firmRole) && member.firmRole !== "lawyer") {
+      const { getFirmCapabilityMatrix } = await import("../firmPermissions");
+      const { roleHasAccess } = await import("@shared/roles");
+      const { matrix } = await getFirmCapabilityMatrix(member.firmId);
+      const canCreateCase =
+        canSeeFirmWideCases(member.firmRole, matrix) ||
+        roleHasAccess(matrix, member.firmRole, "assignedCases", "own");
+      if (!canCreateCase) {
         throw new TRPCError({ code: "FORBIDDEN" });
       }
       const { clientIds, lawyerIds, deadline, ...caseData } = input;

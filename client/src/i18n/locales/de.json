@@ -1003,6 +1003,14 @@
     "notes": {
       "inviteStaff": "Sub-Admin kann Anwalt/Assistent/Mandant einladen, keinen weiteren Admin.",
       "caseInvoices": "Mandanten sehen nur eigene Nicht-Entwürfe. Nie plattformweit."
-    }
+    },
+    "matrixHintEditable": "Bearbeiten Sie die Rechte jeder Rolle für Ihre Kanzlei und speichern Sie. Änderungen gelten sofort.",
+    "customizedBadge": "Angepasste Berechtigungen sind für diese Kanzlei aktiv.",
+    "saveChanges": "Rollenrechte speichern",
+    "saved": "Rollenrechte gespeichert",
+    "resetDefaults": "Auf Standard zurücksetzen",
+    "resetConfirm": "Alle Rollenrechte auf LexFlow-Standards zurücksetzen?",
+    "resetDone": "Rollenrechte zurückgesetzt",
+    "adminLocked": "Admin-Zugriff auf Kanzlei-Einstellungen kann nicht entfernt werden"
   }
 }

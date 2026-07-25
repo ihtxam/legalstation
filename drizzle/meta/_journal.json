@@ -113,6 +113,13 @@
       "when": 1785272800000,
       "tag": "0015_swiss_qr_banking",
       "breakpoints": true
+    },
+    {
+      "idx": 16,
+      "version": "5",
+      "when": 1785276400000,
+      "tag": "0016_role_capability_overrides",
+      "breakpoints": true
     }
   ]
 }

@@ -1,7 +1,13 @@
 import { z } from "zod";
 import { TRPCError } from "@trpc/server";
-import { isFirmAdminLike } from "@shared/roles";
+import { canSeeFirmWideCases } from "@shared/roles";
+import { getFirmCapabilityMatrix } from "../firmPermissions";
 import { protectedProcedure, router } from "../_core/trpc";
+
+async function canManageFirmTime(member: { firmId: number; firmRole: string }) {
+  const { matrix } = await getFirmCapabilityMatrix(member.firmId);
+  return canSeeFirmWideCases(member.firmRole, matrix);
+}
 import {
   createInvoice,
   createInvoiceItem,
@@ -51,8 +57,9 @@ export const timeEntriesRouter = router({
     )
     .query(async ({ ctx, input }) => {
       const member = await requireFirmMember(ctx.user.id);
+      const firmWide = await canManageFirmTime(member);
       return getTimeEntriesByFirm(member.firmId, {
-        lawyerId: input?.mineOnly === false && isFirmAdminLike(member.firmRole) ? undefined : ctx.user.id,
+        lawyerId: input?.mineOnly === false && firmWide ? undefined : ctx.user.id,
         caseId: input?.caseId,
         status: input?.status,
         from: input?.from ? new Date(input.from) : undefined,
@@ -72,8 +79,9 @@ export const timeEntriesRouter = router({
     )
     .query(async ({ ctx, input }) => {
       const member = await requireFirmMember(ctx.user.id);
+      const firmWide = await canManageFirmTime(member);
       const entries = await getTimeEntriesByFirm(member.firmId, {
-        lawyerId: input?.mineOnly === false && isFirmAdminLike(member.firmRole) ? undefined : ctx.user.id,
+        lawyerId: input?.mineOnly === false && firmWide ? undefined : ctx.user.id,
         from: input?.from ? new Date(input.from) : undefined,
         to: input?.to ? new Date(input.to) : undefined,
       });
@@ -158,7 +166,7 @@ export const timeEntriesRouter = router({
       const member = await requireFirmMember(ctx.user.id);
       const entry = await getTimeEntryById(input.id, member.firmId);
       if (!entry) throw new TRPCError({ code: "NOT_FOUND" });
-      if (entry.lawyerId !== ctx.user.id && !isFirmAdminLike(member.firmRole)) {
+      if (entry.lawyerId !== ctx.user.id && !(await canManageFirmTime(member))) {
         throw new TRPCError({ code: "FORBIDDEN" });
       }
       if (entry.status === "billed") {
@@ -191,7 +199,7 @@ export const timeEntriesRouter = router({
       const member = await requireFirmMember(ctx.user.id);
       const entry = await getTimeEntryById(input.id, member.firmId);
       if (!entry) throw new TRPCError({ code: "NOT_FOUND" });
-      if (entry.lawyerId !== ctx.user.id && !isFirmAdminLike(member.firmRole)) {
+      if (entry.lawyerId !== ctx.user.id && !(await canManageFirmTime(member))) {
         throw new TRPCError({ code: "FORBIDDEN" });
       }
       if (input.status === "billed") {
@@ -218,7 +226,7 @@ export const timeEntriesRouter = router({
       for (const id of input.ids) {
         const entry = await getTimeEntryById(id, member.firmId);
         if (!entry) continue;
-        if (entry.lawyerId !== ctx.user.id && !isFirmAdminLike(member.firmRole)) continue;
+        if (entry.lawyerId !== ctx.user.id && !(await canManageFirmTime(member))) continue;
         if (entry.status !== "draft") continue;
         await updateTimeEntry(id, member.firmId, { status: "submitted" });
         submitted += 1;
@@ -232,7 +240,7 @@ export const timeEntriesRouter = router({
       const member = await requireFirmMember(ctx.user.id);
       const entry = await getTimeEntryById(input.id, member.firmId);
       if (!entry) throw new TRPCError({ code: "NOT_FOUND" });
-      if (entry.lawyerId !== ctx.user.id && !isFirmAdminLike(member.firmRole)) {
+      if (entry.lawyerId !== ctx.user.id && !(await canManageFirmTime(member))) {
         throw new TRPCError({ code: "FORBIDDEN" });
       }
       if (entry.status === "billed") {

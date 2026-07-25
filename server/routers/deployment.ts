@@ -26,8 +26,11 @@ export const deploymentRouter = router({
     )
     .query(async ({ ctx, input }) => {
       const member = await getFirmMemberByUserId(ctx.user.id);
-      const { isFirmAdminLike } = await import("@shared/roles");
-      if (!member || !isFirmAdminLike(member.firmRole)) {
+      if (!member) throw new TRPCError({ code: "FORBIDDEN", message: "Admin only" });
+      const { getFirmCapabilityMatrix } = await import("../firmPermissions");
+      const { canAccessAdminConsole } = await import("@shared/roles");
+      const { matrix } = await getFirmCapabilityMatrix(member.firmId);
+      if (!canAccessAdminConsole(member.firmRole, matrix)) {
         throw new TRPCError({ code: "FORBIDDEN", message: "Admin only" });
       }
 

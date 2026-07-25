@@ -1003,6 +1003,14 @@
     "notes": {
       "inviteStaff": "Il sub-admin può invitare avvocato/assistente/cliente, non un altro admin.",
       "caseInvoices": "I clienti vedono solo le proprie fatture non bozza. Mai a livello piattaforma."
-    }
+    },
+    "matrixHintEditable": "Modifica i diritti di ogni ruolo per il tuo studio e salva. Le modifiche si applicano subito.",
+    "customizedBadge": "Permessi personalizzati attivi per questo studio.",
+    "saveChanges": "Salva autorizzazioni",
+    "saved": "Autorizzazioni salvate",
+    "resetDefaults": "Ripristina predefiniti",
+    "resetConfirm": "Ripristinare tutte le autorizzazioni ai valori LexFlow?",
+    "resetDone": "Autorizzazioni ripristinate",
+    "adminLocked": "L’accesso admin alle impostazioni dello studio non può essere rimosso"
   }
 }
