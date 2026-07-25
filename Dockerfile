@@ -13,13 +13,13 @@ RUN pnpm build
 FROM node:22-bookworm-slim AS runner
 WORKDIR /app
 ENV NODE_ENV=production
-RUN corepack enable && corepack prepare pnpm@10.4.1 --activate \
-  && apt-get update && apt-get install -y --no-install-recommends ca-certificates \
-  && rm -rf /var/lib/apt/lists/*
+# Skip apt (some hosts block deb.debian.org). Node slim includes enough CA certs for HTTPS.
+RUN corepack enable && corepack prepare pnpm@10.4.1 --activate
 
 COPY package.json pnpm-lock.yaml ./
 COPY patches ./patches
-RUN pnpm install --frozen-lockfile --prod
+# Full install: esbuild bundle still references a few dev-time packages via dynamic paths
+RUN pnpm install --frozen-lockfile
 
 COPY --from=build /app/dist ./dist
 COPY --from=build /app/drizzle ./drizzle
