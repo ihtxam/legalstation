@@ -95,10 +95,10 @@ export const invoicePdfRouter = router({
           }
           <p>Thank you for your business.</p>
         `,
-        sender: {
-          email: firm?.email || "invoices@lexflow.ch",
-          name: firm?.name || "LexFlow Invoices",
-        },
+        // Brevo requires a verified sender; use EMAIL_FROM and reply to the firm
+        replyTo: firm?.email
+          ? { email: firm.email, name: firm.name || undefined }
+          : undefined,
         attachment: [
           {
             name: result.filename,

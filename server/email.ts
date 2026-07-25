@@ -7,20 +7,49 @@ interface EmailPayload {
   to: Array<{ email: string; name?: string }>;
   subject: string;
   htmlContent: string;
-  sender: { email: string; name: string };
+  sender?: { email: string; name: string };
   replyTo?: { email: string; name?: string };
   /** Brevo attachment payloads (base64 content) */
   attachment?: Array<{ name: string; content: string }>;
 }
 
+/** Prefer EMAIL_FROM (verified Brevo sender). Falls back only for local/dev. */
+export function getEmailSender(): { email: string; name: string } {
+  const email = (ENV.emailFrom || "").trim();
+  if (email) {
+    return { email, name: ENV.emailFromName || "LexFlow" };
+  }
+  // Last resort — many Brevo accounts reject unverified domains like noreply@lexflow.ch
+  console.warn(
+    "[Email] EMAIL_FROM is not set; using noreply@lexflow.ch (likely undeliverable until verified in Brevo)"
+  );
+  return { email: "noreply@lexflow.ch", name: ENV.emailFromName || "LexFlow" };
+}
+
 export async function sendEmail(payload: EmailPayload): Promise<{ messageId: string }> {
   if (!ENV.brevoApiKey) {
-    console.warn("[Email] Brevo API key not configured, skipping email send");
+    const msg = "Brevo API key not configured (BREVO_API_KEY)";
+    console.warn(`[Email] ${msg}`);
+    if (ENV.isProduction) {
+      throw new Error(msg);
+    }
     return { messageId: "mock-" + Date.now() };
   }
 
+  const sender = payload.sender || getEmailSender();
+  if (ENV.isProduction && !(ENV.emailFrom || "").trim()) {
+    throw new Error(
+      "EMAIL_FROM is not set. Use a verified Brevo sender (e.g. corporateshift@gmail.com)."
+    );
+  }
+
+  const body = {
+    ...payload,
+    sender,
+  };
+
   try {
-    const response = await axios.post(`${BREVO_API_URL}/smtp/email`, payload, {
+    const response = await axios.post(`${BREVO_API_URL}/smtp/email`, body, {
       headers: {
         "api-key": ENV.brevoApiKey,
         "Content-Type": "application/json",
@@ -63,7 +92,6 @@ export async function sendFirmInviteEmail(
     to: [{ email: inviteeEmail }],
     subject: `Join ${firmName} on LexFlow`,
     htmlContent,
-    sender: { email: "noreply@lexflow.ch", name: "LexFlow" },
   });
 }
 
@@ -97,7 +125,6 @@ export async function sendClientInviteEmail(
     to: [{ email: clientEmail }],
     subject: `Access your case information on LexFlow`,
     htmlContent,
-    sender: { email: "noreply@lexflow.ch", name: "LexFlow" },
   });
 }
 
@@ -139,7 +166,6 @@ export async function sendFirmCredentialsEmail(opts: {
     to: [{ email, name: ownerName }],
     subject: `${firmName} — your LexFlow login credentials`,
     htmlContent,
-    sender: { email: "noreply@lexflow.ch", name: "LexFlow" },
   });
 }
 
@@ -176,7 +202,6 @@ export async function sendMessageNotificationEmail(
     to: [{ email: recipientEmail }],
     subject: `New message from ${senderName} in ${caseTitle}`,
     htmlContent,
-    sender: { email: "noreply@lexflow.ch", name: "LexFlow" },
   });
 }
 
@@ -213,7 +238,6 @@ export async function sendDocumentUploadNotificationEmail(
     to: [{ email: recipientEmail }],
     subject: `New document: ${documentName} in ${caseTitle}`,
     htmlContent,
-    sender: { email: "noreply@lexflow.ch", name: "LexFlow" },
   });
 }
 
@@ -251,7 +275,6 @@ export async function sendCaseUpdateEmail(opts: {
     to: [{ email: recipientEmail, name: recipientName }],
     subject: `${caseTitle}: ${updateTitle}`,
     htmlContent,
-    sender: { email: "noreply@lexflow.ch", name: "LexFlow" },
   });
 }
 
@@ -290,7 +313,6 @@ export async function sendDocumentRequestEmail(opts: {
     to: [{ email: recipientEmail, name: recipientName }],
     subject: `Document requested: ${requestTitle}`,
     htmlContent,
-    sender: { email: "noreply@lexflow.ch", name: "LexFlow" },
   });
 }
 
@@ -321,7 +343,6 @@ export async function sendLeadNotificationEmail(opts: {
     to: [{ email: opts.toEmail }],
     subject: `LexFlow lead (${opts.type}): ${opts.firmName}`,
     htmlContent,
-    sender: { email: "noreply@lexflow.ch", name: "LexFlow" },
   });
 }
 

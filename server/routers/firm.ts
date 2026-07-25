@@ -20,6 +20,13 @@ import { resolveFirmContext } from "../access";
 import { protectedProcedure, router } from "../_core/trpc";
 import { isSingleTenant } from "../deployment";
 import { evaluateLicense } from "../license";
+import { getAppBaseUrl } from "../tenant";
+
+const inviteEmailSchema = z
+  .string()
+  .trim()
+  .toLowerCase()
+  .pipe(z.email({ error: "Invalid email address" }));
 
 export const firmRouter = router({
   // Get current user's firm context
@@ -150,7 +157,8 @@ export const firmRouter = router({
           .optional(),
         defaultCurrency: z.string().length(3).optional(),
         defaultVatRate: z.number().min(0).max(100).optional(),
-        slug: z.string().max(50).optional(),
+        // Accept any string — we sanitize with slugifyFirmName below (no Zod regex)
+        slug: z.string().max(80).optional(),
         customDomain: z.string().max(255).nullable().optional(),
         finish: z.boolean().optional(),
       })
@@ -177,8 +185,8 @@ export const firmRouter = router({
         updates.customDomain = input.customDomain?.trim() ? input.customDomain.trim() : null;
       }
 
-      if (input.slug !== undefined && input.slug.trim()) {
-        const cleanSlug = slugifyFirmName(input.slug);
+      if (input.slug !== undefined && String(input.slug).trim()) {
+        const cleanSlug = slugifyFirmName(String(input.slug));
         if (!cleanSlug || cleanSlug.length < 2) {
           throw new TRPCError({
             code: "BAD_REQUEST",
@@ -225,7 +233,7 @@ export const firmRouter = router({
   // Invite a team member
   invite: protectedProcedure
     .input(z.object({
-      email: z.string().email(),
+      email: inviteEmailSchema,
       role: z.enum(["lawyer", "assistant", "client"]),
       clientId: z.number().optional(),
     }))
@@ -245,21 +253,29 @@ export const firmRouter = router({
         clientId: input.clientId,
         expiresAt,
       });
-      const inviteUrl = `${ctx.req.headers.origin}/invite/${token}`;
+      const inviteUrl = `${getAppBaseUrl(ctx.req)}/invite/${token}`;
       const firm = await getFirmById(member.firmId);
-      
-      // Send email based on role
-      if (input.role === "client") {
-        await sendClientInviteEmail(input.email, firm?.name || "Your Firm", inviteUrl).catch(err => {
-          console.error("[Email] Failed to send client invite:", err.message);
-        });
-      } else {
-        await sendFirmInviteEmail(input.email, firm?.name || "Your Firm", inviteUrl, ctx.user.name || "Your colleague").catch(err => {
-          console.error("[Email] Failed to send firm invite:", err.message);
-        });
+
+      let emailSent = false;
+      let emailError: string | undefined;
+      try {
+        if (input.role === "client") {
+          await sendClientInviteEmail(input.email, firm?.name || "Your Firm", inviteUrl);
+        } else {
+          await sendFirmInviteEmail(
+            input.email,
+            firm?.name || "Your Firm",
+            inviteUrl,
+            ctx.user.name || "Your colleague"
+          );
+        }
+        emailSent = true;
+      } catch (err: any) {
+        emailError = err?.message || "Failed to send invitation email";
+        console.error("[Email] Failed to send invite:", emailError);
       }
-      
-      return { token, inviteUrl };
+
+      return { token, inviteUrl, emailSent, emailError };
     }),
 
   // Accept an invitation

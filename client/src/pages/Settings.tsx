@@ -83,13 +83,52 @@ export default function SettingsPage() {
     onError: (e) => toast.error(e.message),
   });
   const invite = trpc.firm.invite.useMutation({
-    onSuccess: () => { 
-      toast.success(t("settings.inviteSent"));
-      setInviteEmail(""); 
+    onSuccess: async (data) => {
+      setInviteEmail("");
       setInviteRole("lawyer");
+      if (data.emailSent) {
+        toast.success(t("settings.inviteSent"));
+        return;
+      }
+      const link = data.inviteUrl;
+      try {
+        if (link && navigator.clipboard?.writeText) {
+          await navigator.clipboard.writeText(link);
+          toast.warning(
+            data.emailError
+              ? `${t("settings.inviteEmailFailed")}: ${data.emailError}. ${t("settings.inviteEmailFailedCopied")}`
+              : t("settings.inviteEmailFailedCopied")
+          );
+          return;
+        }
+      } catch {
+        // fall through
+      }
+      toast.warning(
+        data.emailError
+          ? `${t("settings.inviteEmailFailed")}: ${data.emailError}. ${link || ""}`
+          : `${t("settings.inviteEmailFailed")}. ${link || ""}`
+      );
     },
-    onError: (e) => toast.error(e.message),
+    onError: (e) => {
+      const msg = e.message || "";
+      // Zod 4 often surfaces the whole issue array as the message
+      toast.error(
+        msg.includes("Invalid email") || msg.trim().startsWith("[")
+          ? t("settings.invalidEmail")
+          : msg
+      );
+    },
   });
+
+  const submitInvite = () => {
+    const email = inviteEmail.trim().toLowerCase();
+    if (!email || !email.includes("@")) {
+      toast.error(t("settings.invalidEmail"));
+      return;
+    }
+    invite.mutate({ email, role: inviteRole });
+  };
 
   useEffect(() => { if (!loading && !isAuthenticated) startLogin(); }, [isAuthenticated, loading]);
   useEffect(() => {
@@ -282,16 +321,36 @@ export default function SettingsPage() {
                   <h3 className="font-semibold text-foreground mb-2">{t("settings.inviteMember")}</h3>
                   <p className="text-sm text-muted-foreground">{t("settings.inviteHint")}</p>
                 </div>
-                <div className="flex gap-3">
-                  <Input className="flex-1" placeholder={t("settings.inviteEmail")} value={inviteEmail} onChange={e => setInviteEmail(e.target.value)} />
-                  <select className="border border-input rounded-md px-3 text-sm bg-background" value={inviteRole} onChange={e => setInviteRole(e.target.value as any)}>
-                    <option value="lawyer">{t("settings.lawyer")}</option>
-                    <option value="assistant">{t("settings.assistant")}</option>
-                  </select>
-                  <Button className="bg-[var(--color-navy)] hover:bg-[var(--color-navy-light)] text-white shrink-0" disabled={!inviteEmail || invite.isPending}
-                    onClick={() => invite.mutate({ email: inviteEmail, role: inviteRole })}>
-                    {invite.isPending ? t("settings.sending") : <><Send className="w-4 h-4 mr-1.5" /> {t("settings.sendInvite")}</> }
-                  </Button>
+                <div className="space-y-2">
+                  <Label htmlFor="invite-email">{t("settings.inviteEmail")}</Label>
+                  <div className="flex flex-col sm:flex-row gap-3">
+                    <Input
+                      id="invite-email"
+                      type="email"
+                      autoComplete="email"
+                      className="flex-1"
+                      placeholder="colleague@example.com"
+                      value={inviteEmail}
+                      onChange={e => setInviteEmail(e.target.value)}
+                      onKeyDown={e => { if (e.key === "Enter") submitInvite(); }}
+                    />
+                    <select
+                      className="border border-input rounded-md px-3 text-sm bg-background"
+                      value={inviteRole}
+                      onChange={e => setInviteRole(e.target.value as any)}
+                      aria-label={t("settings.inviteRole")}
+                    >
+                      <option value="lawyer">{t("settings.lawyer")}</option>
+                      <option value="assistant">{t("settings.assistant")}</option>
+                    </select>
+                    <Button
+                      className="bg-[var(--color-navy)] hover:bg-[var(--color-navy-light)] text-white shrink-0"
+                      disabled={!inviteEmail.trim() || invite.isPending}
+                      onClick={submitInvite}
+                    >
+                      {invite.isPending ? t("settings.sending") : <><Send className="w-4 h-4 mr-1.5" /> {t("settings.sendInvite")}</>}
+                    </Button>
+                  </div>
                 </div>
               </div>
               <div className="bg-card border border-border rounded-xl overflow-hidden">

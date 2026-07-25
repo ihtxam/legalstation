@@ -28,8 +28,35 @@ export default function ClientDetailPage() {
     onError: (e) => toast.error(e.message),
   });
   const inviteClient = trpc.firm.invite.useMutation({
-    onSuccess: () => { toast.success("Invitation sent!"); setInviteEmail(""); },
-    onError: (e) => toast.error(e.message),
+    onSuccess: async (data) => {
+      setInviteEmail("");
+      if (data.emailSent) {
+        toast.success("Invitation sent!");
+        return;
+      }
+      try {
+        if (data.inviteUrl && navigator.clipboard?.writeText) {
+          await navigator.clipboard.writeText(data.inviteUrl);
+          toast.warning(
+            `Email could not be sent${data.emailError ? `: ${data.emailError}` : ""}. Invite link copied to clipboard.`
+          );
+          return;
+        }
+      } catch {
+        // fall through
+      }
+      toast.warning(
+        `Invitation created but email failed${data.emailError ? `: ${data.emailError}` : ""}. Link: ${data.inviteUrl || ""}`
+      );
+    },
+    onError: (e) => {
+      const msg = e.message || "";
+      toast.error(
+        msg.includes("Invalid email") || msg.trim().startsWith("[")
+          ? "Please enter a valid email address"
+          : msg
+      );
+    },
   });
 
   useEffect(() => { if (!loading && !isAuthenticated) startLogin(); }, [isAuthenticated, loading]);
@@ -78,12 +105,32 @@ export default function ClientDetailPage() {
           <div className="bg-blue-50 border border-blue-200 rounded-xl p-5">
             <p className="font-medium text-blue-800 mb-1">Invite client to portal</p>
             <p className="text-blue-700 text-sm mb-3">Send an invitation so this client can access their cases and documents.</p>
-            <div className="flex gap-2">
-              <Input className="bg-white" placeholder="Email address" value={inviteEmail} onChange={e => setInviteEmail(e.target.value)} />
-              <Button className="bg-blue-700 hover:bg-blue-800 text-white shrink-0" disabled={!inviteEmail || inviteClient.isPending}
-                onClick={() => inviteClient.mutate({ email: inviteEmail, role: "client", clientId })}>
-                <Send className="w-4 h-4 mr-1.5" /> Send invite
-              </Button>
+            <div className="space-y-2">
+              <Label htmlFor="client-invite-email">Email address</Label>
+              <div className="flex gap-2">
+                <Input
+                  id="client-invite-email"
+                  type="email"
+                  autoComplete="email"
+                  className="bg-white"
+                  placeholder="client@example.com"
+                  value={inviteEmail || client.email || ""}
+                  onChange={e => setInviteEmail(e.target.value)}
+                />
+                <Button
+                  className="bg-blue-700 hover:bg-blue-800 text-white shrink-0"
+                  disabled={!(inviteEmail || client.email)?.trim() || inviteClient.isPending}
+                  onClick={() =>
+                    inviteClient.mutate({
+                      email: (inviteEmail || client.email || "").trim().toLowerCase(),
+                      role: "client",
+                      clientId,
+                    })
+                  }
+                >
+                  <Send className="w-4 h-4 mr-1.5" /> Send invite
+                </Button>
+              </div>
             </div>
           </div>
         )}

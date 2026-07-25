@@ -34,6 +34,9 @@ services:
       VITE_OAUTH_PORTAL_URL: ${VITE_OAUTH_PORTAL_URL:-}
       OAUTH_SERVER_URL: ${OAUTH_SERVER_URL:-}
       BREVO_API_KEY: ${BREVO_API_KEY:-}
+      # Must match a verified Brevo sender (see Brevo → Senders)
+      EMAIL_FROM: ${EMAIL_FROM:-}
+      EMAIL_FROM_NAME: ${EMAIL_FROM_NAME:-LexFlow}
       STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY:-}
       STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET:-}
       ADYEN_API_KEY: ${ADYEN_API_KEY:-}

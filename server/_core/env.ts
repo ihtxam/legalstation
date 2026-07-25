@@ -13,6 +13,9 @@ export const ENV = {
   forgeApiUrl: process.env.BUILT_IN_FORGE_API_URL ?? "",
   forgeApiKey: process.env.BUILT_IN_FORGE_API_KEY ?? "",
   brevoApiKey: process.env.BREVO_API_KEY ?? "",
+  /** Verified Brevo sender address (must match a sender in the Brevo account) */
+  emailFrom: process.env.EMAIL_FROM ?? "",
+  emailFromName: process.env.EMAIL_FROM_NAME ?? "LexFlow",
 
   /** Canonical public URL for emails / redirects (e.g. https://legal.webprintmedia.swiss) */
   appUrl: process.env.APP_URL ?? "",
