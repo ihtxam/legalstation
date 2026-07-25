@@ -401,7 +401,7 @@ export const timeEntriesRouter = router({
     return { success: true };
   }),
 
-  /** Create a draft invoice from submitted billable time entries. */
+  /** Create a draft invoice from billable time entries (draft or submitted). Drafts are auto-submitted. */
   createInvoiceFromEntries: protectedProcedure
     .input(
       z.object({
@@ -426,14 +426,25 @@ export const timeEntriesRouter = router({
       for (const id of input.entryIds) {
         const entry = await getTimeEntryById(id, member.firmId);
         if (!entry) throw new TRPCError({ code: "NOT_FOUND", message: `Entry ${id} not found` });
-        if (entry.status !== "submitted") {
-          throw new TRPCError({
-            code: "BAD_REQUEST",
-            message: `Entry ${id} must be submitted before billing`,
-          });
-        }
         if (!entry.billable) {
           throw new TRPCError({ code: "BAD_REQUEST", message: `Entry ${id} is not billable` });
+        }
+        if (entry.status === "billed") {
+          throw new TRPCError({ code: "BAD_REQUEST", message: `Entry ${id} is already billed` });
+        }
+        if (entry.status !== "draft" && entry.status !== "submitted") {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: `Entry ${id} cannot be invoiced (status: ${entry.status})`,
+          });
+        }
+        // Auto-submit drafts so billing can proceed in one step
+        if (entry.status === "draft") {
+          if (!canTransitionTimeEntryStatus("draft", "submitted")) {
+            throw new TRPCError({ code: "BAD_REQUEST", message: `Cannot submit entry ${id}` });
+          }
+          await updateTimeEntry(entry.id, member.firmId, { status: "submitted" });
+          entry.status = "submitted";
         }
         entries.push(entry);
       }

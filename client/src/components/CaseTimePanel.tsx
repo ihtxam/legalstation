@@ -10,6 +10,7 @@ import { Pause, Play, Plus, Square, Trash2, Edit2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { format } from "date-fns";
+import { Link } from "wouter";
 
 function formatDuration(minutes: number) {
   const h = Math.floor(minutes / 60);
@@ -103,6 +104,13 @@ export default function CaseTimePanel({ caseId }: { caseId: number }) {
 
   return (
     <div className="space-y-6">
+      <p className="text-sm text-muted-foreground">
+        Set your hourly rate and create invoices from time entries in{" "}
+        <Link href="/time-reports" className="text-[var(--color-navy)] underline underline-offset-2">
+          Time Reports
+        </Link>
+        .
+      </p>
       <div className="rounded-xl border border-border bg-muted/30 p-4 space-y-3">
         <div className="flex items-center justify-between gap-3 flex-wrap">
           <div>
