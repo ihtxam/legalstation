@@ -19,6 +19,7 @@ import { Plus, Trash2, Send, CheckCircle, Download, CreditCard, CheckCircle2, Pe
 import PaymentPlanScheduler from "@/pages/PaymentPlanScheduler";
 import { PaymentInstallmentTimeline } from "@/components/PaymentInstallmentTimeline";
 import { useTranslation } from "react-i18next";
+import { canCreateInvoice } from "@shared/roles";
 
 function formatCHF(amount: string | number) {
   return new Intl.NumberFormat("de-CH", { style: "currency", currency: "CHF" }).format(Number(amount));
@@ -560,6 +561,7 @@ export default function InvoiceDetailPage() {
   const { data: branding } = trpc.firm.branding.useQuery(undefined, { enabled: isAuthenticated });
   const { data: firmData } = trpc.firm.myFirm.useQuery(undefined, { enabled: isAuthenticated });
   const isFirmMember = !!firmData;
+  const canManageInvoices = canCreateInvoice(firmData?.member?.firmRole);
   const [editing, setEditing] = useState(false);
   const [form, setForm] = useState<InvoiceFormState | null>(null);
 
@@ -633,7 +635,25 @@ export default function InvoiceDetailPage() {
     }
   };
 
-  if (isNewInvoice) return <NewInvoiceForm />;
+  if (isNewInvoice) {
+    if (!firmData) {
+      return (
+        <LexLayout title={t("invoiceDetail.title")}>
+          <div className="p-6">
+            <Skeleton className="h-64 w-full" />
+          </div>
+        </LexLayout>
+      );
+    }
+    if (!canManageInvoices) {
+      return (
+        <LexLayout title={t("invoiceDetail.title")}>
+          <div className="p-6 text-center text-muted-foreground">{t("invoiceDetail.notFound")}</div>
+        </LexLayout>
+      );
+    }
+    return <NewInvoiceForm />;
+  }
   if (isLoading)
     return (
       <LexLayout title={t("invoiceDetail.title")}>
@@ -650,7 +670,7 @@ export default function InvoiceDetailPage() {
     );
 
   const invoice = invoiceData;
-  const canEdit = isFirmMember && invoice.status === "draft";
+  const canEdit = canManageInvoices && invoice.status === "draft";
   const client = clients?.find((c) => c.id === invoice.clientId);
   const caseRow = cases?.find((c) => c.id === invoice.caseId);
 
@@ -941,7 +961,7 @@ export default function InvoiceDetailPage() {
                 <Download className="w-4 h-4 me-1.5" />
                 {generatePdf.isPending ? t("common.loading") : t("invoiceDetail.downloadPdf")}
               </Button>
-              {isFirmMember && invoice.status === "draft" && (
+              {canManageInvoices && invoice.status === "draft" && (
                 <Button
                   className="bg-[var(--color-navy)] hover:bg-[var(--color-navy-light)] text-white"
                   onClick={() => updateStatus.mutate({ id: invoiceId, status: "sent" })}

@@ -20,17 +20,25 @@ import {
   DEFAULT_MAX_UPLOAD_BYTES,
   parseAllowedExtensions,
 } from "@shared/uploadPolicy";
+import { isFirmAdminLike } from "@shared/roles";
 
 const UPLOAD_TYPE_OPTIONS = [...DEFAULT_ALLOWED_UPLOAD_EXTENSIONS];
+
+type InviteStaffRole = "subadmin" | "lawyer" | "assistant";
 
 export default function SettingsPage() {
   const { t } = useTranslation();
   const { isAuthenticated, loading, user, refresh } = useAuth();
   const { data: firmData, refetch } = trpc.firm.myFirm.useQuery(undefined, { enabled: isAuthenticated });
-  const { data: members } = trpc.firm.members.useQuery(undefined, { enabled: isAuthenticated && !!firmData });
+  const canManageFirm = isFirmAdminLike(firmData?.member?.firmRole);
+  const isOwnerAdmin = firmData?.member?.firmRole === "admin";
+  const { data: members } = trpc.firm.members.useQuery(undefined, {
+    enabled: isAuthenticated && canManageFirm,
+  });
   const [firmForm, setFirmForm] = useState({ name: "", address: "", email: "", phone: "", vatNumber: "", logoUrl: "" });
   const [inviteEmail, setInviteEmail] = useState("");
-  const [inviteRole, setInviteRole] = useState<"lawyer" | "assistant">("lawyer");
+  const [inviteRole, setInviteRole] = useState<InviteStaffRole>("lawyer");
+  const [inviteEmailLanguage, setInviteEmailLanguage] = useState<AppLocale>("en");
   const [logoFile, setLogoFile] = useState<File | null>(null);
   const [logoPreview, setLogoPreview] = useState<string>("");
   const [hasChanges, setHasChanges] = useState(false);
@@ -44,7 +52,7 @@ export default function SettingsPage() {
   const [totpSetup, setTotpSetup] = useState<{ qrDataUrl: string; secret: string } | null>(null);
   const [totpCode, setTotpCode] = useState("");
   const [locale, setLocale] = useState<AppLocale>("en");
-  const isFirmAdmin = firmData?.member?.firmRole === "admin";
+  const isFirmAdmin = canManageFirm;
 
   const setupTotp = trpc.auth.setupTotp.useMutation({
     onSuccess: (data) => setTotpSetup({ qrDataUrl: data.qrDataUrl, secret: data.secret }),
@@ -103,6 +111,7 @@ export default function SettingsPage() {
     onSuccess: async (data) => {
       setInviteEmail("");
       setInviteRole("lawyer");
+      if (isAppLocale(user?.preferredLocale)) setInviteEmailLanguage(user.preferredLocale);
       if (data.emailSent) {
         toast.success(t("settings.inviteSent"));
         return;
@@ -144,10 +153,15 @@ export default function SettingsPage() {
       toast.error(t("settings.invalidEmail"));
       return;
     }
-    invite.mutate({ email, role: inviteRole });
+    invite.mutate({ email, role: inviteRole, emailLanguage: inviteEmailLanguage });
   };
 
   useEffect(() => { if (!loading && !isAuthenticated) startLogin(); }, [isAuthenticated, loading]);
+  useEffect(() => {
+    if (isAppLocale(user?.preferredLocale)) {
+      setInviteEmailLanguage(user.preferredLocale);
+    }
+  }, [user?.preferredLocale]);
   useEffect(() => {
     if (firmData?.firm) {
       setFirmForm({
@@ -229,14 +243,12 @@ export default function SettingsPage() {
     });
   };
 
-  const isFirmStaff = Boolean(firmData?.member);
-
   return (
     <LexLayout title={t("settings.title")} breadcrumb={[{ label: t("settings.title") }]}>
       <div className="p-6 max-w-3xl mx-auto">
-        <Tabs defaultValue={isFirmStaff ? "firm" : "language"}>
+        <Tabs defaultValue={canManageFirm ? "firm" : "language"}>
           <TabsList className="bg-muted mb-6 flex flex-wrap h-auto">
-            {isFirmStaff && (
+            {canManageFirm && (
               <>
                 <TabsTrigger value="firm"><Building2 className="w-4 h-4 mr-1.5" />{t("settings.tabFirm")}</TabsTrigger>
                 <TabsTrigger value="team"><Users className="w-4 h-4 mr-1.5" />{t("settings.tabTeam")}</TabsTrigger>
@@ -246,7 +258,7 @@ export default function SettingsPage() {
             <TabsTrigger value="language"><Languages className="w-4 h-4 mr-1.5" />{t("settings.tabLanguage")}</TabsTrigger>
           </TabsList>
 
-          {isFirmStaff && <TabsContent value="firm">
+          {canManageFirm && <TabsContent value="firm">
             <div className="bg-card border border-border rounded-xl p-6 space-y-4">
               <h3 className="font-semibold text-foreground">{t("settings.firmSettings")}</h3>
               <div><Label>{t("settings.firmName")}</Label><Input className={`mt-1.5 ${getFieldHighlight('name')}`} value={firmForm.name} onChange={e => setFirmForm(f => ({ ...f, name: e.target.value }))} /></div>
@@ -436,43 +448,75 @@ export default function SettingsPage() {
             </div>
           </TabsContent>
 
-          {isFirmStaff && <TabsContent value="team">
+          {canManageFirm && <TabsContent value="team">
             <div className="space-y-4">
               <div className="bg-card border border-border rounded-xl p-6 space-y-4">
                 <div>
                   <h3 className="font-semibold text-foreground mb-2">{t("settings.inviteMember")}</h3>
                   <p className="text-sm text-muted-foreground">{t("settings.inviteHint")}</p>
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="invite-email">{t("settings.inviteEmail")}</Label>
-                  <div className="flex flex-col sm:flex-row gap-3">
+                <div className="space-y-3">
+                  <div>
+                    <Label htmlFor="invite-email">{t("settings.inviteEmail")}</Label>
                     <Input
                       id="invite-email"
                       type="email"
                       autoComplete="email"
-                      className="flex-1"
+                      className="mt-1.5"
                       placeholder="colleague@example.com"
                       value={inviteEmail}
                       onChange={e => setInviteEmail(e.target.value)}
                       onKeyDown={e => { if (e.key === "Enter") submitInvite(); }}
                     />
-                    <select
-                      className="border border-input rounded-md px-3 text-sm bg-background"
-                      value={inviteRole}
-                      onChange={e => setInviteRole(e.target.value as any)}
-                      aria-label={t("settings.inviteRole")}
-                    >
-                      <option value="lawyer">{t("settings.lawyer")}</option>
-                      <option value="assistant">{t("settings.assistant")}</option>
-                    </select>
-                    <Button
-                      className="bg-[var(--color-navy)] hover:bg-[var(--color-navy-light)] text-white shrink-0"
-                      disabled={!inviteEmail.trim() || invite.isPending}
-                      onClick={submitInvite}
-                    >
-                      {invite.isPending ? t("settings.sending") : <><Send className="w-4 h-4 mr-1.5" /> {t("settings.sendInvite")}</>}
-                    </Button>
                   </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                      <Label htmlFor="invite-role">{t("settings.inviteRole")}</Label>
+                      <select
+                        id="invite-role"
+                        className="mt-1.5 w-full border border-input rounded-md px-3 py-2 text-sm bg-background"
+                        value={inviteRole}
+                        onChange={e => setInviteRole(e.target.value as InviteStaffRole)}
+                      >
+                        {isOwnerAdmin && <option value="subadmin">{t("settings.subadmin")}</option>}
+                        <option value="lawyer">{t("settings.lawyer")}</option>
+                        <option value="assistant">{t("settings.assistant")}</option>
+                      </select>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        {inviteRole === "subadmin"
+                          ? t("settings.roleHintSubadmin")
+                          : inviteRole === "lawyer"
+                            ? t("settings.roleHintLawyer")
+                            : t("settings.roleHintAssistant")}
+                      </p>
+                    </div>
+                    <div>
+                      <Label htmlFor="invite-email-lang">{t("settings.inviteEmailLanguage")}</Label>
+                      <Select
+                        value={inviteEmailLanguage}
+                        onValueChange={(v) => setInviteEmailLanguage(v as AppLocale)}
+                      >
+                        <SelectTrigger id="invite-email-lang" className="mt-1.5">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {APP_LOCALES.map((code) => (
+                            <SelectItem key={code} value={code}>
+                              {APP_LOCALE_LABELS[code]}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <p className="text-xs text-muted-foreground mt-1">{t("settings.inviteEmailLanguageHint")}</p>
+                    </div>
+                  </div>
+                  <Button
+                    className="bg-[var(--color-navy)] hover:bg-[var(--color-navy-light)] text-white"
+                    disabled={!inviteEmail.trim() || invite.isPending}
+                    onClick={submitInvite}
+                  >
+                    {invite.isPending ? t("settings.sending") : <><Send className="w-4 h-4 mr-1.5" /> {t("settings.sendInvite")}</>}
+                  </Button>
                 </div>
               </div>
               <div className="bg-card border border-border rounded-xl overflow-hidden">
@@ -483,13 +527,21 @@ export default function SettingsPage() {
                   <div className="p-6 text-center text-muted-foreground text-sm">{t("settings.noTeamMembers")}</div>
                 ) : (
                   <div className="divide-y divide-border">
-                    {members.map(({ member, user }) => (
+                    {members.map(({ member, user: memberUser }) => (
                       <div key={member.id} className="flex items-center justify-between px-5 py-3.5">
                         <div>
-                          <p className="font-medium text-sm text-foreground">{user.name}</p>
-                          <p className="text-xs text-muted-foreground">{user.email}</p>
+                          <p className="font-medium text-sm text-foreground">{memberUser.name}</p>
+                          <p className="text-xs text-muted-foreground">{memberUser.email}</p>
                         </div>
-                        <span className="text-xs font-medium px-2.5 py-1 rounded-full bg-[var(--color-navy)]/8 text-[var(--color-navy)] capitalize">{member.firmRole}</span>
+                        <span className="text-xs font-medium px-2.5 py-1 rounded-full bg-[var(--color-navy)]/8 text-[var(--color-navy)] capitalize">
+                          {member.firmRole === "subadmin"
+                            ? t("settings.subadmin")
+                            : member.firmRole === "admin"
+                              ? t("roles.admin")
+                              : member.firmRole === "lawyer"
+                                ? t("settings.lawyer")
+                                : t("settings.assistant")}
+                        </span>
                       </div>
                     ))}
                   </div>

@@ -368,6 +368,34 @@ export async function getCasesByClientId(clientId: number) {
   return db.select().from(cases).where(inArray(cases.id, caseIds)).orderBy(desc(cases.createdAt));
 }
 
+/** Case IDs where the staff user is assigned as lawyer or assistant. */
+export async function getAssignedCaseIdsForUser(userId: number): Promise<number[]> {
+  const db = await getDb();
+  if (!db) return [];
+  const rows = await db
+    .select({ caseId: caseAssignments.caseId })
+    .from(caseAssignments)
+    .where(
+      and(
+        eq(caseAssignments.userId, userId),
+        inArray(caseAssignments.assignmentType, ["lawyer", "assistant"])
+      )
+    );
+  return Array.from(new Set(rows.map((r) => r.caseId)));
+}
+
+export async function getCasesByAssignedUser(firmId: number, userId: number) {
+  const caseIds = await getAssignedCaseIdsForUser(userId);
+  if (!caseIds.length) return [];
+  const db = await getDb();
+  if (!db) return [];
+  return db
+    .select()
+    .from(cases)
+    .where(and(eq(cases.firmId, firmId), inArray(cases.id, caseIds)))
+    .orderBy(desc(cases.createdAt));
+}
+
 // ─── Case event helpers ───────────────────────────────────────────────────────
 export async function createCaseEvent(data: InsertCaseEvent) {
   const db = await getDb();

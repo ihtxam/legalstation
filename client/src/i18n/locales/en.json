@@ -324,7 +324,15 @@
     "maxUploadMb": "Max file size (MB)",
     "maxUploadMbHelp": "Between 0.1 and 50 MB. Default is 10 MB.",
     "allowedFileTypes": "Allowed file types",
-    "allowedFileTypesRequired": "Select at least one allowed file type."
+    "allowedFileTypesRequired": "Select at least one allowed file type.",
+    "subadmin": "Sub-admin",
+    "inviteEmailLanguage": "Invite email language",
+    "inviteEmailLanguageHint": "The invitation email and join page open in this language.",
+    "roleHintSubadmin": "Full firm access (cases, invoices, settings). Cannot invite other admins.",
+    "roleHintLawyer": "Sees only assigned cases and related invoices. Cannot change firm settings.",
+    "roleHintAssistant": "Sees assigned cases; can view related invoices but not create them.",
+    "inviteClientTitle": "Invite client to portal",
+    "inviteClientHint": "Send an invitation so this client can access their cases and documents."
   },
   "notFound": {
     "title": "Page Not Found",
@@ -783,7 +791,8 @@
     "passwordMismatch": "Passwords do not match",
     "roleLawyer": "lawyer",
     "roleAssistant": "assistant",
-    "roleClient": "client"
+    "roleClient": "client",
+    "roleSubadmin": "sub-admin"
   },
   "onboarding": {
     "setupTitle": "Set up your firm",
@@ -944,5 +953,12 @@
     "dnsSlug": "Subdomain slug",
     "subdomainStatus": "Status",
     "dnsNote": "Production IP is {{ip}}. DNS changes can take up to 24–48 hours to propagate."
+  },
+  "roles": {
+    "admin": "Admin",
+    "subadmin": "Sub-admin",
+    "lawyer": "Lawyer",
+    "assistant": "Assistant",
+    "client": "Client"
   }
 }

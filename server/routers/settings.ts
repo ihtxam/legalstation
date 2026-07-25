@@ -7,7 +7,8 @@ import { agencySettings } from "../../drizzle/schema";
 async function requirePlatformOrFirmAdmin(userId: number, role: string) {
   if (role === "superadmin") return;
   const member = await getFirmMemberByUserId(userId);
-  if (!member || member.firmRole !== "admin") {
+  const { isFirmAdminLike } = await import("@shared/roles");
+  if (!member || !isFirmAdminLike(member.firmRole)) {
     throw new TRPCError({ code: "FORBIDDEN" });
   }
 }

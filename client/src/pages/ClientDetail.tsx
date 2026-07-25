@@ -15,15 +15,23 @@ import { toast } from "sonner";
 import { format } from "date-fns";
 import ClientActivityPanel from "@/components/ClientActivityPanel";
 import { useTranslation } from "react-i18next";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { APP_LOCALES, APP_LOCALE_LABELS, isAppLocale, type AppLocale } from "@shared/locales";
+import { canInviteClient } from "@shared/roles";
 
 export default function ClientDetailPage() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { id } = useParams<{ id: string }>();
   const clientId = parseInt(id);
-  const { isAuthenticated, loading } = useAuth();
+  const { isAuthenticated, loading, user } = useAuth();
+  const { data: firmData } = trpc.firm.myFirm.useQuery(undefined, { enabled: isAuthenticated });
   const [, navigate] = useLocation();
   const [editing, setEditing] = useState(false);
   const [inviteEmail, setInviteEmail] = useState("");
+  const [inviteEmailLanguage, setInviteEmailLanguage] = useState<AppLocale>(
+    isAppLocale(i18n.language) ? i18n.language : "en"
+  );
+  const canSendClientInvite = canInviteClient(firmData?.member?.firmRole);
 
   const { data: client, isLoading, refetch } = trpc.clients.get.useQuery({ id: clientId }, { enabled: isAuthenticated && !isNaN(clientId) });
   const updateClient = trpc.clients.update.useMutation({
@@ -63,6 +71,13 @@ export default function ClientDetailPage() {
   });
 
   useEffect(() => { if (!loading && !isAuthenticated) startLogin(); }, [isAuthenticated, loading]);
+  useEffect(() => {
+    if (isAppLocale(user?.preferredLocale)) {
+      setInviteEmailLanguage(user.preferredLocale);
+    } else if (isAppLocale(i18n.language)) {
+      setInviteEmailLanguage(i18n.language);
+    }
+  }, [user?.preferredLocale, i18n.language]);
 
   const displayName = client
     ? client.type === "company" ? (client.companyName ?? "Unnamed Company") : `${client.firstName ?? ""} ${client.lastName ?? ""}`.trim() || "Unnamed Client"
@@ -104,36 +119,56 @@ export default function ClientDetailPage() {
         </div>
 
         {/* Invite section */}
-        {!client.userId && (
+        {!client.userId && canSendClientInvite && (
           <div className="bg-blue-50 border border-blue-200 rounded-xl p-5">
-            <p className="font-medium text-blue-800 mb-1">Invite client to portal</p>
-            <p className="text-blue-700 text-sm mb-3">Send an invitation so this client can access their cases and documents.</p>
-            <div className="space-y-2">
-              <Label htmlFor="client-invite-email">Email address</Label>
-              <div className="flex gap-2">
+            <p className="font-medium text-blue-800 mb-1">{t("settings.inviteClientTitle")}</p>
+            <p className="text-blue-700 text-sm mb-3">{t("settings.inviteClientHint")}</p>
+            <div className="space-y-3">
+              <div>
+                <Label htmlFor="client-invite-email">{t("settings.inviteEmail")}</Label>
                 <Input
                   id="client-invite-email"
                   type="email"
                   autoComplete="email"
-                  className="bg-white"
+                  className="bg-white mt-1.5"
                   placeholder="client@example.com"
                   value={inviteEmail || client.email || ""}
                   onChange={e => setInviteEmail(e.target.value)}
                 />
-                <Button
-                  className="bg-blue-700 hover:bg-blue-800 text-white shrink-0"
-                  disabled={!(inviteEmail || client.email)?.trim() || inviteClient.isPending}
-                  onClick={() =>
-                    inviteClient.mutate({
-                      email: (inviteEmail || client.email || "").trim().toLowerCase(),
-                      role: "client",
-                      clientId,
-                    })
-                  }
-                >
-                  <Send className="w-4 h-4 mr-1.5" /> Send invite
-                </Button>
               </div>
+              <div>
+                <Label htmlFor="client-invite-lang">{t("settings.inviteEmailLanguage")}</Label>
+                <Select
+                  value={inviteEmailLanguage}
+                  onValueChange={(v) => setInviteEmailLanguage(v as AppLocale)}
+                >
+                  <SelectTrigger id="client-invite-lang" className="bg-white mt-1.5 max-w-xs">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {APP_LOCALES.map((code) => (
+                      <SelectItem key={code} value={code}>
+                        {APP_LOCALE_LABELS[code]}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-blue-700/80 mt-1">{t("settings.inviteEmailLanguageHint")}</p>
+              </div>
+              <Button
+                className="bg-blue-700 hover:bg-blue-800 text-white"
+                disabled={!(inviteEmail || client.email)?.trim() || inviteClient.isPending}
+                onClick={() =>
+                  inviteClient.mutate({
+                    email: (inviteEmail || client.email || "").trim().toLowerCase(),
+                    role: "client",
+                    clientId,
+                    emailLanguage: inviteEmailLanguage,
+                  })
+                }
+              >
+                <Send className="w-4 h-4 mr-1.5" /> {t("settings.sendInvite")}
+              </Button>
             </div>
           </div>
         )}

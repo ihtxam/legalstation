@@ -12,6 +12,7 @@ import { useLocation } from "wouter";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { useTranslation } from "react-i18next";
+import { canCreateInvoice } from "@shared/roles";
 
 function formatCHF(amount: string | number) {
   return new Intl.NumberFormat("de-CH", { style: "currency", currency: "CHF" }).format(Number(amount));
@@ -22,6 +23,8 @@ export default function InvoicesPage() {
   const { isAuthenticated, loading } = useAuth();
   const [, navigate] = useLocation();
   const [statusFilter, setStatusFilter] = useState<string>("all");
+  const { data: firmData } = trpc.firm.myFirm.useQuery(undefined, { enabled: isAuthenticated });
+  const showNewInvoice = canCreateInvoice(firmData?.member?.firmRole);
 
   const { data: invoices, isLoading } = trpc.invoices.list.useQuery(
     { status: statusFilter !== "all" ? statusFilter as any : undefined },
@@ -42,9 +45,11 @@ export default function InvoicesPage() {
             <h2 className="text-xl font-semibold text-foreground">{t("invoices.title")}</h2>
             <p className="text-muted-foreground text-sm mt-0.5">{t("invoices.count", { count: allInvoices.length })}</p>
           </div>
-          <Button className="bg-[var(--color-navy)] hover:bg-[var(--color-navy-light)] text-white" onClick={() => navigate("/invoices/new")}>
-            <Plus className="w-4 h-4 mr-1.5" /> {t("invoices.new")}
-          </Button>
+          {showNewInvoice && (
+            <Button className="bg-[var(--color-navy)] hover:bg-[var(--color-navy-light)] text-white" onClick={() => navigate("/invoices/new")}>
+              <Plus className="w-4 h-4 mr-1.5" /> {t("invoices.new")}
+            </Button>
+          )}
         </div>
 
         <div className="flex items-center gap-3">

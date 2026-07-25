@@ -324,7 +324,15 @@
     "maxUploadMb": "Max. Dateigröße (MB)",
     "maxUploadMbHelp": "Zwischen 0,1 und 50 MB. Standard: 10 MB.",
     "allowedFileTypes": "Erlaubte Dateitypen",
-    "allowedFileTypesRequired": "Mindestens einen Dateityp auswählen."
+    "allowedFileTypesRequired": "Mindestens einen Dateityp auswählen.",
+    "subadmin": "Sub-Admin",
+    "inviteEmailLanguage": "Sprache der Einladungs-E-Mail",
+    "inviteEmailLanguageHint": "Die Einladungs-E-Mail und die Beitrittsseite öffnen sich in dieser Sprache.",
+    "roleHintSubadmin": "Voller Kanzlei-Zugriff (Fälle, Rechnungen, Einstellungen). Kann keine weiteren Admins einladen.",
+    "roleHintLawyer": "Sieht nur zugewiesene Fälle und zugehörige Rechnungen. Keine Admin-Einstellungen.",
+    "roleHintAssistant": "Sieht zugewiesene Fälle; kann zugehörige Rechnungen einsehen, aber nicht erstellen.",
+    "inviteClientTitle": "Mandant zum Portal einladen",
+    "inviteClientHint": "Senden Sie eine Einladung, damit dieser Mandant auf Fälle und Dokumente zugreifen kann."
   },
   "notFound": {
     "title": "Seite nicht gefunden",
@@ -783,7 +791,8 @@
     "passwordMismatch": "Passwörter stimmen nicht überein",
     "roleLawyer": "Anwalt",
     "roleAssistant": "Assistent",
-    "roleClient": "Mandant"
+    "roleClient": "Mandant",
+    "roleSubadmin": "Sub-Admin"
   },
   "onboarding": {
     "setupTitle": "Kanzlei einrichten",
@@ -944,5 +953,12 @@
     "dnsSlug": "Subdomain slug",
     "subdomainStatus": "Status",
     "dnsNote": "Production IP is {{ip}}. DNS changes can take up to 24–48 hours to propagate."
+  },
+  "roles": {
+    "admin": "Admin",
+    "subadmin": "Sub-Admin",
+    "lawyer": "Anwalt",
+    "assistant": "Assistent",
+    "client": "Mandant"
   }
 }

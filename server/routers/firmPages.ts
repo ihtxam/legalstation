@@ -8,7 +8,8 @@ import { firmPages } from "../../drizzle/schema";
 async function requireAdmin(userId: number) {
   const member = await getFirmMemberByUserId(userId);
   if (!member) throw new TRPCError({ code: "UNAUTHORIZED" });
-  if (member.firmRole !== "admin") {
+  const { isFirmAdminLike } = await import("@shared/roles");
+  if (!isFirmAdminLike(member.firmRole)) {
     throw new TRPCError({ code: "FORBIDDEN", message: "Admin only" });
   }
   return member;
@@ -16,7 +17,7 @@ async function requireAdmin(userId: number) {
 
 async function requireStaff(userId: number) {
   const member = await getFirmMemberByUserId(userId);
-  if (!member || !["admin", "lawyer", "assistant"].includes(member.firmRole)) {
+  if (!member || !["admin", "subadmin", "lawyer", "assistant"].includes(member.firmRole)) {
     throw new TRPCError({ code: "FORBIDDEN" });
   }
   return member;

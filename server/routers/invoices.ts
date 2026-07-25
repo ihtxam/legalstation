@@ -4,6 +4,7 @@ import {
   createInvoice,
   createInvoiceItem,
   deleteInvoiceItems,
+  getAssignedCaseIdsForUser,
   getFirmMemberByUserId,
   getInvoiceById,
   getInvoiceItems,
@@ -14,6 +15,7 @@ import {
   getClientByUserId,
 } from "../db";
 import { protectedProcedure, router } from "../_core/trpc";
+import { canCreateInvoice, canSeeFirmWideInvoices } from "@shared/roles";
 
 export const invoicesRouter = router({
   list: protectedProcedure
@@ -23,12 +25,25 @@ export const invoicesRouter = router({
     .query(async ({ ctx, input }) => {
       const member = await getFirmMemberByUserId(ctx.user.id);
       if (member) {
-        const all = await getInvoicesByFirm(member.firmId);
+        let all = await getInvoicesByFirm(member.firmId);
+        if (!canSeeFirmWideInvoices(member.firmRole)) {
+          const assignedCaseIds = await getAssignedCaseIdsForUser(ctx.user.id);
+          const assigned = new Set(assignedCaseIds);
+          all = all.filter(
+            (r) =>
+              r.invoice.createdByUserId === ctx.user.id ||
+              (r.invoice.caseId != null && assigned.has(r.invoice.caseId))
+          );
+        }
         if (input?.status) return all.filter(r => r.invoice.status === input.status);
         return all;
       }
       const client = await getClientByUserId(ctx.user.id);
-      if (client) return getInvoicesByClient(client.id);
+      if (client) {
+        const rows = await getInvoicesByClient(client.id);
+        // Clients never see drafts
+        return rows.filter((inv) => inv.status !== "draft");
+      }
       return [];
     }),
 
@@ -58,7 +73,7 @@ export const invoicesRouter = router({
     }))
     .mutation(async ({ ctx, input }) => {
       const member = await getFirmMemberByUserId(ctx.user.id);
-      if (!member || !["admin", "lawyer"].includes(member.firmRole)) throw new TRPCError({ code: "FORBIDDEN" });
+      if (!member || !canCreateInvoice(member.firmRole)) throw new TRPCError({ code: "FORBIDDEN" });
       const invoiceNumber = await getNextInvoiceNumber(member.firmId);
       const subtotal = input.items.reduce((sum, item) => sum + item.quantity * item.unitPrice, 0);
       const vatAmount = subtotal * (input.vatRate / 100);
@@ -103,7 +118,7 @@ export const invoicesRouter = router({
     }))
     .mutation(async ({ ctx, input }) => {
       const member = await getFirmMemberByUserId(ctx.user.id);
-      if (!member || !["admin", "lawyer"].includes(member.firmRole)) throw new TRPCError({ code: "FORBIDDEN" });
+      if (!member || !canCreateInvoice(member.firmRole)) throw new TRPCError({ code: "FORBIDDEN" });
       const updates: Record<string, unknown> = { status: input.status };
       if (input.status === "paid") updates.paidAt = new Date();
       await updateInvoice(input.id, member.firmId, updates as any);
@@ -128,10 +143,13 @@ export const invoicesRouter = router({
     }))
     .mutation(async ({ ctx, input }) => {
       const member = await getFirmMemberByUserId(ctx.user.id);
-      if (!member || !["admin", "lawyer"].includes(member.firmRole)) throw new TRPCError({ code: "FORBIDDEN" });
+      if (!member || !canCreateInvoice(member.firmRole)) throw new TRPCError({ code: "FORBIDDEN" });
       const invoice = await getInvoiceById(input.id, member.firmId);
       if (!invoice) throw new TRPCError({ code: "NOT_FOUND" });
       if (invoice.status !== "draft") throw new TRPCError({ code: "BAD_REQUEST", message: "Only draft invoices can be edited" });
+      // Lawyers may only edit invoices they can access
+      const { assertInvoiceAccess } = await import("../access");
+      await assertInvoiceAccess(ctx.user.id, input.id);
       const { id, items, dueDate, ...rest } = input;
       if (items) {
         await deleteInvoiceItems(id);

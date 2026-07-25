@@ -25,11 +25,20 @@ import { Separator } from "@/components/ui/separator";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
+import { isFirmAdminLike } from "@shared/roles";
 
 interface LexLayoutProps {
   children: React.ReactNode;
   title?: string;
   breadcrumb?: { label: string; href?: string }[];
+}
+
+function roleLabel(t: (key: string) => string, role?: string | null) {
+  if (role === "admin") return t("roles.admin");
+  if (role === "subadmin") return t("roles.subadmin");
+  if (role === "lawyer") return t("roles.lawyer");
+  if (role === "assistant") return t("roles.assistant");
+  return t("roles.client");
 }
 
 export default function LexLayout({ children, title, breadcrumb }: LexLayoutProps) {
@@ -41,7 +50,7 @@ export default function LexLayout({ children, title, breadcrumb }: LexLayoutProp
   const [sidebarOpen, setSidebarOpen] = useState(true);
 
   const isClient = !firmData;
-  const isAdmin = firmData?.member?.firmRole === "admin";
+  const isAdmin = isFirmAdminLike(firmData?.member?.firmRole);
   const isSuperadmin = user?.role === "superadmin";
 
   const clientNavItems = [
@@ -160,7 +169,9 @@ export default function LexLayout({ children, title, breadcrumb }: LexLayoutProp
             {sidebarOpen && (
               <div className="min-w-0">
                 <p className="text-white text-sm font-medium truncate">{user?.name ?? "User"}</p>
-                <p className="text-white/50 text-xs truncate">{firmData?.member.firmRole ?? "Client"}</p>
+                <p className="text-white/50 text-xs truncate">
+                  {roleLabel(t, firmData?.member.firmRole)}
+                </p>
               </div>
             )}
           </div>

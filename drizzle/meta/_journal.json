@@ -99,6 +99,13 @@
       "when": 1785182800000,
       "tag": "0013_document_upload_policy",
       "breakpoints": true
+    },
+    {
+      "idx": 14,
+      "version": "5",
+      "when": 1785269200000,
+      "tag": "0014_roles_invite_locale",
+      "breakpoints": true
     }
   ]
 }

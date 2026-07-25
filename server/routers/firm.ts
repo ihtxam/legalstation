@@ -72,10 +72,16 @@ async function applyInvitationToUser(opts: {
       }
     }
   } else if (!existingMember) {
+    const staffRole =
+      opts.invitation.role === "subadmin" ||
+      opts.invitation.role === "lawyer" ||
+      opts.invitation.role === "assistant"
+        ? opts.invitation.role
+        : "lawyer";
     await createFirmMember({
       firmId: opts.invitation.firmId,
       userId: opts.userId,
-      firmRole: opts.invitation.role as "admin" | "lawyer" | "assistant",
+      firmRole: staffRole,
     });
   } else if (existingMember.firmId !== opts.invitation.firmId) {
     throw new TRPCError({
@@ -247,7 +253,8 @@ export const firmRouter = router({
     }))
     .mutation(async ({ ctx, input }) => {
       const member = await getFirmMemberByUserId(ctx.user.id);
-      if (!member || member.firmRole !== "admin") throw new TRPCError({ code: "FORBIDDEN" });
+      const { isFirmAdminLike } = await import("@shared/roles");
+      if (!member || !isFirmAdminLike(member.firmRole)) throw new TRPCError({ code: "FORBIDDEN" });
       const { defaultVatRate, defaultCurrency, maxUploadMb, allowedUploadTypes, ...rest } = input;
       const { UPLOAD_HARD_MAX_BYTES } = await import("@shared/uploadPolicy");
       await updateFirm(member.firmId, {
@@ -366,14 +373,33 @@ export const firmRouter = router({
   invite: protectedProcedure
     .input(z.object({
       email: inviteEmailSchema,
-      role: z.enum(["lawyer", "assistant", "client"]),
+      role: z.enum(["subadmin", "lawyer", "assistant", "client"]),
       clientId: z.number().optional(),
+      /** Language for the invite email + preferred join UI (admin choice at invite time). */
+      emailLanguage: z.enum(["en", "fr", "de", "it", "ar"]).optional(),
     }))
     .mutation(async ({ ctx, input }) => {
       const member = await getFirmMemberByUserId(ctx.user.id);
-      if (!member || !["admin", "lawyer"].includes(member.firmRole)) {
-        throw new TRPCError({ code: "FORBIDDEN" });
+      const { canInviteClient, canInviteStaff, isFirmAdminLike } = await import("@shared/roles");
+      const { isAppLocale } = await import("@shared/locales");
+      if (!member) throw new TRPCError({ code: "FORBIDDEN" });
+
+      if (input.role === "client") {
+        if (!canInviteClient(member.firmRole)) throw new TRPCError({ code: "FORBIDDEN" });
+      } else if (input.role === "subadmin") {
+        // Only firm admin can invite subadmins
+        if (member.firmRole !== "admin") throw new TRPCError({ code: "FORBIDDEN" });
+      } else {
+        // lawyer / assistant invites: admin or subadmin
+        if (!canInviteStaff(member.firmRole)) throw new TRPCError({ code: "FORBIDDEN" });
       }
+      const locale =
+        input.emailLanguage && isAppLocale(input.emailLanguage)
+          ? input.emailLanguage
+          : isAppLocale(ctx.user.preferredLocale)
+            ? ctx.user.preferredLocale
+            : "en";
+
       const token = nanoid(64);
       const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
       await createInvitation({
@@ -383,6 +409,7 @@ export const firmRouter = router({
         token,
         invitedByUserId: ctx.user.id,
         clientId: input.clientId,
+        emailLanguage: locale,
         expiresAt,
       });
       const inviteUrl = `${getAppBaseUrl(ctx.req)}/invite/${token}`;
@@ -391,7 +418,6 @@ export const firmRouter = router({
       let emailSent = false;
       let emailError: string | undefined;
       try {
-        const locale = ctx.user.preferredLocale || "en";
         if (input.role === "client") {
           await sendClientInviteEmail(input.email, firm?.name || "Your Firm", inviteUrl, locale);
         } else {
@@ -409,7 +435,7 @@ export const firmRouter = router({
         console.error("[Email] Failed to send invite:", emailError);
       }
 
-      return { token, inviteUrl, emailSent, emailError };
+      return { token, inviteUrl, emailSent, emailError, emailLanguage: locale };
     }),
 
   /** Public preview for invite landing page (no auth). */
@@ -427,6 +453,7 @@ export const firmRouter = router({
         role: invitation.role,
         firmName: firm?.name ?? "LexFlow",
         firmSlug: firm?.slug ?? null,
+        emailLanguage: invitation.emailLanguage || "en",
         expired: invitation.expiresAt < new Date(),
         accepted: Boolean(invitation.acceptedAt),
         expiresAt: invitation.expiresAt,
@@ -444,6 +471,7 @@ export const firmRouter = router({
         token: z.string().min(10),
         name: z.string().trim().min(1).max(200),
         password: z.string().min(8).max(200),
+        preferredLocale: z.enum(["en", "fr", "de", "it", "ar"]).optional(),
       })
     )
     .mutation(async ({ ctx, input }) => {
@@ -466,6 +494,11 @@ export const firmRouter = router({
           message: "An account with this email already exists. Sign in to accept the invitation.",
         });
       }
+      const { isAppLocale } = await import("@shared/locales");
+      const preferredLocale =
+        (input.preferredLocale && isAppLocale(input.preferredLocale) && input.preferredLocale) ||
+        (isAppLocale(invitation.emailLanguage) && invitation.emailLanguage) ||
+        "en";
 
       const db = await getDb();
       if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database unavailable" });
@@ -478,6 +511,7 @@ export const firmRouter = router({
         role: "user",
         loginMethod: "password",
         passwordHash: hashPassword(input.password),
+        preferredLocale,
         mustChangePassword: false,
         lastSignedIn: new Date(),
       });

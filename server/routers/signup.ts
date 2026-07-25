@@ -60,6 +60,7 @@ export const signupRouter = router({
         password: z.string().min(8).max(200),
         phone: z.string().trim().max(50).optional(),
         slug: z.string().trim().max(80).optional(),
+        preferredLocale: z.enum(["en", "fr", "de", "it", "ar"]).optional(),
       })
     )
     .mutation(async ({ ctx, input }) => {
@@ -98,6 +99,10 @@ export const signupRouter = router({
         });
       }
 
+      const { isAppLocale } = await import("@shared/locales");
+      const preferredLocale =
+        input.preferredLocale && isAppLocale(input.preferredLocale) ? input.preferredLocale : "en";
+
       const openId = `password-trial-${nanoid(12)}`;
       await db.insert(users).values({
         openId,
@@ -106,6 +111,7 @@ export const signupRouter = router({
         role: "user",
         loginMethod: "password",
         passwordHash: hashPassword(input.password),
+        preferredLocale,
         mustChangePassword: false,
         lastSignedIn: new Date(),
       });

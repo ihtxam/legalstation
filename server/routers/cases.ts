@@ -11,6 +11,7 @@ import {
   getCaseEvents,
   getCasesByClientId,
   getCasesByFirm,
+  getCasesByAssignedUser,
   getFirmMemberByUserId,
   getClientByUserId,
   removeCaseAssignment,
@@ -23,6 +24,7 @@ import {
 import { users } from "../../drizzle/schema";
 import { protectedProcedure, router } from "../_core/trpc";
 import { assertCaseAccess } from "../access";
+import { canSeeFirmWideCases, isFirmAdminLike } from "@shared/roles";
 import { getCaseNotificationRecipients } from "../caseNotifications";
 import { sendCaseUpdateEmail } from "../email";
 import { getAppBaseUrl } from "../tenant";
@@ -43,7 +45,9 @@ export const casesRouter = router({
     .query(async ({ ctx, input }) => {
       const member = await getFirmMemberByUserId(ctx.user.id);
       if (member) {
-        let all = await getCasesByFirm(member.firmId);
+        let all = canSeeFirmWideCases(member.firmRole)
+          ? await getCasesByFirm(member.firmId)
+          : await getCasesByAssignedUser(member.firmId, ctx.user.id);
         if (input?.search) {
           const q = input.search.toLowerCase();
           all = all.filter(c => c.title.toLowerCase().includes(q) || c.referenceNumber?.toLowerCase().includes(q));
@@ -82,7 +86,9 @@ export const casesRouter = router({
     }))
     .mutation(async ({ ctx, input }) => {
       const member = await requireFirmMember(ctx.user.id);
-      if (!["admin", "lawyer"].includes(member.firmRole)) throw new TRPCError({ code: "FORBIDDEN" });
+      if (!isFirmAdminLike(member.firmRole) && member.firmRole !== "lawyer") {
+        throw new TRPCError({ code: "FORBIDDEN" });
+      }
       const { clientIds, lawyerIds, deadline, ...caseData } = input;
       await createCase({
         ...caseData,
@@ -95,7 +101,12 @@ export const casesRouter = router({
         for (const clientId of (clientIds ?? [])) {
           await addCaseAssignment({ caseId: newCase.id, clientId, assignmentType: "client", assignedByUserId: ctx.user.id });
         }
-        for (const userId of (lawyerIds ?? [])) {
+        const lawyerSet = new Set(lawyerIds ?? []);
+        // Auto-assign creator so lawyers see cases they open
+        if (member.firmRole === "lawyer" || member.firmRole === "subadmin") {
+          lawyerSet.add(ctx.user.id);
+        }
+        for (const userId of Array.from(lawyerSet)) {
           await addCaseAssignment({ caseId: newCase.id, userId, assignmentType: "lawyer", assignedByUserId: ctx.user.id });
         }
         await createCaseEvent({

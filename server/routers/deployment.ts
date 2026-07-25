@@ -26,7 +26,8 @@ export const deploymentRouter = router({
     )
     .query(async ({ ctx, input }) => {
       const member = await getFirmMemberByUserId(ctx.user.id);
-      if (!member || member.firmRole !== "admin") {
+      const { isFirmAdminLike } = await import("@shared/roles");
+      if (!member || !isFirmAdminLike(member.firmRole)) {
         throw new TRPCError({ code: "FORBIDDEN", message: "Admin only" });
       }
 

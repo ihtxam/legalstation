@@ -1,4 +1,4 @@
-export type FirmRole = "admin" | "lawyer" | "assistant" | "client";
+export type FirmRole = "admin" | "subadmin" | "lawyer" | "assistant" | "client";
 export type CaseStatus = "open" | "pending" | "closed" | "archived";
 export type CaseType = "civil" | "criminal" | "corporate" | "family" | "real_estate" | "employment" | "tax" | "immigration" | "intellectual_property" | "other";
 export type InvoiceStatus = "draft" | "sent" | "paid" | "overdue" | "cancelled";

@@ -2,11 +2,12 @@ import { useEffect } from "react";
 import { useLocation } from "wouter";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { trpc } from "@/lib/trpc";
+import { canCreateInvoice, isFirmAdminLike } from "@shared/roles";
 
 /**
  * Redirects unauthenticated users to login, and optionally enforces firm membership.
  * @param requireFirmMember - if true, clients (non-firm-members) are redirected to /dashboard
- * @param requireAdmin - if true, only admin role can access; others are redirected to /dashboard
+ * @param requireAdmin - if true, only admin/subadmin can access; others are redirected to /dashboard
  */
 export function useRoleGuard(options: { requireFirmMember?: boolean; requireAdmin?: boolean } = {}) {
   const { isAuthenticated, loading: authLoading } = useAuth();
@@ -14,7 +15,7 @@ export function useRoleGuard(options: { requireFirmMember?: boolean; requireAdmi
     enabled: isAuthenticated,
   });
   const [, navigate] = useLocation();
-  const { startLogin } = useAuth() as any;
+  const role = firmData?.member?.firmRole;
 
   useEffect(() => {
     if (authLoading || firmLoading) return;
@@ -27,19 +28,22 @@ export function useRoleGuard(options: { requireFirmMember?: boolean; requireAdmi
       navigate("/dashboard");
       return;
     }
-    if (options.requireAdmin && firmData?.member?.firmRole !== "admin") {
+    if (options.requireAdmin && !isFirmAdminLike(role)) {
       navigate("/dashboard");
       return;
     }
-  }, [isAuthenticated, authLoading, firmData, firmLoading]);
+  }, [isAuthenticated, authLoading, firmData, firmLoading, options.requireFirmMember, options.requireAdmin, role, navigate]);
 
   return {
     loading: authLoading || firmLoading,
     firmData,
     isFirmMember: !!firmData,
-    isAdmin: firmData?.member?.firmRole === "admin",
-    isLawyer: firmData?.member?.firmRole === "lawyer",
-    isAssistant: firmData?.member?.firmRole === "assistant",
+    isAdmin: isFirmAdminLike(role),
+    isSubadmin: role === "subadmin",
+    isLawyer: role === "lawyer",
+    isAssistant: role === "assistant",
+    canManageFirm: isFirmAdminLike(role),
+    canCreateInvoice: canCreateInvoice(role),
     isClient: !firmData,
   };
 }

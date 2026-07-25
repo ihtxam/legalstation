@@ -1,5 +1,11 @@
 import { TRPCError } from "@trpc/server";
 import {
+  canSeeFirmWideCases,
+  canSeeFirmWideInvoices,
+  isFirmAdminLike,
+} from "@shared/roles";
+import {
+  getAssignedCaseIdsForUser,
   getCaseAssignments,
   getCaseById,
   getClientByUserId,
@@ -33,6 +39,13 @@ export async function assertCaseAccess(userId: number, caseId: number) {
   if (!caseRow) throw new TRPCError({ code: "NOT_FOUND", message: "Case not found" });
 
   if (ctx.kind === "member") {
+    if (canSeeFirmWideCases(ctx.member.firmRole)) {
+      return { ctx, caseRow, includeInternal: true as const };
+    }
+    const assignedIds = await getAssignedCaseIdsForUser(userId);
+    if (!assignedIds.includes(caseId)) {
+      throw new TRPCError({ code: "FORBIDDEN", message: "Not assigned to this case" });
+    }
     return { ctx, caseRow, includeInternal: true as const };
   }
 
@@ -50,6 +63,7 @@ export async function assertDocumentAccess(userId: number, documentId: number) {
   if (!doc) throw new TRPCError({ code: "NOT_FOUND", message: "Document not found" });
 
   if (ctx.kind === "member") {
+    await assertCaseAccess(userId, doc.caseId);
     return { ctx, doc, includeInternal: true as const };
   }
 
@@ -65,8 +79,24 @@ export async function assertInvoiceAccess(userId: number, invoiceId: number) {
   if (ctx.kind === "member") {
     const invoice = await getInvoiceById(invoiceId, ctx.firmId);
     if (!invoice) throw new TRPCError({ code: "NOT_FOUND", message: "Invoice not found" });
-    return { ctx, invoice };
+
+    if (canSeeFirmWideInvoices(ctx.member.firmRole)) {
+      return { ctx, invoice };
+    }
+
+    // Lawyer / assistant: invoices on assigned cases, or ones they created
+    if (invoice.createdByUserId === userId) {
+      return { ctx, invoice };
+    }
+    if (invoice.caseId != null) {
+      const assignedIds = await getAssignedCaseIdsForUser(userId);
+      if (assignedIds.includes(invoice.caseId)) {
+        return { ctx, invoice };
+      }
+    }
+    throw new TRPCError({ code: "FORBIDDEN", message: "Invoice not available" });
   }
+
   const invoice = await getInvoiceByIdOnly(invoiceId);
   if (!invoice || invoice.firmId !== ctx.firmId || invoice.clientId !== ctx.client.id) {
     throw new TRPCError({ code: "NOT_FOUND", message: "Invoice not found" });
@@ -77,3 +107,5 @@ export async function assertInvoiceAccess(userId: number, invoiceId: number) {
   }
   return { ctx, invoice };
 }
+
+export { isFirmAdminLike };

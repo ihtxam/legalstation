@@ -3,24 +3,29 @@ import { useAuth } from "@/_core/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { Scale, CheckCircle, AlertCircle, ArrowRight } from "lucide-react";
 import { FormEvent, type ReactNode, useEffect, useRef, useState } from "react";
 import { Link, useLocation, useParams } from "wouter";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
+import { setAppLocale } from "@/i18n";
+import { isAppLocale } from "@shared/locales";
 
 export default function InvitePage() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { token = "" } = useParams<{ token: string }>();
   const { isAuthenticated, loading, refresh, user } = useAuth();
   const [, navigate] = useLocation();
   const acceptedOnce = useRef(false);
+  const localeApplied = useRef(false);
 
   const [name, setName] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
 
   const roleLabel = (role: string) => {
+    if (role === "subadmin") return t("invite.roleSubadmin");
     if (role === "lawyer") return t("invite.roleLawyer");
     if (role === "assistant") return t("invite.roleAssistant");
     if (role === "client") return t("invite.roleClient");
@@ -49,6 +54,16 @@ export default function InvitePage() {
     onError: (e) => toast.error(e.message),
   });
 
+  // Prefill UI language from the admin-chosen invite email language (once).
+  useEffect(() => {
+    if (localeApplied.current) return;
+    const lang = inviteQuery.data?.emailLanguage;
+    if (lang && isAppLocale(lang)) {
+      setAppLocale(lang);
+      localeApplied.current = true;
+    }
+  }, [inviteQuery.data?.emailLanguage]);
+
   useEffect(() => {
     if (loading || !isAuthenticated || !token || acceptedOnce.current) return;
     if (inviteQuery.data?.expired || inviteQuery.data?.accepted) return;
@@ -70,7 +85,13 @@ export default function InvitePage() {
       toast.error(t("invite.passwordMismatch"));
       return;
     }
-    registerFromInvite.mutate({ token, name: name.trim(), password });
+    const preferredLocale = isAppLocale(i18n.language) ? i18n.language : undefined;
+    registerFromInvite.mutate({
+      token,
+      name: name.trim(),
+      password,
+      preferredLocale,
+    });
   };
 
   if (!token) {
@@ -161,6 +182,9 @@ export default function InvitePage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100 flex items-center justify-center p-6">
       <div className="w-full max-w-md">
+        <div className="flex justify-end mb-4">
+          <LanguageSwitcher />
+        </div>
         <div className="text-center mb-6">
           <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-[var(--color-navy)] mb-4">
             <Scale className="w-6 h-6 text-white" />

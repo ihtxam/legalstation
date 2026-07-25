@@ -73,7 +73,9 @@ export const firmMembers = mysqlTable("firm_members", {
   id: int("id").autoincrement().primaryKey(),
   firmId: int("firmId").notNull(),
   userId: int("userId").notNull(),
-  firmRole: mysqlEnum("firmRole", ["admin", "lawyer", "assistant"]).notNull().default("lawyer"),
+  firmRole: mysqlEnum("firmRole", ["admin", "subadmin", "lawyer", "assistant"])
+    .notNull()
+    .default("lawyer"),
   title: varchar("title", { length: 100 }),
   isActive: boolean("isActive").notNull().default(true),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
@@ -88,10 +90,12 @@ export const invitations = mysqlTable("invitations", {
   id: int("id").autoincrement().primaryKey(),
   firmId: int("firmId").notNull(),
   email: varchar("email", { length: 320 }).notNull(),
-  role: mysqlEnum("role", ["lawyer", "assistant", "client"]).notNull(),
+  role: mysqlEnum("role", ["subadmin", "lawyer", "assistant", "client"]).notNull(),
   token: varchar("token", { length: 128 }).notNull().unique(),
   invitedByUserId: int("invitedByUserId").notNull(),
   clientId: int("clientId"),
+  /** Locale used for the invite email and preferred join-page language */
+  emailLanguage: varchar("emailLanguage", { length: 5 }).notNull().default("en"),
   acceptedAt: timestamp("acceptedAt"),
   expiresAt: timestamp("expiresAt").notNull(),
   createdAt: timestamp("createdAt").defaultNow().notNull(),

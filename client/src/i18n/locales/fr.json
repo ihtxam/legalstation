@@ -324,7 +324,15 @@
     "maxUploadMb": "Taille max. (Mo)",
     "maxUploadMbHelp": "Entre 0,1 et 50 Mo. Par défaut : 10 Mo.",
     "allowedFileTypes": "Types de fichiers autorisés",
-    "allowedFileTypesRequired": "Sélectionnez au moins un type de fichier."
+    "allowedFileTypesRequired": "Sélectionnez au moins un type de fichier.",
+    "subadmin": "Sous-admin",
+    "inviteEmailLanguage": "Langue de l'e-mail d'invitation",
+    "inviteEmailLanguageHint": "L'e-mail d'invitation et la page d'inscription s'ouvrent dans cette langue.",
+    "roleHintSubadmin": "Accès complet au cabinet (dossiers, factures, paramètres). Ne peut pas inviter d'autres admins.",
+    "roleHintLawyer": "Voit uniquement ses dossiers assignés et les factures liées. Pas de paramètres admin.",
+    "roleHintAssistant": "Voit les dossiers assignés ; peut consulter les factures liées mais pas les créer.",
+    "inviteClientTitle": "Inviter le client au portail",
+    "inviteClientHint": "Envoyez une invitation pour que ce client accède à ses dossiers et documents."
   },
   "notFound": {
     "title": "Page introuvable",
@@ -783,7 +791,8 @@
     "passwordMismatch": "Les mots de passe ne correspondent pas",
     "roleLawyer": "avocat",
     "roleAssistant": "assistant",
-    "roleClient": "client"
+    "roleClient": "client",
+    "roleSubadmin": "sous-admin"
   },
   "onboarding": {
     "setupTitle": "Configurez votre cabinet",
@@ -944,5 +953,12 @@
     "dnsSlug": "Subdomain slug",
     "subdomainStatus": "Status",
     "dnsNote": "Production IP is {{ip}}. DNS changes can take up to 24–48 hours to propagate."
+  },
+  "roles": {
+    "admin": "Admin",
+    "subadmin": "Sous-admin",
+    "lawyer": "Avocat",
+    "assistant": "Assistant",
+    "client": "Client"
   }
 }

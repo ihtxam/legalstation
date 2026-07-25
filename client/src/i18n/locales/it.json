@@ -324,7 +324,15 @@
     "maxUploadMb": "Dimensione max (MB)",
     "maxUploadMbHelp": "Tra 0,1 e 50 MB. Predefinito: 10 MB.",
     "allowedFileTypes": "Tipi di file consentiti",
-    "allowedFileTypesRequired": "Seleziona almeno un tipo di file."
+    "allowedFileTypesRequired": "Seleziona almeno un tipo di file.",
+    "subadmin": "Sub-admin",
+    "inviteEmailLanguage": "Lingua e-mail di invito",
+    "inviteEmailLanguageHint": "L'e-mail di invito e la pagina di iscrizione si aprono in questa lingua.",
+    "roleHintSubadmin": "Accesso completo allo studio (pratiche, fatture, impostazioni). Non può invitare altri admin.",
+    "roleHintLawyer": "Vede solo le pratiche assegnate e le fatture collegate. Nessuna impostazione admin.",
+    "roleHintAssistant": "Vede le pratiche assegnate; può visualizzare le fatture collegate ma non crearle.",
+    "inviteClientTitle": "Invita il cliente al portale",
+    "inviteClientHint": "Invia un invito affinché questo cliente possa accedere a pratiche e documenti."
   },
   "notFound": {
     "title": "Pagina non trovata",
@@ -783,7 +791,8 @@
     "passwordMismatch": "Le password non corrispondono",
     "roleLawyer": "avvocato",
     "roleAssistant": "assistente",
-    "roleClient": "cliente"
+    "roleClient": "cliente",
+    "roleSubadmin": "sub-admin"
   },
   "onboarding": {
     "setupTitle": "Configura il tuo studio",
@@ -944,5 +953,12 @@
     "dnsSlug": "Subdomain slug",
     "subdomainStatus": "Status",
     "dnsNote": "Production IP is {{ip}}. DNS changes can take up to 24–48 hours to propagate."
+  },
+  "roles": {
+    "admin": "Admin",
+    "subadmin": "Sub-admin",
+    "lawyer": "Avvocato",
+    "assistant": "Assistente",
+    "client": "Cliente"
   }
 }

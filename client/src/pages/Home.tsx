@@ -23,6 +23,8 @@ import { useEffect, useMemo, useState } from "react";
 import { useLocation } from "wouter";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
+import { LanguageSwitcher } from "@/components/LanguageSwitcher";
+import { isAppLocale } from "@shared/locales";
 
 type DemoStatus = {
   enabled: boolean;
@@ -74,7 +76,7 @@ function previewSlug(value: string): string {
 }
 
 export default function Home() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { isAuthenticated, loading, refresh, user } = useAuth();
   const [, navigate] = useLocation();
   const [demo, setDemo] = useState<DemoStatus>({ enabled: false, users: [] });
@@ -189,6 +191,7 @@ export default function Home() {
           <span className="font-serif font-semibold text-xl text-foreground tracking-tight">LexFlow</span>
         </div>
         <div className="flex items-center gap-2">
+          <LanguageSwitcher />
           <Button variant="ghost" onClick={() => navigate("/platform/login")} className="text-muted-foreground">
             Platform
           </Button>
@@ -348,6 +351,7 @@ export default function Home() {
                     phone: trialForm.phone.trim() || undefined,
                     password: trialForm.password,
                     slug: slugTouched ? trialForm.slug.trim() || undefined : undefined,
+                    preferredLocale: isAppLocale(i18n.language) ? i18n.language : "en",
                   });
                 }}
               >

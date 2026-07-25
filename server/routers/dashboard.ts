@@ -70,7 +70,8 @@ export const dashboardRouter = router({
   /** Firm-admin analytics: cases, billing, messaging volume. */
   adminAnalytics: protectedProcedure.query(async ({ ctx }) => {
     const member = await getFirmMemberByUserId(ctx.user.id);
-    if (!member || member.firmRole !== "admin") {
+    const { isFirmAdminLike } = await import("@shared/roles");
+    if (!member || !isFirmAdminLike(member.firmRole)) {
       throw new TRPCError({ code: "FORBIDDEN", message: "Admin only" });
     }
     const allCases = await getCasesByFirm(member.firmId);
