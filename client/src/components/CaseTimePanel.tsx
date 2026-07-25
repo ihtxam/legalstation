@@ -227,16 +227,20 @@ export default function CaseTimePanel({ caseId }: { caseId: number }) {
           rows={2}
         />
         <Button
-          disabled={!manualDescription.trim() || createEntry.isPending}
-          onClick={() =>
+          disabled={createEntry.isPending}
+          onClick={() => {
+            if (!manualDescription.trim()) {
+              toast.error(t("timeReports.addDescription"));
+              return;
+            }
             createEntry.mutate({
               caseId,
-              description: manualDescription,
+              description: manualDescription.trim(),
               durationMinutes: Math.max(1, parseInt(manualMinutes, 10) || 1),
               date: manualDate,
               billable,
-            })
-          }
+            });
+          }}
         >
           <Plus className="w-3.5 h-3.5 me-1.5" /> {t("timeReports.addEntry")}
         </Button>
@@ -308,14 +312,18 @@ export default function CaseTimePanel({ caseId }: { caseId: number }) {
             <Button variant="outline" onClick={() => setEditEntry(null)}>{t("timeReports.cancel")}</Button>
             <Button
               disabled={!editEntry || updateEntry.isPending}
-              onClick={() =>
-                editEntry &&
+              onClick={() => {
+                if (!editEntry) return;
+                if (!editDesc.trim()) {
+                  toast.error(t("timeReports.addDescription"));
+                  return;
+                }
                 updateEntry.mutate({
                   id: editEntry.id,
                   durationMinutes: Math.max(1, parseInt(editMinutes, 10) || 1),
-                  description: editDesc,
-                })
-              }
+                  description: editDesc.trim(),
+                });
+              }}
             >
               {t("timeReports.save")}
             </Button>

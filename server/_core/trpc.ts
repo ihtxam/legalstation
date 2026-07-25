@@ -1,10 +1,57 @@
 import { NOT_ADMIN_ERR_MSG, UNAUTHED_ERR_MSG } from '@shared/const';
 import { initTRPC, TRPCError } from "@trpc/server";
 import superjson from "superjson";
+import { ZodError } from "zod";
 import type { TrpcContext } from "./context";
+
+function friendlyZodMessage(error: ZodError): string {
+  const issue = error.issues[0];
+  if (!issue) return "Invalid input";
+  if (issue.message && !issue.message.startsWith("Too small") && !issue.message.startsWith("Invalid input")) {
+    return issue.message;
+  }
+  const field = issue.path.length ? String(issue.path[issue.path.length - 1]) : "field";
+  if (issue.code === "too_small") {
+    return `Please provide a valid ${field}.`;
+  }
+  return issue.message || `Invalid ${field}`;
+}
 
 const t = initTRPC.context<TrpcContext>().create({
   transformer: superjson,
+  errorFormatter({ shape, error }) {
+    const cause = error.cause;
+    if (cause instanceof ZodError) {
+      return {
+        ...shape,
+        message: friendlyZodMessage(cause),
+        data: {
+          ...shape.data,
+          zodError: cause.flatten(),
+        },
+      };
+    }
+    // tRPC may already stringify Zod issues into error.message
+    if (typeof shape.message === "string" && shape.message.trim().startsWith("[")) {
+      try {
+        const parsed = JSON.parse(shape.message) as Array<{ message?: string; path?: Array<string | number>; code?: string }>;
+        if (Array.isArray(parsed) && parsed[0]?.message) {
+          const issue = parsed[0];
+          const field = issue.path?.length ? String(issue.path[issue.path.length - 1]) : "field";
+          const message =
+            issue.message && !issue.message.startsWith("Too small")
+              ? issue.message
+              : issue.code === "too_small"
+                ? `Please provide a valid ${field}.`
+                : issue.message;
+          return { ...shape, message };
+        }
+      } catch {
+        // keep original
+      }
+    }
+    return shape;
+  },
 });
 
 export const router = t.router;

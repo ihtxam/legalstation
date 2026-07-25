@@ -99,7 +99,10 @@ export const timeEntriesRouter = router({
     .input(
       z.object({
         caseId: z.number(),
-        description: z.string().min(1),
+        description: z
+          .string()
+          .trim()
+          .min(1, { error: "Please add a description for this time entry." }),
         durationMinutes: z.number().int().positive(),
         date: z.string(),
         billable: z.boolean().optional().default(true),
@@ -139,7 +142,11 @@ export const timeEntriesRouter = router({
     .input(
       z.object({
         id: z.number(),
-        description: z.string().min(1).optional(),
+        description: z
+          .string()
+          .trim()
+          .min(1, { error: "Please add a description for this time entry." })
+          .optional(),
         durationMinutes: z.number().int().positive().optional(),
         date: z.string().optional(),
         billable: z.boolean().optional(),
