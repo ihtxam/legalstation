@@ -6,7 +6,8 @@ import { Scale, ArrowRight, Building2 } from "lucide-react";
 import { FormEvent, useEffect, useState } from "react";
 import { useLocation, useSearch } from "wouter";
 import { toast } from "sonner";
-import { startOAuthLogin } from "@/const";
+import { isOAuthConfigured, startOAuthLogin } from "@/const";
+import { useTranslation } from "react-i18next";
 
 type TenantInfo =
   | { mode: "platform"; appName: string }
@@ -19,10 +20,12 @@ type TenantInfo =
     };
 
 export default function LoginPage() {
+  const { t } = useTranslation();
   const { isAuthenticated, loading, refresh, user } = useAuth();
   const [, navigate] = useLocation();
   const search = useSearch();
   const firmHint = new URLSearchParams(search).get("firm");
+  const oauthEnabled = isOAuthConfigured();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -66,17 +69,17 @@ export default function LoginPage() {
         body: JSON.stringify({ email, password, portal: "app" }),
       });
       const data = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(data.error || "Login failed");
+      if (!res.ok) throw new Error(data.error || t("login.loginFailed"));
       await refresh();
       if (data.mustChangePassword) {
         setMustChange(true);
-        toast.message("Please set a new password to continue");
+        toast.message(t("login.mustChange"));
         return;
       }
-      toast.success("Signed in");
+      toast.success(t("login.signedIn"));
       navigate(data.redirectTo || "/dashboard");
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Login failed");
+      toast.error(err instanceof Error ? err.message : t("login.loginFailed"));
     } finally {
       setBusy(false);
     }
@@ -85,11 +88,11 @@ export default function LoginPage() {
   const onChangePassword = async (e: FormEvent) => {
     e.preventDefault();
     if (newPassword.length < 8) {
-      toast.error("Password must be at least 8 characters");
+      toast.error(t("login.passwordTooShort"));
       return;
     }
     if (newPassword !== confirmPassword) {
-      toast.error("Passwords do not match");
+      toast.error(t("login.passwordMismatch"));
       return;
     }
     setBusy(true);
@@ -103,10 +106,10 @@ export default function LoginPage() {
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error || "Failed to change password");
       await refresh();
-      toast.success("Password updated");
+      toast.success(t("login.passwordUpdated"));
       navigate("/onboarding");
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Failed");
+      toast.error(err instanceof Error ? err.message : t("login.loginFailed"));
     } finally {
       setBusy(false);
     }
@@ -130,11 +133,7 @@ export default function LoginPage() {
           </div>
           <h1 className="font-serif text-2xl font-semibold text-foreground mb-2">{brandName}</h1>
           <p className="text-muted-foreground text-sm">
-            {mustChange
-              ? "Set a new password to finish activating your account"
-              : tenant?.mode === "firm"
-                ? "Sign in to your firm workspace"
-                : "Sign in to LexFlow"}
+            {mustChange ? t("login.changePassword") : t("login.signIn")}
           </p>
           {(firmHint || (tenant?.mode === "firm" && tenant.slug)) && (
             <p className="text-xs text-muted-foreground mt-2">
@@ -147,7 +146,7 @@ export default function LoginPage() {
           {mustChange ? (
             <form className="space-y-4" onSubmit={onChangePassword}>
               <div>
-                <Label htmlFor="newPassword">New password</Label>
+                <Label htmlFor="newPassword">{t("login.newPassword")}</Label>
                 <Input
                   id="newPassword"
                   type="password"
@@ -159,7 +158,7 @@ export default function LoginPage() {
                 />
               </div>
               <div>
-                <Label htmlFor="confirmPassword">Confirm password</Label>
+                <Label htmlFor="confirmPassword">{t("login.confirmPassword")}</Label>
                 <Input
                   id="confirmPassword"
                   type="password"
@@ -176,14 +175,14 @@ export default function LoginPage() {
                 style={{ backgroundColor: primary }}
                 disabled={busy}
               >
-                {busy ? "Saving…" : "Save password & continue"}
+                {busy ? t("common.loading") : t("login.updatePassword")}
                 <ArrowRight className="w-4 h-4 ml-2" />
               </Button>
             </form>
           ) : (
             <form className="space-y-4" onSubmit={onLogin}>
               <div>
-                <Label htmlFor="email">Email</Label>
+                <Label htmlFor="email">{t("login.email")}</Label>
                 <Input
                   id="email"
                   type="email"
@@ -195,7 +194,7 @@ export default function LoginPage() {
                 />
               </div>
               <div>
-                <Label htmlFor="password">Password</Label>
+                <Label htmlFor="password">{t("login.password")}</Label>
                 <Input
                   id="password"
                   type="password"
@@ -212,7 +211,7 @@ export default function LoginPage() {
                 style={{ backgroundColor: primary }}
                 disabled={busy}
               >
-                {busy ? "Signing in…" : "Sign in"}
+                {busy ? t("login.signingIn") : t("login.signIn")}
                 <ArrowRight className="w-4 h-4 ml-2" />
               </Button>
             </form>
@@ -220,13 +219,15 @@ export default function LoginPage() {
 
           {!mustChange && (
             <div className="mt-6 space-y-3 text-center text-sm text-muted-foreground">
-              <button type="button" className="underline hover:text-foreground" onClick={() => startOAuthLogin()}>
-                Sign in with OAuth
-              </button>
+              {oauthEnabled && (
+                <button type="button" className="underline hover:text-foreground" onClick={() => startOAuthLogin()}>
+                  {t("login.signInOauth")}
+                </button>
+              )}
               <div>
-                Platform admin?{" "}
+                {t("login.platformAdmin")}{" "}
                 <a href="/platform/login" className="underline hover:text-foreground">
-                  Superadmin login
+                  {t("login.superadminLogin")}
                 </a>
               </div>
             </div>

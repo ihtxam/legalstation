@@ -3,7 +3,8 @@ import { randomId } from "@/lib/randomId";
 
 export { COOKIE_NAME, ONE_YEAR_MS } from "@shared/const";
 
-function oauthConfigured(): boolean {
+/** True when Manus OAuth portal env vars are present (optional for SaaS). */
+export function isOAuthConfigured(): boolean {
   return Boolean(import.meta.env.VITE_OAUTH_PORTAL_URL && import.meta.env.VITE_APP_ID);
 }
 
@@ -21,7 +22,7 @@ export const startLogin = (opts?: { portal?: "app" | "platform" }) => {
 
 /** Optional Manus OAuth sign-in (legacy / enterprise). */
 export const startOAuthLogin = () => {
-  if (!oauthConfigured()) {
+  if (!isOAuthConfigured()) {
     startLogin();
     return;
   }

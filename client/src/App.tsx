@@ -9,6 +9,7 @@ import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import { TwoFactorChallenge } from "./components/TwoFactorChallenge";
 import { setAppLocale } from "./i18n";
+import { isAppLocale } from "@shared/locales";
 import { trpc } from "./lib/trpc";
 import Home from "./pages/Home";
 import Dashboard from "./pages/Dashboard";
@@ -42,7 +43,7 @@ function Router() {
   });
 
   useEffect(() => {
-    if (user?.preferredLocale === "fr" || user?.preferredLocale === "de" || user?.preferredLocale === "en") {
+    if (isAppLocale(user?.preferredLocale)) {
       setAppLocale(user.preferredLocale);
     }
   }, [user?.preferredLocale]);

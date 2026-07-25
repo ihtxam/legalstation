@@ -127,7 +127,7 @@ export const appRouter = router({
         return { success: true as const };
       }),
     setLocale: protectedProcedure
-      .input(z.object({ locale: z.enum(["en", "fr", "de"]) }))
+      .input(z.object({ locale: z.enum(["en", "fr", "de", "it", "ar"]) }))
       .mutation(async ({ ctx, input }) => {
         await updateUserById(ctx.user.id, { preferredLocale: input.locale });
         return { success: true as const, locale: input.locale };

@@ -12,6 +12,7 @@ import { toast } from "sonner";
 import { Building2, Users, Send, Upload, X, Shield, Languages } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { setAppLocale } from "@/i18n";
+import { APP_LOCALES, APP_LOCALE_LABELS, isAppLocale, type AppLocale } from "@shared/locales";
 
 export default function SettingsPage() {
   const { t } = useTranslation();
@@ -27,7 +28,7 @@ export default function SettingsPage() {
   const [originalForm, setOriginalForm] = useState({ name: "", address: "", email: "", phone: "", vatNumber: "", logoUrl: "" });
   const [totpSetup, setTotpSetup] = useState<{ qrDataUrl: string; secret: string } | null>(null);
   const [totpCode, setTotpCode] = useState("");
-  const [locale, setLocale] = useState<"en" | "fr" | "de">("en");
+  const [locale, setLocale] = useState<AppLocale>("en");
 
   const setupTotp = trpc.auth.setupTotp.useMutation({
     onSuccess: (data) => setTotpSetup({ qrDataUrl: data.qrDataUrl, secret: data.secret }),
@@ -59,7 +60,7 @@ export default function SettingsPage() {
   });
 
   useEffect(() => {
-    if (user?.preferredLocale === "fr" || user?.preferredLocale === "de" || user?.preferredLocale === "en") {
+    if (isAppLocale(user?.preferredLocale)) {
       setLocale(user.preferredLocale);
     }
   }, [user?.preferredLocale]);
@@ -253,14 +254,16 @@ export default function SettingsPage() {
                 <h3 className="font-semibold text-foreground">{t("settings.languageHeading")}</h3>
                 <p className="text-sm text-muted-foreground mt-1">{t("settings.languageHint")}</p>
               </div>
-              <Select value={locale} onValueChange={(v: "en" | "fr" | "de") => setLocale(v)}>
+              <Select value={locale} onValueChange={(v) => setLocale(v as AppLocale)}>
                 <SelectTrigger className="max-w-xs">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="en">English</SelectItem>
-                  <SelectItem value="fr">Français</SelectItem>
-                  <SelectItem value="de">Deutsch</SelectItem>
+                  {APP_LOCALES.map((code) => (
+                    <SelectItem key={code} value={code}>
+                      {APP_LOCALE_LABELS[code]}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
               <Button

@@ -3,6 +3,8 @@ import { useAuth } from "@/_core/hooks/useAuth";
 import { useLocation } from "wouter";
 import { trpc } from "@/lib/trpc";
 import { setAppLocale } from "@/i18n";
+import { useTranslation } from "react-i18next";
+import { APP_LOCALES, APP_LOCALE_LABELS, isAppLocale, type AppLocale } from "@shared/locales";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -45,6 +47,7 @@ import {
 type TabId = "overview" | "firms" | "plans" | "users" | "leads" | "settings" | "audit";
 
 export default function SuperadminDashboard() {
+  const { t } = useTranslation();
   const { user, logout, loading } = useAuth();
   const [, navigate] = useLocation();
   const [tab, setTab] = useState<TabId>("overview");
@@ -64,16 +67,18 @@ export default function SuperadminDashboard() {
   const [userSearch, setUserSearch] = useState("");
   const [newAdminEmail, setNewAdminEmail] = useState("");
   const [newAdminName, setNewAdminName] = useState("");
-  const [uiLocale, setUiLocale] = useState<"en" | "fr" | "de">("en");
+  const [uiLocale, setUiLocale] = useState<AppLocale>("en");
 
   // Platform settings form state
   const [agencyName, setAgencyName] = useState("LexFlow");
   const [logoUrl, setLogoUrl] = useState("");
   const [supportEmail, setSupportEmail] = useState("");
-  const [defaultLocale, setDefaultLocale] = useState<"en" | "fr" | "de">("en");
+  const [defaultLocale, setDefaultLocale] = useState<AppLocale>("en");
   const [localeEn, setLocaleEn] = useState(true);
   const [localeFr, setLocaleFr] = useState(true);
   const [localeDe, setLocaleDe] = useState(true);
+  const [localeIt, setLocaleIt] = useState(true);
+  const [localeAr, setLocaleAr] = useState(true);
   const [vatStandard, setVatStandard] = useState("8.1");
   const [vatReduced, setVatReduced] = useState("2.6");
   const [vatSpecial, setVatSpecial] = useState("3.8");
@@ -106,7 +111,7 @@ export default function SuperadminDashboard() {
   }, [user, loading, navigate]);
 
   useEffect(() => {
-    if (user?.preferredLocale === "en" || user?.preferredLocale === "fr" || user?.preferredLocale === "de") {
+    if (isAppLocale(user?.preferredLocale)) {
       setUiLocale(user.preferredLocale);
     }
   }, [user?.preferredLocale]);
@@ -144,7 +149,7 @@ export default function SuperadminDashboard() {
   );
   const updateLeadStatus = trpc.leads.updateStatus.useMutation({
     onSuccess: () => {
-      toast.success("Lead status updated");
+      toast.success(t("superadmin.leadStatusUpdated"));
       void refetchLeads();
     },
     onError: (err) => toast.error(err.message),
@@ -159,10 +164,14 @@ export default function SuperadminDashboard() {
     setAgencyName(platformSettings.agencyName);
     setLogoUrl(platformSettings.logoUrl);
     setSupportEmail(platformSettings.supportEmail);
-    setDefaultLocale(platformSettings.defaultLocale);
+    setDefaultLocale(
+      isAppLocale(platformSettings.defaultLocale) ? platformSettings.defaultLocale : "en"
+    );
     setLocaleEn(platformSettings.supportedLocales.includes("en"));
     setLocaleFr(platformSettings.supportedLocales.includes("fr"));
     setLocaleDe(platformSettings.supportedLocales.includes("de"));
+    setLocaleIt(platformSettings.supportedLocales.includes("it"));
+    setLocaleAr(platformSettings.supportedLocales.includes("ar"));
     setVatStandard(String(platformSettings.vatRates.standard));
     setVatReduced(String(platformSettings.vatRates.reduced));
     setVatSpecial(String(platformSettings.vatRates.special));
@@ -272,8 +281,8 @@ export default function SuperadminDashboard() {
   });
   const setLocaleMutation = trpc.auth.setLocale.useMutation({
     onSuccess: (r) => {
-      setAppLocale(r.locale);
-      toast.success("Language updated");
+      if (isAppLocale(r.locale)) setAppLocale(r.locale);
+      toast.success(t("superadmin.localeUpdated"));
     },
     onError: (err) => toast.error(err.message),
   });
@@ -348,10 +357,12 @@ export default function SuperadminDashboard() {
   };
 
   const savePlatformSettings = () => {
-    const supported: Array<"en" | "fr" | "de"> = [];
+    const supported: AppLocale[] = [];
     if (localeEn) supported.push("en");
     if (localeFr) supported.push("fr");
     if (localeDe) supported.push("de");
+    if (localeIt) supported.push("it");
+    if (localeAr) supported.push("ar");
     if (!supported.length) {
       toast.error("Enable at least one language");
       return;
@@ -391,11 +402,11 @@ export default function SuperadminDashboard() {
   }
 
   const statCards = [
-    { label: "Total Firms", value: stats?.totalFirms ?? 0, icon: Building2, color: "text-blue-600", bg: "bg-blue-50" },
-    { label: "Active Firms", value: stats?.activeFirms ?? 0, icon: TrendingUp, color: "text-green-600", bg: "bg-green-50" },
-    { label: "Total Users", value: stats?.totalUsers ?? 0, icon: Users, color: "text-purple-600", bg: "bg-purple-50" },
+    { label: t("superadmin.statTotalFirms"), value: stats?.totalFirms ?? 0, icon: Building2, color: "text-blue-600", bg: "bg-blue-50" },
+    { label: t("superadmin.statActiveFirms"), value: stats?.activeFirms ?? 0, icon: TrendingUp, color: "text-green-600", bg: "bg-green-50" },
+    { label: t("superadmin.statTotalUsers"), value: stats?.totalUsers ?? 0, icon: Users, color: "text-purple-600", bg: "bg-purple-50" },
     {
-      label: "MRR / ARR proxy",
+      label: t("superadmin.statMrr"),
       value: formatCurrency(stats?.totalRevenue ?? 0),
       icon: DollarSign,
       color: "text-amber-600",
@@ -410,28 +421,31 @@ export default function SuperadminDashboard() {
           <div>
             <div className="flex items-center gap-2">
               <Shield className="h-5 w-5 text-amber-400" />
-              <h1 className="text-2xl font-semibold tracking-tight">LexFlow Platform</h1>
+              <h1 className="text-2xl font-semibold tracking-tight">{t("superadmin.title")}</h1>
             </div>
             <p className="text-slate-400 text-sm mt-1">
-              Superadmin console · {user.email || user.name}
+              {t("superadmin.subtitle", { who: user.email || user.name })}
             </p>
           </div>
           <div className="flex items-center gap-2 flex-wrap">
             <Select
               value={uiLocale}
-              onValueChange={(v: "en" | "fr" | "de") => {
-                setUiLocale(v);
-                setLocaleMutation.mutate({ locale: v });
+              onValueChange={(v) => {
+                const locale = v as AppLocale;
+                setUiLocale(locale);
+                setLocaleMutation.mutate({ locale });
               }}
             >
-              <SelectTrigger className="w-[120px] bg-slate-900 border-slate-700 text-slate-100">
+              <SelectTrigger className="w-[140px] bg-slate-900 border-slate-700 text-slate-100">
                 <Languages className="h-3.5 w-3.5 mr-1" />
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="en">English</SelectItem>
-                <SelectItem value="fr">Français</SelectItem>
-                <SelectItem value="de">Deutsch</SelectItem>
+                {APP_LOCALES.map((code) => (
+                  <SelectItem key={code} value={code}>
+                    {APP_LOCALE_LABELS[code]}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
             <Button
@@ -439,7 +453,7 @@ export default function SuperadminDashboard() {
               className="border-slate-700 text-slate-100 bg-transparent"
               onClick={() => logout().then(() => navigate("/platform/login"))}
             >
-              <LogOut className="h-4 w-4 mr-1.5" /> Sign out
+              <LogOut className="h-4 w-4 mr-1.5" /> {t("superadmin.signOut")}
             </Button>
           </div>
         </div>
@@ -449,21 +463,21 @@ export default function SuperadminDashboard() {
         {lastCreatedCreds && (
           <Card className="mb-6 border-emerald-200 bg-emerald-50">
             <CardContent className="p-4 text-sm space-y-1">
-              <p className="font-semibold text-emerald-900">Firm provisioned</p>
+              <p className="font-semibold text-emerald-900">{t("superadmin.firmProvisioned")}</p>
               <p>
-                Login:{" "}
+                {t("superadmin.loginLabel")}{" "}
                 <a className="underline" href={lastCreatedCreds.loginUrl}>
                   {lastCreatedCreds.loginUrl}
                 </a>
               </p>
               {lastCreatedCreds.temporaryPassword && (
                 <p>
-                  Temporary password:{" "}
+                  {t("superadmin.tempPassword")}{" "}
                   <code className="bg-white px-1 rounded">{lastCreatedCreds.temporaryPassword}</code>
                 </p>
               )}
               <Button size="sm" variant="ghost" onClick={() => setLastCreatedCreds(null)}>
-                Dismiss
+                {t("superadmin.dismiss")}
               </Button>
             </CardContent>
           </Card>
@@ -471,18 +485,18 @@ export default function SuperadminDashboard() {
 
         <Tabs value={tab} onValueChange={(v) => setTab(v as TabId)} className="space-y-6">
           <TabsList className="bg-white border flex-wrap h-auto">
-            <TabsTrigger value="overview">Overview</TabsTrigger>
-            <TabsTrigger value="firms">Law firms</TabsTrigger>
-            <TabsTrigger value="plans">Plans</TabsTrigger>
-            <TabsTrigger value="users">Users</TabsTrigger>
+            <TabsTrigger value="overview">{t("superadmin.tabOverview")}</TabsTrigger>
+            <TabsTrigger value="firms">{t("superadmin.tabFirms")}</TabsTrigger>
+            <TabsTrigger value="plans">{t("superadmin.tabPlans")}</TabsTrigger>
+            <TabsTrigger value="users">{t("superadmin.tabUsers")}</TabsTrigger>
             <TabsTrigger value="leads">
-              <Mail className="h-3.5 w-3.5 mr-1" /> Leads
+              <Mail className="h-3.5 w-3.5 mr-1" /> {t("superadmin.tabLeads")}
             </TabsTrigger>
             <TabsTrigger value="settings">
-              <Settings className="h-3.5 w-3.5 mr-1" /> Settings
+              <Settings className="h-3.5 w-3.5 mr-1" /> {t("superadmin.tabSettings")}
             </TabsTrigger>
             <TabsTrigger value="audit">
-              <Activity className="h-3.5 w-3.5 mr-1" /> Audit
+              <Activity className="h-3.5 w-3.5 mr-1" /> {t("superadmin.tabAudit")}
             </TabsTrigger>
           </TabsList>
 
@@ -511,29 +525,60 @@ export default function SuperadminDashboard() {
             <div className="grid md:grid-cols-2 gap-4">
               <Card className="shadow-none">
                 <CardHeader>
-                  <CardTitle className="text-base">System status</CardTitle>
-                  <CardDescription>Integrations and runtime configuration</CardDescription>
+                  <CardTitle className="text-base">{t("superadmin.systemStatus")}</CardTitle>
+                  <CardDescription>{t("superadmin.systemStatusDesc")}</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-2 text-sm">
-                  {[
-                    ["Email (Brevo)", system?.brevoConfigured],
-                    ["OAuth (Manus)", system?.oauthConfigured],
-                    ["Forge / AI", system?.forgeConfigured],
-                    ["Demo auth", system?.demoAuthEnabled],
-                    ["Bootstrap secret", system?.bootstrapSecretConfigured],
-                  ].map(([label, ok]) => (
-                    <div key={String(label)} className="flex items-center justify-between border-b py-2">
+                  {(
+                    [
+                      {
+                        label: t("superadmin.integrationEmail"),
+                        ok: system?.brevoConfigured,
+                        badgeMissing: t("superadmin.recommended"),
+                      },
+                      {
+                        label: t("superadmin.integrationOauth"),
+                        ok: system?.oauthConfigured,
+                        badgeMissing: t("superadmin.optional"),
+                      },
+                      {
+                        label: t("superadmin.integrationForge"),
+                        ok: system?.forgeConfigured,
+                        badgeMissing: t("superadmin.recommended"),
+                      },
+                      {
+                        label: t("superadmin.integrationDemo"),
+                        ok: system?.demoAuthEnabled,
+                        badgeMissing: t("superadmin.optional"),
+                      },
+                      {
+                        label: t("superadmin.integrationBootstrap"),
+                        ok: system?.bootstrapSecretConfigured,
+                        badgeMissing: t("superadmin.optional"),
+                      },
+                    ] as const
+                  ).map(({ label, ok, badgeMissing }) => (
+                    <div key={label} className="flex items-center justify-between border-b py-2 gap-3">
                       <span>{label}</span>
-                      <Badge variant={ok ? "default" : "secondary"}>{ok ? "Configured" : "Missing"}</Badge>
+                      <Badge variant={ok ? "default" : "secondary"}>
+                        {ok ? t("superadmin.configured") : badgeMissing}
+                      </Badge>
                     </div>
                   ))}
+                  {!system?.oauthConfigured && (
+                    <div className="flex gap-2 items-start mt-3 p-3 rounded-lg bg-slate-50 border text-slate-700">
+                      <p className="text-xs">{t("superadmin.oauthHint")}</p>
+                    </div>
+                  )}
+                  {!system?.forgeConfigured && (
+                    <div className="flex gap-2 items-start mt-3 p-3 rounded-lg bg-slate-50 border text-slate-700">
+                      <p className="text-xs">{t("superadmin.forgeHint")}</p>
+                    </div>
+                  )}
                   {!system?.brevoConfigured && (
                     <div className="flex gap-2 items-start mt-3 p-3 rounded-lg bg-amber-50 border border-amber-200 text-amber-900">
                       <AlertTriangle className="h-4 w-4 mt-0.5 shrink-0" />
-                      <p className="text-xs">
-                        Brevo API key is not set. Firm credential emails will be mocked until you add{" "}
-                        <code>BREVO_API_KEY</code> to the server <code>.env</code> and restart the app.
-                      </p>
+                      <p className="text-xs">{t("superadmin.brevoHint")}</p>
                     </div>
                   )}
                   <div className="pt-2 text-xs text-muted-foreground space-y-1">
@@ -1168,15 +1213,15 @@ export default function SuperadminDashboard() {
                 </CardHeader>
                 <CardContent className="space-y-3">
                   <div>
-                    <Label>Platform name</Label>
+                    <Label>{t("superadmin.platformName")}</Label>
                     <Input className="mt-1" value={agencyName} onChange={(e) => setAgencyName(e.target.value)} />
                   </div>
                   <div>
-                    <Label>Logo URL</Label>
+                    <Label>{t("superadmin.logoUrl")}</Label>
                     <Input className="mt-1" value={logoUrl} onChange={(e) => setLogoUrl(e.target.value)} />
                   </div>
                   <div>
-                    <Label>Support email</Label>
+                    <Label>{t("superadmin.supportEmail")}</Label>
                     <Input className="mt-1" value={supportEmail} onChange={(e) => setSupportEmail(e.target.value)} />
                   </div>
                 </CardContent>
@@ -1185,34 +1230,43 @@ export default function SuperadminDashboard() {
               <Card className="shadow-none">
                 <CardHeader>
                   <CardTitle className="text-base flex items-center gap-2">
-                    <Languages className="h-4 w-4" /> Languages
+                    <Languages className="h-4 w-4" /> {t("superadmin.languages")}
                   </CardTitle>
-                  <CardDescription>EN / FR / DE for the product UI</CardDescription>
+                  <CardDescription>{t("superadmin.languagesDesc")}</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-3">
                   <div>
-                    <Label>Default locale for new users</Label>
-                    <Select value={defaultLocale} onValueChange={(v: "en" | "fr" | "de") => setDefaultLocale(v)}>
+                    <Label>{t("superadmin.defaultLocale")}</Label>
+                    <Select
+                      value={defaultLocale}
+                      onValueChange={(v) => setDefaultLocale(v as AppLocale)}
+                    >
                       <SelectTrigger className="mt-1">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="en">English</SelectItem>
-                        <SelectItem value="fr">Français</SelectItem>
-                        <SelectItem value="de">Deutsch</SelectItem>
+                        {APP_LOCALES.map((code) => (
+                          <SelectItem key={code} value={code}>
+                            {APP_LOCALE_LABELS[code]}
+                          </SelectItem>
+                        ))}
                       </SelectContent>
                     </Select>
                   </div>
                   <div className="space-y-2">
-                    <Label>Enabled languages</Label>
-                    {[
-                      ["en", "English", localeEn, setLocaleEn],
-                      ["fr", "Français", localeFr, setLocaleFr],
-                      ["de", "Deutsch", localeDe, setLocaleDe],
-                    ].map(([code, label, on, setOn]) => (
-                      <div key={String(code)} className="flex items-center justify-between">
-                        <span className="text-sm">{label as string}</span>
-                        <Switch checked={on as boolean} onCheckedChange={setOn as (v: boolean) => void} />
+                    <Label>{t("superadmin.enabledLanguages")}</Label>
+                    {(
+                      [
+                        ["en", t("superadmin.langEnglish"), localeEn, setLocaleEn],
+                        ["fr", t("superadmin.langFrench"), localeFr, setLocaleFr],
+                        ["de", t("superadmin.langGerman"), localeDe, setLocaleDe],
+                        ["it", t("superadmin.langItalian"), localeIt, setLocaleIt],
+                        ["ar", t("superadmin.langArabic"), localeAr, setLocaleAr],
+                      ] as const
+                    ).map(([code, label, on, setOn]) => (
+                      <div key={code} className="flex items-center justify-between">
+                        <span className="text-sm">{label}</span>
+                        <Switch checked={on} onCheckedChange={setOn} />
                       </div>
                     ))}
                   </div>
@@ -1298,17 +1352,15 @@ export default function SuperadminDashboard() {
 
             <Button onClick={savePlatformSettings} disabled={updatePlatformMutation.isPending}>
               <Save className="h-4 w-4 mr-1.5" />
-              {updatePlatformMutation.isPending ? "Saving…" : "Save platform settings"}
+              {updatePlatformMutation.isPending ? t("superadmin.saving") : t("superadmin.savePlatform")}
             </Button>
           </TabsContent>
 
           {/* ─── Leads ────────────────────────────────────────────── */}
           <TabsContent value="leads" className="space-y-4">
             <div>
-              <h2 className="text-xl font-semibold">Homepage leads</h2>
-              <p className="text-sm text-muted-foreground">
-                Demo requests and firm signup inquiries from the public homepage
-              </p>
+              <h2 className="text-xl font-semibold">{t("superadmin.leadsTitle")}</h2>
+              <p className="text-sm text-muted-foreground">{t("superadmin.leadsSubtitle")}</p>
             </div>
             <div className="border rounded-lg bg-white divide-y">
               {(platformLeads || []).map((lead) => (
@@ -1344,16 +1396,16 @@ export default function SuperadminDashboard() {
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="new">New</SelectItem>
-                      <SelectItem value="contacted">Contacted</SelectItem>
-                      <SelectItem value="qualified">Qualified</SelectItem>
-                      <SelectItem value="closed">Closed</SelectItem>
+                      <SelectItem value="new">{t("superadmin.leadStatusNew")}</SelectItem>
+                      <SelectItem value="contacted">{t("superadmin.leadStatusContacted")}</SelectItem>
+                      <SelectItem value="qualified">{t("superadmin.leadStatusQualified")}</SelectItem>
+                      <SelectItem value="closed">{t("superadmin.leadStatusClosed")}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
               ))}
               {!platformLeads?.length && (
-                <p className="p-6 text-center text-muted-foreground text-sm">No leads yet</p>
+                <p className="p-6 text-center text-muted-foreground text-sm">{t("superadmin.noLeads")}</p>
               )}
             </div>
           </TabsContent>

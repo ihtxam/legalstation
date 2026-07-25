@@ -819,9 +819,9 @@ export const superadminRouter = router({
       defaultLocale: settings.default_locale || "en",
       supportedLocales: (() => {
         try {
-          return JSON.parse(settings.supported_locales || '["en","fr","de"]') as string[];
+          return JSON.parse(settings.supported_locales || '["en","fr","de","it","ar"]') as string[];
         } catch {
-          return ["en", "fr", "de"];
+          return ["en", "fr", "de", "it", "ar"];
         }
       })(),
       supportEmail: settings.support_email || null,
@@ -836,9 +836,9 @@ export const superadminRouter = router({
     } catch {
       /* defaults */
     }
-    let supportedLocales = ["en", "fr", "de"];
+    let supportedLocales = ["en", "fr", "de", "it", "ar"];
     try {
-      supportedLocales = JSON.parse(settings.supported_locales || '["en","fr","de"]');
+      supportedLocales = JSON.parse(settings.supported_locales || '["en","fr","de","it","ar"]');
     } catch {
       /* defaults */
     }
@@ -846,7 +846,7 @@ export const superadminRouter = router({
       agencyName: settings.agency_name || "LexFlow",
       logoUrl: settings.logo_url || "",
       supportEmail: settings.support_email || "",
-      defaultLocale: (settings.default_locale as "en" | "fr" | "de") || "en",
+      defaultLocale: (settings.default_locale as "en" | "fr" | "de" | "it" | "ar") || "en",
       supportedLocales,
       vatRates,
       adyen: {
@@ -863,8 +863,8 @@ export const superadminRouter = router({
         agencyName: z.string().min(1).max(120).optional(),
         logoUrl: z.string().url().optional().or(z.literal("")),
         supportEmail: z.string().email().optional().or(z.literal("")),
-        defaultLocale: z.enum(["en", "fr", "de"]).optional(),
-        supportedLocales: z.array(z.enum(["en", "fr", "de"])).min(1).optional(),
+        defaultLocale: z.enum(["en", "fr", "de", "it", "ar"]).optional(),
+        supportedLocales: z.array(z.enum(["en", "fr", "de", "it", "ar"])).min(1).optional(),
         vatRates: z
           .object({
             standard: z.number().min(0).max(100),
