@@ -53,25 +53,28 @@ export async function resolveFirmFromHost(req: Request) {
   const db = await getDb();
   if (!db) return null;
 
-  // Custom domain exact match
-  const byDomain = await db
-    .select()
-    .from(firms)
-    .where(eq(firms.customDomain, host))
-    .limit(1);
-  if (byDomain[0] && byDomain[0].subdomainStatus === "active") {
-    return byDomain[0];
-  }
+  try {
+    // Custom domain exact match
+    const byDomain = await db
+      .select()
+      .from(firms)
+      .where(eq(firms.customDomain, host))
+      .limit(1);
+    if (byDomain[0] && byDomain[0].subdomainStatus === "active") {
+      return byDomain[0];
+    }
 
-  const sub = extractSubdomain(hostHeader);
-  if (!sub) return null;
-  const firm = await getFirmBySlug(sub);
-  if (!firm) return null;
-  if (firm.subdomainStatus !== "active" && firm.subdomainStatus !== "pending") {
-    // Allow pending so owners can finish onboarding on their subdomain
+    const sub = extractSubdomain(hostHeader);
+    if (!sub) return null;
+    const firm = await getFirmBySlug(sub);
+    if (!firm) return null;
     if (firm.subdomainStatus === "rejected") return null;
+    return firm;
+  } catch (err) {
+    // Schema may be mid-migration; never crash the process for host branding.
+    console.warn("[Tenant] resolveFirmFromHost failed", err);
+    return null;
   }
-  return firm;
 }
 
 export function firmLoginUrl(firmSlug: string, req?: Request): string {

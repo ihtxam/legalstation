@@ -68,24 +68,33 @@ async function issueSession(req: Request, res: Response, user: typeof users.$inf
 
 export function registerPasswordAuthRoutes(app: Express) {
   app.get("/api/auth/tenant", async (req: Request, res: Response) => {
-    const firm = await resolveFirmFromHost(req);
-    if (!firm) {
+    try {
+      const firm = await resolveFirmFromHost(req);
+      if (!firm) {
+        return res.json({
+          mode: "platform",
+          appName: "LexFlow",
+          loginHint: null,
+        });
+      }
+      return res.json({
+        mode: "firm",
+        firmId: firm.id,
+        name: firm.name,
+        slug: firm.slug,
+        logoUrl: firm.logoUrl,
+        primaryColor: firm.primaryColor,
+        secondaryColor: firm.secondaryColor,
+        onboardingCompleted: Boolean(firm.onboardingCompletedAt),
+      });
+    } catch (err: any) {
+      console.error("[Auth] tenant resolve failed", err?.message || err);
       return res.json({
         mode: "platform",
         appName: "LexFlow",
         loginHint: null,
       });
     }
-    return res.json({
-      mode: "firm",
-      firmId: firm.id,
-      name: firm.name,
-      slug: firm.slug,
-      logoUrl: firm.logoUrl,
-      primaryColor: firm.primaryColor,
-      secondaryColor: firm.secondaryColor,
-      onboardingCompleted: Boolean(firm.onboardingCompletedAt),
-    });
   });
 
   app.post("/api/auth/login", async (req: Request, res: Response) => {
