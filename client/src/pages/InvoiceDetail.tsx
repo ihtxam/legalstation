@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react";
-import { useLocation, useParams } from "wouter";
+import { useState, useEffect, type Dispatch, type SetStateAction } from "react";
+import { useLocation } from "wouter";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { useAuth } from "@/_core/hooks/useAuth";
@@ -15,7 +15,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Separator } from "@/components/ui/separator";
-import { Plus, Trash2, FileText, Send, CheckCircle, Download, CreditCard, CheckCircle2 } from "lucide-react";
+import { Plus, Trash2, Send, CheckCircle, Download, CreditCard, CheckCircle2, Pencil, X } from "lucide-react";
 import PaymentPlanScheduler from "@/pages/PaymentPlanScheduler";
 import { PaymentInstallmentTimeline } from "@/components/PaymentInstallmentTimeline";
 import { useTranslation } from "react-i18next";
@@ -29,6 +29,249 @@ interface LineItem {
   billingType: "hourly" | "flat_fee";
   quantity: number;
   unitPrice: number;
+}
+
+type InvoiceFormState = {
+  clientId: number | null;
+  caseId: number | null;
+  dueDate: string;
+  vatRate: string;
+  notes: string;
+  items: LineItem[];
+};
+
+function clientLabel(c: {
+  type: string;
+  companyName?: string | null;
+  firstName?: string | null;
+  lastName?: string | null;
+}) {
+  return c.type === "company"
+    ? c.companyName || "—"
+    : `${c.firstName ?? ""} ${c.lastName ?? ""}`.trim() || "—";
+}
+
+function InvoiceFormFields({
+  form,
+  setForm,
+  clients,
+  cases,
+}: {
+  form: InvoiceFormState;
+  setForm: Dispatch<SetStateAction<InvoiceFormState>>;
+  clients: Array<{
+    id: number;
+    type: string;
+    companyName?: string | null;
+    firstName?: string | null;
+    lastName?: string | null;
+  }> | undefined;
+  cases: Array<{ id: number; title: string }> | undefined;
+}) {
+  const { t } = useTranslation();
+
+  const updateItem = (i: number, field: keyof LineItem, value: string | number) =>
+    setForm((prev) => ({
+      ...prev,
+      items: prev.items.map((item, idx) => (idx === i ? { ...item, [field]: value } : item)),
+    }));
+
+  const addItem = () =>
+    setForm((prev) => ({
+      ...prev,
+      items: [...prev.items, { description: "", billingType: "hourly", quantity: 1, unitPrice: 0 }],
+    }));
+
+  const removeItem = (i: number) =>
+    setForm((prev) => ({
+      ...prev,
+      items: prev.items.filter((_, idx) => idx !== i),
+    }));
+
+  return (
+    <>
+      <div className="bg-card border border-border rounded-xl p-6 space-y-4">
+        <h3 className="font-semibold text-foreground">{t("invoiceDetail.title")}</h3>
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <Label>
+              {t("invoiceDetail.client")} <span className="text-destructive">*</span>
+            </Label>
+            <Select
+              value={form.clientId?.toString() ?? ""}
+              onValueChange={(v) => setForm((f) => ({ ...f, clientId: parseInt(v, 10) }))}
+            >
+              <SelectTrigger className="mt-1.5">
+                <SelectValue placeholder={t("invoiceDetail.selectClient")} />
+              </SelectTrigger>
+              <SelectContent>
+                {clients?.map((c) => (
+                  <SelectItem key={c.id} value={c.id.toString()}>
+                    {clientLabel(c)}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div>
+            <Label>{t("invoiceDetail.optionalCase")}</Label>
+            <Select
+              value={form.caseId?.toString() ?? "none"}
+              onValueChange={(v) =>
+                setForm((f) => ({ ...f, caseId: v === "none" ? null : parseInt(v, 10) }))
+              }
+            >
+              <SelectTrigger className="mt-1.5">
+                <SelectValue placeholder={t("invoiceDetail.optionalCase")} />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none">{t("invoiceDetail.optionalCase")}</SelectItem>
+                {cases?.map((c) => (
+                  <SelectItem key={c.id} value={c.id.toString()}>
+                    {c.title}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div>
+            <Label>{t("invoiceDetail.dueDate")}</Label>
+            <Input
+              type="date"
+              value={form.dueDate}
+              onChange={(e) => setForm((f) => ({ ...f, dueDate: e.target.value }))}
+              className="mt-1.5"
+            />
+          </div>
+          <div>
+            <Label>{t("invoiceDetail.vatRate")}</Label>
+            <Select
+              value={form.vatRate}
+              onValueChange={(v) => setForm((f) => ({ ...f, vatRate: v }))}
+            >
+              <SelectTrigger className="mt-1.5">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="7.7">7.7% (Standard)</SelectItem>
+                <SelectItem value="3.7">3.7% (Special)</SelectItem>
+                <SelectItem value="2.5">2.5% (Reduced)</SelectItem>
+                <SelectItem value="0">0% (Exempt)</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+      </div>
+
+      <div className="bg-card border border-border rounded-xl p-6 space-y-4">
+        <div className="flex items-center justify-between">
+          <h3 className="font-semibold text-foreground">{t("invoiceDetail.lineItems")}</h3>
+          <Button
+            size="sm"
+            className="bg-[var(--color-navy)] hover:bg-[var(--color-navy-light)] text-white"
+            onClick={addItem}
+          >
+            <Plus className="w-3.5 h-3.5 me-1.5" /> {t("invoiceDetail.addLine")}
+          </Button>
+        </div>
+        <div className="space-y-3">
+          {form.items.map((item, i) => (
+            <div key={i} className="flex gap-3 items-end">
+              <div className="flex-1">
+                <Label className="text-xs">{t("invoiceDetail.description")}</Label>
+                <Input
+                  value={item.description}
+                  onChange={(e) => updateItem(i, "description", e.target.value)}
+                  className="mt-1"
+                  placeholder="e.g., Legal consultation"
+                />
+              </div>
+              <div className="w-24">
+                <Label className="text-xs">{t("common.type")}</Label>
+                <Select
+                  value={item.billingType}
+                  onValueChange={(v) => updateItem(i, "billingType", v)}
+                >
+                  <SelectTrigger className="mt-1">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="hourly">Hourly</SelectItem>
+                    <SelectItem value="flat_fee">Flat Fee</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="w-20">
+                <Label className="text-xs">{t("invoiceDetail.qty")}</Label>
+                <Input
+                  type="number"
+                  value={item.quantity}
+                  onChange={(e) => updateItem(i, "quantity", parseFloat(e.target.value) || 0)}
+                  className="mt-1"
+                  min="0.5"
+                  step="0.5"
+                />
+              </div>
+              <div className="w-24">
+                <Label className="text-xs">{t("invoiceDetail.unitPrice")}</Label>
+                <Input
+                  type="number"
+                  value={item.unitPrice}
+                  onChange={(e) => updateItem(i, "unitPrice", parseFloat(e.target.value) || 0)}
+                  className="mt-1"
+                  min="0"
+                  step="0.01"
+                />
+              </div>
+              <button
+                type="button"
+                onClick={() => removeItem(i)}
+                className="p-2 text-muted-foreground hover:text-destructive transition-colors"
+                disabled={form.items.length <= 1}
+              >
+                <Trash2 className="w-4 h-4" />
+              </button>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div className="bg-card border border-border rounded-xl p-6 space-y-4">
+        <h3 className="font-semibold text-foreground">{t("invoiceDetail.notes")}</h3>
+        <Textarea
+          value={form.notes}
+          onChange={(e) => setForm((f) => ({ ...f, notes: e.target.value }))}
+          placeholder="Additional notes for the invoice…"
+        />
+      </div>
+    </>
+  );
+}
+
+function formTotals(form: InvoiceFormState) {
+  const subtotal = form.items.reduce((s, i) => s + i.quantity * i.unitPrice, 0);
+  const vatAmount = subtotal * (parseFloat(form.vatRate) / 100);
+  return { subtotal, vatAmount, total: subtotal + vatAmount };
+}
+
+function validateInvoiceForm(form: InvoiceFormState, t: (k: string) => string): string | null {
+  if (!form.clientId) return t("invoiceDetail.selectClient");
+  if (!form.dueDate) return t("invoiceDetail.dueDate");
+  if (!form.items.length) return t("invoiceDetail.lineItems");
+  if (form.items.some((i) => !i.description.trim())) return t("invoiceDetail.description");
+  if (form.items.some((i) => !(i.quantity > 0) || !(i.unitPrice > 0))) {
+    return t("invoiceDetail.unitPrice");
+  }
+  return null;
+}
+
+function toPayloadItems(items: LineItem[]) {
+  return items.map((i) => ({
+    description: i.description.trim(),
+    billingType: i.billingType,
+    quantity: i.quantity,
+    unitPrice: typeof i.unitPrice === "string" ? parseFloat(i.unitPrice) : i.unitPrice,
+  }));
 }
 
 function StripePayButton({ invoiceId }: { invoiceId: number }) {
@@ -48,9 +291,12 @@ function StripePayButton({ invoiceId }: { invoiceId: number }) {
         <p className="font-medium text-blue-900 text-sm">{t("invoiceDetail.payNow")}</p>
         <p className="text-xs text-blue-700 mt-0.5">Secure payment via Stripe. Accepted: Visa, Mastercard, Amex.</p>
       </div>
-      <Button className="bg-blue-600 hover:bg-blue-700 text-white shrink-0" disabled={createSession.isPending}
-        onClick={() => createSession.mutate({ invoiceId })}>
-        <CreditCard className="w-4 h-4 mr-1.5" />
+      <Button
+        className="bg-blue-600 hover:bg-blue-700 text-white shrink-0"
+        disabled={createSession.isPending}
+        onClick={() => createSession.mutate({ invoiceId })}
+      >
+        <CreditCard className="w-4 h-4 me-1.5" />
         {createSession.isPending ? t("common.loading") : t("invoiceDetail.payNow")}
       </Button>
     </div>
@@ -62,157 +308,86 @@ function NewInvoiceForm() {
   const [, navigate] = useLocation();
   const { data: clients } = trpc.clients.list.useQuery();
   const { data: cases } = trpc.cases.list.useQuery();
-  const [clientId, setClientId] = useState<number | null>(null);
-  const [caseId, setCaseId] = useState<number | null>(null);
-  const [dueDate, setDueDate] = useState("");
-  const [vatRate, setVatRate] = useState("7.7");
-  const [notes, setNotes] = useState("");
-  const [items, setItems] = useState<LineItem[]>([{ description: "", billingType: "hourly", quantity: 1, unitPrice: 0 }]);
+  const [form, setForm] = useState<InvoiceFormState>({
+    clientId: null,
+    caseId: null,
+    dueDate: "",
+    vatRate: "7.7",
+    notes: "",
+    items: [{ description: "", billingType: "hourly", quantity: 1, unitPrice: 0 }],
+  });
   const [showPreview, setShowPreview] = useState(false);
 
   const createInvoice = trpc.invoices.create.useMutation({
-    onSuccess: (inv) => { toast.success(t("invoiceDetail.created")); navigate(`/invoices/${inv?.id}`); },
+    onSuccess: (inv) => {
+      toast.success(t("invoiceDetail.created"));
+      navigate(`/invoices/${inv?.id}`);
+    },
     onError: (e) => toast.error(e.message),
   });
 
-  const subtotal = items.reduce((s, i) => s + i.quantity * i.unitPrice, 0);
-  const vatAmount = subtotal * (parseFloat(vatRate) / 100);
-  const total = subtotal + vatAmount;
+  const { subtotal, vatAmount, total } = formTotals(form);
 
-  const addItem = () => setItems(prev => [...prev, { description: "", billingType: "hourly", quantity: 1, unitPrice: 0 }]);
-  const removeItem = (i: number) => setItems(prev => prev.filter((_, idx) => idx !== i));
-  const updateItem = (i: number, field: keyof LineItem, value: any) =>
-    setItems(prev => prev.map((item, idx) => idx === i ? { ...item, [field]: value } : item));
+  const submit = () => {
+    const err = validateInvoiceForm(form, t);
+    if (err) {
+      toast.error(err);
+      return;
+    }
+    createInvoice.mutate({
+      clientId: form.clientId!,
+      caseId: form.caseId ?? undefined,
+      dueDate: new Date(form.dueDate).getTime(),
+      vatRate: parseFloat(form.vatRate),
+      notes: form.notes || undefined,
+      items: toPayloadItems(form.items),
+    });
+  };
 
   return (
-    <LexLayout breadcrumb={[{ label: t("nav.billing"), href: "/invoices" }, { label: t("invoiceDetail.newInvoice") }]}>
+    <LexLayout
+      breadcrumb={[
+        { label: t("nav.billing"), href: "/invoices" },
+        { label: t("invoiceDetail.newInvoice") },
+      ]}
+    >
       <div className="p-6 max-w-3xl mx-auto space-y-6">
-        <div className="bg-card border border-border rounded-xl p-6 space-y-4">
-          <h3 className="font-semibold text-foreground">Invoice Details</h3>
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <Label>Client <span className="text-destructive">*</span></Label>
-              <Select value={clientId?.toString() ?? ""} onValueChange={v => setClientId(parseInt(v))}>
-                <SelectTrigger className="mt-1.5"><SelectValue placeholder={t("invoiceDetail.selectClient")} /></SelectTrigger>
-                <SelectContent>
-                  {clients?.map(c => (
-                    <SelectItem key={c.id} value={c.id.toString()}>
-                      {c.type === "company" ? c.companyName : `${c.firstName ?? ""} ${c.lastName ?? ""}`.trim()}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div>
-              <Label>Case <span className="text-destructive">*</span></Label>
-              <Select value={caseId?.toString() ?? ""} onValueChange={v => setCaseId(parseInt(v))}>
-                <SelectTrigger className="mt-1.5"><SelectValue placeholder={t("invoiceDetail.optionalCase")} /></SelectTrigger>
-                <SelectContent>
-                  {cases?.map(c => (
-                    <SelectItem key={c.id} value={c.id.toString()}>
-                      {c.title}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div>
-              <Label>{t("invoiceDetail.dueDate")}</Label>
-              <Input type="date" value={dueDate} onChange={e => setDueDate(e.target.value)} className="mt-1.5" />
-            </div>
-            <div>
-              <Label>{t("invoiceDetail.vatRate")}</Label>
-              <Select value={vatRate} onValueChange={setVatRate}>
-                <SelectTrigger className="mt-1.5"><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="7.7">7.7% (Standard)</SelectItem>
-                  <SelectItem value="3.7">3.7% (Special)</SelectItem>
-                  <SelectItem value="2.5">2.5% (Reduced)</SelectItem>
-                  <SelectItem value="0">0% (Exempt)</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-card border border-border rounded-xl p-6 space-y-4">
-          <div className="flex items-center justify-between">
-            <h3 className="font-semibold text-foreground">Line Items</h3>
-            <Button size="sm" className="bg-[var(--color-navy)] hover:bg-[var(--color-navy-light)] text-white" onClick={addItem}>
-              <Plus className="w-3.5 h-3.5 mr-1.5" /> Add item
-            </Button>
-          </div>
-          <div className="space-y-3">
-            {items.map((item, i) => (
-              <div key={i} className="flex gap-3 items-end">
-                <div className="flex-1">
-                  <Label className="text-xs">Description</Label>
-                  <Input value={item.description} onChange={e => updateItem(i, "description", e.target.value)} className="mt-1" placeholder="e.g., Legal consultation" />
-                </div>
-                <div className="w-24">
-                  <Label className="text-xs">Type</Label>
-                  <Select value={item.billingType} onValueChange={v => updateItem(i, "billingType", v)}>
-                    <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="hourly">Hourly</SelectItem>
-                      <SelectItem value="flat_fee">Flat Fee</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="w-20">
-                  <Label className="text-xs">Qty</Label>
-                  <Input type="number" value={item.quantity} onChange={e => updateItem(i, "quantity", parseFloat(e.target.value))} className="mt-1" min="0.5" step="0.5" />
-                </div>
-                <div className="w-24">
-                  <Label className="text-xs">Price (CHF)</Label>
-                  <Input type="number" value={item.unitPrice} onChange={e => updateItem(i, "unitPrice", parseFloat(e.target.value))} className="mt-1" min="0" step="0.01" />
-                </div>
-                <button onClick={() => removeItem(i)} className="p-2 text-muted-foreground hover:text-destructive transition-colors">
-                  <Trash2 className="w-4 h-4" />
-                </button>
-              </div>
-            ))}
-          </div>
-        </div>
+        <InvoiceFormFields form={form} setForm={setForm} clients={clients} cases={cases} />
 
         <div className="bg-card border border-border rounded-xl p-6 space-y-3">
           <div className="flex justify-between text-sm">
-            <span className="text-muted-foreground">Subtotal</span>
+            <span className="text-muted-foreground">{t("invoiceDetail.subtotal")}</span>
             <span className="font-medium">{formatCHF(subtotal)}</span>
           </div>
           <div className="flex justify-between text-sm">
-            <span className="text-muted-foreground">VAT ({vatRate}%)</span>
+            <span className="text-muted-foreground">
+              {t("invoiceDetail.vat")} ({form.vatRate}%)
+            </span>
             <span className="font-medium">{formatCHF(vatAmount)}</span>
           </div>
           <Separator />
           <div className="flex justify-between text-lg font-semibold">
-            <span>Total</span>
+            <span>{t("invoiceDetail.total")}</span>
             <span>{formatCHF(total)}</span>
           </div>
         </div>
 
-        <div className="bg-card border border-border rounded-xl p-6 space-y-4">
-          <h3 className="font-semibold text-foreground">Notes</h3>
-          <Textarea value={notes} onChange={e => setNotes(e.target.value)} placeholder="Additional notes for the invoice…" />
-        </div>
-
         <div className="flex gap-3 justify-end">
-          <Button variant="outline" onClick={() => window.history.back()}>Cancel</Button>
-          <Button variant="outline" disabled={!clientId || !caseId || items.length === 0} onClick={() => setShowPreview(true)}>Preview</Button>
-          <Button className="bg-[var(--color-navy)] hover:bg-[var(--color-navy-light)] text-white" disabled={!clientId || !caseId || items.length === 0 || createInvoice.isPending}
-            onClick={() => createInvoice.mutate({
-              clientId: clientId!,
-              caseId: caseId!,
-              dueDate: dueDate ? new Date(dueDate).getTime() : 0,
-              vatRate: parseFloat(vatRate),
-              notes,
-              items: items.map(i => ({ ...i, unitPrice: typeof i.unitPrice === 'string' ? parseFloat(i.unitPrice) : i.unitPrice })),
-            })}>
-            Create Invoice
+          <Button variant="outline" onClick={() => window.history.back()}>
+            {t("common.cancel")}
+          </Button>
+          <Button variant="outline" onClick={() => setShowPreview(true)}>
+            Preview
+          </Button>
+          <Button
+            className="bg-[var(--color-navy)] hover:bg-[var(--color-navy-light)] text-white"
+            disabled={createInvoice.isPending}
+            onClick={submit}
+          >
+            {t("invoiceDetail.create")}
           </Button>
         </div>
 
-        {/* Preview Modal */}
         <Dialog open={showPreview} onOpenChange={setShowPreview}>
           <DialogContent className="max-w-2xl">
             <DialogHeader>
@@ -221,73 +396,85 @@ function NewInvoiceForm() {
             <div className="bg-card border border-border rounded-lg p-6 space-y-4">
               <div className="grid grid-cols-2 gap-4 text-sm">
                 <div>
-                  <p className="text-muted-foreground">Client</p>
-                  <p className="font-medium">{clients?.find(c => c.id === clientId)?.companyName || `${clients?.find(c => c.id === clientId)?.firstName} ${clients?.find(c => c.id === clientId)?.lastName}`}</p>
+                  <p className="text-muted-foreground">{t("invoiceDetail.client")}</p>
+                  <p className="font-medium">
+                    {clients?.find((c) => c.id === form.clientId)
+                      ? clientLabel(clients.find((c) => c.id === form.clientId)!)
+                      : "—"}
+                  </p>
                 </div>
                 <div>
-                  <p className="text-muted-foreground">Case</p>
-                  <p className="font-medium">{cases?.find(c => c.id === caseId)?.title}</p>
+                  <p className="text-muted-foreground">{t("invoiceDetail.case")}</p>
+                  <p className="font-medium">
+                    {cases?.find((c) => c.id === form.caseId)?.title || "—"}
+                  </p>
                 </div>
                 <div>
-                  <p className="text-muted-foreground">Due Date</p>
-                  <p className="font-medium">{dueDate ? format(new Date(dueDate), "dd MMM yyyy") : "Not set"}</p>
+                  <p className="text-muted-foreground">{t("invoiceDetail.dueDate")}</p>
+                  <p className="font-medium">
+                    {form.dueDate ? format(new Date(form.dueDate), "dd MMM yyyy") : "Not set"}
+                  </p>
                 </div>
                 <div>
-                  <p className="text-muted-foreground">VAT Rate</p>
-                  <p className="font-medium">{vatRate}%</p>
+                  <p className="text-muted-foreground">{t("invoiceDetail.vatRate")}</p>
+                  <p className="font-medium">{form.vatRate}%</p>
                 </div>
               </div>
               <Separator />
               <div className="space-y-2">
-                <h4 className="font-semibold text-sm">Line Items</h4>
-                {items.map((item, i) => (
+                <h4 className="font-semibold text-sm">{t("invoiceDetail.lineItems")}</h4>
+                {form.items.map((item, i) => (
                   <div key={i} className="flex justify-between text-sm">
-                    <span>{item.description} ({item.quantity} × CHF {item.unitPrice})</span>
-                    <span className="font-medium">CHF {(item.quantity * item.unitPrice).toFixed(2)}</span>
+                    <span>
+                      {item.description} ({item.quantity} × CHF {item.unitPrice})
+                    </span>
+                    <span className="font-medium">
+                      CHF {(item.quantity * item.unitPrice).toFixed(2)}
+                    </span>
                   </div>
                 ))}
               </div>
               <Separator />
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">Subtotal</span>
+                  <span className="text-muted-foreground">{t("invoiceDetail.subtotal")}</span>
                   <span className="font-medium">{formatCHF(subtotal)}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">VAT ({vatRate}%)</span>
+                  <span className="text-muted-foreground">
+                    {t("invoiceDetail.vat")} ({form.vatRate}%)
+                  </span>
                   <span className="font-medium">{formatCHF(vatAmount)}</span>
                 </div>
                 <Separator />
                 <div className="flex justify-between text-base font-semibold">
-                  <span>Total</span>
+                  <span>{t("invoiceDetail.total")}</span>
                   <span>{formatCHF(total)}</span>
                 </div>
               </div>
-              {notes && (
+              {form.notes && (
                 <>
                   <Separator />
                   <div>
-                    <p className="text-sm text-muted-foreground mb-1">Notes</p>
-                    <p className="text-sm">{notes}</p>
+                    <p className="text-sm text-muted-foreground mb-1">{t("invoiceDetail.notes")}</p>
+                    <p className="text-sm">{form.notes}</p>
                   </div>
                 </>
               )}
             </div>
             <DialogFooter>
-              <Button variant="outline" onClick={() => setShowPreview(false)}>Cancel</Button>
-              <Button className="bg-[var(--color-navy)] hover:bg-[var(--color-navy-light)] text-white" disabled={createInvoice.isPending}
+              <Button variant="outline" onClick={() => setShowPreview(false)}>
+                {t("common.cancel")}
+              </Button>
+              <Button
+                className="bg-[var(--color-navy)] hover:bg-[var(--color-navy-light)] text-white"
+                disabled={createInvoice.isPending}
                 onClick={() => {
-                  createInvoice.mutate({
-                    clientId: clientId!,
-                    caseId: caseId!,
-                    dueDate: dueDate ? new Date(dueDate).getTime() : 0,
-                    vatRate: parseFloat(vatRate),
-                    notes,
-                    items: items.map(i => ({ ...i, unitPrice: typeof i.unitPrice === 'string' ? parseFloat(i.unitPrice) : i.unitPrice })),
-                  });
                   setShowPreview(false);
-                }}>
-                Create Invoice
+                  submit();
+                }}
+              >
+                {t("invoiceDetail.create")}
               </Button>
             </DialogFooter>
           </DialogContent>
@@ -322,11 +509,44 @@ function AdyenPayButton({ invoiceId, existingUrl }: { invoiceId: number; existin
           else createLink.mutate({ invoiceId });
         }}
       >
-        <CreditCard className="w-4 h-4 mr-1.5" />
+        <CreditCard className="w-4 h-4 me-1.5" />
         {createLink.isPending ? "Preparing…" : existingUrl ? "Open Adyen link" : "Pay with Adyen"}
       </Button>
     </div>
   );
+}
+
+function invoiceToForm(invoice: {
+  clientId: number;
+  caseId?: number | null;
+  dueDate?: Date | string | null;
+  vatRate?: string | number | null;
+  notes?: string | null;
+  items?: Array<{
+    description: string;
+    billingType: string;
+    quantity: string | number;
+    unitPrice: string | number;
+  }>;
+}): InvoiceFormState {
+  return {
+    clientId: invoice.clientId,
+    caseId: invoice.caseId ?? null,
+    dueDate: invoice.dueDate ? format(new Date(invoice.dueDate), "yyyy-MM-dd") : "",
+    vatRate: String(invoice.vatRate ?? "7.7"),
+    notes: invoice.notes || "",
+    items:
+      invoice.items && invoice.items.length > 0
+        ? invoice.items.map((item) => ({
+            description: item.description || "",
+            billingType: (item.billingType === "flat_fee" ? "flat_fee" : "hourly") as
+              | "hourly"
+              | "flat_fee",
+            quantity: Number(item.quantity) || 1,
+            unitPrice: Number(item.unitPrice) || 0,
+          }))
+        : [{ description: "", billingType: "hourly", quantity: 1, unitPrice: 0 }],
+  };
 }
 
 export default function InvoiceDetailPage() {
@@ -334,19 +554,44 @@ export default function InvoiceDetailPage() {
   const [location] = useLocation();
   const isNewInvoice = location === "/invoices/new";
   const id = isNewInvoice ? "new" : location.split("/").pop();
-  const invoiceId = isNewInvoice ? NaN : parseInt(id || "");
+  const invoiceId = isNewInvoice ? NaN : parseInt(id || "", 10);
   const { isAuthenticated, loading } = useAuth();
   const [, navigate] = useLocation();
   const { data: branding } = trpc.firm.branding.useQuery(undefined, { enabled: isAuthenticated });
   const { data: firmData } = trpc.firm.myFirm.useQuery(undefined, { enabled: isAuthenticated });
   const isFirmMember = !!firmData;
+  const [editing, setEditing] = useState(false);
+  const [form, setForm] = useState<InvoiceFormState | null>(null);
 
-  useEffect(() => { if (!loading && !isAuthenticated) startLogin(); }, [isAuthenticated, loading]);
+  const { data: clients } = trpc.clients.list.useQuery(undefined, {
+    enabled: isAuthenticated && isFirmMember,
+  });
+  const { data: cases } = trpc.cases.list.useQuery(undefined, {
+    enabled: isAuthenticated && isFirmMember,
+  });
 
-  // Only fetch if viewing existing invoice
-  const { data: invoiceData, isLoading, refetch } = trpc.invoices.get.useQuery({ id: invoiceId }, { enabled: isAuthenticated && !isNaN(invoiceId) });
+  useEffect(() => {
+    if (!loading && !isAuthenticated) startLogin();
+  }, [isAuthenticated, loading]);
+
+  const { data: invoiceData, isLoading, refetch } = trpc.invoices.get.useQuery(
+    { id: invoiceId },
+    { enabled: isAuthenticated && !isNaN(invoiceId) }
+  );
   const updateStatus = trpc.invoices.updateStatus.useMutation({
-    onSuccess: () => { refetch(); toast.success(t("invoiceDetail.updated")); },
+    onSuccess: () => {
+      refetch();
+      toast.success(t("invoiceDetail.updated"));
+    },
+    onError: (e) => toast.error(e.message),
+  });
+  const updateInvoice = trpc.invoices.update.useMutation({
+    onSuccess: async () => {
+      toast.success(t("invoiceDetail.saved"));
+      setEditing(false);
+      setForm(null);
+      await refetch();
+    },
     onError: (e) => toast.error(e.message),
   });
   const generatePdf = trpc.invoicePdf.generate.useMutation({
@@ -389,176 +634,330 @@ export default function InvoiceDetailPage() {
   };
 
   if (isNewInvoice) return <NewInvoiceForm />;
-  if (isLoading) return <LexLayout title={t("invoiceDetail.title")}><div className="p-6"><Skeleton className="h-64 w-full" /></div></LexLayout>;
-  if (!invoiceData) return <LexLayout title={t("common.notFound")}><div className="p-6 text-center text-muted-foreground">{t("invoiceDetail.notFound")}</div></LexLayout>;
+  if (isLoading)
+    return (
+      <LexLayout title={t("invoiceDetail.title")}>
+        <div className="p-6">
+          <Skeleton className="h-64 w-full" />
+        </div>
+      </LexLayout>
+    );
+  if (!invoiceData)
+    return (
+      <LexLayout title={t("common.notFound")}>
+        <div className="p-6 text-center text-muted-foreground">{t("invoiceDetail.notFound")}</div>
+      </LexLayout>
+    );
 
   const invoice = invoiceData;
-  const subtotal = invoice.items?.reduce((s: number, i: any) => s + (i.quantity * (typeof i.unitPrice === 'string' ? parseFloat(i.unitPrice) : i.unitPrice)), 0) ?? 0;
-  const vatAmount = subtotal * (parseFloat(invoice.vatRate as any) / 100);
-  const total = subtotal + vatAmount;
+  const canEdit = isFirmMember && invoice.status === "draft";
+  const client = clients?.find((c) => c.id === invoice.clientId);
+  const caseRow = cases?.find((c) => c.id === invoice.caseId);
+
+  const startEditing = () => {
+    setForm(invoiceToForm(invoice));
+    setEditing(true);
+  };
+
+  const cancelEditing = () => {
+    setEditing(false);
+    setForm(null);
+  };
+
+  const saveEdits = () => {
+    if (!form) return;
+    const err = validateInvoiceForm(form, t);
+    if (err) {
+      toast.error(err);
+      return;
+    }
+    updateInvoice.mutate({
+      id: invoiceId,
+      clientId: form.clientId!,
+      caseId: form.caseId,
+      dueDate: new Date(form.dueDate).getTime(),
+      vatRate: parseFloat(form.vatRate),
+      notes: form.notes || "",
+      items: toPayloadItems(form.items),
+    });
+  };
+
+  const displaySubtotal =
+    editing && form
+      ? formTotals(form).subtotal
+      : (invoice.items?.reduce(
+          (s: number, i: { quantity: string | number; unitPrice: string | number }) =>
+            s + Number(i.quantity) * Number(i.unitPrice),
+          0
+        ) ?? 0);
+  const displayVatRate = editing && form ? form.vatRate : String(invoice.vatRate);
+  const displayVatAmount = displaySubtotal * (parseFloat(displayVatRate) / 100);
+  const displayTotal = displaySubtotal + displayVatAmount;
 
   return (
-    <LexLayout breadcrumb={[{ label: t("nav.billing"), href: "/invoices" }, { label: `${t("invoiceDetail.title")} #${invoice.invoiceNumber}` }]}>
+    <LexLayout
+      breadcrumb={[
+        { label: t("nav.billing"), href: "/invoices" },
+        { label: `${t("invoiceDetail.title")} #${invoice.invoiceNumber}` },
+      ]}
+    >
       <div className="p-6 max-w-4xl mx-auto space-y-6">
-        {/* Header */}
         <div className="bg-card border border-border rounded-xl p-6">
           <div className="flex items-start justify-between gap-4 mb-4">
             <div className="flex items-start gap-4 flex-1">
               {branding?.logoUrl && (
-                <img src={branding.logoUrl} alt="Firm logo" className="h-12 w-auto object-contain" />
+                <img
+                  src={branding.logoUrl}
+                  alt="Firm logo"
+                  className="h-12 w-auto object-contain"
+                />
               )}
               <div>
-                <h2 className="text-2xl font-semibold text-foreground">Invoice #{invoice.invoiceNumber}</h2>
-                <p className="text-sm text-muted-foreground mt-1">Case ID: {invoice.caseId}</p>
+                <h2 className="text-2xl font-semibold text-foreground">
+                  Invoice #{invoice.invoiceNumber}
+                </h2>
+                <p className="text-sm text-muted-foreground mt-1">
+                  {client ? clientLabel(client) : `Client #${invoice.clientId}`}
+                  {caseRow ? ` · ${caseRow.title}` : invoice.caseId ? ` · Case #${invoice.caseId}` : ""}
+                </p>
               </div>
             </div>
             <StatusBadge status={invoice.status} />
           </div>
-          <Separator className="my-4" />
-          <div className="grid grid-cols-2 gap-6 text-sm">
-            <div>
-              <p className="text-muted-foreground">Firm</p>
-              <p className="font-medium text-foreground">{branding?.name}</p>
-              <p className="text-xs text-muted-foreground mt-1">{branding?.email}</p>
-            </div>
-            <div>
-              <p className="text-muted-foreground">Due Date</p>
-              <p className="font-medium text-foreground">{invoice.dueDate ? format(invoice.dueDate, "dd MMM yyyy") : "—"}</p>
-            </div>
-            <div>
-              <p className="text-muted-foreground">Issued</p>
-              <p className="font-medium text-foreground">{format(invoice.createdAt, "dd MMM yyyy")}</p>
-            </div>
-            <div>
-              <p className="text-muted-foreground">Total</p>
-              <p className="font-semibold text-lg text-foreground">{formatCHF(total)}</p>
-            </div>
-          </div>
-        </div>
-
-        {/* Line items */}
-        <div className="bg-card border border-border rounded-xl p-6">
-          <h3 className="font-semibold text-foreground mb-4">Line Items</h3>
-          <div className="divide-y divide-border">
-            {invoice.items?.map((item: any, i: number) => (
-              <div key={i} className="flex justify-between py-3 text-sm">
+          {!editing && (
+            <>
+              <Separator className="my-4" />
+              <div className="grid grid-cols-2 gap-6 text-sm">
                 <div>
-                  <p className="font-medium text-foreground">{item.description}</p>
-                  <p className="text-xs text-muted-foreground">{item.billingType === "hourly" ? `${item.quantity} hours @ ${formatCHF(item.unitPrice)}/hr` : "Flat fee"}</p>
+                  <p className="text-muted-foreground">Firm</p>
+                  <p className="font-medium text-foreground">{branding?.name}</p>
+                  <p className="text-xs text-muted-foreground mt-1">{branding?.email}</p>
                 </div>
-                <p className="font-medium text-foreground">{formatCHF(item.quantity * item.unitPrice)}</p>
+                <div>
+                  <p className="text-muted-foreground">{t("invoiceDetail.dueDate")}</p>
+                  <p className="font-medium text-foreground">
+                    {invoice.dueDate ? format(invoice.dueDate, "dd MMM yyyy") : "—"}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-muted-foreground">Issued</p>
+                  <p className="font-medium text-foreground">
+                    {format(invoice.createdAt, "dd MMM yyyy")}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-muted-foreground">{t("invoiceDetail.total")}</p>
+                  <p className="font-semibold text-lg text-foreground">{formatCHF(displayTotal)}</p>
+                </div>
               </div>
-            ))}
-          </div>
+            </>
+          )}
         </div>
 
-        {/* Totals */}
-        <div className="bg-card border border-border rounded-xl p-6 space-y-3">
-          <div className="flex justify-between text-sm">
-            <span className="text-muted-foreground">Subtotal</span>
-            <span className="font-medium">{formatCHF(subtotal)}</span>
-          </div>
-          <div className="flex justify-between text-sm">
-            <span className="text-muted-foreground">VAT ({invoice.vatRate}%)</span>
-            <span className="font-medium">{formatCHF(vatAmount)}</span>
-          </div>
-          <Separator />
-          <div className="flex justify-between text-lg font-semibold">
-            <span>Total</span>
-            <span>{formatCHF(total)}</span>
-          </div>
-        </div>
-
-        {/* Email Delivery Status */}
-        {invoice.status === "sent" && (
-          <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 flex items-center justify-between gap-4">
-            <div className="flex items-center gap-3">
-              <CheckCircle2 className="w-5 h-5 text-blue-600" />
-              <div>
-                <p className="font-medium text-blue-900 text-sm">Invoice sent to client</p>
-                <p className="text-xs text-blue-700 mt-0.5">Email delivery confirmed</p>
+        {editing && form ? (
+          <>
+            <InvoiceFormFields
+              form={form}
+              setForm={(next) =>
+                setForm((prev) => {
+                  const base = prev ?? form;
+                  return typeof next === "function" ? next(base) : next;
+                })
+              }
+              clients={clients}
+              cases={cases}
+            />
+            <div className="bg-card border border-border rounded-xl p-6 space-y-3">
+              <div className="flex justify-between text-sm">
+                <span className="text-muted-foreground">{t("invoiceDetail.subtotal")}</span>
+                <span className="font-medium">{formatCHF(displaySubtotal)}</span>
+              </div>
+              <div className="flex justify-between text-sm">
+                <span className="text-muted-foreground">
+                  {t("invoiceDetail.vat")} ({displayVatRate}%)
+                </span>
+                <span className="font-medium">{formatCHF(displayVatAmount)}</span>
+              </div>
+              <Separator />
+              <div className="flex justify-between text-lg font-semibold">
+                <span>{t("invoiceDetail.total")}</span>
+                <span>{formatCHF(displayTotal)}</span>
               </div>
             </div>
-          </div>
-        )}
+            <div className="flex gap-3 justify-end">
+              <Button variant="outline" onClick={cancelEditing} disabled={updateInvoice.isPending}>
+                <X className="w-4 h-4 me-1.5" />
+                {t("common.cancel")}
+              </Button>
+              <Button
+                className="bg-[var(--color-navy)] hover:bg-[var(--color-navy-light)] text-white"
+                disabled={updateInvoice.isPending}
+                onClick={saveEdits}
+              >
+                {updateInvoice.isPending ? t("common.loading") : t("common.save")}
+              </Button>
+            </div>
+          </>
+        ) : (
+          <>
+            <div className="bg-card border border-border rounded-xl p-6">
+              <h3 className="font-semibold text-foreground mb-4">{t("invoiceDetail.lineItems")}</h3>
+              <div className="divide-y divide-border">
+                {invoice.items?.map(
+                  (
+                    item: {
+                      description: string;
+                      billingType: string;
+                      quantity: string | number;
+                      unitPrice: string | number;
+                    },
+                    i: number
+                  ) => (
+                    <div key={i} className="flex justify-between py-3 text-sm">
+                      <div>
+                        <p className="font-medium text-foreground">{item.description}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {item.billingType === "hourly"
+                            ? `${item.quantity} hours @ ${formatCHF(item.unitPrice)}/hr`
+                            : "Flat fee"}
+                        </p>
+                      </div>
+                      <p className="font-medium text-foreground">
+                        {formatCHF(Number(item.quantity) * Number(item.unitPrice))}
+                      </p>
+                    </div>
+                  )
+                )}
+              </div>
+            </div>
 
-        {/* Payment plans — lawyers manage; clients only see timeline */}
-        {paymentPlans && paymentPlans.length > 0 ? (
-          <div className="space-y-4">
-            {paymentPlans.map((plan) => (
-              <PaymentInstallmentTimeline
-                key={plan.id}
-                invoiceNumber={invoice.invoiceNumber}
-                totalAmount={parseFloat(String(plan.totalAmount))}
-                generatingId={
-                  isFirmMember && generateInstallment.isPending
-                    ? generateInstallment.variables?.installmentId ?? null
-                    : null
-                }
-                onGenerateInvoice={
-                  isFirmMember
-                    ? (installmentId) => generateInstallment.mutate({ installmentId })
-                    : undefined
-                }
-                installments={(plan.installments || []).map((inst) => {
-                  const due = new Date(inst.dueDate);
-                  const daysFromNow = Math.ceil((due.getTime() - Date.now()) / (1000 * 60 * 60 * 24));
-                  return {
-                    id: inst.id,
-                    installmentNumber: inst.installmentNumber,
-                    amount: parseFloat(String(inst.amount)),
-                    status: inst.status,
-                    dueDate: due,
-                    daysFromNow,
-                    generatedInvoiceId: inst.generatedInvoiceId,
-                  };
-                })}
-              />
-            ))}
-          </div>
-        ) : isFirmMember ? (
-          <PaymentPlanScheduler
-            invoiceId={invoiceId}
-            totalAmount={total}
-            onCreated={() => void refetchPlans()}
-          />
-        ) : null}
+            <div className="bg-card border border-border rounded-xl p-6 space-y-3">
+              <div className="flex justify-between text-sm">
+                <span className="text-muted-foreground">{t("invoiceDetail.subtotal")}</span>
+                <span className="font-medium">{formatCHF(displaySubtotal)}</span>
+              </div>
+              <div className="flex justify-between text-sm">
+                <span className="text-muted-foreground">
+                  {t("invoiceDetail.vat")} ({invoice.vatRate}%)
+                </span>
+                <span className="font-medium">{formatCHF(displayVatAmount)}</span>
+              </div>
+              <Separator />
+              <div className="flex justify-between text-lg font-semibold">
+                <span>{t("invoiceDetail.total")}</span>
+                <span>{formatCHF(displayTotal)}</span>
+              </div>
+            </div>
 
-        {/* Payment section */}
-        {invoice.status !== "paid" && invoice.status !== "cancelled" && (
-          <div className="space-y-3">
-            <StripePayButton invoiceId={invoiceId} />
-            <AdyenPayButton invoiceId={invoiceId} existingUrl={invoice.adyenPaymentLinkUrl} />
-            {invoice.stripePaymentUrl && (
-              <p className="text-xs text-muted-foreground">
-                Stripe link saved for this invoice (also embedded on PDF when available).
-              </p>
+            {invoice.notes && (
+              <div className="bg-card border border-border rounded-xl p-6">
+                <h3 className="font-semibold text-foreground mb-2">{t("invoiceDetail.notes")}</h3>
+                <p className="text-sm text-muted-foreground whitespace-pre-wrap">{invoice.notes}</p>
+              </div>
             )}
-          </div>
-        )}
 
-        {/* Actions */}
-        <div className="flex gap-3 justify-end">
-          <Button
-            variant="outline"
-            disabled={generatePdf.isPending}
-            onClick={() => void downloadServerPdf()}
-          >
-            <Download className="w-4 h-4 mr-1.5" />
-            {generatePdf.isPending ? t("common.loading") : t("invoiceDetail.downloadPdf")}
-          </Button>
-          {isFirmMember && invoice.status === "draft" && (
-            <Button className="bg-[var(--color-navy)] hover:bg-[var(--color-navy-light)] text-white" onClick={() => updateStatus.mutate({ id: invoiceId, status: "sent" })}>
-              <Send className="w-4 h-4 mr-1.5" /> Send to Client
-            </Button>
-          )}
-          {invoice.status === "paid" && (
-            <div className="flex items-center gap-2 text-green-600">
-              <CheckCircle className="w-5 h-5" />
-              <span className="font-medium">Paid</span>
+            {invoice.status === "sent" && (
+              <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 flex items-center justify-between gap-4">
+                <div className="flex items-center gap-3">
+                  <CheckCircle2 className="w-5 h-5 text-blue-600" />
+                  <div>
+                    <p className="font-medium text-blue-900 text-sm">Invoice sent to client</p>
+                    <p className="text-xs text-blue-700 mt-0.5">Email delivery confirmed</p>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {paymentPlans && paymentPlans.length > 0 ? (
+              <div className="space-y-4">
+                {paymentPlans.map((plan) => (
+                  <PaymentInstallmentTimeline
+                    key={plan.id}
+                    invoiceNumber={invoice.invoiceNumber}
+                    totalAmount={parseFloat(String(plan.totalAmount))}
+                    generatingId={
+                      isFirmMember && generateInstallment.isPending
+                        ? generateInstallment.variables?.installmentId ?? null
+                        : null
+                    }
+                    onGenerateInvoice={
+                      isFirmMember
+                        ? (installmentId) => generateInstallment.mutate({ installmentId })
+                        : undefined
+                    }
+                    installments={(plan.installments || []).map((inst) => {
+                      const due = new Date(inst.dueDate);
+                      const daysFromNow = Math.ceil(
+                        (due.getTime() - Date.now()) / (1000 * 60 * 60 * 24)
+                      );
+                      return {
+                        id: inst.id,
+                        installmentNumber: inst.installmentNumber,
+                        amount: parseFloat(String(inst.amount)),
+                        status: inst.status,
+                        dueDate: due,
+                        daysFromNow,
+                        generatedInvoiceId: inst.generatedInvoiceId,
+                      };
+                    })}
+                  />
+                ))}
+              </div>
+            ) : isFirmMember ? (
+              <PaymentPlanScheduler
+                invoiceId={invoiceId}
+                totalAmount={displayTotal}
+                onCreated={() => void refetchPlans()}
+              />
+            ) : null}
+
+            {invoice.status !== "paid" && invoice.status !== "cancelled" && (
+              <div className="space-y-3">
+                <StripePayButton invoiceId={invoiceId} />
+                <AdyenPayButton
+                  invoiceId={invoiceId}
+                  existingUrl={invoice.adyenPaymentLinkUrl}
+                />
+                {invoice.stripePaymentUrl && (
+                  <p className="text-xs text-muted-foreground">
+                    Stripe link saved for this invoice (also embedded on PDF when available).
+                  </p>
+                )}
+              </div>
+            )}
+
+            <div className="flex gap-3 justify-end flex-wrap">
+              {canEdit && (
+                <Button variant="outline" onClick={startEditing}>
+                  <Pencil className="w-4 h-4 me-1.5" />
+                  {t("invoiceDetail.edit")}
+                </Button>
+              )}
+              <Button
+                variant="outline"
+                disabled={generatePdf.isPending}
+                onClick={() => void downloadServerPdf()}
+              >
+                <Download className="w-4 h-4 me-1.5" />
+                {generatePdf.isPending ? t("common.loading") : t("invoiceDetail.downloadPdf")}
+              </Button>
+              {isFirmMember && invoice.status === "draft" && (
+                <Button
+                  className="bg-[var(--color-navy)] hover:bg-[var(--color-navy-light)] text-white"
+                  onClick={() => updateStatus.mutate({ id: invoiceId, status: "sent" })}
+                >
+                  <Send className="w-4 h-4 me-1.5" /> {t("invoiceDetail.send")}
+                </Button>
+              )}
+              {invoice.status === "paid" && (
+                <div className="flex items-center gap-2 text-green-600">
+                  <CheckCircle className="w-5 h-5" />
+                  <span className="font-medium">{t("common.paid")}</span>
+                </div>
+              )}
             </div>
-          )}
-        </div>
+          </>
+        )}
       </div>
     </LexLayout>
   );
