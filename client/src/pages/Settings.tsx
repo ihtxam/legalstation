@@ -13,6 +13,7 @@ import { Building2, Users, Send, Upload, X, Shield, Languages } from "lucide-rea
 import { useTranslation } from "react-i18next";
 import { setAppLocale } from "@/i18n";
 import { APP_LOCALES, APP_LOCALE_LABELS, isAppLocale, type AppLocale } from "@shared/locales";
+import CustomDomainDnsHelp from "@/components/CustomDomainDnsHelp";
 
 export default function SettingsPage() {
   const { t } = useTranslation();
@@ -239,6 +240,13 @@ export default function SettingsPage() {
                 onClick={() => updateFirm.mutate({ name: firmForm.name, address: firmForm.address, email: firmForm.email || null, phone: firmForm.phone, vatNumber: firmForm.vatNumber || null, logoUrl: firmForm.logoUrl || null })}>
                 {updateFirm.isPending ? t("settings.saving") : hasChanges ? t("settings.saveUnsavedChanges") : t("settings.noChanges")}
               </Button>
+              {firmData?.firm && (
+                <CustomDomainDnsHelp
+                  customDomain={firmData.firm.customDomain}
+                  subdomainStatus={firmData.firm.subdomainStatus}
+                  slug={firmData.firm.slug}
+                />
+              )}
             </div>
           </TabsContent>}
 

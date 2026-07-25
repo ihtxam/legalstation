@@ -16,6 +16,8 @@ import {
   BarChart3,
   Shield,
   Bell,
+  Target,
+  Globe,
 } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -53,11 +55,13 @@ export default function LexLayout({ children, title, breadcrumb }: LexLayoutProp
     { href: "/dashboard", label: t("nav.dashboard"), icon: LayoutDashboard },
     { href: "/cases", label: t("nav.cases"), icon: Briefcase },
     { href: "/clients", label: t("nav.clients"), icon: Users },
+    { href: "/leads", label: t("nav.leads"), icon: Target },
     { href: "/messages", label: t("nav.messages"), icon: MessageSquare },
     { href: "/invoices", label: t("nav.billing"), icon: Receipt },
     { href: "/time-reports", label: t("nav.timeReports"), icon: FileText },
     ...(isAdmin
       ? [
+          { href: "/cms", label: t("nav.cms"), icon: Globe },
           { href: "/analytics", label: t("nav.analytics"), icon: BarChart3 },
           { href: "/audit", label: t("nav.auditLog"), icon: Shield },
         ]

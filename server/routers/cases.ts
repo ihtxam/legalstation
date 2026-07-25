@@ -201,10 +201,11 @@ export const casesRouter = router({
       courtName: z.string().optional(),
       courtFileNumber: z.string().optional(),
       deadline: z.number().optional().nullable(),
+      matterStageId: z.number().nullable().optional(),
     }))
     .mutation(async ({ ctx, input }) => {
       const member = await requireFirmMember(ctx.user.id);
-      const { id, deadline, ...data } = input;
+      const { id, deadline, matterStageId, ...data } = input;
       const existing = await getCaseById(id, member.firmId);
       if (!existing) throw new TRPCError({ code: "NOT_FOUND" });
       if (data.status && data.status !== existing.status) {
@@ -231,6 +232,7 @@ export const casesRouter = router({
       }
       await updateCase(id, member.firmId, {
         ...data,
+        ...(matterStageId !== undefined ? { matterStageId } : {}),
         deadline: deadline ? new Date(deadline) : deadline === null ? null : undefined,
       });
       return { success: true };

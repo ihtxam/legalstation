@@ -30,6 +30,8 @@ import ClientPortalPage from "./pages/ClientPortal";
 import TimeReportsPage from "./pages/TimeReports";
 import AuditLogPage from "./pages/AuditLog";
 import AdminAnalyticsPage from "./pages/AdminAnalytics";
+import FirmLeadsPage from "./pages/FirmLeads";
+import FirmCmsPage from "./pages/FirmCms";
 import LoginPage from "./pages/Login";
 import PlatformLoginPage from "./pages/PlatformLogin";
 import FloatingTimer from "./components/FloatingTimer";
@@ -144,6 +146,8 @@ function Router() {
         <Route path="/admin/settings" component={AdminSettings} />
         <Route path="/client-portal" component={ClientPortalPage} />
         <Route path="/time-reports" component={TimeReportsPage} />
+        <Route path="/leads" component={FirmLeadsPage} />
+        <Route path="/cms" component={FirmCmsPage} />
         <Route path="/audit" component={AuditLogPage} />
         <Route path="/analytics" component={AdminAnalyticsPage} />
         <Route path="/404" component={NotFound} />

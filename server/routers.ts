@@ -30,6 +30,11 @@ import { timeEntriesRouter } from "./routers/timeEntries";
 import { documentRequestsRouter } from "./routers/documentRequests";
 import { leadsRouter } from "./routers/leads";
 import { deploymentRouter } from "./routers/deployment";
+import { matterStagesRouter } from "./routers/matterStages";
+import { caseTasksRouter } from "./routers/caseTasks";
+import { clientActivitiesRouter } from "./routers/clientActivities";
+import { firmLeadsRouter } from "./routers/firmLeads";
+import { firmPagesRouter } from "./routers/firmPages";
 import { updateUserById } from "./db";
 import {
   TWO_FACTOR_COOKIE,
@@ -204,6 +209,11 @@ export const appRouter = router({
   timeEntries: timeEntriesRouter,
   documentRequests: documentRequestsRouter,
   leads: leadsRouter,
+  matterStages: matterStagesRouter,
+  caseTasks: caseTasksRouter,
+  clientActivities: clientActivitiesRouter,
+  firmLeads: firmLeadsRouter,
+  firmPages: firmPagesRouter,
 });
 
 export type AppRouter = typeof appRouter;

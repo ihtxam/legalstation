@@ -136,6 +136,8 @@ export const cases = mysqlTable("cases", {
   referenceNumber: varchar("referenceNumber", { length: 100 }),
   type: mysqlEnum("type", ["civil", "criminal", "corporate", "family", "real_estate", "employment", "tax", "immigration", "intellectual_property", "other"]).notNull().default("civil"),
   status: mysqlEnum("status", ["open", "pending", "closed", "archived"]).notNull().default("open"),
+  /** Internal matter pipeline stage (firm-defined) */
+  matterStageId: int("matterStageId"),
   description: text("description"),
   courtName: varchar("courtName", { length: 255 }),
   courtFileNumber: varchar("courtFileNumber", { length: 100 }),
@@ -562,3 +564,115 @@ export const documentSummaries = mysqlTable("document_summaries", {
 
 export type DocumentSummary = typeof documentSummaries.$inferSelect;
 export type InsertDocumentSummary = typeof documentSummaries.$inferInsert;
+
+// ─── Matter stages (internal case pipeline per firm) ─────────────────────────
+export const matterStages = mysqlTable("matter_stages", {
+  id: int("id").autoincrement().primaryKey(),
+  firmId: int("firmId").notNull(),
+  name: varchar("name", { length: 100 }).notNull(),
+  sortOrder: int("sortOrder").notNull().default(0),
+  color: varchar("color", { length: 7 }).default("#001f3f"),
+  isClosedStage: boolean("isClosedStage").notNull().default(false),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type MatterStage = typeof matterStages.$inferSelect;
+export type InsertMatterStage = typeof matterStages.$inferInsert;
+
+// ─── Case tasks / subtasks (matter work breakdown) ───────────────────────────
+export const caseTasks = mysqlTable("case_tasks", {
+  id: int("id").autoincrement().primaryKey(),
+  firmId: int("firmId").notNull(),
+  caseId: int("caseId").notNull(),
+  parentTaskId: int("parentTaskId"),
+  matterStageId: int("matterStageId"),
+  title: varchar("title", { length: 255 }).notNull(),
+  description: text("description"),
+  status: mysqlEnum("status", ["todo", "in_progress", "done", "cancelled"]).notNull().default("todo"),
+  assigneeUserId: int("assigneeUserId"),
+  dueAt: timestamp("dueAt"),
+  /** Mentions as JSON array of user ids, e.g. [1,2] — also parsed from @[userId] in description */
+  mentionedUserIds: text("mentionedUserIds"),
+  sortOrder: int("sortOrder").notNull().default(0),
+  createdByUserId: int("createdByUserId").notNull(),
+  completedAt: timestamp("completedAt"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type CaseTask = typeof caseTasks.$inferSelect;
+export type InsertCaseTask = typeof caseTasks.$inferInsert;
+
+// ─── Client activities (meeting notes, todos, next actions, reminders) ───────
+export const clientActivities = mysqlTable("client_activities", {
+  id: int("id").autoincrement().primaryKey(),
+  firmId: int("firmId").notNull(),
+  clientId: int("clientId").notNull(),
+  type: mysqlEnum("type", ["note", "meeting", "todo", "next_action", "reminder"]).notNull(),
+  title: varchar("title", { length: 255 }).notNull(),
+  body: text("body"),
+  dueAt: timestamp("dueAt"),
+  remindAt: timestamp("remindAt"),
+  assigneeUserId: int("assigneeUserId"),
+  mentionedUserIds: text("mentionedUserIds"),
+  completedAt: timestamp("completedAt"),
+  createdByUserId: int("createdByUserId").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type ClientActivity = typeof clientActivities.$inferSelect;
+export type InsertClientActivity = typeof clientActivities.$inferInsert;
+
+// ─── Firm leads (CRM pipeline — Grow-lite) ───────────────────────────────────
+export const firmLeads = mysqlTable("firm_leads", {
+  id: int("id").autoincrement().primaryKey(),
+  firmId: int("firmId").notNull(),
+  contactName: varchar("contactName", { length: 200 }).notNull(),
+  email: varchar("email", { length: 320 }),
+  phone: varchar("phone", { length: 50 }),
+  company: varchar("company", { length: 255 }),
+  source: varchar("source", { length: 100 }),
+  stage: mysqlEnum("stage", [
+    "new",
+    "contacted",
+    "qualified",
+    "consultation",
+    "proposal",
+    "won",
+    "lost",
+  ])
+    .notNull()
+    .default("new"),
+  notes: text("notes"),
+  assignedUserId: int("assignedUserId"),
+  convertedClientId: int("convertedClientId"),
+  convertedCaseId: int("convertedCaseId"),
+  createdByUserId: int("createdByUserId").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type FirmLead = typeof firmLeads.$inferSelect;
+export type InsertFirmLead = typeof firmLeads.$inferInsert;
+
+// ─── Firm CMS pages (simple page builder / homepage) ─────────────────────────
+export const firmPages = mysqlTable("firm_pages", {
+  id: int("id").autoincrement().primaryKey(),
+  firmId: int("firmId").notNull(),
+  slug: varchar("slug", { length: 120 }).notNull(),
+  title: varchar("title", { length: 255 }).notNull(),
+  /** HTML or markdown body */
+  content: text("content"),
+  isHome: boolean("isHome").notNull().default(false),
+  published: boolean("published").notNull().default(false),
+  seoTitle: varchar("seoTitle", { length: 255 }),
+  seoDescription: varchar("seoDescription", { length: 500 }),
+  createdByUserId: int("createdByUserId").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type FirmPage = typeof firmPages.$inferSelect;
+export type InsertFirmPage = typeof firmPages.$inferInsert;

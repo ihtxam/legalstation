@@ -13,8 +13,11 @@ import { useEffect, useState } from "react";
 import { useLocation, useParams } from "wouter";
 import { toast } from "sonner";
 import { format } from "date-fns";
+import ClientActivityPanel from "@/components/ClientActivityPanel";
+import { useTranslation } from "react-i18next";
 
 export default function ClientDetailPage() {
+  const { t } = useTranslation();
   const { id } = useParams<{ id: string }>();
   const clientId = parseInt(id);
   const { isAuthenticated, loading } = useAuth();
@@ -136,11 +139,15 @@ export default function ClientDetailPage() {
         )}
 
         {/* Tabs */}
-        <Tabs defaultValue="details">
+        <Tabs defaultValue="activity">
           <TabsList className="bg-muted">
-            <TabsTrigger value="details">Details</TabsTrigger>
-            <TabsTrigger value="notes">Notes</TabsTrigger>
+            <TabsTrigger value="activity">{t("crm.activityTitle")}</TabsTrigger>
+            <TabsTrigger value="details">{t("common.details")}</TabsTrigger>
+            <TabsTrigger value="notes">{t("common.notes")}</TabsTrigger>
           </TabsList>
+          <TabsContent value="activity" className="mt-4">
+            <ClientActivityPanel clientId={clientId} />
+          </TabsContent>
           <TabsContent value="details" className="mt-4">
             <div className="bg-card border border-border rounded-xl p-5 grid grid-cols-2 gap-4">
               {[

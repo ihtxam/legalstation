@@ -16,7 +16,7 @@ import { Badge } from "@/components/ui/badge";
 import {
   Calendar, FileText, MessageSquare, Lock, Globe, Plus,
   Upload, Download, Eye, Trash2, Clock, Edit2, FolderOpen,
-  AlertCircle, Users, X
+  AlertCircle, Users, X, CheckSquare
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useLocation, useParams } from "wouter";
@@ -25,6 +25,7 @@ import { format } from "date-fns";
 import { CASE_TYPE_LABELS } from "@shared/types";
 import { DocumentVersionHistory } from "@/components/DocumentVersionHistory";
 import CaseTimePanel from "@/components/CaseTimePanel";
+import CaseTasksPanel from "@/components/CaseTasksPanel";
 import { useTranslation } from "react-i18next";
 
 function CaseTimeline({ caseId, isInternal }: { caseId: number; isInternal: boolean }) {
@@ -588,6 +589,9 @@ export default function CaseDetailPage() {
 
   const { data: caseData, isLoading, refetch } = trpc.cases.get.useQuery({ id: caseId }, { enabled: isAuthenticated && !isNaN(caseId) });
   const { data: firmData } = trpc.firm.myFirm.useQuery(undefined, { enabled: isAuthenticated });
+  const { data: matterStages } = trpc.matterStages.list.useQuery(undefined, {
+    enabled: isAuthenticated && !!firmData,
+  });
   const updateCase = trpc.cases.update.useMutation({
     onSuccess: () => { setEditStatus(false); refetch(); toast.success(t("caseDetail.caseUpdated")); },
     onError: (e) => toast.error(e.message),
@@ -597,6 +601,7 @@ export default function CaseDetailPage() {
   useEffect(() => { if (caseData) setNewStatus(caseData.status); }, [caseData]);
 
   const isInternal = firmData && ["admin", "lawyer", "assistant"].includes(firmData.member.firmRole);
+  const currentStage = matterStages?.find((s) => s.id === caseData?.matterStageId);
 
   if (isLoading) return <LexLayout title={t("caseDetail.title")}><div className="p-6"><Skeleton className="h-64 w-full" /></div></LexLayout>;
   if (!caseData) return <LexLayout title={t("common.notFound")}><div className="p-6 text-center text-muted-foreground">{t("caseDetail.notFound")}</div></LexLayout>;
@@ -611,6 +616,14 @@ export default function CaseDetailPage() {
               <div className="flex items-center gap-3 flex-wrap mb-2">
                 <h2 className="text-xl font-semibold text-foreground">{caseData.title}</h2>
                 <StatusBadge status={caseData.status} />
+                {currentStage && (
+                  <Badge
+                    style={{ backgroundColor: currentStage.color || "#001f3f" }}
+                    className="text-white"
+                  >
+                    {currentStage.name}
+                  </Badge>
+                )}
               </div>
               <div className="flex items-center gap-4 text-sm text-muted-foreground flex-wrap">
                 {caseData.referenceNumber && <span>{t("caseDetail.reference")}: <span className="font-medium text-foreground">{caseData.referenceNumber}</span></span>}
@@ -622,6 +635,32 @@ export default function CaseDetailPage() {
                   </span>
                 )}
               </div>
+              {isInternal && (
+                <div className="mt-3 max-w-xs">
+                  <Label className="text-xs text-muted-foreground">{t("crm.matterStage")}</Label>
+                  <Select
+                    value={caseData.matterStageId != null ? String(caseData.matterStageId) : "none"}
+                    onValueChange={(v) =>
+                      updateCase.mutate({
+                        id: caseId,
+                        matterStageId: v === "none" ? null : Number(v),
+                      })
+                    }
+                  >
+                    <SelectTrigger className="mt-1 h-8">
+                      <SelectValue placeholder={t("crm.noStage")} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">{t("crm.noStage")}</SelectItem>
+                      {(matterStages || []).map((s) => (
+                        <SelectItem key={s.id} value={String(s.id)}>
+                          {s.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
             </div>
             {isInternal && (
               <Button size="sm" variant="outline" onClick={() => setEditStatus(true)}>
@@ -658,8 +697,9 @@ export default function CaseDetailPage() {
 
         {/* Tabs */}
         <Tabs defaultValue="timeline" className="bg-card border border-border rounded-xl p-6">
-          <TabsList className="bg-muted">
+          <TabsList className="bg-muted flex flex-wrap h-auto">
             <TabsTrigger value="timeline"><Clock className="w-3.5 h-3.5 mr-1.5" />{t("common.notes")}</TabsTrigger>
+            <TabsTrigger value="tasks"><CheckSquare className="w-3.5 h-3.5 mr-1.5" />{t("crm.tasks")}</TabsTrigger>
             <TabsTrigger value="time"><Clock className="w-3.5 h-3.5 mr-1.5" />{t("common.time")}</TabsTrigger>
             <TabsTrigger value="documents"><FileText className="w-3.5 h-3.5 mr-1.5" />{t("common.documents")}</TabsTrigger>
             <TabsTrigger value="messages"><MessageSquare className="w-3.5 h-3.5 mr-1.5" />{t("nav.messages")}</TabsTrigger>
@@ -667,6 +707,13 @@ export default function CaseDetailPage() {
           </TabsList>
           <TabsContent value="timeline" className="mt-4">
             <CaseTimeline caseId={caseId} isInternal={!!isInternal} />
+          </TabsContent>
+          <TabsContent value="tasks" className="mt-4">
+            {isInternal ? (
+              <CaseTasksPanel caseId={caseId} />
+            ) : (
+              <div className="text-center text-muted-foreground py-8">{t("caseDetail.noLawyers")}</div>
+            )}
           </TabsContent>
           <TabsContent value="time" className="mt-4">
             {isInternal ? (

@@ -9,6 +9,7 @@ import { useEffect, useState } from "react";
 import { useLocation } from "wouter";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
+import CustomDomainDnsHelp from "@/components/CustomDomainDnsHelp";
 
 const STEP_META = [
   { id: 1, titleKey: "onboarding.stepFirmProfile" as const, icon: Building2 },
@@ -289,6 +290,11 @@ export default function FirmOnboardingPage() {
                   onChange={(e) => setCustomDomain(e.target.value)}
                 />
               </div>
+              <CustomDomainDnsHelp
+                customDomain={customDomain}
+                subdomainStatus={firmData?.firm.subdomainStatus}
+                slug={slug}
+              />
             </>
           )}
 
