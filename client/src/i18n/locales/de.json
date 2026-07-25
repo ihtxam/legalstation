@@ -888,6 +888,8 @@
     "leadsHint": "Track prospects through your intake pipeline.",
     "newLead": "New lead",
     "leadCreated": "Lead created",
+    "editLead": "Lead bearbeiten",
+    "leadUpdated": "Lead aktualisiert",
     "leadConverted": "Lead converted to client",
     "convert": "Convert to client",
     "convertTitle": "Convert lead",

@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Pause, Play, Plus, Square, Trash2, Edit2 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { Link } from "wouter";
@@ -34,7 +34,8 @@ export default function CaseTimePanel({ caseId }: { caseId: number }) {
     refetchInterval: 10_000,
   });
 
-  const [description, setDescription] = useState("");
+  const [timerDescription, setTimerDescription] = useState("");
+  const [manualDescription, setManualDescription] = useState("");
   const [manualMinutes, setManualMinutes] = useState("60");
   const [manualDate, setManualDate] = useState(format(new Date(), "yyyy-MM-dd"));
   const [billable, setBillable] = useState(true);
@@ -42,6 +43,8 @@ export default function CaseTimePanel({ caseId }: { caseId: number }) {
   const [editEntry, setEditEntry] = useState<(typeof entries extends (infer T)[] | undefined ? T : never) | null>(null);
   const [editMinutes, setEditMinutes] = useState("");
   const [editDesc, setEditDesc] = useState("");
+  const syncedTimerId = useRef<number | null>(null);
+  const descriptionSaveTimer = useRef<number | null>(null);
 
   const timerForThisCase = activeTimer?.caseId === caseId ? activeTimer : null;
 
@@ -60,18 +63,22 @@ export default function CaseTimePanel({ caseId }: { caseId: number }) {
     onSuccess: () => utils.timeEntries.activeTimer.invalidate(),
     onError: (e) => toast.error(e.message),
   });
+  const updateTimer = trpc.timeEntries.updateTimer.useMutation({
+    onError: (e) => toast.error(e.message),
+  });
   const stopTimer = trpc.timeEntries.stopTimer.useMutation({
     onSuccess: async (r) => {
       toast.success(t("timeReports.savedMinutes", { count: r.durationMinutes }));
       await utils.timeEntries.invalidate();
-      setDescription("");
+      setTimerDescription("");
+      syncedTimerId.current = null;
     },
     onError: (e) => toast.error(e.message),
   });
   const createEntry = trpc.timeEntries.create.useMutation({
     onSuccess: async () => {
       toast.success(t("timeReports.entryAdded"));
-      setDescription("");
+      setManualDescription("");
       await refetch();
     },
     onError: (e) => toast.error(e.message),
@@ -92,17 +99,45 @@ export default function CaseTimePanel({ caseId }: { caseId: number }) {
     onError: (e) => toast.error(e.message),
   });
 
+  // Keep the clock in sync with the server timer — never overwrite the description here.
   useEffect(() => {
     if (!timerForThisCase) {
       setLocalSeconds(0);
+      syncedTimerId.current = null;
       return;
     }
     setLocalSeconds(timerForThisCase.elapsedSeconds);
-    setDescription(timerForThisCase.description || "");
     if (timerForThisCase.isPaused) return;
     const id = window.setInterval(() => setLocalSeconds((s) => s + 1), 1000);
     return () => window.clearInterval(id);
   }, [timerForThisCase?.id, timerForThisCase?.isPaused, timerForThisCase?.elapsedSeconds]);
+
+  // Hydrate description only when a timer starts / switches for this case.
+  useEffect(() => {
+    if (!timerForThisCase) return;
+    if (syncedTimerId.current === timerForThisCase.id) return;
+    syncedTimerId.current = timerForThisCase.id;
+    setTimerDescription(timerForThisCase.description || "");
+  }, [timerForThisCase?.id]);
+
+  useEffect(() => {
+    return () => {
+      if (descriptionSaveTimer.current != null) {
+        window.clearTimeout(descriptionSaveTimer.current);
+      }
+    };
+  }, []);
+
+  const onTimerDescriptionChange = (value: string) => {
+    setTimerDescription(value);
+    if (!timerForThisCase) return;
+    if (descriptionSaveTimer.current != null) {
+      window.clearTimeout(descriptionSaveTimer.current);
+    }
+    descriptionSaveTimer.current = window.setTimeout(() => {
+      updateTimer.mutate({ description: value });
+    }, 500);
+  };
 
   return (
     <div className="space-y-6">
@@ -125,8 +160,8 @@ export default function CaseTimePanel({ caseId }: { caseId: number }) {
         </div>
         <Textarea
           placeholder={t("timeReports.workingOn")}
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
+          value={timerDescription}
+          onChange={(e) => onTimerDescriptionChange(e.target.value)}
           rows={2}
         />
         <div className="flex items-center gap-2 flex-wrap">
@@ -134,7 +169,7 @@ export default function CaseTimePanel({ caseId }: { caseId: number }) {
             <Button
               className="bg-[var(--color-navy)] text-white"
               disabled={startTimer.isPending || (activeTimer != null && activeTimer.caseId !== caseId)}
-              onClick={() => startTimer.mutate({ caseId, description })}
+              onClick={() => startTimer.mutate({ caseId, description: timerDescription })}
             >
               <Play className="w-3.5 h-3.5 me-1.5" /> {t("timeReports.startTimer")}
             </Button>
@@ -151,7 +186,13 @@ export default function CaseTimePanel({ caseId }: { caseId: number }) {
               )}
               <Button
                 className="bg-[var(--color-navy)] text-white"
-                onClick={() => stopTimer.mutate({ save: true, description, billable })}
+                onClick={() => {
+                  if (descriptionSaveTimer.current != null) {
+                    window.clearTimeout(descriptionSaveTimer.current);
+                    descriptionSaveTimer.current = null;
+                  }
+                  stopTimer.mutate({ save: true, description: timerDescription, billable });
+                }}
               >
                 <Square className="w-3.5 h-3.5 me-1.5" /> {t("timeReports.stopSave")}
               </Button>
@@ -181,16 +222,16 @@ export default function CaseTimePanel({ caseId }: { caseId: number }) {
         </div>
         <Textarea
           placeholder={t("timeReports.description")}
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
+          value={manualDescription}
+          onChange={(e) => setManualDescription(e.target.value)}
           rows={2}
         />
         <Button
-          disabled={!description.trim() || createEntry.isPending}
+          disabled={!manualDescription.trim() || createEntry.isPending}
           onClick={() =>
             createEntry.mutate({
               caseId,
-              description,
+              description: manualDescription,
               durationMinutes: Math.max(1, parseInt(manualMinutes, 10) || 1),
               date: manualDate,
               billable,

@@ -22,7 +22,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Plus, UserPlus } from "lucide-react";
+import { Pencil, Plus, UserPlus } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useLocation } from "wouter";
 import { toast } from "sonner";
@@ -40,6 +40,15 @@ const STAGES = [
 
 type LeadStage = (typeof STAGES)[number];
 
+const emptyForm = {
+  contactName: "",
+  email: "",
+  phone: "",
+  company: "",
+  source: "",
+  notes: "",
+};
+
 export default function FirmLeadsPage() {
   const { t } = useTranslation();
   const { isAuthenticated, loading } = useAuth();
@@ -49,24 +58,51 @@ export default function FirmLeadsPage() {
     enabled: isAuthenticated,
   });
 
-  const [createOpen, setCreateOpen] = useState(false);
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [editingId, setEditingId] = useState<number | null>(null);
   const [convertLeadId, setConvertLeadId] = useState<number | null>(null);
   const [createCase, setCreateCase] = useState(true);
   const [caseTitle, setCaseTitle] = useState("");
-  const [form, setForm] = useState({
-    contactName: "",
-    email: "",
-    phone: "",
-    company: "",
-    source: "",
-    notes: "",
-  });
+  const [form, setForm] = useState(emptyForm);
+
+  const resetForm = () => {
+    setForm(emptyForm);
+    setEditingId(null);
+  };
+
+  const openCreate = () => {
+    resetForm();
+    setDialogOpen(true);
+  };
+
+  const openEdit = (lead: NonNullable<typeof leads>[number]) => {
+    setEditingId(lead.id);
+    setForm({
+      contactName: lead.contactName || "",
+      email: lead.email || "",
+      phone: lead.phone || "",
+      company: lead.company || "",
+      source: lead.source || "",
+      notes: lead.notes || "",
+    });
+    setDialogOpen(true);
+  };
 
   const create = trpc.firmLeads.create.useMutation({
     onSuccess: async () => {
       toast.success(t("crm.leadCreated"));
-      setCreateOpen(false);
-      setForm({ contactName: "", email: "", phone: "", company: "", source: "", notes: "" });
+      setDialogOpen(false);
+      resetForm();
+      await utils.firmLeads.list.invalidate();
+    },
+    onError: (e) => toast.error(e.message),
+  });
+
+  const update = trpc.firmLeads.update.useMutation({
+    onSuccess: async () => {
+      toast.success(t("crm.leadUpdated"));
+      setDialogOpen(false);
+      resetForm();
       await utils.firmLeads.list.invalidate();
     },
     onError: (e) => toast.error(e.message),
@@ -103,6 +139,23 @@ export default function FirmLeadsPage() {
   }, [leads]);
 
   const stageLabel = (s: LeadStage) => t(`crm.leadStage.${s}`);
+  const saving = create.isPending || update.isPending;
+
+  const submitLead = () => {
+    const payload = {
+      contactName: form.contactName.trim(),
+      email: form.email || null,
+      phone: form.phone || null,
+      company: form.company || null,
+      source: form.source || null,
+      notes: form.notes || null,
+    };
+    if (editingId != null) {
+      update.mutate({ id: editingId, ...payload });
+    } else {
+      create.mutate(payload);
+    }
+  };
 
   return (
     <LexLayout breadcrumb={[{ label: t("nav.leads") }]}>
@@ -112,7 +165,7 @@ export default function FirmLeadsPage() {
             <h1 className="text-xl font-semibold">{t("crm.leadsTitle")}</h1>
             <p className="text-sm text-muted-foreground">{t("crm.leadsHint")}</p>
           </div>
-          <Button className="bg-[var(--color-navy)] text-white" onClick={() => setCreateOpen(true)}>
+          <Button className="bg-[var(--color-navy)] text-white" onClick={openCreate}>
             <Plus className="w-4 h-4 me-1.5" /> {t("crm.newLead")}
           </Button>
         </div>
@@ -133,13 +186,26 @@ export default function FirmLeadsPage() {
                 <div className="space-y-2 min-h-[80px]">
                   {byStage[stage].map((lead) => (
                     <div key={lead.id} className="rounded-lg border border-border bg-card p-3 space-y-2">
-                      <p className="font-medium text-sm">{lead.contactName}</p>
-                      {lead.company && (
-                        <p className="text-xs text-muted-foreground">{lead.company}</p>
-                      )}
-                      {lead.email && (
-                        <p className="text-xs text-muted-foreground truncate">{lead.email}</p>
-                      )}
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="min-w-0">
+                          <p className="font-medium text-sm">{lead.contactName}</p>
+                          {lead.company && (
+                            <p className="text-xs text-muted-foreground">{lead.company}</p>
+                          )}
+                          {lead.email && (
+                            <p className="text-xs text-muted-foreground truncate">{lead.email}</p>
+                          )}
+                        </div>
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          className="h-7 w-7 shrink-0"
+                          title={t("crm.editLead")}
+                          onClick={() => openEdit(lead)}
+                        >
+                          <Pencil className="w-3.5 h-3.5" />
+                        </Button>
+                      </div>
                       <Select
                         value={lead.stage}
                         onValueChange={(v) =>
@@ -190,10 +256,16 @@ export default function FirmLeadsPage() {
         )}
       </div>
 
-      <Dialog open={createOpen} onOpenChange={setCreateOpen}>
+      <Dialog
+        open={dialogOpen}
+        onOpenChange={(open) => {
+          setDialogOpen(open);
+          if (!open) resetForm();
+        }}
+      >
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>{t("crm.newLead")}</DialogTitle>
+            <DialogTitle>{editingId != null ? t("crm.editLead") : t("crm.newLead")}</DialogTitle>
           </DialogHeader>
           <div className="space-y-3 py-2">
             <div>
@@ -252,24 +324,21 @@ export default function FirmLeadsPage() {
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setCreateOpen(false)}>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setDialogOpen(false);
+                resetForm();
+              }}
+            >
               {t("common.cancel")}
             </Button>
             <Button
               className="bg-[var(--color-navy)] text-white"
-              disabled={!form.contactName.trim() || create.isPending}
-              onClick={() =>
-                create.mutate({
-                  contactName: form.contactName.trim(),
-                  email: form.email || null,
-                  phone: form.phone || null,
-                  company: form.company || null,
-                  source: form.source || null,
-                  notes: form.notes || null,
-                })
-              }
+              disabled={!form.contactName.trim() || saving}
+              onClick={submitLead}
             >
-              {t("common.create")}
+              {editingId != null ? t("common.save") : t("common.create")}
             </Button>
           </DialogFooter>
         </DialogContent>
