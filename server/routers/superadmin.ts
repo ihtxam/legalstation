@@ -459,30 +459,93 @@ export const superadminRouter = router({
     .input(
       z.object({
         planId: z.number(),
-        name: z.string().optional(),
-        description: z.string().optional(),
+        name: z.string().min(1).optional(),
+        description: z.string().optional().nullable(),
         maxUsers: z.number().int().positive().optional(),
         monthlyPrice: z.number().nonnegative().optional(),
         yearlyPrice: z.number().nonnegative().optional(),
         features: z.array(z.string()).optional(),
+        sortOrder: z.number().int().optional(),
         isActive: z.boolean().optional(),
       })
     )
-    .mutation(async ({ input }) => {
+    .mutation(async ({ ctx, input }) => {
       const db = await getDb();
       if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+
+      const [existing] = await db
+        .select()
+        .from(subscriptionPlans)
+        .where(eq(subscriptionPlans.id, input.planId))
+        .limit(1);
+      if (!existing) throw new TRPCError({ code: "NOT_FOUND", message: "Plan not found" });
 
       const updates: Record<string, unknown> = {};
       if (input.name !== undefined) updates.name = input.name;
       if (input.description !== undefined) updates.description = input.description;
       if (input.maxUsers !== undefined) updates.maxUsers = input.maxUsers;
-      if (input.monthlyPrice !== undefined) updates.monthlyPrice = input.monthlyPrice.toString();
-      if (input.yearlyPrice !== undefined) updates.yearlyPrice = input.yearlyPrice.toString();
+      if (input.monthlyPrice !== undefined) updates.monthlyPrice = input.monthlyPrice.toFixed(2);
+      if (input.yearlyPrice !== undefined) updates.yearlyPrice = input.yearlyPrice.toFixed(2);
       if (input.features !== undefined) updates.features = JSON.stringify(input.features);
+      if (input.sortOrder !== undefined) updates.sortOrder = input.sortOrder;
       if (input.isActive !== undefined) updates.isActive = input.isActive;
 
       await db.update(subscriptionPlans).set(updates).where(eq(subscriptionPlans.id, input.planId));
+      await audit(ctx.user.id, "update_plan", "plan", input.planId, updates);
       return { success: true };
+    }),
+
+  /** Superadmin opens a firm workspace as that firm's admin user. */
+  impersonateFirmAdmin: superadminProcedure
+    .input(z.object({ firmId: z.number() }))
+    .mutation(async ({ ctx, input }) => {
+      const db = await getDb();
+      if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+
+      const [firm] = await db.select().from(firms).where(eq(firms.id, input.firmId)).limit(1);
+      if (!firm) throw new TRPCError({ code: "NOT_FOUND", message: "Firm not found" });
+
+      const adminMembers = await db
+        .select()
+        .from(firmMembers)
+        .where(and(eq(firmMembers.firmId, input.firmId), eq(firmMembers.firmRole, "admin")));
+
+      let targetUser: (typeof users.$inferSelect) | null = null;
+      for (const member of adminMembers) {
+        const [u] = await db.select().from(users).where(eq(users.id, member.userId)).limit(1);
+        if (u && u.role !== "superadmin") {
+          targetUser = u;
+          break;
+        }
+      }
+
+      if (!targetUser) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "No firm admin user found for this firm",
+        });
+      }
+
+      const { startImpersonationSession, getSessionCookieToken } = await import("../impersonation");
+
+      await startImpersonationSession(ctx.req, ctx.res, {
+        targetUser,
+        currentSessionToken: getSessionCookieToken(ctx.req),
+      });
+
+      await audit(ctx.user.id, "impersonate_firm_admin", "firm", firm.id, {
+        targetUserId: targetUser.id,
+        targetEmail: targetUser.email,
+      });
+
+      const onboardingDone = Boolean(firm.onboardingCompletedAt);
+      return {
+        success: true as const,
+        redirectTo: onboardingDone ? "/dashboard" : "/firm-onboarding",
+        firmName: firm.name,
+        adminEmail: targetUser.email,
+        adminName: targetUser.name,
+      };
     }),
 
   /**

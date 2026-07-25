@@ -42,6 +42,8 @@ import {
   Save,
   AlertTriangle,
   LogOut,
+  LogIn,
+  Pencil,
 } from "lucide-react";
 
 type TabId = "overview" | "firms" | "plans" | "users" | "leads" | "settings" | "audit";
@@ -53,6 +55,17 @@ export default function SuperadminDashboard() {
   const [tab, setTab] = useState<TabId>("overview");
   const [showCreateFirm, setShowCreateFirm] = useState(false);
   const [showCreatePlan, setShowCreatePlan] = useState(false);
+  const [editingPlan, setEditingPlan] = useState<{
+    id: number;
+    name: string;
+    description: string;
+    maxUsers: number;
+    monthlyPrice: string;
+    yearlyPrice: string;
+    features: string;
+    sortOrder: number;
+    isActive: boolean;
+  } | null>(null);
   const [showEditFirm, setShowEditFirm] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [filterStatus, setFilterStatus] = useState("all");
@@ -242,7 +255,17 @@ export default function SuperadminDashboard() {
   const updatePlanMutation = trpc.superadmin.updatePlan.useMutation({
     onSuccess: () => {
       toast.success("Plan updated");
+      setEditingPlan(null);
       refetchPlans();
+    },
+    onError: (err) => toast.error(err.message),
+  });
+  const utils = trpc.useUtils();
+  const impersonateMutation = trpc.superadmin.impersonateFirmAdmin.useMutation({
+    onSuccess: async (data) => {
+      toast.success(`Logged in as admin of ${data.firmName}`);
+      await utils.invalidate();
+      navigate(data.redirectTo || "/dashboard");
     },
     onError: (err) => toast.error(err.message),
   });
@@ -337,6 +360,36 @@ export default function SuperadminDashboard() {
       sendCredentials,
       defaultCurrency: ((formData.get("defaultCurrency") as string) || "CHF").toUpperCase(),
       defaultVatRate: parseFloat((formData.get("defaultVatRate") as string) || "8.1"),
+    });
+  };
+
+  const openEditPlan = (plan: {
+    id: number;
+    name: string;
+    description: string | null;
+    maxUsers: number;
+    monthlyPrice: string | number;
+    yearlyPrice: string | number;
+    features: string | null;
+    sortOrder: number;
+    isActive: boolean;
+  }) => {
+    let featuresText = "";
+    try {
+      featuresText = plan.features ? (JSON.parse(plan.features) as string[]).join(", ") : "";
+    } catch {
+      featuresText = plan.features || "";
+    }
+    setEditingPlan({
+      id: plan.id,
+      name: plan.name,
+      description: plan.description || "",
+      maxUsers: plan.maxUsers,
+      monthlyPrice: String(plan.monthlyPrice),
+      yearlyPrice: String(plan.yearlyPrice),
+      features: featuresText,
+      sortOrder: plan.sortOrder ?? 0,
+      isActive: plan.isActive,
     });
   };
 
@@ -800,6 +853,14 @@ export default function SuperadminDashboard() {
                         <Button
                           size="sm"
                           variant="outline"
+                          onClick={() => impersonateMutation.mutate({ firmId: firm.id })}
+                          disabled={impersonateMutation.isPending}
+                        >
+                          <LogIn className="h-3.5 w-3.5 mr-1" /> Login as admin
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
                           onClick={() => sendCredentialsMutation.mutate({ firmId: firm.id })}
                           disabled={sendCredentialsMutation.isPending}
                         >
@@ -857,6 +918,17 @@ export default function SuperadminDashboard() {
                   <p className="py-8 text-center text-muted-foreground">Loading…</p>
                 ) : (
                   <div className="space-y-4 text-sm">
+                    <Button
+                      className="w-full"
+                      onClick={() => {
+                        if (!selectedFirmId) return;
+                        impersonateMutation.mutate({ firmId: selectedFirmId });
+                      }}
+                      disabled={impersonateMutation.isPending}
+                    >
+                      <LogIn className="h-4 w-4 mr-1.5" />
+                      {impersonateMutation.isPending ? "Opening…" : "Login as firm admin"}
+                    </Button>
                     <div className="grid grid-cols-2 gap-3">
                       <div>
                         <p className="text-muted-foreground">Plan</p>
@@ -1107,20 +1179,159 @@ export default function SuperadminDashboard() {
                           ))}
                         </ul>
                       )}
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() =>
-                          updatePlanMutation.mutate({ planId: plan.id, isActive: !plan.isActive })
-                        }
-                      >
-                        {plan.isActive ? "Deactivate" : "Activate"}
-                      </Button>
+                      <div className="flex flex-wrap gap-2 pt-1">
+                        <Button size="sm" variant="outline" onClick={() => openEditPlan(plan)}>
+                          <Pencil className="h-3.5 w-3.5 mr-1" /> Edit
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() =>
+                            updatePlanMutation.mutate({ planId: plan.id, isActive: !plan.isActive })
+                          }
+                        >
+                          {plan.isActive ? "Deactivate" : "Activate"}
+                        </Button>
+                      </div>
                     </CardContent>
                   </Card>
                 ))}
               </div>
             )}
+
+            <Dialog open={!!editingPlan} onOpenChange={(o) => !o && setEditingPlan(null)}>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Edit plan</DialogTitle>
+                  <DialogDescription>Update pricing, limits, and feature list</DialogDescription>
+                </DialogHeader>
+                {editingPlan && (
+                  <form
+                    className="space-y-3"
+                    onSubmit={(e) => {
+                      e.preventDefault();
+                      updatePlanMutation.mutate({
+                        planId: editingPlan.id,
+                        name: editingPlan.name.trim(),
+                        description: editingPlan.description.trim() || null,
+                        maxUsers: editingPlan.maxUsers,
+                        monthlyPrice: parseFloat(editingPlan.monthlyPrice) || 0,
+                        yearlyPrice: parseFloat(editingPlan.yearlyPrice) || 0,
+                        sortOrder: editingPlan.sortOrder,
+                        isActive: editingPlan.isActive,
+                        features: editingPlan.features
+                          .split(",")
+                          .map((f) => f.trim())
+                          .filter(Boolean),
+                      });
+                    }}
+                  >
+                    <div>
+                      <Label>Name</Label>
+                      <Input
+                        className="mt-1"
+                        required
+                        value={editingPlan.name}
+                        onChange={(e) => setEditingPlan({ ...editingPlan, name: e.target.value })}
+                      />
+                    </div>
+                    <div>
+                      <Label>Description</Label>
+                      <Input
+                        className="mt-1"
+                        value={editingPlan.description}
+                        onChange={(e) =>
+                          setEditingPlan({ ...editingPlan, description: e.target.value })
+                        }
+                      />
+                    </div>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <Label>Max users</Label>
+                        <Input
+                          className="mt-1"
+                          type="number"
+                          min={1}
+                          required
+                          value={editingPlan.maxUsers}
+                          onChange={(e) =>
+                            setEditingPlan({
+                              ...editingPlan,
+                              maxUsers: parseInt(e.target.value, 10) || 1,
+                            })
+                          }
+                        />
+                      </div>
+                      <div>
+                        <Label>Sort order</Label>
+                        <Input
+                          className="mt-1"
+                          type="number"
+                          value={editingPlan.sortOrder}
+                          onChange={(e) =>
+                            setEditingPlan({
+                              ...editingPlan,
+                              sortOrder: parseInt(e.target.value, 10) || 0,
+                            })
+                          }
+                        />
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <Label>Monthly CHF</Label>
+                        <Input
+                          className="mt-1"
+                          type="number"
+                          step="0.01"
+                          required
+                          value={editingPlan.monthlyPrice}
+                          onChange={(e) =>
+                            setEditingPlan({ ...editingPlan, monthlyPrice: e.target.value })
+                          }
+                        />
+                      </div>
+                      <div>
+                        <Label>Yearly CHF</Label>
+                        <Input
+                          className="mt-1"
+                          type="number"
+                          step="0.01"
+                          required
+                          value={editingPlan.yearlyPrice}
+                          onChange={(e) =>
+                            setEditingPlan({ ...editingPlan, yearlyPrice: e.target.value })
+                          }
+                        />
+                      </div>
+                    </div>
+                    <div>
+                      <Label>Features (comma-separated)</Label>
+                      <Textarea
+                        className="mt-1"
+                        value={editingPlan.features}
+                        onChange={(e) =>
+                          setEditingPlan({ ...editingPlan, features: e.target.value })
+                        }
+                      />
+                    </div>
+                    <label className="flex items-center gap-2 text-sm">
+                      <input
+                        type="checkbox"
+                        checked={editingPlan.isActive}
+                        onChange={(e) =>
+                          setEditingPlan({ ...editingPlan, isActive: e.target.checked })
+                        }
+                      />
+                      Active plan
+                    </label>
+                    <Button type="submit" className="w-full" disabled={updatePlanMutation.isPending}>
+                      {updatePlanMutation.isPending ? "Saving…" : "Save plan"}
+                    </Button>
+                  </form>
+                )}
+              </DialogContent>
+            </Dialog>
           </TabsContent>
 
           {/* ─── Users ────────────────────────────────────────────── */}

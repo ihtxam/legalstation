@@ -1,10 +1,18 @@
-import { COOKIE_NAME } from "@shared/const";
+import { COOKIE_NAME, IMPERSONATOR_COOKIE } from "@shared/const";
 import { z } from "zod";
 import { TRPCError } from "@trpc/server";
+import { eq } from "drizzle-orm";
 import { invoicePdfRouter } from "./routers/invoicePdfRouter";
 import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
 import { publicProcedure, protectedProcedure, router } from "./_core/trpc";
+import { getDb, getFirmMemberByUserId } from "./db";
+import { firms } from "../drizzle/schema";
+import {
+  getImpersonatorSessionToken,
+  stopImpersonationSession,
+} from "./impersonation";
+import { sdk } from "./_core/sdk";
 import { firmRouter } from "./routers/firm";
 import { clientsRouter } from "./routers/clients";
 import { casesRouter } from "./routers/cases";
@@ -37,7 +45,7 @@ export const appRouter = router({
   system: systemRouter,
   deployment: deploymentRouter,
   auth: router({
-    me: publicProcedure.query(({ ctx }) => {
+    me: publicProcedure.query(async ({ ctx }) => {
       if (!ctx.user) return null;
       const rawCookie = ctx.req.headers.cookie || "";
       const cookie = rawCookie
@@ -48,7 +56,41 @@ export const appRouter = router({
         .slice(1)
         .join("=");
       const totpEnabled = Boolean(ctx.user.totpEnabled);
-      const requires2fa = totpEnabled && !verifyTwoFactorOk(cookie, ctx.user.id);
+
+      let impersonation: {
+        active: true;
+        firmId: number;
+        firmName: string;
+        adminEmail: string | null;
+        adminName: string | null;
+      } | null = null;
+
+      const impersonatorToken = getImpersonatorSessionToken(ctx.req);
+      if (impersonatorToken) {
+        const original = await sdk.verifySession(impersonatorToken);
+        if (original) {
+          const member = await getFirmMemberByUserId(ctx.user.id);
+          if (member) {
+            const db = await getDb();
+            const [firm] = db
+              ? await db.select().from(firms).where(eq(firms.id, member.firmId)).limit(1)
+              : [];
+            if (firm) {
+              impersonation = {
+                active: true,
+                firmId: firm.id,
+                firmName: firm.name,
+                adminEmail: ctx.user.email,
+                adminName: ctx.user.name,
+              };
+            }
+          }
+        }
+      }
+
+      // Impersonation bypasses 2FA and forced password change for the target account
+      const requires2fa =
+        !impersonation && totpEnabled && !verifyTwoFactorOk(cookie, ctx.user.id);
       return {
         id: ctx.user.id,
         openId: ctx.user.openId,
@@ -57,17 +99,29 @@ export const appRouter = router({
         loginMethod: ctx.user.loginMethod,
         role: ctx.user.role,
         preferredLocale: ctx.user.preferredLocale || "en",
-        mustChangePassword: Boolean(ctx.user.mustChangePassword),
+        mustChangePassword: impersonation ? false : Boolean(ctx.user.mustChangePassword),
         totpEnabled,
         requires2fa,
+        impersonation,
         createdAt: ctx.user.createdAt,
         lastSignedIn: ctx.user.lastSignedIn,
       };
+    }),
+    stopImpersonation: protectedProcedure.mutation(async ({ ctx }) => {
+      const result = await stopImpersonationSession(ctx.req, ctx.res);
+      if (!result.restored) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "No active impersonation session",
+        });
+      }
+      return { success: true as const, redirectTo: "/superadmin" as const };
     }),
     logout: publicProcedure.mutation(({ ctx }) => {
       const cookieOptions = getSessionCookieOptions(ctx.req);
       ctx.res.clearCookie(COOKIE_NAME, { ...cookieOptions, maxAge: -1 });
       ctx.res.clearCookie(TWO_FACTOR_COOKIE, { ...cookieOptions, maxAge: -1 });
+      ctx.res.clearCookie(IMPERSONATOR_COOKIE, { ...cookieOptions, maxAge: -1 });
       return { success: true } as const;
     }),
     setupTotp: protectedProcedure.mutation(async ({ ctx }) => {

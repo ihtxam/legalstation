@@ -33,6 +33,7 @@ import AdminAnalyticsPage from "./pages/AdminAnalytics";
 import LoginPage from "./pages/Login";
 import PlatformLoginPage from "./pages/PlatformLogin";
 import FloatingTimer from "./components/FloatingTimer";
+import ImpersonationBanner from "./components/ImpersonationBanner";
 
 function Router() {
   const { user, refresh, loading } = useAuth();
@@ -120,6 +121,7 @@ function Router() {
 
   return (
     <>
+      <ImpersonationBanner />
       <Switch>
         <Route path="/" component={Home} />
         <Route path="/login" component={LoginPage} />
