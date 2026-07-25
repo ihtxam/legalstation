@@ -16,5 +16,7 @@ describe("password helpers", () => {
 
   it("slugifies firm names", () => {
     expect(slugifyFirmName("Müller & Partner AG")).toBe("muller-partner-ag");
+    expect(slugifyFirmName("Isha & co")).toBe("isha-co");
+    expect(slugifyFirmName("isha-&-co")).toBe("isha-co");
   });
 });

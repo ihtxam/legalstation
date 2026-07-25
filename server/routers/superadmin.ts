@@ -219,7 +219,11 @@ export const superadminRouter = router({
         .limit(1);
       if (!plan[0]) throw new TRPCError({ code: "NOT_FOUND", message: "Plan not found" });
 
-      const baseSlug = input.slug || slugifyFirmName(input.name);
+      // Always sanitize — manual slug fields may contain "&", spaces, etc.
+      const baseSlug = slugifyFirmName(input.slug || input.name);
+      if (!baseSlug) {
+        throw new TRPCError({ code: "BAD_REQUEST", message: "Could not derive a valid subdomain from the firm name" });
+      }
       if (isReservedSubdomain(baseSlug)) {
         throw new TRPCError({ code: "BAD_REQUEST", message: "This subdomain is reserved" });
       }

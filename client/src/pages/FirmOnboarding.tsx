@@ -17,6 +17,16 @@ const STEPS = [
   { id: 5, title: "Done", icon: Check },
 ];
 
+function sanitizeSlug(value: string) {
+  return value
+    .toLowerCase()
+    .normalize("NFKD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 48);
+}
+
 export default function FirmOnboardingPage() {
   const { isAuthenticated, loading } = useAuth();
   const [, navigate] = useLocation();
@@ -63,36 +73,93 @@ export default function FirmOnboardingPage() {
     setSecondaryColor(f.secondaryColor || "#c9a227");
     setCurrency(f.defaultCurrency || "CHF");
     setVatRate(String(f.defaultVatRate || "8.10"));
-    setSlug(f.slug || "");
+    setSlug(sanitizeSlug(f.slug || f.name || ""));
     setCustomDomain(f.customDomain || "");
   }, [firmData, navigate]);
 
-  if (loading || isLoading || !firmData) return null;
+  if (loading || isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center text-sm text-muted-foreground">
+        Loading…
+      </div>
+    );
+  }
+
+  if (!firmData) {
+    return (
+      <div className="min-h-screen flex items-center justify-center p-6">
+        <div className="max-w-md text-center space-y-3">
+          <h1 className="font-serif text-2xl font-semibold">No firm workspace found</h1>
+          <p className="text-muted-foreground text-sm">
+            Your account is not linked to a law firm yet. Ask the platform admin to provision your firm,
+            or go back to the dashboard.
+          </p>
+          <Button onClick={() => navigate("/dashboard")}>Go to dashboard</Button>
+        </div>
+      </div>
+    );
+  }
 
   const saveStep = async (next: number, finish = false) => {
-    await stepMut.mutateAsync({
+    const cleanSlug = sanitizeSlug(slug);
+    const payload: {
+      step: number;
+      finish?: boolean;
+      name?: string;
+      address?: string;
+      email?: string;
+      phone?: string;
+      vatNumber?: string;
+      logoUrl?: string | null;
+      primaryColor?: string;
+      secondaryColor?: string;
+      defaultCurrency?: string;
+      defaultVatRate?: number;
+      slug?: string;
+      customDomain?: string | null;
+    } = {
       step: finish ? 5 : next,
       finish,
-      name: name || undefined,
-      address,
-      email: email || undefined,
-      phone,
-      vatNumber,
-      logoUrl: logoUrl || null,
-      primaryColor,
-      secondaryColor,
-      defaultCurrency: currency,
-      defaultVatRate: parseFloat(vatRate) || 8.1,
-      slug: slug || undefined,
-      customDomain: customDomain || null,
-    });
-    await refetch();
-    if (finish) {
-      toast.success("Onboarding complete");
-      navigate("/dashboard");
-      return;
+    };
+
+    // Only send fields relevant to the current step
+    if (step === 1 || finish) {
+      payload.name = name.trim() || undefined;
+      payload.address = address;
+      payload.email = email.trim() || undefined;
+      payload.phone = phone;
+      payload.vatNumber = vatNumber;
     }
-    setStep(next);
+    if (step === 2 || finish) {
+      payload.logoUrl = logoUrl.trim() || null;
+      payload.primaryColor = primaryColor;
+      payload.secondaryColor = secondaryColor;
+    }
+    if (step === 3 || finish) {
+      payload.defaultCurrency = currency.trim().toUpperCase().slice(0, 3) || "CHF";
+      payload.defaultVatRate = parseFloat(vatRate) || 8.1;
+    }
+    if (step === 4 || finish) {
+      if (!cleanSlug) {
+        toast.error("Enter a valid subdomain (letters, numbers, hyphens)");
+        return;
+      }
+      payload.slug = cleanSlug;
+      payload.customDomain = customDomain.trim() || null;
+    }
+
+    try {
+      await stepMut.mutateAsync(payload);
+      await refetch();
+      if (finish) {
+        toast.success("Onboarding complete");
+        navigate("/dashboard");
+        return;
+      }
+      setStep(next);
+    } catch {
+      // toast handled by mutation onError
+    }
   };
 
   return (
@@ -207,7 +274,10 @@ export default function FirmOnboardingPage() {
               <div>
                 <Label>Subdomain</Label>
                 <div className="flex items-center gap-2 mt-1.5">
-                  <Input value={slug} onChange={(e) => setSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ""))} />
+                  <Input
+                    value={slug}
+                    onChange={(e) => setSlug(sanitizeSlug(e.target.value))}
+                  />
                   <span className="text-sm text-muted-foreground whitespace-nowrap">.your-domain</span>
                 </div>
                 <p className="text-xs text-muted-foreground mt-1">

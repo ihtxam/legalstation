@@ -139,13 +139,19 @@ export const firmRouter = router({
         phone: z.string().optional(),
         email: z.string().email().optional(),
         vatNumber: z.string().optional(),
-        logoUrl: z.string().optional().nullable(),
-        primaryColor: z.string().regex(/^#[0-9A-Fa-f]{6}$/).optional(),
-        secondaryColor: z.string().regex(/^#[0-9A-Fa-f]{6}$/).optional(),
+        logoUrl: z.string().nullable().optional(),
+        primaryColor: z
+          .string()
+          .regex(/^#[0-9A-Fa-f]{6}$/, "Primary color must be a hex value like #001f3f")
+          .optional(),
+        secondaryColor: z
+          .string()
+          .regex(/^#[0-9A-Fa-f]{6}$/, "Accent color must be a hex value like #c9a227")
+          .optional(),
         defaultCurrency: z.string().length(3).optional(),
         defaultVatRate: z.number().min(0).max(100).optional(),
-        slug: z.string().min(2).max(50).regex(/^[a-z0-9-]+$/).optional(),
-        customDomain: z.string().max(255).optional().nullable(),
+        slug: z.string().max(50).optional(),
+        customDomain: z.string().max(255).nullable().optional(),
         finish: z.boolean().optional(),
       })
     )
@@ -153,31 +159,41 @@ export const firmRouter = router({
       const member = await getFirmMemberByUserId(ctx.user.id);
       if (!member || member.firmRole !== "admin") throw new TRPCError({ code: "FORBIDDEN" });
 
+      const { slugifyFirmName } = await import("../auth/password");
       const updates: Record<string, unknown> = {
         onboardingStep: input.step,
       };
       if (input.name) updates.name = input.name;
       if (input.address !== undefined) updates.address = input.address;
       if (input.phone !== undefined) updates.phone = input.phone;
-      if (input.email !== undefined) updates.email = input.email;
+      if (input.email) updates.email = input.email;
       if (input.vatNumber !== undefined) updates.vatNumber = input.vatNumber;
-      if (input.logoUrl !== undefined) updates.logoUrl = input.logoUrl;
+      if (input.logoUrl !== undefined) updates.logoUrl = input.logoUrl || null;
       if (input.primaryColor) updates.primaryColor = input.primaryColor;
       if (input.secondaryColor) updates.secondaryColor = input.secondaryColor;
       if (input.defaultCurrency) updates.defaultCurrency = input.defaultCurrency.toUpperCase();
       if (input.defaultVatRate != null) updates.defaultVatRate = input.defaultVatRate.toFixed(2);
-      if (input.customDomain !== undefined) updates.customDomain = input.customDomain;
+      if (input.customDomain !== undefined) {
+        updates.customDomain = input.customDomain?.trim() ? input.customDomain.trim() : null;
+      }
 
-      if (input.slug) {
+      if (input.slug !== undefined && input.slug.trim()) {
+        const cleanSlug = slugifyFirmName(input.slug);
+        if (!cleanSlug || cleanSlug.length < 2) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "Subdomain must use letters, numbers, and hyphens only",
+          });
+        }
         const { isReservedSubdomain } = await import("../tenant");
-        if (isReservedSubdomain(input.slug)) {
+        if (isReservedSubdomain(cleanSlug)) {
           throw new TRPCError({ code: "BAD_REQUEST", message: "This subdomain is reserved" });
         }
-        const existing = await getFirmBySlug(input.slug);
+        const existing = await getFirmBySlug(cleanSlug);
         if (existing && existing.id !== member.firmId) {
           throw new TRPCError({ code: "CONFLICT", message: "Subdomain already taken" });
         }
-        updates.slug = input.slug;
+        updates.slug = cleanSlug;
         updates.subdomainStatus = "pending";
       }
 
@@ -187,7 +203,15 @@ export const firmRouter = router({
         if (!updates.subdomainStatus) updates.subdomainStatus = "active";
       }
 
-      await updateFirm(member.firmId, updates as any);
+      try {
+        await updateFirm(member.firmId, updates as any);
+      } catch (err: any) {
+        console.error("[Firm] onboarding update failed:", err);
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: err?.message || "Could not save onboarding step",
+        });
+      }
       return { success: true, step: input.step, completed: Boolean(input.finish) };
     }),
 
