@@ -319,14 +319,16 @@ export const firmRouter = router({
       let emailSent = false;
       let emailError: string | undefined;
       try {
+        const locale = ctx.user.preferredLocale || "en";
         if (input.role === "client") {
-          await sendClientInviteEmail(input.email, firm?.name || "Your Firm", inviteUrl);
+          await sendClientInviteEmail(input.email, firm?.name || "Your Firm", inviteUrl, locale);
         } else {
           await sendFirmInviteEmail(
             input.email,
             firm?.name || "Your Firm",
             inviteUrl,
-            ctx.user.name || "Your colleague"
+            ctx.user.name || "Your colleague",
+            locale
           );
         }
         emailSent = true;

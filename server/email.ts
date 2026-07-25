@@ -1,5 +1,6 @@
 import axios from "axios";
 import { ENV } from "./_core/env";
+import { getInviteEmailStrings } from "./emailI18n";
 
 const BREVO_API_URL = "https://api.brevo.com/v3";
 
@@ -66,23 +67,25 @@ export async function sendFirmInviteEmail(
   inviteeEmail: string,
   firmName: string,
   inviteUrl: string,
-  inviterName: string
+  inviterName: string,
+  locale?: string | null
 ): Promise<void> {
+  const s = getInviteEmailStrings(locale);
   const htmlContent = `
     <html>
       <body style="font-family: Inter, sans-serif; color: #1a1a1a;">
         <div style="max-width: 600px; margin: 0 auto; padding: 20px;">
-          <h2 style="color: #001f3f; margin-bottom: 20px;">Join ${firmName} on LexFlow</h2>
-          <p>Hi,</p>
-          <p>${inviterName} has invited you to join <strong>${firmName}</strong> on LexFlow, a modern legal practice management platform.</p>
+          <h2 style="color: #001f3f; margin-bottom: 20px;">${s.firmHeading(firmName)}</h2>
+          <p>${s.greeting}</p>
+          <p>${s.firmBody(inviterName, firmName)}</p>
           <p style="margin: 30px 0;">
             <a href="${inviteUrl}" style="background-color: #001f3f; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block;">
-              Create account &amp; join
+              ${s.firmCta}
             </a>
           </p>
-          <p style="color: #666; font-size: 14px;">This invitation expires in 7 days. If you have questions, contact your firm administrator.</p>
+          <p style="color: #666; font-size: 14px;">${s.firmExpiry}</p>
           <hr style="border: none; border-top: 1px solid #ddd; margin: 30px 0;" />
-          <p style="color: #999; font-size: 12px;">LexFlow — Swiss Legal Practice Management</p>
+          <p style="color: #999; font-size: 12px;">${s.firmFooter}</p>
         </div>
       </body>
     </html>
@@ -90,7 +93,7 @@ export async function sendFirmInviteEmail(
 
   await sendEmail({
     to: [{ email: inviteeEmail }],
-    subject: `Join ${firmName} on LexFlow`,
+    subject: s.firmSubject(firmName),
     htmlContent,
   });
 }
@@ -98,24 +101,26 @@ export async function sendFirmInviteEmail(
 export async function sendClientInviteEmail(
   clientEmail: string,
   firmName: string,
-  inviteUrl: string
+  inviteUrl: string,
+  locale?: string | null
 ): Promise<void> {
+  const s = getInviteEmailStrings(locale);
   const htmlContent = `
     <html>
       <body style="font-family: Inter, sans-serif; color: #1a1a1a;">
         <div style="max-width: 600px; margin: 0 auto; padding: 20px;">
-          <h2 style="color: #001f3f; margin-bottom: 20px;">Welcome to ${firmName}'s LexFlow Portal</h2>
-          <p>Hi,</p>
-          <p><strong>${firmName}</strong> has invited you to access your case information and documents through LexFlow, a secure legal practice management platform.</p>
+          <h2 style="color: #001f3f; margin-bottom: 20px;">${s.clientHeading(firmName)}</h2>
+          <p>${s.greeting}</p>
+          <p>${s.clientBody(firmName)}</p>
           <p style="margin: 30px 0;">
             <a href="${inviteUrl}" style="background-color: #001f3f; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block;">
-              Get Started
+              ${s.clientCta}
             </a>
           </p>
-          <p style="color: #666; font-size: 14px;">You'll be able to view your cases, upload documents, and communicate securely with your legal team.</p>
-          <p style="color: #666; font-size: 14px;">This invitation expires in 7 days.</p>
+          <p style="color: #666; font-size: 14px;">${s.clientHint}</p>
+          <p style="color: #666; font-size: 14px;">${s.clientExpiry}</p>
           <hr style="border: none; border-top: 1px solid #ddd; margin: 30px 0;" />
-          <p style="color: #999; font-size: 12px;">LexFlow — Swiss Legal Practice Management</p>
+          <p style="color: #999; font-size: 12px;">${s.clientFooter}</p>
         </div>
       </body>
     </html>
@@ -123,7 +128,7 @@ export async function sendClientInviteEmail(
 
   await sendEmail({
     to: [{ email: clientEmail }],
-    subject: `Access your case information on LexFlow`,
+    subject: s.clientSubject,
     htmlContent,
   });
 }

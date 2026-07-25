@@ -8,13 +8,14 @@ import { Building2, Palette, Coins, Globe, Check, ArrowRight, ArrowLeft } from "
 import { useEffect, useState } from "react";
 import { useLocation } from "wouter";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
 
-const STEPS = [
-  { id: 1, title: "Firm profile", icon: Building2 },
-  { id: 2, title: "Branding", icon: Palette },
-  { id: 3, title: "Currency & tax", icon: Coins },
-  { id: 4, title: "Subdomain", icon: Globe },
-  { id: 5, title: "Done", icon: Check },
+const STEP_META = [
+  { id: 1, titleKey: "onboarding.stepFirmProfile" as const, icon: Building2 },
+  { id: 2, titleKey: "onboarding.stepBranding" as const, icon: Palette },
+  { id: 3, titleKey: "onboarding.stepCurrencyTax" as const, icon: Coins },
+  { id: 4, titleKey: "onboarding.stepSubdomain" as const, icon: Globe },
+  { id: 5, titleKey: "onboarding.stepDone" as const, icon: Check },
 ];
 
 function sanitizeSlug(value: string) {
@@ -28,6 +29,7 @@ function sanitizeSlug(value: string) {
 }
 
 export default function FirmOnboardingPage() {
+  const { t } = useTranslation();
   const { isAuthenticated, loading } = useAuth();
   const [, navigate] = useLocation();
   const { data: firmData, isLoading, refetch } = trpc.firm.myFirm.useQuery(undefined, {
@@ -80,7 +82,7 @@ export default function FirmOnboardingPage() {
   if (loading || isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center text-sm text-muted-foreground">
-        Loading…
+        {t("onboarding.loading")}
       </div>
     );
   }
@@ -89,12 +91,9 @@ export default function FirmOnboardingPage() {
     return (
       <div className="min-h-screen flex items-center justify-center p-6">
         <div className="max-w-md text-center space-y-3">
-          <h1 className="font-serif text-2xl font-semibold">No firm workspace found</h1>
-          <p className="text-muted-foreground text-sm">
-            Your account is not linked to a law firm yet. Ask the platform admin to provision your firm,
-            or go back to the dashboard.
-          </p>
-          <Button onClick={() => navigate("/dashboard")}>Go to dashboard</Button>
+          <h1 className="font-serif text-2xl font-semibold">{t("onboarding.noFirmTitle")}</h1>
+          <p className="text-muted-foreground text-sm">{t("onboarding.noFirmDesc")}</p>
+          <Button onClick={() => navigate("/dashboard")}>{t("onboarding.goDashboard")}</Button>
         </div>
       </div>
     );
@@ -122,7 +121,6 @@ export default function FirmOnboardingPage() {
       finish,
     };
 
-    // Only send fields relevant to the current step
     if (step === 1 || finish) {
       payload.name = name.trim() || undefined;
       payload.address = address;
@@ -141,7 +139,7 @@ export default function FirmOnboardingPage() {
     }
     if (step === 4 || finish) {
       if (!cleanSlug) {
-        toast.error("Enter a valid subdomain (letters, numbers, hyphens)");
+        toast.error(t("onboarding.invalidSlug"));
         return;
       }
       payload.slug = cleanSlug;
@@ -152,7 +150,7 @@ export default function FirmOnboardingPage() {
       await stepMut.mutateAsync(payload);
       await refetch();
       if (finish) {
-        toast.success("Onboarding complete");
+        toast.success(t("onboarding.complete"));
         navigate("/dashboard");
         return;
       }
@@ -166,14 +164,14 @@ export default function FirmOnboardingPage() {
     <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white">
       <div className="max-w-2xl mx-auto px-6 py-10">
         <div className="mb-8">
-          <h1 className="font-serif text-3xl font-semibold text-foreground">Welcome to LexFlow</h1>
+          <h1 className="font-serif text-3xl font-semibold text-foreground">{t("onboarding.welcome")}</h1>
           <p className="text-muted-foreground mt-1">
-            Set up {firmData.firm.name} — branding, billing defaults, and your login subdomain.
+            {t("onboarding.welcomeSubtitle", { firm: firmData.firm.name })}
           </p>
         </div>
 
         <div className="flex gap-2 mb-8 flex-wrap">
-          {STEPS.map((s) => (
+          {STEP_META.map((s) => (
             <div
               key={s.id}
               className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium border ${
@@ -185,7 +183,7 @@ export default function FirmOnboardingPage() {
               }`}
             >
               <s.icon className="w-3.5 h-3.5" />
-              {s.title}
+              {t(s.titleKey)}
             </div>
           ))}
         </div>
@@ -194,25 +192,25 @@ export default function FirmOnboardingPage() {
           {step === 1 && (
             <>
               <div>
-                <Label>Firm name</Label>
+                <Label>{t("onboarding.firmName")}</Label>
                 <Input className="mt-1.5" value={name} onChange={(e) => setName(e.target.value)} />
               </div>
               <div>
-                <Label>Address</Label>
+                <Label>{t("onboarding.address")}</Label>
                 <Input className="mt-1.5" value={address} onChange={(e) => setAddress(e.target.value)} />
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <Label>Email</Label>
+                  <Label>{t("onboarding.email")}</Label>
                   <Input className="mt-1.5" value={email} onChange={(e) => setEmail(e.target.value)} />
                 </div>
                 <div>
-                  <Label>Phone</Label>
+                  <Label>{t("onboarding.phone")}</Label>
                   <Input className="mt-1.5" value={phone} onChange={(e) => setPhone(e.target.value)} />
                 </div>
               </div>
               <div>
-                <Label>VAT / UID</Label>
+                <Label>{t("onboarding.vatUid")}</Label>
                 <Input className="mt-1.5" value={vatNumber} onChange={(e) => setVatNumber(e.target.value)} />
               </div>
             </>
@@ -221,24 +219,24 @@ export default function FirmOnboardingPage() {
           {step === 2 && (
             <>
               <div>
-                <Label>Logo URL</Label>
+                <Label>{t("onboarding.logoUrl")}</Label>
                 <Input
                   className="mt-1.5"
-                  placeholder="https://… or upload in Settings later"
+                  placeholder={t("onboarding.logoPlaceholder")}
                   value={logoUrl}
                   onChange={(e) => setLogoUrl(e.target.value)}
                 />
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <Label>Primary color</Label>
+                  <Label>{t("onboarding.primaryColor")}</Label>
                   <div className="flex gap-2 mt-1.5">
                     <Input type="color" className="w-14 p-1 h-10" value={primaryColor} onChange={(e) => setPrimaryColor(e.target.value)} />
                     <Input value={primaryColor} onChange={(e) => setPrimaryColor(e.target.value)} />
                   </div>
                 </div>
                 <div>
-                  <Label>Accent color</Label>
+                  <Label>{t("onboarding.accentColor")}</Label>
                   <div className="flex gap-2 mt-1.5">
                     <Input type="color" className="w-14 p-1 h-10" value={secondaryColor} onChange={(e) => setSecondaryColor(e.target.value)} />
                     <Input value={secondaryColor} onChange={(e) => setSecondaryColor(e.target.value)} />
@@ -249,7 +247,7 @@ export default function FirmOnboardingPage() {
                 className="rounded-lg p-4 text-white"
                 style={{ background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor})` }}
               >
-                Preview — {name || "Your firm"}
+                {t("onboarding.preview", { name: name || t("onboarding.yourFirm") })}
               </div>
             </>
           )}
@@ -257,14 +255,14 @@ export default function FirmOnboardingPage() {
           {step === 3 && (
             <>
               <div>
-                <Label>Default currency</Label>
+                <Label>{t("onboarding.defaultCurrency")}</Label>
                 <Input className="mt-1.5" maxLength={3} value={currency} onChange={(e) => setCurrency(e.target.value.toUpperCase())} />
-                <p className="text-xs text-muted-foreground mt-1">ISO code, e.g. CHF, EUR, USD</p>
+                <p className="text-xs text-muted-foreground mt-1">{t("onboarding.currencyHint")}</p>
               </div>
               <div>
-                <Label>Default VAT rate (%)</Label>
+                <Label>{t("onboarding.defaultVat")}</Label>
                 <Input className="mt-1.5" value={vatRate} onChange={(e) => setVatRate(e.target.value)} />
-                <p className="text-xs text-muted-foreground mt-1">Swiss standard MWST is currently 8.1%</p>
+                <p className="text-xs text-muted-foreground mt-1">{t("onboarding.vatHint")}</p>
               </div>
             </>
           )}
@@ -272,7 +270,7 @@ export default function FirmOnboardingPage() {
           {step === 4 && (
             <>
               <div>
-                <Label>Subdomain</Label>
+                <Label>{t("onboarding.subdomain")}</Label>
                 <div className="flex items-center gap-2 mt-1.5">
                   <Input
                     value={slug}
@@ -280,15 +278,13 @@ export default function FirmOnboardingPage() {
                   />
                   <span className="text-sm text-muted-foreground whitespace-nowrap">.your-domain</span>
                 </div>
-                <p className="text-xs text-muted-foreground mt-1">
-                  Lawyers and clients will sign in at this subdomain once DNS is configured.
-                </p>
+                <p className="text-xs text-muted-foreground mt-1">{t("onboarding.subdomainHint")}</p>
               </div>
               <div>
-                <Label>Custom domain (optional)</Label>
+                <Label>{t("onboarding.customDomain")}</Label>
                 <Input
                   className="mt-1.5"
-                  placeholder="portal.yourfirm.ch"
+                  placeholder={t("onboarding.customDomainPlaceholder")}
                   value={customDomain}
                   onChange={(e) => setCustomDomain(e.target.value)}
                 />
@@ -301,10 +297,8 @@ export default function FirmOnboardingPage() {
               <div className="inline-flex w-12 h-12 rounded-full bg-emerald-100 items-center justify-center">
                 <Check className="w-6 h-6 text-emerald-700" />
               </div>
-              <h2 className="text-xl font-semibold">You&apos;re ready</h2>
-              <p className="text-muted-foreground text-sm">
-                Finish to open your firm dashboard. You can change branding and subdomain later in Settings.
-              </p>
+              <h2 className="text-xl font-semibold">{t("onboarding.youreReady")}</h2>
+              <p className="text-muted-foreground text-sm">{t("onboarding.finishHint")}</p>
             </div>
           )}
 
@@ -314,7 +308,7 @@ export default function FirmOnboardingPage() {
               disabled={step <= 1 || stepMut.isPending}
               onClick={() => setStep((s) => Math.max(1, s - 1))}
             >
-              <ArrowLeft className="w-4 h-4 mr-1.5" /> Back
+              <ArrowLeft className="w-4 h-4 me-1.5" /> {t("onboarding.back")}
             </Button>
             {step < 5 ? (
               <Button
@@ -322,7 +316,7 @@ export default function FirmOnboardingPage() {
                 disabled={stepMut.isPending || (step === 1 && !name.trim())}
                 onClick={() => saveStep(step + 1)}
               >
-                Continue <ArrowRight className="w-4 h-4 ml-1.5" />
+                {t("onboarding.continue")} <ArrowRight className="w-4 h-4 ms-1.5" />
               </Button>
             ) : (
               <Button
@@ -330,7 +324,7 @@ export default function FirmOnboardingPage() {
                 disabled={stepMut.isPending}
                 onClick={() => saveStep(5, true)}
               >
-                Go to dashboard <ArrowRight className="w-4 h-4 ml-1.5" />
+                {t("onboarding.goDashboard")} <ArrowRight className="w-4 h-4 ms-1.5" />
               </Button>
             )}
           </div>

@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { useLocation } from "wouter";
 import { toast } from "sonner";
 import { useAuth } from "@/_core/hooks/useAuth";
+import { useTranslation } from "react-i18next";
 
 function formatClock(totalSeconds: number) {
   const h = Math.floor(totalSeconds / 3600);
@@ -14,6 +15,7 @@ function formatClock(totalSeconds: number) {
 }
 
 export default function FloatingTimer() {
+  const { t } = useTranslation();
   const { isAuthenticated, user } = useAuth();
   const [, navigate] = useLocation();
   const utils = trpc.useUtils();
@@ -36,7 +38,7 @@ export default function FloatingTimer() {
   });
   const stop = trpc.timeEntries.stopTimer.useMutation({
     onSuccess: async (r) => {
-      toast.success(`Saved ${r.durationMinutes} min`);
+      toast.success(t("timeReports.savedMin", { count: r.durationMinutes }));
       await utils.timeEntries.invalidate();
     },
     onError: (e) => toast.error(e.message),
@@ -56,7 +58,7 @@ export default function FloatingTimer() {
   if (!firmData || !timer || user?.role === "superadmin") return null;
 
   return (
-    <div className="fixed bottom-4 right-4 z-50 rounded-xl border border-border bg-card shadow-lg px-4 py-3 flex items-center gap-3 min-w-[260px]">
+    <div className="fixed bottom-4 end-4 z-50 rounded-xl border border-border bg-card shadow-lg px-4 py-3 flex items-center gap-3 min-w-[260px]">
       <div className="w-9 h-9 rounded-lg bg-[var(--color-navy)]/10 flex items-center justify-center">
         <Clock className="w-4 h-4 text-[var(--color-navy)]" />
       </div>
@@ -66,17 +68,17 @@ export default function FloatingTimer() {
           className="text-xs text-muted-foreground truncate block hover:underline"
           onClick={() => navigate(`/cases/${timer.caseId}`)}
         >
-          Case #{timer.caseId}
+          {t("timeReports.caseNumber", { id: timer.caseId })}
         </button>
         <p className="font-mono text-lg font-semibold tabular-nums">{formatClock(localSeconds)}</p>
       </div>
       <div className="flex items-center gap-1">
         {timer.isPaused ? (
-          <Button size="icon" variant="outline" className="h-8 w-8" onClick={() => resume.mutate()} title="Resume">
+          <Button size="icon" variant="outline" className="h-8 w-8" onClick={() => resume.mutate()} title={t("timeReports.titleResume")}>
             <Play className="w-3.5 h-3.5" />
           </Button>
         ) : (
-          <Button size="icon" variant="outline" className="h-8 w-8" onClick={() => pause.mutate()} title="Pause">
+          <Button size="icon" variant="outline" className="h-8 w-8" onClick={() => pause.mutate()} title={t("timeReports.titlePause")}>
             <Pause className="w-3.5 h-3.5" />
           </Button>
         )}
@@ -84,7 +86,7 @@ export default function FloatingTimer() {
           size="icon"
           className="h-8 w-8 bg-[var(--color-navy)] text-white"
           onClick={() => stop.mutate({ save: true })}
-          title="Stop & save"
+          title={t("timeReports.titleStopSave")}
         >
           <Square className="w-3.5 h-3.5" />
         </Button>

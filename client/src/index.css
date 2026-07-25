@@ -135,6 +135,23 @@
   .ease-snappy { transition-timing-function: cubic-bezier(0.23, 1, 0.32, 1); }
 }
 
+/* RTL polish */
+html[dir="rtl"] .text-left {
+  text-align: right;
+}
+html[dir="rtl"] .text-right {
+  text-align: left;
+}
+html[dir="rtl"] aside {
+  border-inline-end: 1px solid rgb(255 255 255 / 0.1);
+}
+html[dir="rtl"] aside nav {
+  padding-inline: 0.5rem;
+}
+html[dir="rtl"] aside nav .px-3 {
+  padding-inline: 0.75rem;
+}
+
 @media print {
   .no-print { display: none !important; }
   body { background: white; }

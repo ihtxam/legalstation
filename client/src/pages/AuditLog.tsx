@@ -11,8 +11,10 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Download } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 export default function AuditLogPage() {
+  const { t } = useTranslation();
   const { isAuthenticated, loading } = useAuth();
   const [from, setFrom] = useState("");
   const [to, setTo] = useState("");
@@ -39,36 +41,34 @@ export default function AuditLogPage() {
     a.download = `lexflow-audit-${new Date().toISOString().slice(0, 10)}.json`;
     a.click();
     URL.revokeObjectURL(url);
-    toast.success("Audit export downloaded");
+    toast.success(t("audit.downloaded"));
   };
 
   return (
-    <LexLayout breadcrumb={[{ label: "Audit log" }]}>
+    <LexLayout breadcrumb={[{ label: t("audit.breadcrumb") }]}>
       <div className="p-6 max-w-6xl mx-auto space-y-6">
         <div>
-          <h1 className="text-3xl font-bold">Audit log</h1>
-          <p className="text-muted-foreground mt-1">
-            Document access events for SIEM export and compliance review
-          </p>
+          <h1 className="text-3xl font-bold">{t("audit.title")}</h1>
+          <p className="text-muted-foreground mt-1">{t("audit.subtitle")}</p>
         </div>
 
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Filters</CardTitle>
-            <CardDescription>Admin-only firm-wide document audit trail</CardDescription>
+            <CardTitle className="text-base">{t("audit.filters")}</CardTitle>
+            <CardDescription>{t("audit.filtersDesc")}</CardDescription>
           </CardHeader>
           <CardContent className="flex flex-wrap gap-4 items-end">
             <div>
-              <Label>From</Label>
+              <Label>{t("audit.from")}</Label>
               <Input type="date" className="mt-1.5" value={from} onChange={(e) => setFrom(e.target.value)} />
             </div>
             <div>
-              <Label>To</Label>
+              <Label>{t("audit.to")}</Label>
               <Input type="date" className="mt-1.5" value={to} onChange={(e) => setTo(e.target.value)} />
             </div>
-            <Button variant="outline" onClick={() => void refetch()}>Apply</Button>
+            <Button variant="outline" onClick={() => void refetch()}>{t("audit.apply")}</Button>
             <Button onClick={downloadJson} disabled={!data?.events?.length}>
-              <Download className="w-4 h-4 mr-1.5" /> Export JSON
+              <Download className="w-4 h-4 me-1.5" /> {t("audit.exportJson")}
             </Button>
           </CardContent>
         </Card>
@@ -77,24 +77,24 @@ export default function AuditLogPage() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Time</TableHead>
-                <TableHead>Event</TableHead>
-                <TableHead>Document</TableHead>
-                <TableHead>Actor</TableHead>
-                <TableHead>IP</TableHead>
+                <TableHead>{t("audit.colTime")}</TableHead>
+                <TableHead>{t("audit.colEvent")}</TableHead>
+                <TableHead>{t("audit.colDocument")}</TableHead>
+                <TableHead>{t("audit.colActor")}</TableHead>
+                <TableHead>{t("audit.colIp")}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {isLoading ? (
                 <TableRow>
                   <TableCell colSpan={5} className="text-center text-muted-foreground py-8">
-                    Loading…
+                    {t("audit.loading")}
                   </TableCell>
                 </TableRow>
               ) : !data?.events?.length ? (
                 <TableRow>
                   <TableCell colSpan={5} className="text-center text-muted-foreground py-8">
-                    No audit events in this range
+                    {t("audit.empty")}
                   </TableCell>
                 </TableRow>
               ) : (
@@ -108,7 +108,7 @@ export default function AuditLogPage() {
                       {e.resource.name}
                       <span className="text-xs text-muted-foreground block">#{e.resource.id}</span>
                     </TableCell>
-                    <TableCell className="text-sm">User #{e.actor_user_id}</TableCell>
+                    <TableCell className="text-sm">{t("audit.userActor", { id: e.actor_user_id })}</TableCell>
                     <TableCell className="text-sm text-muted-foreground">{e.network.ip || "—"}</TableCell>
                   </TableRow>
                 ))

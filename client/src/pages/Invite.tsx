@@ -7,15 +7,10 @@ import { Scale, CheckCircle, AlertCircle, ArrowRight } from "lucide-react";
 import { FormEvent, type ReactNode, useEffect, useRef, useState } from "react";
 import { Link, useLocation, useParams } from "wouter";
 import { toast } from "sonner";
-
-function roleLabel(role: string) {
-  if (role === "lawyer") return "lawyer";
-  if (role === "assistant") return "assistant";
-  if (role === "client") return "client";
-  return role;
-}
+import { useTranslation } from "react-i18next";
 
 export default function InvitePage() {
+  const { t } = useTranslation();
   const { token = "" } = useParams<{ token: string }>();
   const { isAuthenticated, loading, refresh, user } = useAuth();
   const [, navigate] = useLocation();
@@ -25,6 +20,13 @@ export default function InvitePage() {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
 
+  const roleLabel = (role: string) => {
+    if (role === "lawyer") return t("invite.roleLawyer");
+    if (role === "assistant") return t("invite.roleAssistant");
+    if (role === "client") return t("invite.roleClient");
+    return role;
+  };
+
   const inviteQuery = trpc.firm.getInvite.useQuery(
     { token },
     { enabled: Boolean(token), retry: false }
@@ -32,7 +34,7 @@ export default function InvitePage() {
 
   const acceptInvite = trpc.firm.acceptInvite.useMutation({
     onSuccess: (data) => {
-      toast.success("Invitation accepted!");
+      toast.success(t("invite.accepted"));
       navigate(data.role === "client" ? "/client-portal" : "/dashboard");
     },
     onError: (e) => toast.error(e.message),
@@ -40,7 +42,7 @@ export default function InvitePage() {
 
   const registerFromInvite = trpc.firm.registerFromInvite.useMutation({
     onSuccess: async (data) => {
-      toast.success("Account created — welcome aboard!");
+      toast.success(t("invite.accountCreated"));
       await refresh();
       navigate(data.redirectTo || "/dashboard");
     },
@@ -61,11 +63,11 @@ export default function InvitePage() {
   const onCreateAccount = (e: FormEvent) => {
     e.preventDefault();
     if (password.length < 8) {
-      toast.error("Password must be at least 8 characters");
+      toast.error(t("invite.passwordTooShort"));
       return;
     }
     if (password !== confirmPassword) {
-      toast.error("Passwords do not match");
+      toast.error(t("invite.passwordMismatch"));
       return;
     }
     registerFromInvite.mutate({ token, name: name.trim(), password });
@@ -75,7 +77,7 @@ export default function InvitePage() {
     return (
       <CenteredShell>
         <AlertCircle className="w-8 h-8 text-destructive mx-auto mb-3" />
-        <p className="text-destructive">Invalid invitation link</p>
+        <p className="text-destructive">{t("invite.invalidLink")}</p>
       </CenteredShell>
     );
   }
@@ -83,7 +85,7 @@ export default function InvitePage() {
   if (inviteQuery.isLoading || loading) {
     return (
       <CenteredShell>
-        <p className="text-muted-foreground">Loading invitation…</p>
+        <p className="text-muted-foreground">{t("invite.loading")}</p>
       </CenteredShell>
     );
   }
@@ -93,9 +95,9 @@ export default function InvitePage() {
       <CenteredShell>
         <AlertCircle className="w-8 h-8 text-destructive mx-auto mb-3" />
         <p className="text-destructive mb-4">
-          {inviteQuery.error?.message || "Invitation not found"}
+          {inviteQuery.error?.message || t("invite.notFound")}
         </p>
-        <Button onClick={() => navigate("/")}>Go home</Button>
+        <Button onClick={() => navigate("/")}>{t("invite.goHome")}</Button>
       </CenteredShell>
     );
   }
@@ -107,12 +109,12 @@ export default function InvitePage() {
       <CenteredShell>
         <AlertCircle className="w-8 h-8 text-destructive mx-auto mb-3" />
         <h1 className="font-serif text-2xl font-semibold mb-2">
-          {invite.accepted ? "Invitation already used" : "Invitation expired"}
+          {invite.accepted ? t("invite.alreadyUsed") : t("invite.expired")}
         </h1>
         <p className="text-muted-foreground mb-4">
-          Ask your firm administrator to send a new invite to {invite.email}.
+          {t("invite.askAdmin", { email: invite.email })}
         </p>
-        <Button onClick={() => navigate("/login")}>Sign in</Button>
+        <Button onClick={() => navigate("/login")}>{t("invite.signIn")}</Button>
       </CenteredShell>
     );
   }
@@ -120,14 +122,18 @@ export default function InvitePage() {
   if (isAuthenticated) {
     return (
       <CenteredShell>
-        <h1 className="font-serif text-2xl font-semibold mb-2">Joining {invite.firmName}</h1>
+        <h1 className="font-serif text-2xl font-semibold mb-2">
+          {t("invite.joining", { firm: invite.firmName })}
+        </h1>
         {acceptInvite.isPending && (
-          <p className="text-muted-foreground">Accepting invitation as {user?.email}…</p>
+          <p className="text-muted-foreground">
+            {t("invite.accepting", { email: user?.email })}
+          </p>
         )}
         {acceptInvite.isSuccess && (
           <div className="flex flex-col items-center gap-3">
             <CheckCircle className="w-8 h-8 text-emerald-500" />
-            <p className="text-muted-foreground">You have joined the firm. Redirecting…</p>
+            <p className="text-muted-foreground">{t("invite.joinedRedirect")}</p>
           </div>
         )}
         {acceptInvite.isError && (
@@ -135,16 +141,16 @@ export default function InvitePage() {
             <AlertCircle className="w-8 h-8 text-destructive" />
             <p className="text-destructive text-sm">{acceptInvite.error?.message}</p>
             <p className="text-sm text-muted-foreground">
-              This invite is for <strong>{invite.email}</strong>.
+              {t("invite.inviteFor", { email: invite.email })}
               {user?.email && user.email.toLowerCase() !== invite.email.toLowerCase()
-                ? " Sign out and use that email, or create a new account."
+                ? t("invite.wrongEmail")
                 : ""}
             </p>
             <div className="flex gap-2">
               <Button variant="outline" onClick={() => navigate("/")}>
-                Go home
+                {t("invite.goHome")}
               </Button>
-              <Button onClick={() => navigate(loginHref)}>Sign in with invite email</Button>
+              <Button onClick={() => navigate(loginHref)}>{t("invite.signInInviteEmail")}</Button>
             </div>
           </div>
         )}
@@ -152,7 +158,6 @@ export default function InvitePage() {
     );
   }
 
-  // Unauthenticated: create account (default) or sign in if account already exists
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100 flex items-center justify-center p-6">
       <div className="w-full max-w-md">
@@ -161,10 +166,10 @@ export default function InvitePage() {
             <Scale className="w-6 h-6 text-white" />
           </div>
           <h1 className="font-serif text-2xl font-semibold text-foreground mb-2">
-            Join {invite.firmName}
+            {t("invite.joinFirm", { firm: invite.firmName })}
           </h1>
           <p className="text-muted-foreground text-sm">
-            You&apos;ve been invited as a <strong>{roleLabel(invite.role)}</strong>
+            {t("invite.invitedAs", { role: roleLabel(invite.role) })}
           </p>
         </div>
 
@@ -172,25 +177,24 @@ export default function InvitePage() {
           {invite.accountExists ? (
             <>
               <p className="text-sm text-muted-foreground">
-                An account already exists for <strong>{invite.email}</strong>. Sign in to accept
-                this invitation.
+                {t("invite.accountExists", { email: invite.email })}
               </p>
               <Button
                 className="w-full bg-[var(--color-navy)] text-white"
                 onClick={() => navigate(loginHref)}
               >
-                Sign in to join
-                <ArrowRight className="w-4 h-4 ml-2" />
+                {t("invite.signInToJoin")}
+                <ArrowRight className="w-4 h-4 ms-2" />
               </Button>
             </>
           ) : (
             <>
               <p className="text-sm text-muted-foreground">
-                Create your LexFlow account to join as a {roleLabel(invite.role)}.
+                {t("invite.createToJoin", { role: roleLabel(invite.role) })}
               </p>
               <form className="space-y-4" onSubmit={onCreateAccount}>
                 <div>
-                  <Label htmlFor="invite-email">Email</Label>
+                  <Label htmlFor="invite-email">{t("invite.email")}</Label>
                   <Input
                     id="invite-email"
                     className="mt-1.5"
@@ -201,7 +205,7 @@ export default function InvitePage() {
                   />
                 </div>
                 <div>
-                  <Label htmlFor="invite-name">Full name</Label>
+                  <Label htmlFor="invite-name">{t("invite.fullName")}</Label>
                   <Input
                     id="invite-name"
                     className="mt-1.5"
@@ -213,7 +217,7 @@ export default function InvitePage() {
                   />
                 </div>
                 <div>
-                  <Label htmlFor="invite-password">Password</Label>
+                  <Label htmlFor="invite-password">{t("invite.password")}</Label>
                   <Input
                     id="invite-password"
                     className="mt-1.5"
@@ -226,7 +230,7 @@ export default function InvitePage() {
                   />
                 </div>
                 <div>
-                  <Label htmlFor="invite-confirm">Confirm password</Label>
+                  <Label htmlFor="invite-confirm">{t("invite.confirmPassword")}</Label>
                   <Input
                     id="invite-confirm"
                     className="mt-1.5"
@@ -244,15 +248,15 @@ export default function InvitePage() {
                   disabled={registerFromInvite.isPending}
                 >
                   {registerFromInvite.isPending
-                    ? "Creating account…"
-                    : `Create account & join as ${roleLabel(invite.role)}`}
-                  <ArrowRight className="w-4 h-4 ml-2" />
+                    ? t("invite.creatingAccount")
+                    : t("invite.createAndJoin", { role: roleLabel(invite.role) })}
+                  <ArrowRight className="w-4 h-4 ms-2" />
                 </Button>
               </form>
               <p className="text-center text-sm text-muted-foreground pt-2">
-                Already have an account?{" "}
+                {t("invite.alreadyHaveAccount")}{" "}
                 <Link href={loginHref} className="underline hover:text-foreground">
-                  Sign in
+                  {t("invite.signIn")}
                 </Link>
               </p>
             </>

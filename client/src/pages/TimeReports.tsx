@@ -17,6 +17,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import { AlertTriangle, ChevronLeft, ChevronRight, Pause, Play, Plus, Send, Trash2 } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 function formatCHF(amount: number) {
   return new Intl.NumberFormat("de-CH", { style: "currency", currency: "CHF" }).format(amount);
@@ -46,6 +47,7 @@ function statusBadgeVariant(status: string): "default" | "secondary" | "outline"
 }
 
 export default function TimeReportsPage() {
+  const { t } = useTranslation();
   const { isAuthenticated, loading } = useAuth();
   const [, navigate] = useLocation();
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -54,20 +56,17 @@ export default function TimeReportsPage() {
   const [selectedIds, setSelectedIds] = useState<number[]>([]);
   const [activeTab, setActiveTab] = useState("entries");
 
-  // Timer state
   const [timerRunning, setTimerRunning] = useState(false);
   const [timerSeconds, setTimerSeconds] = useState(0);
   const [timerCaseId, setTimerCaseId] = useState<string>("");
   const [timerDescription, setTimerDescription] = useState("");
 
-  // Manual entry
   const [manualCaseId, setManualCaseId] = useState<string>("");
   const [manualDescription, setManualDescription] = useState("");
   const [manualMinutes, setManualMinutes] = useState("60");
   const [manualDate, setManualDate] = useState(format(new Date(), "yyyy-MM-dd"));
   const [hourlyRateInput, setHourlyRateInput] = useState("");
 
-  // Invoice from entries
   const [invoiceClientId, setInvoiceClientId] = useState<string>("");
   const [invoiceDueDate, setInvoiceDueDate] = useState(
     format(new Date(Date.now() + 30 * 86400000), "yyyy-MM-dd")
@@ -101,14 +100,18 @@ export default function TimeReportsPage() {
 
   const createEntry = trpc.timeEntries.create.useMutation({
     onSuccess: async () => {
-      toast.success("Time entry saved as draft");
+      toast.success(t("timeReports.entrySaved"));
       await utils.timeEntries.invalidate();
     },
     onError: (e) => toast.error(e.message),
   });
   const submitMany = trpc.timeEntries.submitMany.useMutation({
     onSuccess: async (r) => {
-      toast.success(`Submitted ${r.submitted} entr${r.submitted === 1 ? "y" : "ies"}`);
+      toast.success(
+        r.submitted === 1
+          ? t("timeReports.submittedOne", { count: r.submitted })
+          : t("timeReports.submittedMany", { count: r.submitted })
+      );
       setSelectedIds([]);
       await utils.timeEntries.invalidate();
     },
@@ -116,21 +119,21 @@ export default function TimeReportsPage() {
   });
   const deleteEntry = trpc.timeEntries.delete.useMutation({
     onSuccess: async () => {
-      toast.success("Entry deleted");
+      toast.success(t("timeReports.entryDeleted"));
       await utils.timeEntries.invalidate();
     },
     onError: (e) => toast.error(e.message),
   });
   const setRate = trpc.timeEntries.setHourlyRate.useMutation({
     onSuccess: async () => {
-      toast.success("Hourly rate saved — used when invoicing your time");
+      toast.success(t("timeReports.rateSaved"));
       await utils.timeEntries.invalidate();
     },
     onError: (e) => toast.error(e.message),
   });
   const createInvoice = trpc.timeEntries.createInvoiceFromEntries.useMutation({
     onSuccess: (inv) => {
-      toast.success("Draft invoice created from time entries");
+      toast.success(t("timeReports.invoiceCreated"));
       setSelectedIds([]);
       if (inv?.id) navigate(`/invoices/${inv.id}`);
     },
@@ -177,7 +180,6 @@ export default function TimeReportsPage() {
     { enabled: isAuthenticated && !!suggestCaseId && activeTab === "invoice" && !invoiceClientId }
   );
 
-  // When opening the Invoice tab, pre-select all invoiceable entries in range
   useEffect(() => {
     if (activeTab !== "invoice") return;
     if (invoiceableEntries.length === 0) return;
@@ -189,7 +191,6 @@ export default function TimeReportsPage() {
     });
   }, [activeTab, invoiceableEntries]);
 
-  // Suggest client from the case assignment on the first selected entry
   useEffect(() => {
     if (invoiceClientId || !suggestCase?.assignments) return;
     const clientAssign = suggestCase.assignments.find(
@@ -216,11 +217,11 @@ export default function TimeReportsPage() {
 
   const saveTimerEntry = () => {
     if (!timerCaseId) {
-      toast.error("Select a case for the timer");
+      toast.error(t("timeReports.selectCaseTimer"));
       return;
     }
     if (!timerDescription.trim()) {
-      toast.error("Add a description");
+      toast.error(t("timeReports.addDescription"));
       return;
     }
     const minutes = Math.max(1, Math.round(timerSeconds / 60));
@@ -238,12 +239,12 @@ export default function TimeReportsPage() {
 
   const saveManualEntry = () => {
     if (!manualCaseId) {
-      toast.error("Select a case");
+      toast.error(t("timeReports.selectCaseManual"));
       return;
     }
     createEntry.mutate({
       caseId: Number(manualCaseId),
-      description: manualDescription.trim() || "Time entry",
+      description: manualDescription.trim() || t("timeReports.defaultDescription"),
       durationMinutes: Math.max(1, parseInt(manualMinutes, 10) || 1),
       date: manualDate,
       billable: true,
@@ -266,15 +267,15 @@ export default function TimeReportsPage() {
 
   const createInvoiceFromSelection = () => {
     if (!hasHourlyRate) {
-      toast.error("Set your hourly rate (top right) before creating an invoice");
+      toast.error(t("timeReports.setRateFirst"));
       return;
     }
     if (!invoiceClientId) {
-      toast.error("Select a client for the invoice");
+      toast.error(t("timeReports.selectClientInvoice"));
       return;
     }
     if (selectedInvoiceable.length === 0) {
-      toast.error("Select at least one billable entry");
+      toast.error(t("timeReports.selectBillable"));
       return;
     }
     createInvoice.mutate({
@@ -287,20 +288,18 @@ export default function TimeReportsPage() {
   };
 
   return (
-    <LexLayout breadcrumb={[{ label: "Time Reports" }]}>
+    <LexLayout breadcrumb={[{ label: t("timeReports.breadcrumb") }]}>
       <div className="p-6 max-w-6xl mx-auto space-y-6">
         <div>
-          <h1 className="text-3xl font-bold text-foreground">Time Reports</h1>
-          <p className="text-muted-foreground mt-2">
-            1) Set your hourly rate · 2) Log time · 3) Invoice billable entries
-          </p>
+          <h1 className="text-3xl font-bold text-foreground">{t("timeReports.title")}</h1>
+          <p className="text-muted-foreground mt-2">{t("timeReports.subtitle")}</p>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
           <Card className="lg:col-span-2">
             <CardHeader>
-              <CardTitle className="text-base">Timer</CardTitle>
-              <CardDescription>Start a timer or log time manually (saved as draft)</CardDescription>
+              <CardTitle className="text-base">{t("timeReports.timer")}</CardTitle>
+              <CardDescription>{t("timeReports.timerDesc")}</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="flex items-center gap-4">
@@ -314,19 +313,19 @@ export default function TimeReportsPage() {
                   variant={timerRunning ? "secondary" : "default"}
                   onClick={() => setTimerRunning((r) => !r)}
                 >
-                  {timerRunning ? <Pause className="w-4 h-4 mr-1.5" /> : <Play className="w-4 h-4 mr-1.5" />}
-                  {timerRunning ? "Pause" : "Start"}
+                  {timerRunning ? <Pause className="w-4 h-4 me-1.5" /> : <Play className="w-4 h-4 me-1.5" />}
+                  {timerRunning ? t("timeReports.pause") : t("timeReports.start")}
                 </Button>
                 <Button variant="outline" disabled={timerSeconds < 1} onClick={saveTimerEntry}>
-                  Save entry
+                  {t("timeReports.saveEntry")}
                 </Button>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 <div>
-                  <Label>Case</Label>
+                  <Label>{t("timeReports.case")}</Label>
                   <Select value={timerCaseId} onValueChange={setTimerCaseId}>
                     <SelectTrigger className="mt-1.5">
-                      <SelectValue placeholder="Select case" />
+                      <SelectValue placeholder={t("timeReports.selectCase")} />
                     </SelectTrigger>
                     <SelectContent>
                       {(cases ?? []).map((c) => (
@@ -338,22 +337,22 @@ export default function TimeReportsPage() {
                   </Select>
                 </div>
                 <div>
-                  <Label>Description</Label>
+                  <Label>{t("timeReports.description")}</Label>
                   <Input
                     className="mt-1.5"
                     value={timerDescription}
                     onChange={(e) => setTimerDescription(e.target.value)}
-                    placeholder="What are you working on?"
+                    placeholder={t("timeReports.workingOn")}
                   />
                 </div>
               </div>
 
               <div className="border-t pt-4 grid grid-cols-1 md:grid-cols-4 gap-3">
                 <div>
-                  <Label>Case</Label>
+                  <Label>{t("timeReports.case")}</Label>
                   <Select value={manualCaseId} onValueChange={setManualCaseId}>
                     <SelectTrigger className="mt-1.5">
-                      <SelectValue placeholder="Case" />
+                      <SelectValue placeholder={t("timeReports.case")} />
                     </SelectTrigger>
                     <SelectContent>
                       {(cases ?? []).map((c) => (
@@ -365,7 +364,7 @@ export default function TimeReportsPage() {
                   </Select>
                 </div>
                 <div>
-                  <Label>Minutes</Label>
+                  <Label>{t("timeReports.minutes")}</Label>
                   <Input
                     className="mt-1.5"
                     type="number"
@@ -375,7 +374,7 @@ export default function TimeReportsPage() {
                   />
                 </div>
                 <div>
-                  <Label>Date</Label>
+                  <Label>{t("timeReports.date")}</Label>
                   <Input
                     className="mt-1.5"
                     type="date"
@@ -385,11 +384,11 @@ export default function TimeReportsPage() {
                 </div>
                 <div className="flex items-end">
                   <Button className="w-full" onClick={saveManualEntry} disabled={createEntry.isPending}>
-                    <Plus className="w-4 h-4 mr-1.5" /> Add
+                    <Plus className="w-4 h-4 me-1.5" /> {t("timeReports.add")}
                   </Button>
                 </div>
                 <div className="md:col-span-4">
-                  <Label>Description</Label>
+                  <Label>{t("timeReports.description")}</Label>
                   <Textarea
                     className="mt-1.5"
                     value={manualDescription}
@@ -404,21 +403,17 @@ export default function TimeReportsPage() {
           <Card className={!hasHourlyRate ? "border-amber-400 bg-amber-50/40" : undefined}>
             <CardHeader>
               <CardTitle className="text-base flex items-center gap-2">
-                Your hourly rate
+                {t("timeReports.hourlyRate")}
                 {!hasHourlyRate && <AlertTriangle className="w-4 h-4 text-amber-600" />}
               </CardTitle>
-              <CardDescription>
-                Set this once — invoices use it for your billable time (CHF / hour)
-              </CardDescription>
+              <CardDescription>{t("timeReports.hourlyRateDesc")}</CardDescription>
             </CardHeader>
             <CardContent className="space-y-3">
               {!hasHourlyRate && (
-                <p className="text-sm text-amber-800">
-                  Required before creating an invoice from time entries.
-                </p>
+                <p className="text-sm text-amber-800">{t("timeReports.hourlyRateRequired")}</p>
               )}
               <div>
-                <Label htmlFor="hourly-rate">CHF per hour</Label>
+                <Label htmlFor="hourly-rate">{t("timeReports.chfPerHour")}</Label>
                 <Input
                   id="hourly-rate"
                   className="mt-1.5"
@@ -427,7 +422,7 @@ export default function TimeReportsPage() {
                   step="0.01"
                   value={hourlyRateInput}
                   onChange={(e) => setHourlyRateInput(e.target.value)}
-                  placeholder="e.g. 350"
+                  placeholder={t("timeReports.ratePlaceholder")}
                 />
               </div>
               <Button
@@ -436,11 +431,11 @@ export default function TimeReportsPage() {
                 disabled={setRate.isPending || !hourlyRateInput}
                 onClick={() => setRate.mutate({ hourlyRate: parseFloat(hourlyRateInput) })}
               >
-                {hasHourlyRate ? "Update rate" : "Save hourly rate"}
+                {hasHourlyRate ? t("timeReports.updateRate") : t("timeReports.saveRate")}
               </Button>
               {hasHourlyRate && (
                 <p className="text-xs text-muted-foreground">
-                  Current: {formatCHF(Number(defaultRate))} / hour
+                  {t("timeReports.currentRate", { rate: formatCHF(Number(defaultRate)) })}
                 </p>
               )}
             </CardContent>
@@ -449,12 +444,12 @@ export default function TimeReportsPage() {
 
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Filters</CardTitle>
+            <CardTitle className="text-base">{t("timeReports.filters")}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
               <div>
-                <Label className="text-sm">Date From</Label>
+                <Label className="text-sm">{t("timeReports.dateFrom")}</Label>
                 <Input
                   type="date"
                   value={dateFrom}
@@ -463,7 +458,7 @@ export default function TimeReportsPage() {
                 />
               </div>
               <div>
-                <Label className="text-sm">Date To</Label>
+                <Label className="text-sm">{t("timeReports.dateTo")}</Label>
                 <Input
                   type="date"
                   value={dateTo}
@@ -490,34 +485,34 @@ export default function TimeReportsPage() {
           <Card>
             <CardContent className="pt-6">
               <div className="text-2xl font-bold">{summary?.totalHours?.toFixed(1) ?? "0"}</div>
-              <div className="text-xs text-muted-foreground">Total hours</div>
+              <div className="text-xs text-muted-foreground">{t("timeReports.totalHours")}</div>
             </CardContent>
           </Card>
           <Card>
             <CardContent className="pt-6">
               <div className="text-2xl font-bold">{summary?.billableHours?.toFixed(1) ?? "0"}</div>
-              <div className="text-xs text-muted-foreground">Billable hours</div>
+              <div className="text-xs text-muted-foreground">{t("timeReports.billableHours")}</div>
             </CardContent>
           </Card>
           <Card>
             <CardContent className="pt-6">
               <div className="text-2xl font-bold">{formatCHF(summary?.revenue ?? 0)}</div>
-              <div className="text-xs text-muted-foreground">Est. revenue</div>
+              <div className="text-xs text-muted-foreground">{t("timeReports.estRevenue")}</div>
             </CardContent>
           </Card>
           <Card>
             <CardContent className="pt-6">
               <div className="text-2xl font-bold">{utilizationRate}%</div>
-              <div className="text-xs text-muted-foreground">Utilization</div>
+              <div className="text-xs text-muted-foreground">{t("timeReports.utilization")}</div>
             </CardContent>
           </Card>
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab}>
           <TabsList>
-            <TabsTrigger value="entries">Entries</TabsTrigger>
+            <TabsTrigger value="entries">{t("timeReports.entries")}</TabsTrigger>
             <TabsTrigger value="invoice">
-              Create invoice
+              {t("timeReports.createInvoice")}
               {invoiceableEntries.length > 0 ? ` (${invoiceableEntries.length})` : ""}
             </TabsTrigger>
           </TabsList>
@@ -528,23 +523,21 @@ export default function TimeReportsPage() {
                 disabled={selectedIds.length === 0 || submitMany.isPending}
                 onClick={() => submitMany.mutate({ ids: selectedIds })}
               >
-                <Send className="w-4 h-4 mr-1.5" /> Submit selected
+                <Send className="w-4 h-4 me-1.5" /> {t("timeReports.submitSelected")}
               </Button>
-              <p className="text-sm text-muted-foreground">
-                Optional: mark drafts as submitted. Or go to Create invoice — drafts can be billed directly.
-              </p>
+              <p className="text-sm text-muted-foreground">{t("timeReports.submitHint")}</p>
             </div>
             <div className="border rounded-lg overflow-hidden">
               <Table>
                 <TableHeader>
                   <TableRow>
                     <TableHead className="w-10" />
-                    <TableHead>Date</TableHead>
-                    <TableHead>Case</TableHead>
-                    <TableHead>Description</TableHead>
-                    <TableHead>Duration</TableHead>
-                    <TableHead>Amount</TableHead>
-                    <TableHead>Status</TableHead>
+                    <TableHead>{t("timeReports.colDate")}</TableHead>
+                    <TableHead>{t("timeReports.colCase")}</TableHead>
+                    <TableHead>{t("timeReports.colDescription")}</TableHead>
+                    <TableHead>{t("timeReports.colDuration")}</TableHead>
+                    <TableHead>{t("timeReports.colAmount")}</TableHead>
+                    <TableHead>{t("timeReports.colStatus")}</TableHead>
                     <TableHead className="w-12" />
                   </TableRow>
                 </TableHeader>
@@ -552,7 +545,7 @@ export default function TimeReportsPage() {
                   {entries.length === 0 ? (
                     <TableRow>
                       <TableCell colSpan={8} className="text-center text-muted-foreground py-8">
-                        No time entries in this date range. Log time above, or widen the month filter.
+                        {t("timeReports.emptyEntries")}
                       </TableCell>
                     </TableRow>
                   ) : (
@@ -600,31 +593,25 @@ export default function TimeReportsPage() {
           <TabsContent value="invoice" className="space-y-4">
             <Card>
               <CardHeader>
-                <CardTitle className="text-base">Create invoice from time entries</CardTitle>
-                <CardDescription>
-                  Select billable drafts or submitted entries below, choose a client, then create a draft invoice.
-                  Drafts are submitted automatically when invoiced.
-                </CardDescription>
+                <CardTitle className="text-base">{t("timeReports.createInvoiceTitle")}</CardTitle>
+                <CardDescription>{t("timeReports.createInvoiceDesc")}</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 {!hasHourlyRate && (
                   <div className="flex items-start gap-2 rounded-md border border-amber-300 bg-amber-50 px-3 py-2 text-sm text-amber-900">
                     <AlertTriangle className="w-4 h-4 mt-0.5 shrink-0" />
-                    <div>
-                      Set <strong>Your hourly rate</strong> (card above) before invoicing. Without it, amounts cannot be calculated.
-                    </div>
+                    <div>{t("timeReports.setRateBeforeInvoice")}</div>
                   </div>
                 )}
 
                 {invoiceableEntries.length === 0 ? (
                   <div className="rounded-md border border-dashed px-4 py-8 text-center space-y-2">
-                    <p className="font-medium text-foreground">No billable entries to invoice in this range</p>
+                    <p className="font-medium text-foreground">{t("timeReports.noBillable")}</p>
                     <p className="text-sm text-muted-foreground max-w-md mx-auto">
-                      Log time with the timer or manual form (Entries stay as <em>draft</em>).
-                      Already billed entries do not appear here. Try another month if your work was logged earlier.
+                      {t("timeReports.noBillableHint")}
                     </p>
                     <Button variant="outline" className="mt-2" onClick={() => setActiveTab("entries")}>
-                      Go to Entries
+                      {t("timeReports.goToEntries")}
                     </Button>
                   </div>
                 ) : (
@@ -639,15 +626,15 @@ export default function TimeReportsPage() {
                                 selectedInvoiceable.length === invoiceableEntries.length
                               }
                               onCheckedChange={(v) => toggleAllInvoiceable(v === true)}
-                              aria-label="Select all invoiceable entries"
+                              aria-label={t("timeReports.selectAllInvoiceable")}
                             />
                           </TableHead>
-                          <TableHead>Date</TableHead>
-                          <TableHead>Case</TableHead>
-                          <TableHead>Description</TableHead>
-                          <TableHead>Duration</TableHead>
-                          <TableHead>Amount</TableHead>
-                          <TableHead>Status</TableHead>
+                          <TableHead>{t("timeReports.colDate")}</TableHead>
+                          <TableHead>{t("timeReports.colCase")}</TableHead>
+                          <TableHead>{t("timeReports.colDescription")}</TableHead>
+                          <TableHead>{t("timeReports.colDuration")}</TableHead>
+                          <TableHead>{t("timeReports.colAmount")}</TableHead>
+                          <TableHead>{t("timeReports.colStatus")}</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
@@ -679,16 +666,20 @@ export default function TimeReportsPage() {
                 )}
 
                 <p className="text-sm text-muted-foreground">
-                  {selectedInvoiceable.length} entr{selectedInvoiceable.length === 1 ? "y" : "ies"} selected
-                  {selectedInvoiceable.length > 0 ? ` · ${formatCHF(selectedTotal)} excl. VAT` : ""}
+                  {selectedInvoiceable.length === 1
+                    ? t("timeReports.selectedOne", { count: selectedInvoiceable.length })
+                    : t("timeReports.selectedMany", { count: selectedInvoiceable.length })}
+                  {selectedInvoiceable.length > 0
+                    ? ` · ${formatCHF(selectedTotal)} ${t("timeReports.exclVat")}`
+                    : ""}
                 </p>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                   <div>
-                    <Label htmlFor="invoice-client">Client</Label>
+                    <Label htmlFor="invoice-client">{t("timeReports.client")}</Label>
                     <Select value={invoiceClientId} onValueChange={setInvoiceClientId}>
                       <SelectTrigger id="invoice-client" className="mt-1.5">
-                        <SelectValue placeholder="Select client" />
+                        <SelectValue placeholder={t("timeReports.selectClient")} />
                       </SelectTrigger>
                       <SelectContent>
                         {(clients ?? []).map((c: any) => (
@@ -702,7 +693,7 @@ export default function TimeReportsPage() {
                     </Select>
                   </div>
                   <div>
-                    <Label htmlFor="invoice-due">Due date</Label>
+                    <Label htmlFor="invoice-due">{t("timeReports.dueDate")}</Label>
                     <Input
                       id="invoice-due"
                       className="mt-1.5"
@@ -721,7 +712,7 @@ export default function TimeReportsPage() {
                   }
                   onClick={createInvoiceFromSelection}
                 >
-                  {createInvoice.isPending ? "Creating…" : "Create draft invoice"}
+                  {createInvoice.isPending ? t("timeReports.creating") : t("timeReports.createDraftInvoice")}
                 </Button>
               </CardContent>
             </Card>

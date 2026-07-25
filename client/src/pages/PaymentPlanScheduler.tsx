@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { toast } from "sonner";
 import { Plus, Trash2 } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 interface Installment {
   dueDate: string;
@@ -25,6 +26,7 @@ export default function PaymentPlanScheduler({
   totalAmount: number;
   onCreated?: () => void;
 }) {
+  const { t } = useTranslation();
   useAuth();
   const [scheduleType, setScheduleType] = useState<"monthly" | "custom">("monthly");
   const [monthCount, setMonthCount] = useState("3");
@@ -36,8 +38,8 @@ export default function PaymentPlanScheduler({
       const genCount = data.generatedInvoiceIds?.length ?? 0;
       toast.success(
         genCount > 0
-          ? `Payment plan created · ${genCount} installment invoice(s) generated`
-          : "Payment plan created"
+          ? t("paymentPlan.createdWithInvoices", { count: genCount })
+          : t("paymentPlan.created")
       );
       setInstallments([]);
       onCreated?.();
@@ -45,7 +47,6 @@ export default function PaymentPlanScheduler({
     onError: (err) => toast.error(err.message),
   });
 
-  // Generate monthly installments
   const generateMonthlyInstallments = () => {
     const months = parseInt(monthCount);
     const amountPerMonth = totalAmount / months;
@@ -64,7 +65,6 @@ export default function PaymentPlanScheduler({
     setInstallments(newInstallments);
   };
 
-  // Add custom installment
   const addCustomInstallment = () => {
     const newInstallment: Installment = {
       dueDate: new Date().toISOString().split("T")[0],
@@ -74,30 +74,26 @@ export default function PaymentPlanScheduler({
     setInstallments([...installments, newInstallment]);
   };
 
-  // Update installment
   const updateInstallment = (index: number, field: keyof Installment, value: any) => {
     const updated = [...installments];
     updated[index] = { ...updated[index], [field]: value };
     setInstallments(updated);
   };
 
-  // Remove installment
   const removeInstallment = (index: number) => {
     setInstallments(installments.filter((_, i) => i !== index));
   };
 
-  // Calculate total percentage
   const totalPercentage = installments.reduce((sum, inst) => sum + inst.percentage, 0);
 
-  // Create payment plan
   const handleCreatePlan = () => {
     if (installments.length === 0) {
-      toast.error("Add at least one installment");
+      toast.error(t("paymentPlan.needInstallment"));
       return;
     }
 
     if (Math.abs(totalPercentage - 100) > 0.01) {
-      toast.error(`Installments must total 100% (currently ${totalPercentage.toFixed(1)}%)`);
+      toast.error(t("paymentPlan.mustTotal100", { total: totalPercentage.toFixed(1) }));
       return;
     }
 
@@ -107,7 +103,9 @@ export default function PaymentPlanScheduler({
 
     createPaymentPlanMutation.mutate({
       invoiceId,
-      name: scheduleType === "monthly" ? `${monthCount}-Month Payment Plan` : "Custom Payment Plan",
+      name: scheduleType === "monthly"
+        ? t("paymentPlan.monthlyName", { count: monthCount })
+        : t("paymentPlan.customName"),
       installmentCount: installments.length,
       intervalDays,
       autoGenerateInvoices,
@@ -126,28 +124,26 @@ export default function PaymentPlanScheduler({
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Payment Plan</CardTitle>
-        <CardDescription>Define custom payment intervals for this invoice</CardDescription>
+        <CardTitle>{t("paymentPlan.title")}</CardTitle>
+        <CardDescription>{t("paymentPlan.description")}</CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
-        {/* Schedule Type Selection */}
         <div className="space-y-3">
-          <Label>Schedule Type</Label>
+          <Label>{t("paymentPlan.scheduleType")}</Label>
           <Select value={scheduleType} onValueChange={(v: any) => setScheduleType(v)}>
             <SelectTrigger>
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="monthly">Monthly Installments</SelectItem>
-              <SelectItem value="custom">Custom Schedule</SelectItem>
+              <SelectItem value="monthly">{t("paymentPlan.monthly")}</SelectItem>
+              <SelectItem value="custom">{t("paymentPlan.custom")}</SelectItem>
             </SelectContent>
           </Select>
         </div>
 
-        {/* Monthly Setup */}
         {scheduleType === "monthly" && (
           <div className="space-y-3">
-            <Label htmlFor="monthCount">Number of Months</Label>
+            <Label htmlFor="monthCount">{t("paymentPlan.numberOfMonths")}</Label>
             <div className="flex gap-2">
               <Input
                 id="monthCount"
@@ -157,31 +153,29 @@ export default function PaymentPlanScheduler({
                 value={monthCount}
                 onChange={(e) => setMonthCount(e.target.value)}
               />
-              <Button onClick={generateMonthlyInstallments}>Generate</Button>
+              <Button onClick={generateMonthlyInstallments}>{t("paymentPlan.generate")}</Button>
             </div>
           </div>
         )}
 
-        {/* Custom Setup */}
         {scheduleType === "custom" && (
           <Button onClick={addCustomInstallment} variant="outline">
-            <Plus className="w-4 h-4 mr-2" />
-            Add Installment
+            <Plus className="w-4 h-4 me-2" />
+            {t("paymentPlan.addInstallment")}
           </Button>
         )}
 
-        {/* Installments Table */}
         {installments.length > 0 && (
           <div className="space-y-3">
-            <Label>Installments (Total: {totalPercentage.toFixed(1)}%)</Label>
+            <Label>{t("paymentPlan.installmentsTotal", { total: totalPercentage.toFixed(1) })}</Label>
             <div className="border rounded-lg overflow-hidden">
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Due Date</TableHead>
-                    <TableHead>Percentage</TableHead>
-                    <TableHead>Amount (CHF)</TableHead>
-                    <TableHead className="w-10">Action</TableHead>
+                    <TableHead>{t("paymentPlan.dueDate")}</TableHead>
+                    <TableHead>{t("paymentPlan.percentage")}</TableHead>
+                    <TableHead>{t("paymentPlan.amountChf")}</TableHead>
+                    <TableHead className="w-10">{t("paymentPlan.action")}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -241,19 +235,16 @@ export default function PaymentPlanScheduler({
             onChange={(e) => setAutoGenerateInvoices(e.target.checked)}
             className="h-4 w-4"
           />
-          <Label htmlFor="autoGenerateInvoices">
-            Auto-generate installment invoices when due
-          </Label>
+          <Label htmlFor="autoGenerateInvoices">{t("paymentPlan.autoGenerate")}</Label>
         </div>
 
-        {/* Create Button */}
         {installments.length > 0 && (
           <Button
             onClick={handleCreatePlan}
             disabled={createPaymentPlanMutation.isPending || Math.abs(totalPercentage - 100) > 0.01}
             className="w-full"
           >
-            {createPaymentPlanMutation.isPending ? "Creating..." : "Create Payment Plan"}
+            {createPaymentPlanMutation.isPending ? t("paymentPlan.creating") : t("paymentPlan.create")}
           </Button>
         )}
       </CardContent>

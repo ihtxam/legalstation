@@ -11,6 +11,7 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { Link } from "wouter";
+import { useTranslation } from "react-i18next";
 
 function formatDuration(minutes: number) {
   const h = Math.floor(minutes / 60);
@@ -26,6 +27,7 @@ function formatClock(totalSeconds: number) {
 }
 
 export default function CaseTimePanel({ caseId }: { caseId: number }) {
+  const { t } = useTranslation();
   const utils = trpc.useUtils();
   const { data: entries, refetch } = trpc.timeEntries.list.useQuery({ caseId, mineOnly: true });
   const { data: activeTimer } = trpc.timeEntries.activeTimer.useQuery(undefined, {
@@ -45,7 +47,7 @@ export default function CaseTimePanel({ caseId }: { caseId: number }) {
 
   const startTimer = trpc.timeEntries.startTimer.useMutation({
     onSuccess: async () => {
-      toast.success("Timer started");
+      toast.success(t("timeReports.timerStarted"));
       await utils.timeEntries.activeTimer.invalidate();
     },
     onError: (e) => toast.error(e.message),
@@ -60,7 +62,7 @@ export default function CaseTimePanel({ caseId }: { caseId: number }) {
   });
   const stopTimer = trpc.timeEntries.stopTimer.useMutation({
     onSuccess: async (r) => {
-      toast.success(`Saved ${r.durationMinutes} minutes`);
+      toast.success(t("timeReports.savedMinutes", { count: r.durationMinutes }));
       await utils.timeEntries.invalidate();
       setDescription("");
     },
@@ -68,7 +70,7 @@ export default function CaseTimePanel({ caseId }: { caseId: number }) {
   });
   const createEntry = trpc.timeEntries.create.useMutation({
     onSuccess: async () => {
-      toast.success("Time entry added");
+      toast.success(t("timeReports.entryAdded"));
       setDescription("");
       await refetch();
     },
@@ -76,7 +78,7 @@ export default function CaseTimePanel({ caseId }: { caseId: number }) {
   });
   const updateEntry = trpc.timeEntries.update.useMutation({
     onSuccess: async () => {
-      toast.success("Entry updated");
+      toast.success(t("timeReports.entryUpdated"));
       setEditEntry(null);
       await refetch();
     },
@@ -84,7 +86,7 @@ export default function CaseTimePanel({ caseId }: { caseId: number }) {
   });
   const deleteEntry = trpc.timeEntries.delete.useMutation({
     onSuccess: async () => {
-      toast.success("Entry deleted");
+      toast.success(t("timeReports.entryDeleted"));
       await refetch();
     },
     onError: (e) => toast.error(e.message),
@@ -105,24 +107,24 @@ export default function CaseTimePanel({ caseId }: { caseId: number }) {
   return (
     <div className="space-y-6">
       <p className="text-sm text-muted-foreground">
-        Set your hourly rate and create invoices from time entries in{" "}
+        {t("timeReports.panelHint")}{" "}
         <Link href="/time-reports" className="text-[var(--color-navy)] underline underline-offset-2">
-          Time Reports
+          {t("timeReports.title")}
         </Link>
         .
       </p>
       <div className="rounded-xl border border-border bg-muted/30 p-4 space-y-3">
         <div className="flex items-center justify-between gap-3 flex-wrap">
           <div>
-            <h3 className="font-semibold text-foreground">Web timer</h3>
-            <p className="text-sm text-muted-foreground">Start recording time on this case. Pause, edit, or save manually.</p>
+            <h3 className="font-semibold text-foreground">{t("timeReports.webTimer")}</h3>
+            <p className="text-sm text-muted-foreground">{t("timeReports.webTimerDesc")}</p>
           </div>
           <p className="font-mono text-2xl font-semibold tabular-nums">
             {timerForThisCase ? formatClock(localSeconds) : "00:00:00"}
           </p>
         </div>
         <Textarea
-          placeholder="What are you working on?"
+          placeholder={t("timeReports.workingOn")}
           value={description}
           onChange={(e) => setDescription(e.target.value)}
           rows={2}
@@ -134,51 +136,51 @@ export default function CaseTimePanel({ caseId }: { caseId: number }) {
               disabled={startTimer.isPending || (activeTimer != null && activeTimer.caseId !== caseId)}
               onClick={() => startTimer.mutate({ caseId, description })}
             >
-              <Play className="w-3.5 h-3.5 mr-1.5" /> Start timer
+              <Play className="w-3.5 h-3.5 me-1.5" /> {t("timeReports.startTimer")}
             </Button>
           ) : (
             <>
               {timerForThisCase.isPaused ? (
                 <Button variant="outline" onClick={() => resumeTimer.mutate()}>
-                  <Play className="w-3.5 h-3.5 mr-1.5" /> Resume
+                  <Play className="w-3.5 h-3.5 me-1.5" /> {t("timeReports.resume")}
                 </Button>
               ) : (
                 <Button variant="outline" onClick={() => pauseTimer.mutate()}>
-                  <Pause className="w-3.5 h-3.5 mr-1.5" /> Pause
+                  <Pause className="w-3.5 h-3.5 me-1.5" /> {t("timeReports.pause")}
                 </Button>
               )}
               <Button
                 className="bg-[var(--color-navy)] text-white"
                 onClick={() => stopTimer.mutate({ save: true, description, billable })}
               >
-                <Square className="w-3.5 h-3.5 mr-1.5" /> Stop & save
+                <Square className="w-3.5 h-3.5 me-1.5" /> {t("timeReports.stopSave")}
               </Button>
             </>
           )}
           {activeTimer && activeTimer.caseId !== caseId && (
-            <p className="text-xs text-amber-700">A timer is already running on another case.</p>
+            <p className="text-xs text-amber-700">{t("timeReports.timerOtherCase")}</p>
           )}
         </div>
       </div>
 
       <div className="rounded-xl border border-border p-4 space-y-3">
-        <h3 className="font-semibold text-foreground">Manual time entry</h3>
+        <h3 className="font-semibold text-foreground">{t("timeReports.manualEntry")}</h3>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           <div>
-            <Label>Date</Label>
+            <Label>{t("timeReports.date")}</Label>
             <Input type="date" className="mt-1.5" value={manualDate} onChange={(e) => setManualDate(e.target.value)} />
           </div>
           <div>
-            <Label>Minutes</Label>
+            <Label>{t("timeReports.minutes")}</Label>
             <Input className="mt-1.5" value={manualMinutes} onChange={(e) => setManualMinutes(e.target.value)} />
           </div>
           <div className="flex items-end pb-2 gap-2">
             <Checkbox id="billable" checked={billable} onCheckedChange={(v) => setBillable(Boolean(v))} />
-            <Label htmlFor="billable">Billable</Label>
+            <Label htmlFor="billable">{t("timeReports.billable")}</Label>
           </div>
         </div>
         <Textarea
-          placeholder="Description"
+          placeholder={t("timeReports.description")}
           value={description}
           onChange={(e) => setDescription(e.target.value)}
           rows={2}
@@ -195,15 +197,15 @@ export default function CaseTimePanel({ caseId }: { caseId: number }) {
             })
           }
         >
-          <Plus className="w-3.5 h-3.5 mr-1.5" /> Add entry
+          <Plus className="w-3.5 h-3.5 me-1.5" /> {t("timeReports.addEntry")}
         </Button>
       </div>
 
       <div>
-        <h3 className="font-semibold text-foreground mb-3">Time on this case</h3>
+        <h3 className="font-semibold text-foreground mb-3">{t("timeReports.timeOnCase")}</h3>
         {!entries?.length ? (
           <div className="py-8 text-center text-sm text-muted-foreground border border-dashed rounded-lg">
-            No time entries yet
+            {t("timeReports.noEntriesYet")}
           </div>
         ) : (
           <div className="border border-border rounded-lg divide-y divide-border">
@@ -213,7 +215,7 @@ export default function CaseTimePanel({ caseId }: { caseId: number }) {
                   <div className="flex items-center gap-2 flex-wrap">
                     <span className="font-medium text-sm">{formatDuration(entry.durationMinutes)}</span>
                     <Badge variant="outline">{entry.status}</Badge>
-                    {!entry.billable && <Badge variant="secondary">non-billable</Badge>}
+                    {!entry.billable && <Badge variant="secondary">{t("timeReports.nonBillable")}</Badge>}
                   </div>
                   <p className="text-sm text-muted-foreground mt-0.5">{entry.description}</p>
                   <p className="text-xs text-muted-foreground mt-1">
@@ -249,20 +251,20 @@ export default function CaseTimePanel({ caseId }: { caseId: number }) {
       <Dialog open={!!editEntry} onOpenChange={(o) => !o && setEditEntry(null)}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Edit time entry</DialogTitle>
+            <DialogTitle>{t("timeReports.editEntry")}</DialogTitle>
           </DialogHeader>
           <div className="space-y-3 py-2">
             <div>
-              <Label>Minutes</Label>
+              <Label>{t("timeReports.minutes")}</Label>
               <Input className="mt-1.5" value={editMinutes} onChange={(e) => setEditMinutes(e.target.value)} />
             </div>
             <div>
-              <Label>Description</Label>
+              <Label>{t("timeReports.description")}</Label>
               <Textarea className="mt-1.5" value={editDesc} onChange={(e) => setEditDesc(e.target.value)} />
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setEditEntry(null)}>Cancel</Button>
+            <Button variant="outline" onClick={() => setEditEntry(null)}>{t("timeReports.cancel")}</Button>
             <Button
               disabled={!editEntry || updateEntry.isPending}
               onClick={() =>
@@ -274,7 +276,7 @@ export default function CaseTimePanel({ caseId }: { caseId: number }) {
                 })
               }
             >
-              Save
+              {t("timeReports.save")}
             </Button>
           </DialogFooter>
         </DialogContent>

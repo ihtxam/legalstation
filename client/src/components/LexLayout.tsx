@@ -195,7 +195,7 @@ export default function LexLayout({ children, title, breadcrumb }: LexLayoutProp
             <button className="relative p-2 text-muted-foreground hover:text-foreground rounded-lg hover:bg-accent transition-colors">
               <Bell className="w-4 h-4" />
               {unreadCount && unreadCount > 0 && (
-                <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-[var(--color-gold)] rounded-full" />
+                <span className="absolute top-1.5 end-1.5 w-2 h-2 bg-[var(--color-gold)] rounded-full" />
               )}
             </button>
           </div>
