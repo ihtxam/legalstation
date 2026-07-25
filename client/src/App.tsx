@@ -34,7 +34,7 @@ import PlatformLoginPage from "./pages/PlatformLogin";
 import FloatingTimer from "./components/FloatingTimer";
 
 function Router() {
-  const { user, refresh } = useAuth();
+  const { user, refresh, loading } = useAuth();
   const [location, navigate] = useLocation();
   const utils = trpc.useUtils();
   const { data: firmData } = trpc.firm.myFirm.useQuery(undefined, {
@@ -48,11 +48,24 @@ function Router() {
   }, [user?.preferredLocale]);
 
   useEffect(() => {
+    if (loading) return;
+
+    // Unauthenticated users hitting the platform console → platform login
+    if (
+      !user &&
+      (location.startsWith("/superadmin") || location.startsWith("/admin"))
+    ) {
+      navigate("/platform/login");
+      return;
+    }
+
     if (!user) return;
+
     if (user.mustChangePassword && location !== "/login" && location !== "/platform/login") {
       navigate("/login");
       return;
     }
+
     if (user.role === "superadmin") {
       if (
         !location.startsWith("/superadmin") &&
@@ -63,6 +76,13 @@ function Router() {
       }
       return;
     }
+
+    // Non-superadmins cannot open the platform console
+    if (location.startsWith("/superadmin") || location.startsWith("/admin")) {
+      navigate("/dashboard");
+      return;
+    }
+
     if (
       firmData?.firm &&
       !firmData.firm.onboardingCompletedAt &&
@@ -72,7 +92,7 @@ function Router() {
     ) {
       navigate("/firm-onboarding");
     }
-  }, [user, location, navigate, firmData]);
+  }, [user, loading, location, navigate, firmData]);
 
   if (user?.requires2fa) {
     return (
@@ -82,6 +102,18 @@ function Router() {
           refresh?.();
         }}
       />
+    );
+  }
+
+  // Avoid flashing NotFound / Unauthorized while auth or redirect settles
+  if (
+    loading ||
+    (!user && (location.startsWith("/superadmin") || location.startsWith("/admin")))
+  ) {
+    return (
+      <div className="min-h-screen flex items-center justify-center text-sm text-muted-foreground">
+        Loading…
+      </div>
     );
   }
 
@@ -105,6 +137,7 @@ function Router() {
         <Route path="/messages" component={MessagesPage} />
         <Route path="/settings" component={SettingsPage} />
         <Route path="/superadmin" component={SuperadminDashboard} />
+        <Route path="/superadmin/" component={SuperadminDashboard} />
         <Route path="/admin/settings" component={AdminSettings} />
         <Route path="/client-portal" component={ClientPortalPage} />
         <Route path="/time-reports" component={TimeReportsPage} />

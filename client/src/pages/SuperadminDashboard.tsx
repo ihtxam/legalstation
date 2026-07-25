@@ -45,7 +45,7 @@ import {
 type TabId = "overview" | "firms" | "plans" | "users" | "settings" | "audit";
 
 export default function SuperadminDashboard() {
-  const { user, logout } = useAuth();
+  const { user, logout, loading } = useAuth();
   const [, navigate] = useLocation();
   const [tab, setTab] = useState<TabId>("overview");
   const [showCreateFirm, setShowCreateFirm] = useState(false);
@@ -94,9 +94,16 @@ export default function SuperadminDashboard() {
   const [editPlanId, setEditPlanId] = useState("");
   const [editBilling, setEditBilling] = useState<"monthly" | "yearly">("monthly");
 
+  const isSuperadmin = user?.role === "superadmin";
+
   useEffect(() => {
-    if (user && user.role !== "superadmin") navigate("/dashboard");
-  }, [user, navigate]);
+    if (loading) return;
+    if (!user) {
+      navigate("/platform/login");
+      return;
+    }
+    if (user.role !== "superadmin") navigate("/dashboard");
+  }, [user, loading, navigate]);
 
   useEffect(() => {
     if (user?.preferredLocale === "en" || user?.preferredLocale === "fr" || user?.preferredLocale === "de") {
@@ -107,19 +114,33 @@ export default function SuperadminDashboard() {
   const formatCurrency = (amount: number) =>
     new Intl.NumberFormat("de-CH", { style: "currency", currency: "CHF" }).format(amount);
 
-  const { data: stats, isLoading: statsLoading } = trpc.superadmin.getStats.useQuery();
-  const { data: firms, isLoading: firmsLoading, refetch: refetchFirms } = trpc.superadmin.listFirms.useQuery();
-  const { data: plans, isLoading: plansLoading, refetch: refetchPlans } = trpc.superadmin.listPlans.useQuery();
-  const { data: system } = trpc.superadmin.getSystemStatus.useQuery();
-  const { data: platformSettings, refetch: refetchPlatform } = trpc.superadmin.getPlatformSettings.useQuery();
-  const { data: platformUsers, refetch: refetchUsers } = trpc.superadmin.listUsers.useQuery({
-    search: userSearch || undefined,
-    limit: 100,
+  const { data: stats, isLoading: statsLoading } = trpc.superadmin.getStats.useQuery(undefined, {
+    enabled: isSuperadmin,
   });
-  const { data: auditLog } = trpc.superadmin.listAuditLog.useQuery({ limit: 50 });
+  const { data: firms, isLoading: firmsLoading, refetch: refetchFirms } = trpc.superadmin.listFirms.useQuery(
+    undefined,
+    { enabled: isSuperadmin }
+  );
+  const { data: plans, isLoading: plansLoading, refetch: refetchPlans } = trpc.superadmin.listPlans.useQuery(
+    undefined,
+    { enabled: isSuperadmin }
+  );
+  const { data: system } = trpc.superadmin.getSystemStatus.useQuery(undefined, { enabled: isSuperadmin });
+  const { data: platformSettings, refetch: refetchPlatform } = trpc.superadmin.getPlatformSettings.useQuery(
+    undefined,
+    { enabled: isSuperadmin }
+  );
+  const { data: platformUsers, refetch: refetchUsers } = trpc.superadmin.listUsers.useQuery(
+    { search: userSearch || undefined, limit: 100 },
+    { enabled: isSuperadmin }
+  );
+  const { data: auditLog } = trpc.superadmin.listAuditLog.useQuery(
+    { limit: 50 },
+    { enabled: isSuperadmin }
+  );
   const { data: firmDetail, isLoading: firmDetailLoading } = trpc.superadmin.getFirmDetail.useQuery(
     { firmId: selectedFirmId! },
-    { enabled: !!selectedFirmId }
+    { enabled: isSuperadmin && !!selectedFirmId }
   );
 
   useEffect(() => {
@@ -346,7 +367,15 @@ export default function SuperadminDashboard() {
     });
   };
 
-  if (user?.role !== "superadmin") {
+  if (loading || !user) {
+    return (
+      <div className="min-h-screen flex items-center justify-center text-sm text-muted-foreground">
+        Redirecting to platform login…
+      </div>
+    );
+  }
+
+  if (user.role !== "superadmin") {
     return <div className="p-8 text-center text-muted-foreground">Unauthorized. Superadmin access required.</div>;
   }
 

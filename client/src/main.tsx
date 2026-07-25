@@ -20,8 +20,16 @@ const redirectToLoginIfUnauthorized = (error: unknown) => {
   if (typeof window === "undefined") return;
 
   const isUnauthorized = error.message === UNAUTHED_ERR_MSG;
-
   if (!isUnauthorized) return;
+
+  const path = window.location.pathname || "";
+  // Platform console must use platform login — never bounce to firm /login or 404.
+  if (path.startsWith("/superadmin") || path.startsWith("/admin") || path.startsWith("/platform")) {
+    if (path !== "/platform/login") {
+      window.location.href = "/platform/login";
+    }
+    return;
+  }
 
   startLogin();
 };
