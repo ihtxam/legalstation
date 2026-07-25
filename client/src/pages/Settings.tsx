@@ -35,14 +35,29 @@ export default function SettingsPage() {
   const { data: members } = trpc.firm.members.useQuery(undefined, {
     enabled: isAuthenticated && canManageFirm,
   });
-  const [firmForm, setFirmForm] = useState({ name: "", address: "", email: "", phone: "", vatNumber: "", logoUrl: "" });
+  const emptyFirmForm = {
+    name: "",
+    address: "",
+    email: "",
+    phone: "",
+    vatNumber: "",
+    logoUrl: "",
+    iban: "",
+    qrIban: "",
+    creditorStreet: "",
+    creditorBuildingNumber: "",
+    creditorPostalCode: "",
+    creditorCity: "",
+    creditorCountry: "CH",
+  };
+  const [firmForm, setFirmForm] = useState(emptyFirmForm);
   const [inviteEmail, setInviteEmail] = useState("");
   const [inviteRole, setInviteRole] = useState<InviteStaffRole>("lawyer");
   const [inviteEmailLanguage, setInviteEmailLanguage] = useState<AppLocale>("en");
   const [logoFile, setLogoFile] = useState<File | null>(null);
   const [logoPreview, setLogoPreview] = useState<string>("");
   const [hasChanges, setHasChanges] = useState(false);
-  const [originalForm, setOriginalForm] = useState({ name: "", address: "", email: "", phone: "", vatNumber: "", logoUrl: "" });
+  const [originalForm, setOriginalForm] = useState(emptyFirmForm);
   const [maxUploadMb, setMaxUploadMb] = useState("10");
   const [allowedTypes, setAllowedTypes] = useState<string[]>([...UPLOAD_TYPE_OPTIONS] as string[]);
   const [originalUpload, setOriginalUpload] = useState<{ maxUploadMb: string; allowedTypes: string[] }>({
@@ -164,23 +179,24 @@ export default function SettingsPage() {
   }, [user?.preferredLocale]);
   useEffect(() => {
     if (firmData?.firm) {
-      setFirmForm({
+      const next = {
         name: firmData.firm.name ?? "",
         address: firmData.firm.address ?? "",
         email: firmData.firm.email ?? "",
         phone: firmData.firm.phone ?? "",
         vatNumber: firmData.firm.vatNumber ?? "",
         logoUrl: firmData.firm.logoUrl ?? "",
-      });
+        iban: firmData.firm.iban ?? "",
+        qrIban: firmData.firm.qrIban ?? "",
+        creditorStreet: firmData.firm.creditorStreet ?? "",
+        creditorBuildingNumber: firmData.firm.creditorBuildingNumber ?? "",
+        creditorPostalCode: firmData.firm.creditorPostalCode ?? "",
+        creditorCity: firmData.firm.creditorCity ?? "",
+        creditorCountry: firmData.firm.creditorCountry ?? "CH",
+      };
+      setFirmForm(next);
       if (firmData.firm.logoUrl) setLogoPreview(firmData.firm.logoUrl);
-      setOriginalForm({
-        name: firmData.firm.name ?? "",
-        address: firmData.firm.address ?? "",
-        email: firmData.firm.email ?? "",
-        phone: firmData.firm.phone ?? "",
-        vatNumber: firmData.firm.vatNumber ?? "",
-        logoUrl: firmData.firm.logoUrl ?? "",
-      });
+      setOriginalForm(next);
       const bytes = firmData.firm.maxUploadBytes ?? DEFAULT_MAX_UPLOAD_BYTES;
       const mb = String(Math.round((bytes / (1024 * 1024)) * 10) / 10);
       const types = parseAllowedExtensions(firmData.firm.allowedUploadTypes);
@@ -292,6 +308,84 @@ export default function SettingsPage() {
               {isFirmAdmin && (
                 <div className="border-t border-border pt-4 space-y-3">
                   <div>
+                    <h4 className="font-semibold text-foreground">{t("settings.bankingTitle")}</h4>
+                    <p className="text-sm text-muted-foreground mt-1">{t("settings.bankingHint")}</p>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                      <Label htmlFor="firm-iban">{t("settings.iban")}</Label>
+                      <Input
+                        id="firm-iban"
+                        className={`mt-1.5 ${getFieldHighlight("iban")}`}
+                        placeholder="CH93 0076 2011 6238 5295 7"
+                        value={firmForm.iban}
+                        onChange={(e) => setFirmForm((f) => ({ ...f, iban: e.target.value }))}
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="firm-qr-iban">{t("settings.qrIban")}</Label>
+                      <Input
+                        id="firm-qr-iban"
+                        className={`mt-1.5 ${getFieldHighlight("qrIban")}`}
+                        placeholder="CH44 3199 9123 0008 8901 2"
+                        value={firmForm.qrIban}
+                        onChange={(e) => setFirmForm((f) => ({ ...f, qrIban: e.target.value }))}
+                      />
+                      <p className="text-xs text-muted-foreground mt-1">{t("settings.qrIbanHelp")}</p>
+                    </div>
+                    <div className="sm:col-span-2">
+                      <Label htmlFor="creditor-street">{t("settings.creditorStreet")}</Label>
+                      <Input
+                        id="creditor-street"
+                        className={`mt-1.5 ${getFieldHighlight("creditorStreet")}`}
+                        value={firmForm.creditorStreet}
+                        onChange={(e) => setFirmForm((f) => ({ ...f, creditorStreet: e.target.value }))}
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="creditor-building">{t("settings.creditorBuildingNumber")}</Label>
+                      <Input
+                        id="creditor-building"
+                        className={`mt-1.5 ${getFieldHighlight("creditorBuildingNumber")}`}
+                        value={firmForm.creditorBuildingNumber}
+                        onChange={(e) => setFirmForm((f) => ({ ...f, creditorBuildingNumber: e.target.value }))}
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="creditor-zip">{t("settings.creditorPostalCode")}</Label>
+                      <Input
+                        id="creditor-zip"
+                        className={`mt-1.5 ${getFieldHighlight("creditorPostalCode")}`}
+                        value={firmForm.creditorPostalCode}
+                        onChange={(e) => setFirmForm((f) => ({ ...f, creditorPostalCode: e.target.value }))}
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="creditor-city">{t("settings.creditorCity")}</Label>
+                      <Input
+                        id="creditor-city"
+                        className={`mt-1.5 ${getFieldHighlight("creditorCity")}`}
+                        value={firmForm.creditorCity}
+                        onChange={(e) => setFirmForm((f) => ({ ...f, creditorCity: e.target.value }))}
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="creditor-country">{t("settings.creditorCountry")}</Label>
+                      <Input
+                        id="creditor-country"
+                        className={`mt-1.5 ${getFieldHighlight("creditorCountry")}`}
+                        maxLength={2}
+                        placeholder="CH"
+                        value={firmForm.creditorCountry}
+                        onChange={(e) => setFirmForm((f) => ({ ...f, creditorCountry: e.target.value.toUpperCase() }))}
+                      />
+                    </div>
+                  </div>
+                </div>
+              )}
+              {isFirmAdmin && (
+                <div className="border-t border-border pt-4 space-y-3">
+                  <div>
                     <h4 className="font-semibold text-foreground">{t("settings.uploadPolicyTitle")}</h4>
                     <p className="text-sm text-muted-foreground mt-1">{t("settings.uploadPolicyHint")}</p>
                   </div>
@@ -349,6 +443,13 @@ export default function SettingsPage() {
                       ? {
                           maxUploadMb: mb,
                           allowedUploadTypes: allowedTypes,
+                          iban: firmForm.iban || null,
+                          qrIban: firmForm.qrIban || null,
+                          creditorStreet: firmForm.creditorStreet || null,
+                          creditorBuildingNumber: firmForm.creditorBuildingNumber || null,
+                          creditorPostalCode: firmForm.creditorPostalCode || null,
+                          creditorCity: firmForm.creditorCity || null,
+                          creditorCountry: firmForm.creditorCountry || "CH",
                         }
                       : {}),
                   });

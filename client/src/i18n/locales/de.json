@@ -332,7 +332,17 @@
     "roleHintLawyer": "Sieht nur zugewiesene Fälle und zugehörige Rechnungen. Keine Admin-Einstellungen.",
     "roleHintAssistant": "Sieht zugewiesene Fälle; kann zugehörige Rechnungen einsehen, aber nicht erstellen.",
     "inviteClientTitle": "Mandant zum Portal einladen",
-    "inviteClientHint": "Senden Sie eine Einladung, damit dieser Mandant auf Fälle und Dokumente zugreifen kann."
+    "inviteClientHint": "Senden Sie eine Einladung, damit dieser Mandant auf Fälle und Dokumente zugreifen kann.",
+    "bankingTitle": "Schweizer QR-Rechnung Bankdaten",
+    "bankingHint": "IBAN / QR-IBAN und Gläubigeradresse erscheinen auf Seite 2 der Rechnungs-PDFs als QR-Zahlteil.",
+    "iban": "IBAN",
+    "qrIban": "QR-IBAN",
+    "qrIbanHelp": "QR-IBAN bevorzugen, falls vorhanden. Sonst wird die normale IBAN verwendet.",
+    "creditorStreet": "Strasse",
+    "creditorBuildingNumber": "Nr.",
+    "creditorPostalCode": "PLZ",
+    "creditorCity": "Ort",
+    "creditorCountry": "Land (ISO)"
   },
   "notFound": {
     "title": "Seite nicht gefunden",
@@ -602,7 +612,8 @@
     "optionalCase": "Fall (optional)",
     "currency": "Währung",
     "payNow": "Jetzt bezahlen",
-    "paymentLink": "Zahlungslink"
+    "paymentLink": "Zahlungslink",
+    "emailSent": "Rechnung per E-Mail an den Mandanten gesendet"
   },
   "timeReports": {
     "title": "Zeitberichte",
@@ -722,7 +733,10 @@
     "needInstallment": "Mindestens eine Rate hinzufügen",
     "mustTotal100": "Raten müssen 100 % ergeben (aktuell {{total}} %)",
     "monthlyName": "{{count}}-Monats-Zahlungsplan",
-    "customName": "Benutzerdefinierter Zahlungsplan"
+    "customName": "Benutzerdefinierter Zahlungsplan",
+    "sendAndSchedule": "Erste Rechnung jetzt senden und Rest planen",
+    "sendAndScheduleHint": "Sendet die erste Rate sofort. Weitere Raten werden bei Fälligkeit erzeugt und per E-Mail gesendet (z. B. alle 30 Tage).",
+    "createdSentFirst": "Zahlungsplan erstellt · erste Rate gesendet ({{emailed}} E-Mails)"
   },
   "analytics": {
     "title": "Kanzlei-Analytik",

@@ -10,6 +10,7 @@ import {
   createInvoice,
   createInvoiceItem,
 } from "./db";
+import { emailInvoiceToClient } from "./invoiceEmail";
 
 export function isInstallmentDue(
   dueDate: Date,
@@ -38,8 +39,9 @@ export function computeInstallmentInvoiceAmounts(args: {
  */
 export async function generateInvoiceForInstallment(
   installmentId: number,
-  createdByUserId: number
-): Promise<{ invoiceId: number; alreadyGenerated: boolean }> {
+  createdByUserId: number,
+  opts?: { sendEmail?: boolean }
+): Promise<{ invoiceId: number; alreadyGenerated: boolean; emailSent?: boolean }> {
   const db = await getDb();
   if (!db) throw new Error("DB unavailable");
 
@@ -51,7 +53,12 @@ export async function generateInvoiceForInstallment(
   if (!installment) throw new Error("Installment not found");
 
   if (installment.generatedInvoiceId) {
-    return { invoiceId: installment.generatedInvoiceId, alreadyGenerated: true };
+    let emailSent = false;
+    if (opts?.sendEmail) {
+      const mail = await emailInvoiceToClient({ invoiceId: installment.generatedInvoiceId });
+      emailSent = mail.sent;
+    }
+    return { invoiceId: installment.generatedInvoiceId, alreadyGenerated: true, emailSent };
   }
 
   const [plan] = await db
@@ -107,11 +114,24 @@ export async function generateInvoiceForInstallment(
     .set({ generatedInvoiceId: invoiceId })
     .where(eq(paymentInstallments.id, installmentId));
 
-  return { invoiceId, alreadyGenerated: false };
+  let emailSent = false;
+  if (opts?.sendEmail) {
+    try {
+      const mail = await emailInvoiceToClient({ invoiceId });
+      emailSent = mail.sent;
+      if (!mail.sent) {
+        console.warn(`[PaymentPlans] Installment ${installmentId} invoice created but not emailed: ${mail.reason}`);
+      }
+    } catch (err) {
+      console.error(`[PaymentPlans] Failed to email installment invoice ${invoiceId}:`, err);
+    }
+  }
+
+  return { invoiceId, alreadyGenerated: false, emailSent };
 }
 
 /**
- * Generate invoices for all due installments on auto-generate plans.
+ * Generate (and optionally email) invoices for all due installments on auto-generate plans.
  * Also marks pending past-due installments as overdue.
  */
 export async function processDuePaymentPlanInstallments(
@@ -119,6 +139,7 @@ export async function processDuePaymentPlanInstallments(
   now: Date = new Date()
 ): Promise<{
   generated: number[];
+  emailed: number[];
   skipped: number[];
   markedOverdue: number;
 }> {
@@ -143,9 +164,10 @@ export async function processDuePaymentPlanInstallments(
     .where(eq(paymentPlans.autoGenerateInvoices, true));
 
   if (!autoPlans.length) {
-    return { generated: [], skipped: [], markedOverdue };
+    return { generated: [], emailed: [], skipped: [], markedOverdue };
   }
 
+  const planById = new Map(autoPlans.map((p) => [p.id, p]));
   const planIds = autoPlans.map((p) => p.id);
   const dueInstallments = await db
     .select()
@@ -160,18 +182,24 @@ export async function processDuePaymentPlanInstallments(
     );
 
   const generated: number[] = [];
+  const emailed: number[] = [];
   const skipped: number[] = [];
 
   for (const inst of dueInstallments) {
     try {
-      const result = await generateInvoiceForInstallment(inst.id, createdByUserId);
+      const plan = planById.get(inst.paymentPlanId);
+      const shouldEmail = plan?.autoSendInvoices !== false;
+      const result = await generateInvoiceForInstallment(inst.id, createdByUserId, {
+        sendEmail: shouldEmail,
+      });
       if (result.alreadyGenerated) skipped.push(inst.id);
       else generated.push(result.invoiceId);
+      if (result.emailSent) emailed.push(result.invoiceId);
     } catch (err) {
       console.error(`[PaymentPlans] Failed to generate for installment ${inst.id}:`, err);
       skipped.push(inst.id);
     }
   }
 
-  return { generated, skipped, markedOverdue };
+  return { generated, emailed, skipped, markedOverdue };
 }

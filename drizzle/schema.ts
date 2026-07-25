@@ -61,6 +61,16 @@ export const firms = mysqlTable("firms", {
   maxUploadBytes: int("maxUploadBytes").notNull().default(10_485_760),
   /** JSON array of allowed file extensions, e.g. ["pdf","jpg","png"]. */
   allowedUploadTypes: text("allowedUploadTypes"),
+  /** Standard Swiss IBAN (used for QR-bill when qrIban is empty). */
+  iban: varchar("iban", { length: 34 }),
+  /** QR-IBAN for Swiss QR-bill (preferred when set; requires QR reference). */
+  qrIban: varchar("qrIban", { length: 34 }),
+  /** Structured creditor address for Swiss QR-bill (required for valid slips). */
+  creditorStreet: varchar("creditorStreet", { length: 70 }),
+  creditorBuildingNumber: varchar("creditorBuildingNumber", { length: 16 }),
+  creditorPostalCode: varchar("creditorPostalCode", { length: 16 }),
+  creditorCity: varchar("creditorCity", { length: 35 }),
+  creditorCountry: varchar("creditorCountry", { length: 2 }).default("CH"),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 });
@@ -416,6 +426,8 @@ export const paymentPlans = mysqlTable("payment_plans", {
   intervalDays: int("intervalDays").notNull(), // 30 for monthly, 0 for one-time
   /** When true, due installments auto-create child invoices */
   autoGenerateInvoices: boolean("autoGenerateInvoices").notNull().default(true),
+  /** When true, generated installment invoices are emailed to the client */
+  autoSendInvoices: boolean("autoSendInvoices").notNull().default(true),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
 });
 

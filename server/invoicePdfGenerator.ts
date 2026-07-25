@@ -6,12 +6,15 @@ import {
   getCaseById,
 } from "./db";
 import { renderInvoicePdf, type InvoicePdfData } from "./invoicePdf";
+import { appendSwissQrBillPage } from "./swissQrBill";
 
 export interface InvoicePdfOptions {
   invoiceId: number;
   firmId?: number;
   includePaymentLink?: boolean;
   paymentUrl?: string;
+  /** When false, skip Swiss QR-bill page even if firm IBAN is configured. */
+  includeSwissQrBill?: boolean;
 }
 
 async function fetchLogoDataUrl(url?: string | null): Promise<string | undefined> {
@@ -107,6 +110,7 @@ export async function generateInvoicePdfFromDb(options: InvoicePdfOptions): Prom
     };
   });
 
+  const clientName = clientDisplayName(client);
   const data: InvoicePdfData = {
     invoiceNumber: invoice.invoiceNumber,
     issueDate: new Date(invoice.issueDate),
@@ -116,7 +120,7 @@ export async function generateInvoicePdfFromDb(options: InvoicePdfOptions): Prom
     firmPhone: firm.phone || undefined,
     firmEmail: firm.email || undefined,
     firmVatId: firm.vatNumber || "",
-    clientName: clientDisplayName(client),
+    clientName,
     clientAddress: clientAddressBlock(client),
     clientEmail: client.email || "",
     caseTitle: caseRow?.title,
@@ -132,7 +136,36 @@ export async function generateInvoicePdfFromDb(options: InvoicePdfOptions): Prom
     paymentUrl: paymentUrl || undefined,
   };
 
-  const buffer = await renderInvoicePdf(data);
+  let buffer = await renderInvoicePdf(data);
+
+  if (options.includeSwissQrBill !== false) {
+    const qr = await appendSwissQrBillPage(buffer, {
+      firm: {
+        name: firm.name,
+        iban: firm.iban,
+        qrIban: firm.qrIban,
+        street: firm.creditorStreet,
+        buildingNumber: firm.creditorBuildingNumber,
+        postalCode: firm.creditorPostalCode,
+        city: firm.creditorCity,
+        country: firm.creditorCountry,
+        addressFallback: firm.address,
+      },
+      debtor: {
+        name: clientName,
+        address: client.address,
+        postalCode: client.postalCode,
+        city: client.city,
+        country: client.country,
+      },
+      amount: toNumber(invoice.total),
+      currency: invoice.currency || "CHF",
+      invoiceId: invoice.id,
+      invoiceNumber: invoice.invoiceNumber,
+    });
+    buffer = qr.buffer;
+  }
+
   return {
     buffer,
     filename: `invoice-${invoice.invoiceNumber}.pdf`,

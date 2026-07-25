@@ -332,7 +332,17 @@
     "roleHintLawyer": "Vede solo le pratiche assegnate e le fatture collegate. Nessuna impostazione admin.",
     "roleHintAssistant": "Vede le pratiche assegnate; può visualizzare le fatture collegate ma non crearle.",
     "inviteClientTitle": "Invita il cliente al portale",
-    "inviteClientHint": "Invia un invito affinché questo cliente possa accedere a pratiche e documenti."
+    "inviteClientHint": "Invia un invito affinché questo cliente possa accedere a pratiche e documenti.",
+    "bankingTitle": "Dati bancari QR-fattura",
+    "bankingHint": "IBAN / QR-IBAN e indirizzo del creditore compaiono a pagina 2 dei PDF fattura come bollettino QR.",
+    "iban": "IBAN",
+    "qrIban": "QR-IBAN",
+    "qrIbanHelp": "Preferire il QR-IBAN se disponibile. Altrimenti viene usato l'IBAN standard.",
+    "creditorStreet": "Via",
+    "creditorBuildingNumber": "N.",
+    "creditorPostalCode": "NPA",
+    "creditorCity": "Città",
+    "creditorCountry": "Paese (ISO)"
   },
   "notFound": {
     "title": "Pagina non trovata",
@@ -602,7 +612,8 @@
     "optionalCase": "Pratica (facoltativa)",
     "currency": "Valuta",
     "payNow": "Paga ora",
-    "paymentLink": "Link di pagamento"
+    "paymentLink": "Link di pagamento",
+    "emailSent": "Fattura inviata al cliente via e-mail"
   },
   "timeReports": {
     "title": "Report tempo",
@@ -722,7 +733,10 @@
     "needInstallment": "Aggiungi almeno una rata",
     "mustTotal100": "Le rate devono totalizzare il 100% (attualmente {{total}}%)",
     "monthlyName": "Piano di pagamento a {{count}} mesi",
-    "customName": "Piano di pagamento personalizzato"
+    "customName": "Piano di pagamento personalizzato",
+    "sendAndSchedule": "Invia subito la prima fattura e pianifica le altre",
+    "sendAndScheduleHint": "Invia la prima rata subito. Le successive vengono generate e inviate alla scadenza (es. ogni 30 giorni).",
+    "createdSentFirst": "Piano creato · prima rata inviata ({{emailed}} e-mail)"
   },
   "analytics": {
     "title": "Analisi dello studio",

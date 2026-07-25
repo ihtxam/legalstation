@@ -587,6 +587,13 @@ export default function InvoiceDetailPage() {
     },
     onError: (e) => toast.error(e.message),
   });
+  const sendInvoiceEmail = trpc.invoicePdf.sendEmail.useMutation({
+    onSuccess: async () => {
+      toast.success(t("invoiceDetail.emailSent"));
+      await refetch();
+    },
+    onError: (e) => toast.error(e.message),
+  });
   const updateInvoice = trpc.invoices.update.useMutation({
     onSuccess: async () => {
       toast.success(t("invoiceDetail.saved"));
@@ -964,9 +971,21 @@ export default function InvoiceDetailPage() {
               {canManageInvoices && invoice.status === "draft" && (
                 <Button
                   className="bg-[var(--color-navy)] hover:bg-[var(--color-navy-light)] text-white"
-                  onClick={() => updateStatus.mutate({ id: invoiceId, status: "sent" })}
+                  disabled={sendInvoiceEmail.isPending || updateStatus.isPending}
+                  onClick={() =>
+                    sendInvoiceEmail.mutate(
+                      { invoiceId },
+                      {
+                        onError: () => {
+                          // Fall back to status-only send if email fails (e.g. missing client email)
+                          updateStatus.mutate({ id: invoiceId, status: "sent" });
+                        },
+                      }
+                    )
+                  }
                 >
-                  <Send className="w-4 h-4 me-1.5" /> {t("invoiceDetail.send")}
+                  <Send className="w-4 h-4 me-1.5" />{" "}
+                  {sendInvoiceEmail.isPending ? t("common.loading") : t("invoiceDetail.send")}
                 </Button>
               )}
               {invoice.status === "paid" && (

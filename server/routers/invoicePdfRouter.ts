@@ -6,9 +6,9 @@ import {
   getInvoiceByIdOnly,
   getFirmMemberByUserId,
   getClientByUserId,
-  getFirmById,
+  getClientById,
 } from "../db";
-import { sendEmail } from "../email";
+import { emailInvoiceToClient } from "../invoiceEmail";
 
 async function assertInvoiceAccess(userId: number, invoiceId: number) {
   const invoice = await getInvoiceByIdOnly(invoiceId);
@@ -67,46 +67,24 @@ export const invoicePdfRouter = router({
         throw new TRPCError({ code: "FORBIDDEN", message: "Only firm members can email invoices" });
       }
 
-      const firm = await getFirmById(invoice.firmId);
-      const result = await generateInvoicePdfFromDb({
-        invoiceId: input.invoiceId,
-        firmId: invoice.firmId,
-        includePaymentLink: input.includePaymentLink,
-        paymentUrl: invoice.adyenPaymentLinkUrl || invoice.stripePaymentUrl || undefined,
-      });
-
-      const toEmail = input.recipientEmail;
+      const client = await getClientById(invoice.clientId, invoice.firmId);
+      const toEmail = input.recipientEmail || client?.email || undefined;
       if (!toEmail) {
-        throw new TRPCError({ code: "BAD_REQUEST", message: "recipientEmail is required" });
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Client has no email address. Add one or provide recipientEmail.",
+        });
       }
 
-      const paymentUrl = invoice.adyenPaymentLinkUrl || invoice.stripePaymentUrl;
-      await sendEmail({
-        to: [{ email: toEmail }],
-        subject: `Invoice ${invoice.invoiceNumber}${firm ? ` — ${firm.name}` : ""}`,
-        htmlContent: `
-          <p>Dear Client,</p>
-          <p>Please find your invoice <strong>${invoice.invoiceNumber}</strong> attached.</p>
-          <p>Amount due: <strong>CHF ${invoice.total}</strong></p>
-          ${
-            input.includePaymentLink && paymentUrl
-              ? `<p><a href="${paymentUrl}" style="background-color:#001f3f;color:white;padding:10px 20px;text-decoration:none;border-radius:4px;display:inline-block;">Pay Now</a></p>`
-              : ""
-          }
-          <p>Thank you for your business.</p>
-        `,
-        // Brevo requires a verified sender; use EMAIL_FROM and reply to the firm
-        replyTo: firm?.email
-          ? { email: firm.email, name: firm.name || undefined }
-          : undefined,
-        attachment: [
-          {
-            name: result.filename,
-            content: result.buffer.toString("base64"),
-          },
-        ],
+      const result = await emailInvoiceToClient({
+        invoiceId: input.invoiceId,
+        recipientEmail: toEmail,
+        includePaymentLink: input.includePaymentLink,
       });
+      if (!result.sent) {
+        throw new TRPCError({ code: "BAD_REQUEST", message: result.reason || "Failed to send invoice" });
+      }
 
-      return { success: true as const, message: "Invoice sent successfully" };
+      return { success: true as const, message: "Invoice sent successfully", email: result.email };
     }),
 });

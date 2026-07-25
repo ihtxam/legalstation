@@ -25,6 +25,10 @@ export const paymentPlansRouter = router({
         installmentCount: z.number().min(1).max(12),
         intervalDays: z.number().min(0),
         autoGenerateInvoices: z.boolean().optional().default(true),
+        /** Email generated installment invoices to the client (first now + later when due). */
+        autoSendInvoices: z.boolean().optional().default(true),
+        /** Generate & send the first installment immediately on create. */
+        sendFirstNow: z.boolean().optional().default(true),
         generateDueNow: z.boolean().optional().default(true),
         installments: z.array(
           z.object({
@@ -46,6 +50,9 @@ export const paymentPlansRouter = router({
       if (!invoice) throw new TRPCError({ code: "NOT_FOUND", message: "Invoice not found" });
 
       const totalAmount = input.installments.reduce((sum, inst) => sum + inst.amount, 0);
+      const autoGenerate = input.autoGenerateInvoices;
+      const autoSend = input.autoSendInvoices;
+      const sendFirstNow = input.sendFirstNow && autoGenerate;
 
       const planResult = await db.insert(paymentPlans).values({
         invoiceId: input.invoiceId,
@@ -54,16 +61,26 @@ export const paymentPlansRouter = router({
         totalAmount: totalAmount.toString(),
         installmentCount: input.installmentCount,
         intervalDays: input.intervalDays,
-        autoGenerateInvoices: input.autoGenerateInvoices,
+        autoGenerateInvoices: autoGenerate,
+        autoSendInvoices: autoSend,
       });
 
       const planId = planResult[0].insertId as number;
       const now = new Date();
-      const createdInstallmentIds: number[] = [];
+      const createdInstallments: Array<{ id: number; number: number; dueDate: Date }> = [];
 
-      for (const inst of input.installments) {
+      const sorted = [...input.installments].sort(
+        (a, b) => a.installmentNumber - b.installmentNumber
+      );
+
+      for (const inst of sorted) {
+        // First installment is due immediately when send-first is enabled
+        const days =
+          sendFirstNow && inst.installmentNumber === sorted[0]?.installmentNumber
+            ? 0
+            : inst.daysFromNow;
         const dueDate = new Date(now);
-        dueDate.setDate(dueDate.getDate() + inst.daysFromNow);
+        dueDate.setDate(dueDate.getDate() + days);
         const result = await db.insert(paymentInstallments).values({
           paymentPlanId: planId,
           installmentNumber: inst.installmentNumber,
@@ -71,25 +88,31 @@ export const paymentPlansRouter = router({
           dueDate,
           status: "pending",
         });
-        createdInstallmentIds.push(result[0].insertId as number);
+        createdInstallments.push({
+          id: result[0].insertId as number,
+          number: inst.installmentNumber,
+          dueDate,
+        });
       }
 
       const generatedInvoiceIds: number[] = [];
-      if (input.autoGenerateInvoices && input.generateDueNow) {
-        for (const installmentId of createdInstallmentIds) {
-          const [row] = await db
-            .select()
-            .from(paymentInstallments)
-            .where(eq(paymentInstallments.id, installmentId))
-            .limit(1);
-          if (row && new Date(row.dueDate).getTime() <= Date.now()) {
-            const gen = await generateInvoiceForInstallment(installmentId, ctx.user.id);
-            if (!gen.alreadyGenerated) generatedInvoiceIds.push(gen.invoiceId);
-          }
+      const emailedInvoiceIds: number[] = [];
+
+      if (autoGenerate && (sendFirstNow || input.generateDueNow)) {
+        const toGenerate = sendFirstNow
+          ? createdInstallments.slice(0, 1)
+          : createdInstallments.filter((row) => row.dueDate.getTime() <= Date.now());
+
+        for (const row of toGenerate) {
+          const gen = await generateInvoiceForInstallment(row.id, ctx.user.id, {
+            sendEmail: autoSend,
+          });
+          if (!gen.alreadyGenerated) generatedInvoiceIds.push(gen.invoiceId);
+          if (gen.emailSent) emailedInvoiceIds.push(gen.invoiceId);
         }
       }
 
-      return { planId, totalAmount, generatedInvoiceIds };
+      return { planId, totalAmount, generatedInvoiceIds, emailedInvoiceIds };
     }),
 
   get: protectedProcedure
@@ -179,7 +202,9 @@ export const paymentPlansRouter = router({
       const invoice = await getInvoiceById(plan.invoiceId, member.firmId);
       if (!invoice) throw new TRPCError({ code: "UNAUTHORIZED" });
 
-      return generateInvoiceForInstallment(input.installmentId, ctx.user.id);
+      return generateInvoiceForInstallment(input.installmentId, ctx.user.id, {
+        sendEmail: plan.autoSendInvoices !== false,
+      });
     }),
 
   generateDue: protectedProcedure.mutation(async ({ ctx }) => {

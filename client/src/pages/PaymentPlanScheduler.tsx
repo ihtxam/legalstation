@@ -31,16 +31,20 @@ export default function PaymentPlanScheduler({
   const [scheduleType, setScheduleType] = useState<"monthly" | "custom">("monthly");
   const [monthCount, setMonthCount] = useState("3");
   const [installments, setInstallments] = useState<Installment[]>([]);
-  const [autoGenerateInvoices, setAutoGenerateInvoices] = useState(true);
+  /** Send first invoice now; generate & email later installments when due (e.g. +30 days). */
+  const [sendAndSchedule, setSendAndSchedule] = useState(true);
 
   const createPaymentPlanMutation = trpc.paymentPlans.create.useMutation({
     onSuccess: (data) => {
       const genCount = data.generatedInvoiceIds?.length ?? 0;
-      toast.success(
-        genCount > 0
-          ? t("paymentPlan.createdWithInvoices", { count: genCount })
-          : t("paymentPlan.created")
-      );
+      const emailed = data.emailedInvoiceIds?.length ?? 0;
+      if (genCount > 0 && emailed > 0) {
+        toast.success(t("paymentPlan.createdSentFirst", { count: genCount, emailed }));
+      } else if (genCount > 0) {
+        toast.success(t("paymentPlan.createdWithInvoices", { count: genCount }));
+      } else {
+        toast.success(t("paymentPlan.created"));
+      }
       setInstallments([]);
       onCreated?.();
     },
@@ -54,7 +58,8 @@ export default function PaymentPlanScheduler({
 
     for (let i = 0; i < months; i++) {
       const dueDate = new Date();
-      dueDate.setMonth(dueDate.getMonth() + i + 1);
+      // First installment due today; each next installment +30 days
+      dueDate.setDate(dueDate.getDate() + i * 30);
       newInstallments.push({
         dueDate: dueDate.toISOString().split("T")[0],
         percentage: 100 / months,
@@ -97,9 +102,19 @@ export default function PaymentPlanScheduler({
       return;
     }
 
-    const intervalDays = installments.length > 1
-      ? Math.floor((new Date(installments[1].dueDate).getTime() - new Date(installments[0].dueDate).getTime()) / (1000 * 60 * 60 * 24))
-      : 30;
+    const intervalDays =
+      scheduleType === "monthly"
+        ? 30
+        : installments.length > 1
+          ? Math.max(
+              1,
+              Math.floor(
+                (new Date(installments[1].dueDate).getTime() -
+                  new Date(installments[0].dueDate).getTime()) /
+                  (1000 * 60 * 60 * 24)
+              )
+            )
+          : 30;
 
     createPaymentPlanMutation.mutate({
       invoiceId,
@@ -108,8 +123,10 @@ export default function PaymentPlanScheduler({
         : t("paymentPlan.customName"),
       installmentCount: installments.length,
       intervalDays,
-      autoGenerateInvoices,
-      generateDueNow: autoGenerateInvoices,
+      autoGenerateInvoices: sendAndSchedule,
+      autoSendInvoices: sendAndSchedule,
+      sendFirstNow: sendAndSchedule,
+      generateDueNow: sendAndSchedule,
       installments: installments.map((inst, idx) => ({
         installmentNumber: idx + 1,
         amount: inst.amount,
@@ -227,15 +244,18 @@ export default function PaymentPlanScheduler({
           </div>
         )}
 
-        <div className="flex items-center gap-2">
-          <input
-            id="autoGenerateInvoices"
-            type="checkbox"
-            checked={autoGenerateInvoices}
-            onChange={(e) => setAutoGenerateInvoices(e.target.checked)}
-            className="h-4 w-4"
-          />
-          <Label htmlFor="autoGenerateInvoices">{t("paymentPlan.autoGenerate")}</Label>
+        <div className="space-y-1">
+          <div className="flex items-center gap-2">
+            <input
+              id="sendAndSchedule"
+              type="checkbox"
+              checked={sendAndSchedule}
+              onChange={(e) => setSendAndSchedule(e.target.checked)}
+              className="h-4 w-4"
+            />
+            <Label htmlFor="sendAndSchedule">{t("paymentPlan.sendAndSchedule")}</Label>
+          </div>
+          <p className="text-xs text-muted-foreground ms-6">{t("paymentPlan.sendAndScheduleHint")}</p>
         </div>
 
         {installments.length > 0 && (

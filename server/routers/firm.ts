@@ -250,15 +250,42 @@ export const firmRouter = router({
       maxUploadMb: z.number().min(0.1).max(50).optional(),
       /** Allowed extensions without dots, e.g. ["pdf","jpg","png"]. */
       allowedUploadTypes: z.array(z.string().min(1).max(20)).max(40).optional(),
+      /** Swiss banking for QR-bill (page 2 of invoices). */
+      iban: z.string().max(34).optional().nullable(),
+      qrIban: z.string().max(34).optional().nullable(),
+      creditorStreet: z.string().max(70).optional().nullable(),
+      creditorBuildingNumber: z.string().max(16).optional().nullable(),
+      creditorPostalCode: z.string().max(16).optional().nullable(),
+      creditorCity: z.string().max(35).optional().nullable(),
+      creditorCountry: z.string().length(2).optional().nullable(),
     }))
     .mutation(async ({ ctx, input }) => {
       const member = await getFirmMemberByUserId(ctx.user.id);
       const { isFirmAdminLike } = await import("@shared/roles");
       if (!member || !isFirmAdminLike(member.firmRole)) throw new TRPCError({ code: "FORBIDDEN" });
-      const { defaultVatRate, defaultCurrency, maxUploadMb, allowedUploadTypes, ...rest } = input;
+      const {
+        defaultVatRate,
+        defaultCurrency,
+        maxUploadMb,
+        allowedUploadTypes,
+        iban,
+        qrIban,
+        creditorCountry,
+        ...rest
+      } = input;
       const { UPLOAD_HARD_MAX_BYTES } = await import("@shared/uploadPolicy");
+      const normalizeIban = (v?: string | null) =>
+        v == null ? v : v.replace(/\s+/g, "").toUpperCase() || null;
       await updateFirm(member.firmId, {
         ...rest,
+        iban: iban !== undefined ? normalizeIban(iban) : undefined,
+        qrIban: qrIban !== undefined ? normalizeIban(qrIban) : undefined,
+        creditorCountry:
+          creditorCountry !== undefined
+            ? creditorCountry
+              ? creditorCountry.toUpperCase()
+              : "CH"
+            : undefined,
         defaultCurrency: defaultCurrency?.toUpperCase(),
         defaultVatRate: defaultVatRate != null ? defaultVatRate.toFixed(2) : undefined,
         maxUploadBytes:

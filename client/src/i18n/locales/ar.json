@@ -332,7 +332,17 @@
     "roleHintLawyer": "يرى فقط قضاياه المعيّنة والفواتير المرتبطة. بدون إعدادات المسؤول.",
     "roleHintAssistant": "يرى القضايا المعيّنة؛ يمكنه عرض الفواتير المرتبطة دون إنشائها.",
     "inviteClientTitle": "دعوة العميل إلى البوابة",
-    "inviteClientHint": "أرسل دعوة ليتمكن هذا العميل من الوصول إلى قضاياه ومستنداته."
+    "inviteClientHint": "أرسل دعوة ليتمكن هذا العميل من الوصول إلى قضاياه ومستنداته.",
+    "bankingTitle": "بيانات الحساب للفاتورة السويسرية QR",
+    "bankingHint": "يظهر IBAN / QR-IBAN وعنوان الدائن في الصفحة الثانية من PDF الفاتورة كقسيمة دفع QR.",
+    "iban": "IBAN",
+    "qrIban": "QR-IBAN",
+    "qrIbanHelp": "فضّل QR-IBAN إن وُجد. وإلا يُستخدم IBAN العادي.",
+    "creditorStreet": "الشارع",
+    "creditorBuildingNumber": "رقم المبنى",
+    "creditorPostalCode": "الرمز البريدي",
+    "creditorCity": "المدينة",
+    "creditorCountry": "الدولة (ISO)"
   },
   "notFound": {
     "title": "الصفحة غير موجودة",
@@ -602,7 +612,8 @@
     "optionalCase": "القضية (اختياري)",
     "currency": "العملة",
     "payNow": "ادفع الآن",
-    "paymentLink": "رابط الدفع"
+    "paymentLink": "رابط الدفع",
+    "emailSent": "تم إرسال الفاتورة إلى العميل بالبريد"
   },
   "timeReports": {
     "title": "تقارير الوقت",
@@ -722,7 +733,10 @@
     "needInstallment": "أضف قسطًا واحدًا على الأقل",
     "mustTotal100": "يجب أن تبلغ الأقساط 100% (حاليًا {{total}}%)",
     "monthlyName": "خطة دفع لـ {{count}} أشهر",
-    "customName": "خطة دفع مخصصة"
+    "customName": "خطة دفع مخصصة",
+    "sendAndSchedule": "أرسل الفاتورة الأولى الآن وجدول الباقي",
+    "sendAndScheduleHint": "يرسل القسط الأول فوراً. الأقساط اللاحقة تُنشأ وتُرسل عند الاستحقاق (مثلاً كل 30 يوماً).",
+    "createdSentFirst": "تم إنشاء الخطة · أُرسل القسط الأول ({{emailed}} بريد)"
   },
   "analytics": {
     "title": "تحليلات المكتب",

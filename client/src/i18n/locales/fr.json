@@ -332,7 +332,17 @@
     "roleHintLawyer": "Voit uniquement ses dossiers assignés et les factures liées. Pas de paramètres admin.",
     "roleHintAssistant": "Voit les dossiers assignés ; peut consulter les factures liées mais pas les créer.",
     "inviteClientTitle": "Inviter le client au portail",
-    "inviteClientHint": "Envoyez une invitation pour que ce client accède à ses dossiers et documents."
+    "inviteClientHint": "Envoyez une invitation pour que ce client accède à ses dossiers et documents.",
+    "bankingTitle": "Coordonnées bancaires QR-facture",
+    "bankingHint": "L'IBAN / QR-IBAN et l'adresse du créancier figurent en page 2 des PDF de facture (bulletin de versement QR).",
+    "iban": "IBAN",
+    "qrIban": "QR-IBAN",
+    "qrIbanHelp": "Préférez le QR-IBAN si votre banque en a fourni un. Sinon l'IBAN standard est utilisé.",
+    "creditorStreet": "Rue du créancier",
+    "creditorBuildingNumber": "N°",
+    "creditorPostalCode": "NPA",
+    "creditorCity": "Ville",
+    "creditorCountry": "Pays (ISO)"
   },
   "notFound": {
     "title": "Page introuvable",
@@ -602,7 +612,8 @@
     "optionalCase": "Dossier (facultatif)",
     "currency": "Devise",
     "payNow": "Payer maintenant",
-    "paymentLink": "Lien de paiement"
+    "paymentLink": "Lien de paiement",
+    "emailSent": "Facture envoyée par e-mail au client"
   },
   "timeReports": {
     "title": "Rapports de temps",
@@ -722,7 +733,10 @@
     "needInstallment": "Ajoutez au moins une échéance",
     "mustTotal100": "Les échéances doivent totaliser 100 % (actuellement {{total}} %)",
     "monthlyName": "Plan de paiement sur {{count}} mois",
-    "customName": "Plan de paiement personnalisé"
+    "customName": "Plan de paiement personnalisé",
+    "sendAndSchedule": "Envoyer la 1re facture maintenant et planifier les suivantes",
+    "sendAndScheduleHint": "Envoie la première échéance immédiatement. Les suivantes sont générées et envoyées à échéance (ex. tous les 30 jours).",
+    "createdSentFirst": "Plan créé · première échéance envoyée ({{emailed}} e-mail)"
   },
   "analytics": {
     "title": "Analytique du cabinet",

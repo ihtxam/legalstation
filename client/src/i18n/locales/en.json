@@ -332,7 +332,17 @@
     "roleHintLawyer": "Sees only assigned cases and related invoices. Cannot change firm settings.",
     "roleHintAssistant": "Sees assigned cases; can view related invoices but not create them.",
     "inviteClientTitle": "Invite client to portal",
-    "inviteClientHint": "Send an invitation so this client can access their cases and documents."
+    "inviteClientHint": "Send an invitation so this client can access their cases and documents.",
+    "bankingTitle": "Swiss QR-bill banking",
+    "bankingHint": "IBAN / QR-IBAN and creditor address appear on page 2 of invoice PDFs as a Swiss QR payment slip.",
+    "iban": "IBAN",
+    "qrIban": "QR-IBAN",
+    "qrIbanHelp": "Preferred for QR-bills when your bank issued a QR-IBAN. Otherwise the standard IBAN is used.",
+    "creditorStreet": "Creditor street",
+    "creditorBuildingNumber": "Building no.",
+    "creditorPostalCode": "Postal code",
+    "creditorCity": "City",
+    "creditorCountry": "Country (ISO)"
   },
   "notFound": {
     "title": "Page Not Found",
@@ -602,7 +612,8 @@
     "optionalCase": "Case (optional)",
     "currency": "Currency",
     "payNow": "Pay now",
-    "paymentLink": "Payment link"
+    "paymentLink": "Payment link",
+    "emailSent": "Invoice emailed to the client"
   },
   "timeReports": {
     "title": "Time Reports",
@@ -722,7 +733,10 @@
     "needInstallment": "Add at least one installment",
     "mustTotal100": "Installments must total 100% (currently {{total}}%)",
     "monthlyName": "{{count}}-Month Payment Plan",
-    "customName": "Custom Payment Plan"
+    "customName": "Custom Payment Plan",
+    "sendAndSchedule": "Send first invoice now and schedule the rest",
+    "sendAndScheduleHint": "Emails the first installment immediately. Later installments are generated and emailed when due (e.g. every 30 days for monthly).",
+    "createdSentFirst": "Payment plan created · first installment sent ({{emailed}} emailed)"
   },
   "analytics": {
     "title": "Firm analytics",
