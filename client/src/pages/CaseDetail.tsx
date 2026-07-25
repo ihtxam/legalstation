@@ -127,7 +127,12 @@ function CaseTimeline({ caseId, isInternal }: { caseId: number; isInternal: bool
 
 function CaseDocuments({ caseId, firmId }: { caseId: number; firmId: number }) {
   const { data: docs, isLoading, refetch } = trpc.documents.list.useQuery({ caseId });
+  const { data: docRequests, refetch: refetchRequests } = trpc.documentRequests.list.useQuery({ caseId });
   const [showUpload, setShowUpload] = useState(false);
+  const [showRequest, setShowRequest] = useState(false);
+  const [requestTitle, setRequestTitle] = useState("");
+  const [requestDescription, setRequestDescription] = useState("");
+  const [requestDue, setRequestDue] = useState("");
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [folderId, setFolderId] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -141,6 +146,24 @@ function CaseDocuments({ caseId, firmId }: { caseId: number; firmId: number }) {
   const register = trpc.documents.register.useMutation({
     onError: (e: any) => toast.error(e.message),
   });
+  const createDocRequest = trpc.documentRequests.create.useMutation({
+    onSuccess: () => {
+      toast.success("Document request sent to client");
+      setShowRequest(false);
+      setRequestTitle("");
+      setRequestDescription("");
+      setRequestDue("");
+      void refetchRequests();
+    },
+    onError: (e) => toast.error(e.message),
+  });
+  const cancelDocRequest = trpc.documentRequests.cancel.useMutation({
+    onSuccess: () => {
+      toast.success("Request cancelled");
+      void refetchRequests();
+    },
+    onError: (e) => toast.error(e.message),
+  });
 
   const groupedDocs = (docs ?? []).reduce((acc: any[], item: any) => {
     const folder = acc.find(g => g.folder.id === item.doc?.folderId);
@@ -149,14 +172,45 @@ function CaseDocuments({ caseId, firmId }: { caseId: number; firmId: number }) {
     return acc;
   }, [] as any[]);
   const unfoldered = groupedDocs.find(g => g.folder.id === 0)?.docs ?? [];
+  const pendingRequests = (docRequests || []).filter((r) => r.status === "pending");
 
   return (
     <div className="space-y-4">
-      <div className="flex justify-end">
+      <div className="flex justify-end gap-2 flex-wrap">
+        <Button size="sm" variant="outline" onClick={() => setShowRequest(true)}>
+          <AlertCircle className="w-3.5 h-3.5 mr-1.5" /> Request from client
+        </Button>
         <Button size="sm" onClick={() => setShowUpload(true)}>
           <Upload className="w-3.5 h-3.5 mr-1.5" /> Upload Document
         </Button>
       </div>
+
+      {pendingRequests.length > 0 && (
+        <div className="rounded-lg border border-border bg-muted/30 p-4 space-y-2">
+          <p className="text-sm font-semibold">Pending client document requests</p>
+          {pendingRequests.map((req) => (
+            <div key={req.id} className="flex items-start justify-between gap-3 bg-card border border-border rounded-md p-3">
+              <div>
+                <p className="text-sm font-medium">{req.title}</p>
+                {req.description && <p className="text-xs text-muted-foreground mt-1">{req.description}</p>}
+                {req.dueDate && (
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Due {format(new Date(req.dueDate), "dd MMM yyyy")}
+                  </p>
+                )}
+              </div>
+              <Button
+                size="sm"
+                variant="ghost"
+                className="text-destructive"
+                onClick={() => cancelDocRequest.mutate({ requestId: req.id })}
+              >
+                Cancel
+              </Button>
+            </div>
+          ))}
+        </div>
+      )}
       {isLoading ? (
         <div className="space-y-2">{[1,2,3].map(i => <Skeleton key={i} className="h-12 w-full" />)}</div>
       ) : !docs?.length ? (
@@ -232,6 +286,65 @@ function CaseDocuments({ caseId, firmId }: { caseId: number; firmId: number }) {
                 }
               }}>
               Upload
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={showRequest} onOpenChange={setShowRequest}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Request document from client</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-2">
+            <div>
+              <Label htmlFor="reqTitle">What do you need?</Label>
+              <Input
+                id="reqTitle"
+                className="mt-1.5"
+                placeholder="e.g. Signed power of attorney"
+                value={requestTitle}
+                onChange={(e) => setRequestTitle(e.target.value)}
+              />
+            </div>
+            <div>
+              <Label htmlFor="reqDesc">Details (optional)</Label>
+              <Textarea
+                id="reqDesc"
+                className="mt-1.5"
+                value={requestDescription}
+                onChange={(e) => setRequestDescription(e.target.value)}
+              />
+            </div>
+            <div>
+              <Label htmlFor="reqDue">Due date (optional)</Label>
+              <Input
+                id="reqDue"
+                type="date"
+                className="mt-1.5"
+                value={requestDue}
+                onChange={(e) => setRequestDue(e.target.value)}
+              />
+            </div>
+            <p className="text-xs text-muted-foreground">
+              The client is emailed and can upload from the client portal.
+            </p>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowRequest(false)}>Cancel</Button>
+            <Button
+              className="bg-[var(--color-navy)] hover:bg-[var(--color-navy-light)] text-white"
+              disabled={!requestTitle.trim() || createDocRequest.isPending}
+              onClick={() =>
+                createDocRequest.mutate({
+                  caseId,
+                  title: requestTitle.trim(),
+                  description: requestDescription.trim() || undefined,
+                  dueDate: requestDue || undefined,
+                })
+              }
+            >
+              Send request
             </Button>
           </DialogFooter>
         </DialogContent>

@@ -216,3 +216,112 @@ export async function sendDocumentUploadNotificationEmail(
     sender: { email: "noreply@lexflow.ch", name: "LexFlow" },
   });
 }
+
+export async function sendCaseUpdateEmail(opts: {
+  recipientEmail: string;
+  recipientName: string;
+  caseTitle: string;
+  updateTitle: string;
+  updateBody: string;
+  caseUrl: string;
+}): Promise<void> {
+  const { recipientEmail, recipientName, caseTitle, updateTitle, updateBody, caseUrl } = opts;
+  const htmlContent = `
+    <html>
+      <body style="font-family: Inter, sans-serif; color: #1a1a1a;">
+        <div style="max-width: 600px; margin: 0 auto; padding: 20px;">
+          <h2 style="color: #001f3f; margin-bottom: 20px;">Update on ${caseTitle}</h2>
+          <p>Hi ${recipientName},</p>
+          <p><strong>${updateTitle}</strong></p>
+          <div style="background-color: #f5f5f5; padding: 15px; border-left: 4px solid #001f3f; margin: 20px 0; border-radius: 4px;">
+            <p style="margin: 0; color: #333;">${updateBody}</p>
+          </div>
+          <p style="margin: 30px 0;">
+            <a href="${caseUrl}" style="background-color: #001f3f; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block;">
+              Open case
+            </a>
+          </p>
+          <hr style="border: none; border-top: 1px solid #ddd; margin: 30px 0;" />
+          <p style="color: #999; font-size: 12px;">LexFlow — Swiss Legal Practice Management</p>
+        </div>
+      </body>
+    </html>
+  `;
+  await sendEmail({
+    to: [{ email: recipientEmail, name: recipientName }],
+    subject: `${caseTitle}: ${updateTitle}`,
+    htmlContent,
+    sender: { email: "noreply@lexflow.ch", name: "LexFlow" },
+  });
+}
+
+export async function sendDocumentRequestEmail(opts: {
+  recipientEmail: string;
+  recipientName: string;
+  caseTitle: string;
+  requestTitle: string;
+  description?: string | null;
+  caseUrl: string;
+}): Promise<void> {
+  const { recipientEmail, recipientName, caseTitle, requestTitle, description, caseUrl } = opts;
+  const htmlContent = `
+    <html>
+      <body style="font-family: Inter, sans-serif; color: #1a1a1a;">
+        <div style="max-width: 600px; margin: 0 auto; padding: 20px;">
+          <h2 style="color: #001f3f; margin-bottom: 20px;">Document requested</h2>
+          <p>Hi ${recipientName},</p>
+          <p>Your legal team requested a document for <strong>${caseTitle}</strong>:</p>
+          <div style="background-color: #f5f5f5; padding: 15px; border-left: 4px solid #001f3f; margin: 20px 0; border-radius: 4px;">
+            <p style="margin: 0 0 8px;"><strong>${requestTitle}</strong></p>
+            ${description ? `<p style="margin: 0; color: #333;">${description}</p>` : ""}
+          </div>
+          <p style="margin: 30px 0;">
+            <a href="${caseUrl}" style="background-color: #001f3f; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block;">
+              Upload in client portal
+            </a>
+          </p>
+          <hr style="border: none; border-top: 1px solid #ddd; margin: 30px 0;" />
+          <p style="color: #999; font-size: 12px;">LexFlow — Swiss Legal Practice Management</p>
+        </div>
+      </body>
+    </html>
+  `;
+  await sendEmail({
+    to: [{ email: recipientEmail, name: recipientName }],
+    subject: `Document requested: ${requestTitle}`,
+    htmlContent,
+    sender: { email: "noreply@lexflow.ch", name: "LexFlow" },
+  });
+}
+
+export async function sendLeadNotificationEmail(opts: {
+  toEmail: string;
+  type: string;
+  firmName: string;
+  contactName: string;
+  email: string;
+  phone?: string | null;
+  message?: string | null;
+}): Promise<void> {
+  const htmlContent = `
+    <html>
+      <body style="font-family: Inter, sans-serif; color: #1a1a1a;">
+        <div style="max-width: 600px; margin: 0 auto; padding: 20px;">
+          <h2 style="color: #001f3f;">New ${opts.type} lead</h2>
+          <p><strong>Firm:</strong> ${opts.firmName}</p>
+          <p><strong>Contact:</strong> ${opts.contactName}</p>
+          <p><strong>Email:</strong> ${opts.email}</p>
+          ${opts.phone ? `<p><strong>Phone:</strong> ${opts.phone}</p>` : ""}
+          ${opts.message ? `<p><strong>Message:</strong> ${opts.message}</p>` : ""}
+        </div>
+      </body>
+    </html>
+  `;
+  await sendEmail({
+    to: [{ email: opts.toEmail }],
+    subject: `LexFlow lead (${opts.type}): ${opts.firmName}`,
+    htmlContent,
+    sender: { email: "noreply@lexflow.ch", name: "LexFlow" },
+  });
+}
+

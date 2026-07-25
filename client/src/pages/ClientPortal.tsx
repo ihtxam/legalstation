@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { startLogin } from "@/const";
 import { trpc } from "@/lib/trpc";
@@ -6,10 +6,26 @@ import LexLayout from "@/components/LexLayout";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import { DocumentExchange } from "@/components/DocumentExchange";
 import { CaseStatusTimeline } from "@/components/CaseStatusTimeline";
 import { Badge } from "@/components/ui/badge";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   FileText,
   MessageSquare,
@@ -17,23 +33,36 @@ import {
   AlertCircle,
   Send,
   Building2,
+  Plus,
+  Upload,
 } from "lucide-react";
 import { format } from "date-fns";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
+import { CASE_TYPE_LABELS } from "@shared/types";
 
 export default function ClientPortalPage() {
   const { t } = useTranslation();
   const { isAuthenticated, loading } = useAuth();
   const [selectedCaseId, setSelectedCaseId] = useState<number | null>(null);
   const [newMessage, setNewMessage] = useState("");
+  const [showLitige, setShowLitige] = useState(false);
+  const [litigeForm, setLitigeForm] = useState({
+    title: "",
+    type: "other" as keyof typeof CASE_TYPE_LABELS,
+    description: "",
+  });
+  const [pendingUploadFiles, setPendingUploadFiles] = useState<File[]>([]);
+  const litigeFileRef = useRef<HTMLInputElement>(null);
+  const fulfillFileRef = useRef<HTMLInputElement>(null);
+  const [fulfillingRequestId, setFulfillingRequestId] = useState<number | null>(null);
   const { data: branding } = trpc.firm.branding.useQuery(undefined, { enabled: isAuthenticated });
 
   useEffect(() => {
     if (!loading && !isAuthenticated) startLogin();
   }, [isAuthenticated, loading]);
 
-  const { data: cases, isLoading: casesLoading } = trpc.cases.list.useQuery(
+  const { data: cases, isLoading: casesLoading, refetch: refetchCases } = trpc.cases.list.useQuery(
     {},
     { enabled: isAuthenticated }
   );
@@ -64,6 +93,14 @@ export default function ClientPortalPage() {
     { enabled: isAuthenticated && !!selectedCaseId }
   );
 
+  const {
+    data: docRequests,
+    refetch: refetchDocRequests,
+  } = trpc.documentRequests.list.useQuery(
+    { caseId: selectedCaseId! },
+    { enabled: isAuthenticated && !!selectedCaseId }
+  );
+
   const [summaries, setSummaries] = useState<Record<number, any>>({});
   const [summariesLoading, setSummariesLoading] = useState<Record<number, boolean>>({});
 
@@ -71,6 +108,17 @@ export default function ClientPortalPage() {
   const getDownloadUrl = trpc.documents.getDownloadUrl.useMutation();
   const registerDocument = trpc.documents.register.useMutation();
   const analyzeDocument = trpc.documentAnalysis.analyzeDocument.useMutation();
+  const fulfillRequest = trpc.documentRequests.fulfill.useMutation({
+    onSuccess: () => {
+      toast.success(t("portal.requestFulfilled"));
+      void refetchDocRequests();
+      void refetchDocs();
+    },
+    onError: (e) => toast.error(e.message),
+  });
+  const createLitige = trpc.cases.createLitige.useMutation({
+    onError: (e) => toast.error(e.message),
+  });
   const sendMsg = trpc.messages.send.useMutation({
     onSuccess: () => {
       setNewMessage("");
@@ -80,16 +128,35 @@ export default function ClientPortalPage() {
   });
   const utils = trpc.useUtils();
 
+  const uploadAndRegister = async (caseId: number, file: File) => {
+    const formData = new FormData();
+    formData.append("file", file);
+    const res = await fetch("/api/upload", { method: "POST", body: formData });
+    if (!res.ok) throw new Error("Upload failed");
+    const { fileKey, fileUrl } = await res.json();
+    const result = await registerDocument.mutateAsync({
+      caseId,
+      name: file.name,
+      originalName: file.name,
+      mimeType: file.type || "application/octet-stream",
+      size: file.size,
+      fileKey,
+      fileUrl,
+      visibility: "shared",
+    });
+    return { result, fileUrl, file };
+  };
+
   // Prefetch existing AI summaries when docs load
   useEffect(() => {
     if (!documents?.length) return;
-    let cancelled = false;
+    let d = false;
     (async () => {
       for (const { doc } of documents) {
-        if (cancelled) break;
+        if (d) break;
         try {
           const summary = await utils.documentAnalysis.getSummary.fetch({ documentId: doc.id });
-          if (summary && !cancelled) {
+          if (summary && !d) {
             setSummaries((prev) => (prev[doc.id] ? prev : { ...prev, [doc.id]: summary }));
           }
         } catch {
@@ -98,7 +165,7 @@ export default function ClientPortalPage() {
       }
     })();
     return () => {
-      cancelled = true;
+      d = true;
     };
   }, [documents, utils.documentAnalysis.getSummary]);
 
@@ -112,30 +179,40 @@ export default function ClientPortalPage() {
 
   const clientCases = cases || [];
   const activeCase = selectedCase || clientCases.find((c) => c.id === selectedCaseId) || null;
+  const pendingRequests = (docRequests || []).filter((r) => r.status === "pending");
 
   return (
     <LexLayout breadcrumb={[{ label: t("portal.title") }]}>
       <div className="p-6 max-w-6xl mx-auto space-y-6">
-        <div className="flex items-start gap-4">
-          {branding?.logoUrl ? (
-            <img
-              src={branding.logoUrl}
-              alt={branding.name || t("settings.logo")}
-              className="h-12 w-auto object-contain"
-            />
-          ) : (
-            <div className="h-12 w-12 rounded-lg bg-[var(--color-navy)]/10 flex items-center justify-center">
-              <Building2 className="w-6 h-6 text-[var(--color-navy)]" />
+        <div className="flex items-start justify-between gap-4 flex-wrap">
+          <div className="flex items-start gap-4">
+            {branding?.logoUrl ? (
+              <img
+                src={branding.logoUrl}
+                alt={branding.name || t("settings.logo")}
+                className="h-12 w-auto object-contain"
+              />
+            ) : (
+              <div className="h-12 w-12 rounded-lg bg-[var(--color-navy)]/10 flex items-center justify-center">
+                <Building2 className="w-6 h-6 text-[var(--color-navy)]" />
+              </div>
+            )}
+            <div>
+              <h1 className="text-3xl font-bold text-foreground">{t("portal.title")}</h1>
+              <p className="text-muted-foreground mt-2">
+                {branding?.name
+                  ? t("portal.subtitle", { firm: branding.name })
+                  : t("portal.subtitleFallback")}
+              </p>
             </div>
-          )}
-          <div>
-            <h1 className="text-3xl font-bold text-foreground">{t("portal.title")}</h1>
-            <p className="text-muted-foreground mt-2">
-              {branding?.name
-                ? t("portal.subtitle", { firm: branding.name })
-                : t("portal.subtitleFallback")}
-            </p>
           </div>
+          <Button
+            className="bg-[var(--color-navy)] hover:bg-[var(--color-navy-light)] text-white"
+            onClick={() => setShowLitige(true)}
+          >
+            <Plus className="w-4 h-4 mr-1.5" />
+            {t("portal.announceLitige")}
+          </Button>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
@@ -152,9 +229,12 @@ export default function ClientPortalPage() {
                     <Skeleton className="h-12 w-full" />
                   </div>
                 ) : clientCases.length === 0 ? (
-                  <div className="p-6 text-center space-y-2">
+                  <div className="p-6 text-center space-y-3">
                     <p className="text-muted-foreground text-sm font-medium">{t("portal.empty")}</p>
-                    <p className="text-xs text-muted-foreground">{t("portal.emptyHint")}</p>
+                    <p className="text-xs text-muted-foreground">{t("portal.emptyHintAnnounce")}</p>
+                    <Button size="sm" variant="outline" onClick={() => setShowLitige(true)}>
+                      {t("portal.announceLitige")}
+                    </Button>
                   </div>
                 ) : (
                   clientCases.map((c) => (
@@ -229,6 +309,67 @@ export default function ClientPortalPage() {
                   )}
                 </div>
 
+                {pendingRequests.length > 0 && (
+                  <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 space-y-3">
+                    <p className="text-sm font-semibold text-amber-900">
+                      {t("portal.documentRequests")} ({pendingRequests.length})
+                    </p>
+                    {pendingRequests.map((req) => (
+                      <div
+                        key={req.id}
+                        className="flex items-start justify-between gap-3 flex-wrap bg-white/70 rounded-md border border-amber-100 p-3"
+                      >
+                        <div>
+                          <p className="font-medium text-sm text-foreground">{req.title}</p>
+                          {req.description && (
+                            <p className="text-xs text-muted-foreground mt-1">{req.description}</p>
+                          )}
+                          {req.dueDate && (
+                            <p className="text-xs text-amber-800 mt-1">
+                              {t("portal.due")}: {format(new Date(req.dueDate), "dd MMM yyyy")}
+                            </p>
+                          )}
+                        </div>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          disabled={fulfillRequest.isPending && fulfillingRequestId === req.id}
+                          onClick={() => {
+                            setFulfillingRequestId(req.id);
+                            fulfillFileRef.current?.click();
+                          }}
+                        >
+                          <Upload className="w-3.5 h-3.5 mr-1.5" />
+                          {t("portal.uploadForRequest")}
+                        </Button>
+                      </div>
+                    ))}
+                    <input
+                      ref={fulfillFileRef}
+                      type="file"
+                      className="hidden"
+                      onChange={async (e) => {
+                        const file = e.target.files?.[0];
+                        const requestId = fulfillingRequestId;
+                        e.target.value = "";
+                        if (!file || !requestId || !selectedCaseId) return;
+                        try {
+                          const { result } = await uploadAndRegister(selectedCaseId, file);
+                          if (!result.documentId) throw new Error("Document not registered");
+                          await fulfillRequest.mutateAsync({
+                            requestId,
+                            documentId: result.documentId,
+                          });
+                        } catch (err: any) {
+                          toast.error(err.message || t("docs.uploadFailed"));
+                        } finally {
+                          setFulfillingRequestId(null);
+                        }
+                      }}
+                    />
+                  </div>
+                )}
+
                 <Tabs defaultValue="documents" className="space-y-4">
                   <TabsList className="grid w-full grid-cols-3">
                     <TabsTrigger value="documents" className="flex items-center gap-2">
@@ -260,21 +401,7 @@ export default function ClientPortalPage() {
                       canUpload={true}
                       canShare={false}
                       onUpload={async (file) => {
-                        const formData = new FormData();
-                        formData.append("file", file);
-                        const res = await fetch("/api/upload", { method: "POST", body: formData });
-                        if (!res.ok) throw new Error("Upload failed");
-                        const { fileKey, fileUrl } = await res.json();
-                        const result = await registerDocument.mutateAsync({
-                          caseId: selectedCaseId!,
-                          name: file.name,
-                          originalName: file.name,
-                          mimeType: file.type || "application/octet-stream",
-                          size: file.size,
-                          fileKey,
-                          fileUrl,
-                          visibility: "shared",
-                        });
+                        const { result, fileUrl } = await uploadAndRegister(selectedCaseId!, file);
                         await refetchDocs();
                         if (result.documentId) {
                           const docId = result.documentId;
@@ -385,6 +512,117 @@ export default function ClientPortalPage() {
           </div>
         </div>
       </div>
+
+      <Dialog open={showLitige} onOpenChange={setShowLitige}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle>{t("portal.announceLitige")}</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-2">
+            <p className="text-sm text-muted-foreground">{t("portal.announceHint")}</p>
+            <div>
+              <Label htmlFor="litigeTitle">{t("portal.litigeTitle")}</Label>
+              <Input
+                id="litigeTitle"
+                className="mt-1.5"
+                value={litigeForm.title}
+                onChange={(e) => setLitigeForm((f) => ({ ...f, title: e.target.value }))}
+              />
+            </div>
+            <div>
+              <Label>{t("common.type")}</Label>
+              <Select
+                value={litigeForm.type}
+                onValueChange={(v) =>
+                  setLitigeForm((f) => ({ ...f, type: v as keyof typeof CASE_TYPE_LABELS }))
+                }
+              >
+                <SelectTrigger className="mt-1.5">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {Object.entries(CASE_TYPE_LABELS).map(([value, label]) => (
+                    <SelectItem key={value} value={value}>
+                      {label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label htmlFor="litigeDesc">{t("portal.litigeDescription")}</Label>
+              <Textarea
+                id="litigeDesc"
+                className="mt-1.5 min-h-28"
+                value={litigeForm.description}
+                onChange={(e) => setLitigeForm((f) => ({ ...f, description: e.target.value }))}
+              />
+            </div>
+            <div>
+              <Label>{t("portal.attachDocsOptional")}</Label>
+              <input
+                ref={litigeFileRef}
+                type="file"
+                multiple
+                className="hidden"
+                onChange={(e) => {
+                  const files = Array.from(e.target.files || []);
+                  setPendingUploadFiles(files);
+                }}
+              />
+              <Button
+                type="button"
+                variant="outline"
+                className="mt-1.5 w-full justify-start"
+                onClick={() => litigeFileRef.current?.click()}
+              >
+                <Upload className="w-4 h-4 mr-1.5" />
+                {pendingUploadFiles.length
+                  ? t("portal.filesSelected", { count: pendingUploadFiles.length })
+                  : t("portal.chooseFiles")}
+              </Button>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowLitige(false)}>
+              {t("common.cancel")}
+            </Button>
+            <Button
+              className="bg-[var(--color-navy)] hover:bg-[var(--color-navy-light)] text-white"
+              disabled={
+                createLitige.isPending ||
+                litigeForm.title.trim().length < 3 ||
+                litigeForm.description.trim().length < 10
+              }
+              onClick={async () => {
+                try {
+                  const created = await createLitige.mutateAsync({
+                    title: litigeForm.title.trim(),
+                    type: litigeForm.type,
+                    description: litigeForm.description.trim(),
+                  });
+                  for (const file of pendingUploadFiles) {
+                    await uploadAndRegister(created.id, file);
+                  }
+                  toast.success(t("portal.litigeCreated"));
+                  setShowLitige(false);
+                  setLitigeForm({ title: "", type: "other", description: "" });
+                  setPendingUploadFiles([]);
+                  const refreshed = await refetchCases();
+                  setSelectedCaseId(created.id);
+                  if (!refreshed.data?.some((c) => c.id === created.id)) {
+                    await refetchCases();
+                  }
+                } catch (err: any) {
+                  toast.error(err.message || t("portal.litigeFailed"));
+                }
+              }}
+            >
+              {createLitige.isPending ? t("common.creating") : t("portal.submitLitige")}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </LexLayout>
   );
 }

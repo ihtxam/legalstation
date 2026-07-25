@@ -1,28 +1,60 @@
 import { useAuth } from "@/_core/hooks/useAuth";
 import { startLogin } from "@/const";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { trpc } from "@/lib/trpc";
 import { Scale, Shield, FileText, MessageSquare, Receipt, Users, ArrowRight, Check } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useLocation } from "wouter";
 import { useTranslation } from "react-i18next";
+import { toast } from "sonner";
 
 type DemoStatus = {
   enabled: boolean;
   users: Array<{ email: string; name: string; openId: string }>;
 };
 
+type LeadForm = {
+  firmName: string;
+  contactName: string;
+  email: string;
+  phone: string;
+  message: string;
+};
+
+const emptyLead: LeadForm = {
+  firmName: "",
+  contactName: "",
+  email: "",
+  phone: "",
+  message: "",
+};
+
 export default function Home() {
   const { t } = useTranslation();
-  const { isAuthenticated, loading, refresh } = useAuth();
+  const { isAuthenticated, loading, refresh, user } = useAuth();
   const [, navigate] = useLocation();
   const [demo, setDemo] = useState<DemoStatus>({ enabled: false, users: [] });
   const [demoBusy, setDemoBusy] = useState<string | null>(null);
+  const [leadTab, setLeadTab] = useState<"demo" | "signup">("demo");
+  const [leadForm, setLeadForm] = useState<LeadForm>(emptyLead);
+
+  const submitLead = trpc.leads.submit.useMutation({
+    onSuccess: () => {
+      toast.success(t("home.leadSuccess"));
+      setLeadForm(emptyLead);
+    },
+    onError: (e) => toast.error(e.message || t("home.leadError")),
+  });
 
   useEffect(() => {
     if (!loading && isAuthenticated) {
-      navigate("/dashboard");
+      navigate(user?.role === "superadmin" ? "/superadmin" : "/dashboard");
     }
-  }, [isAuthenticated, loading, navigate]);
+  }, [isAuthenticated, loading, navigate, user?.role]);
 
   useEffect(() => {
     fetch("/api/demo/status")
@@ -102,11 +134,25 @@ export default function Home() {
           <div className="flex items-center justify-center gap-4 flex-wrap">
             <Button
               size="lg"
-              onClick={() => startLogin()}
+              onClick={() => {
+                document.getElementById("firm-leads")?.scrollIntoView({ behavior: "smooth" });
+                setLeadTab("signup");
+              }}
               className="bg-white text-[var(--color-navy)] hover:bg-white/90 font-semibold px-8 h-12"
             >
               {t("home.getStarted")}
               <ArrowRight className="w-4 h-4 ml-2" />
+            </Button>
+            <Button
+              size="lg"
+              variant="outline"
+              onClick={() => {
+                document.getElementById("firm-leads")?.scrollIntoView({ behavior: "smooth" });
+                setLeadTab("demo");
+              }}
+              className="border-white/40 bg-white/10 text-white hover:bg-white/20 h-12 px-8"
+            >
+              {t("home.requestDemo")}
             </Button>
           </div>
           {demo.enabled && demo.users.length > 0 && (
@@ -154,6 +200,120 @@ export default function Home() {
               <p className="text-muted-foreground text-sm leading-relaxed">{desc}</p>
             </div>
           ))}
+        </div>
+      </section>
+
+      <section id="firm-leads" className="border-t border-border bg-muted/30">
+        <div className="max-w-3xl mx-auto px-8 py-20">
+          <div className="text-center mb-10">
+            <h2 className="font-serif text-3xl font-semibold text-foreground mb-3">
+              {t("home.leadsTitle")}
+            </h2>
+            <p className="text-muted-foreground text-lg">{t("home.leadsSubtitle")}</p>
+          </div>
+
+          <Tabs value={leadTab} onValueChange={(v) => setLeadTab(v as "demo" | "signup")}>
+            <TabsList className="grid w-full grid-cols-2 mb-6">
+              <TabsTrigger value="demo">{t("home.requestDemo")}</TabsTrigger>
+              <TabsTrigger value="signup">{t("home.firmSignup")}</TabsTrigger>
+            </TabsList>
+            <TabsContent value={leadTab}>
+              <form
+                className="bg-card border border-border rounded-xl p-6 space-y-4"
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  submitLead.mutate({
+                    type: leadTab,
+                    firmName: leadForm.firmName.trim(),
+                    contactName: leadForm.contactName.trim(),
+                    email: leadForm.email.trim(),
+                    phone: leadForm.phone.trim() || undefined,
+                    message: leadForm.message.trim() || undefined,
+                  });
+                }}
+              >
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="firmName">{t("home.firmName")}</Label>
+                    <Input
+                      id="firmName"
+                      className="mt-1.5"
+                      required
+                      value={leadForm.firmName}
+                      onChange={(e) => setLeadForm((f) => ({ ...f, firmName: e.target.value }))}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="contactName">{t("home.contactName")}</Label>
+                    <Input
+                      id="contactName"
+                      className="mt-1.5"
+                      required
+                      value={leadForm.contactName}
+                      onChange={(e) => setLeadForm((f) => ({ ...f, contactName: e.target.value }))}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="leadEmail">{t("home.workEmail")}</Label>
+                    <Input
+                      id="leadEmail"
+                      type="email"
+                      className="mt-1.5"
+                      required
+                      value={leadForm.email}
+                      onChange={(e) => setLeadForm((f) => ({ ...f, email: e.target.value }))}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="leadPhone">{t("home.phoneOptional")}</Label>
+                    <Input
+                      id="leadPhone"
+                      className="mt-1.5"
+                      value={leadForm.phone}
+                      onChange={(e) => setLeadForm((f) => ({ ...f, phone: e.target.value }))}
+                    />
+                  </div>
+                </div>
+                <div>
+                  <Label htmlFor="leadMessage">{t("home.messageOptional")}</Label>
+                  <Textarea
+                    id="leadMessage"
+                    className="mt-1.5 min-h-24"
+                    placeholder={
+                      leadTab === "demo" ? t("home.demoMessagePlaceholder") : t("home.signupMessagePlaceholder")
+                    }
+                    value={leadForm.message}
+                    onChange={(e) => setLeadForm((f) => ({ ...f, message: e.target.value }))}
+                  />
+                </div>
+                <div className="flex items-center justify-between gap-3 flex-wrap pt-2">
+                  <p className="text-xs text-muted-foreground">{t("home.leadHint")}</p>
+                  <Button
+                    type="submit"
+                    disabled={submitLead.isPending}
+                    className="bg-[var(--color-navy)] hover:bg-[var(--color-navy-light)] text-white"
+                  >
+                    {submitLead.isPending
+                      ? t("common.loading")
+                      : leadTab === "demo"
+                        ? t("home.requestDemo")
+                        : t("home.firmSignup")}
+                  </Button>
+                </div>
+              </form>
+            </TabsContent>
+          </Tabs>
+
+          <p className="text-center text-sm text-muted-foreground mt-6">
+            {t("home.alreadyHaveAccount")}{" "}
+            <button
+              type="button"
+              className="text-[var(--color-navy)] font-medium underline-offset-2 hover:underline"
+              onClick={() => startLogin()}
+            >
+              {t("home.signIn")}
+            </button>
+          </p>
         </div>
       </section>
 

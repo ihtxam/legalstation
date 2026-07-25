@@ -42,7 +42,7 @@ import {
   LogOut,
 } from "lucide-react";
 
-type TabId = "overview" | "firms" | "plans" | "users" | "settings" | "audit";
+type TabId = "overview" | "firms" | "plans" | "users" | "leads" | "settings" | "audit";
 
 export default function SuperadminDashboard() {
   const { user, logout, loading } = useAuth();
@@ -138,6 +138,17 @@ export default function SuperadminDashboard() {
     { limit: 50 },
     { enabled: isSuperadmin }
   );
+  const { data: platformLeads, refetch: refetchLeads } = trpc.leads.list.useQuery(
+    { limit: 100 },
+    { enabled: isSuperadmin && tab === "leads" }
+  );
+  const updateLeadStatus = trpc.leads.updateStatus.useMutation({
+    onSuccess: () => {
+      toast.success("Lead status updated");
+      void refetchLeads();
+    },
+    onError: (err) => toast.error(err.message),
+  });
   const { data: firmDetail, isLoading: firmDetailLoading } = trpc.superadmin.getFirmDetail.useQuery(
     { firmId: selectedFirmId! },
     { enabled: isSuperadmin && !!selectedFirmId }
@@ -464,6 +475,9 @@ export default function SuperadminDashboard() {
             <TabsTrigger value="firms">Law firms</TabsTrigger>
             <TabsTrigger value="plans">Plans</TabsTrigger>
             <TabsTrigger value="users">Users</TabsTrigger>
+            <TabsTrigger value="leads">
+              <Mail className="h-3.5 w-3.5 mr-1" /> Leads
+            </TabsTrigger>
             <TabsTrigger value="settings">
               <Settings className="h-3.5 w-3.5 mr-1" /> Settings
             </TabsTrigger>
@@ -1286,6 +1300,62 @@ export default function SuperadminDashboard() {
               <Save className="h-4 w-4 mr-1.5" />
               {updatePlatformMutation.isPending ? "Saving…" : "Save platform settings"}
             </Button>
+          </TabsContent>
+
+          {/* ─── Leads ────────────────────────────────────────────── */}
+          <TabsContent value="leads" className="space-y-4">
+            <div>
+              <h2 className="text-xl font-semibold">Homepage leads</h2>
+              <p className="text-sm text-muted-foreground">
+                Demo requests and firm signup inquiries from the public homepage
+              </p>
+            </div>
+            <div className="border rounded-lg bg-white divide-y">
+              {(platformLeads || []).map((lead) => (
+                <div key={lead.id} className="px-4 py-3 flex flex-col md:flex-row md:items-start md:justify-between gap-3">
+                  <div className="space-y-1 min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <Badge variant="outline" className="capitalize">
+                        {lead.type}
+                      </Badge>
+                      <p className="font-medium truncate">{lead.firmName}</p>
+                    </div>
+                    <p className="text-sm text-muted-foreground">
+                      {lead.contactName} · {lead.email}
+                      {lead.phone ? ` · ${lead.phone}` : ""}
+                    </p>
+                    {lead.message && (
+                      <p className="text-sm text-foreground/80 whitespace-pre-wrap">{lead.message}</p>
+                    )}
+                    <p className="text-xs text-muted-foreground">
+                      {new Date(lead.createdAt).toLocaleString()}
+                    </p>
+                  </div>
+                  <Select
+                    value={lead.status}
+                    onValueChange={(status) =>
+                      updateLeadStatus.mutate({
+                        id: lead.id,
+                        status: status as "new" | "contacted" | "qualified" | "closed",
+                      })
+                    }
+                  >
+                    <SelectTrigger className="w-[140px]">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="new">New</SelectItem>
+                      <SelectItem value="contacted">Contacted</SelectItem>
+                      <SelectItem value="qualified">Qualified</SelectItem>
+                      <SelectItem value="closed">Closed</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              ))}
+              {!platformLeads?.length && (
+                <p className="p-6 text-center text-muted-foreground text-sm">No leads yet</p>
+              )}
+            </div>
           </TabsContent>
 
           {/* ─── Audit ────────────────────────────────────────────── */}

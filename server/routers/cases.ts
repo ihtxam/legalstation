@@ -1,5 +1,6 @@
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
+import { eq } from "drizzle-orm";
 import {
   addCaseAssignment,
   createCase,
@@ -17,9 +18,14 @@ import {
   updateCaseEvent,
   getFirmMembers,
   getClientsByFirm,
+  getDb,
 } from "../db";
+import { users } from "../../drizzle/schema";
 import { protectedProcedure, router } from "../_core/trpc";
 import { assertCaseAccess } from "../access";
+import { getCaseNotificationRecipients } from "../caseNotifications";
+import { sendCaseUpdateEmail } from "../email";
+import { getAppBaseUrl } from "../tenant";
 
 async function requireFirmMember(userId: number) {
   const member = await getFirmMemberByUserId(userId);
@@ -104,6 +110,86 @@ export const casesRouter = router({
       return newCase;
     }),
 
+  /** Client announces a new litige / dispute from the client portal. */
+  createLitige: protectedProcedure
+    .input(
+      z.object({
+        title: z.string().min(3).max(255),
+        type: z
+          .enum([
+            "civil",
+            "criminal",
+            "corporate",
+            "family",
+            "real_estate",
+            "employment",
+            "tax",
+            "immigration",
+            "intellectual_property",
+            "other",
+          ])
+          .default("other"),
+        description: z.string().min(10).max(10000),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const client = await getClientByUserId(ctx.user.id);
+      if (!client) throw new TRPCError({ code: "FORBIDDEN", message: "Client profile required" });
+
+      const ref = `LIT-${Date.now().toString(36).toUpperCase()}`;
+      const insertResult = await createCase({
+        firmId: client.firmId,
+        title: input.title,
+        referenceNumber: ref,
+        type: input.type,
+        status: "pending",
+        description: input.description,
+        createdByUserId: ctx.user.id,
+      });
+      const newCaseId = Number((insertResult as { insertId?: number }).insertId ?? 0);
+      const newCase = newCaseId
+        ? await getCaseById(newCaseId, client.firmId)
+        : (await getCasesByFirm(client.firmId)).find((c) => c.referenceNumber === ref);
+      if (!newCase) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+
+      await addCaseAssignment({
+        caseId: newCase.id,
+        clientId: client.id,
+        assignmentType: "client",
+        assignedByUserId: ctx.user.id,
+      });
+
+      await createCaseEvent({
+        caseId: newCase.id,
+        authorUserId: ctx.user.id,
+        eventType: "system",
+        visibility: "shared",
+        title: "Litige announced by client",
+        content: input.description,
+      });
+
+      // Notify firm admins/lawyers
+      const members = await getFirmMembers(client.firmId);
+      const db = await getDb();
+      const caseUrl = `${getAppBaseUrl(ctx.req)}/cases/${newCase.id}`;
+      if (db) {
+        for (const m of members.filter((x) => ["admin", "lawyer"].includes(x.member.firmRole))) {
+          const [u] = await db.select().from(users).where(eq(users.id, m.member.userId)).limit(1);
+          if (!u?.email) continue;
+          await sendCaseUpdateEmail({
+            recipientEmail: u.email,
+            recipientName: u.name || u.email,
+            caseTitle: newCase.title,
+            updateTitle: "New litige from client",
+            updateBody: `${client.firstName || client.companyName || "A client"} submitted: ${input.title}`,
+            caseUrl,
+          }).catch((err) => console.error("[Email] litige:", err.message));
+        }
+      }
+
+      return newCase;
+    }),
+
   update: protectedProcedure
     .input(z.object({
       id: z.number(),
@@ -130,6 +216,18 @@ export const casesRouter = router({
           title: "Status changed",
           content: `Status changed from "${existing.status}" to "${data.status}".`,
         });
+        const { caseTitle, recipients } = await getCaseNotificationRecipients(id, ctx.user.id);
+        const caseUrl = `${getAppBaseUrl(ctx.req)}/client-portal`;
+        for (const r of recipients.filter((x) => x.kind === "client")) {
+          await sendCaseUpdateEmail({
+            recipientEmail: r.email,
+            recipientName: r.name,
+            caseTitle,
+            updateTitle: "Case status updated",
+            updateBody: `Status changed from "${existing.status}" to "${data.status}".`,
+            caseUrl,
+          }).catch((err) => console.error("[Email] status:", err.message));
+        }
       }
       await updateCase(id, member.firmId, {
         ...data,
@@ -166,6 +264,25 @@ export const casesRouter = router({
         title: input.title,
         content: input.content,
       });
+
+      if (input.visibility === "shared") {
+        const { caseTitle, recipients } = await getCaseNotificationRecipients(
+          input.caseId,
+          ctx.user.id
+        );
+        const caseUrl = `${getAppBaseUrl(ctx.req)}/client-portal`;
+        for (const r of recipients.filter((x) => x.kind === "client")) {
+          await sendCaseUpdateEmail({
+            recipientEmail: r.email,
+            recipientName: r.name,
+            caseTitle,
+            updateTitle: input.title || "New update on your case",
+            updateBody: input.content,
+            caseUrl,
+          }).catch((err) => console.error("[Email] note:", err.message));
+        }
+      }
+
       return { success: true };
     }),
 
@@ -254,12 +371,54 @@ export const casesRouter = router({
       await createCaseEvent({
         caseId: input.caseId,
         authorUserId: ctx.user.id,
-        eventType: "system",
-        visibility: "internal",
+        eventType: "assignment",
+        visibility: "shared",
         title: "Lawyer assigned",
-        content: `A lawyer was assigned to this case.`,
+        content: `A lawyer was assigned to this case. You can now message them directly.`,
       });
-      
+
+      // Open case if it was pending (client-announced litige)
+      if (caseData.status === "pending") {
+        await updateCase(input.caseId, member.firmId, { status: "open" });
+      }
+
+      const { caseTitle, recipients } = await getCaseNotificationRecipients(
+        input.caseId,
+        ctx.user.id
+      );
+      const caseUrl = `${getAppBaseUrl(ctx.req)}/client-portal`;
+      for (const r of recipients.filter((x) => x.kind === "client")) {
+        await sendCaseUpdateEmail({
+          recipientEmail: r.email,
+          recipientName: r.name,
+          caseTitle,
+          updateTitle: "A lawyer was assigned to your case",
+          updateBody:
+            "Your legal team assigned a lawyer. You can now exchange messages and documents in the client portal.",
+          caseUrl,
+        }).catch((err) => console.error("[Email] assign:", err.message));
+      }
+
+      // Also notify the assigned lawyer
+      const db = await getDb();
+      if (db) {
+        const [lawyer] = await db
+          .select()
+          .from(users)
+          .where(eq(users.id, input.lawyerId))
+          .limit(1);
+        if (lawyer?.email) {
+          await sendCaseUpdateEmail({
+            recipientEmail: lawyer.email,
+            recipientName: lawyer.name || lawyer.email,
+            caseTitle,
+            updateTitle: "You were assigned to a case",
+            updateBody: `You have been assigned to “${caseTitle}”.`,
+            caseUrl: `${getAppBaseUrl(ctx.req)}/cases/${input.caseId}`,
+          }).catch((err) => console.error("[Email] assign lawyer:", err.message));
+        }
+      }
+
       return { success: true };
     }),
 

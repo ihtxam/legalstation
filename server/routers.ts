@@ -19,6 +19,8 @@ import { settingsRouter } from "./routers/settings";
 import { adyenRouter } from "./routers/adyen";
 import { documentAnalysisRouter } from "./routers/documentAnalysis";
 import { timeEntriesRouter } from "./routers/timeEntries";
+import { documentRequestsRouter } from "./routers/documentRequests";
+import { leadsRouter } from "./routers/leads";
 import { deploymentRouter } from "./routers/deployment";
 import { updateUserById } from "./db";
 import {
@@ -146,6 +148,8 @@ export const appRouter = router({
   documentAnalysis: documentAnalysisRouter,
   invoicePdf: invoicePdfRouter,
   timeEntries: timeEntriesRouter,
+  documentRequests: documentRequestsRouter,
+  leads: leadsRouter,
 });
 
 export type AppRouter = typeof appRouter;

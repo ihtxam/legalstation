@@ -74,8 +74,8 @@ function ClientDashboard() {
     <div className="p-6 space-y-6 max-w-4xl mx-auto">
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {[
-          { label: t("dashboard.myCases"), value: stats?.totalCases ?? 0, icon: Briefcase, color: "text-blue-600", bg: "bg-blue-50", href: "/cases" },
-          { label: t("dashboard.openCases"), value: stats?.openCases ?? 0, icon: Clock, color: "text-amber-600", bg: "bg-amber-50", href: "/cases" },
+          { label: t("dashboard.myCases"), value: stats?.totalCases ?? 0, icon: Briefcase, color: "text-blue-600", bg: "bg-blue-50", href: "/client-portal" },
+          { label: t("dashboard.openCases"), value: stats?.openCases ?? 0, icon: Clock, color: "text-amber-600", bg: "bg-amber-50", href: "/client-portal" },
           { label: t("dashboard.unreadMessages"), value: stats?.unreadMessages ?? 0, icon: Receipt, color: "text-purple-600", bg: "bg-purple-50", href: "/messages" },
           { label: t("dashboard.outstandingBills"), value: stats?.pendingInvoices ?? 0, icon: AlertTriangle, color: "text-red-600", bg: "bg-red-50", href: "/invoices" },
         ].map(({ label, value, icon: Icon, color, bg, href }) => (
@@ -147,13 +147,32 @@ export default function Dashboard() {
     if (!loading && !isAuthenticated) startLogin();
   }, [isAuthenticated, loading]);
 
+  const clientStats = trpc.dashboard.clientStats.useQuery(undefined, {
+    enabled: isAuthenticated && !firmLoading && firmData === null,
+    retry: false,
+  });
+
   useEffect(() => {
-    if (!loading && !firmLoading && isAuthenticated && firmData === null) {
-      navigate("/onboarding");
+    if (loading || firmLoading || !isAuthenticated || firmData !== null) return;
+    if (clientStats.isLoading) return;
+    // Clients land on the portal; users with no firm and no client profile set up a firm
+    if (clientStats.isSuccess) {
+      navigate("/client-portal");
+      return;
     }
-  }, [firmData, firmLoading, loading, isAuthenticated, navigate]);
+    navigate("/onboarding");
+  }, [
+    firmData,
+    firmLoading,
+    loading,
+    isAuthenticated,
+    navigate,
+    clientStats.isLoading,
+    clientStats.isSuccess,
+  ]);
 
   if (loading || firmLoading || !isAuthenticated) return null;
+  if (firmData === null && (clientStats.isLoading || clientStats.isSuccess)) return null;
 
   const isFirmMember = firmData !== null && firmData !== undefined;
 

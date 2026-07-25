@@ -181,6 +181,42 @@ export const caseEvents = mysqlTable("case_events", {
 export type CaseEvent = typeof caseEvents.$inferSelect;
 export type InsertCaseEvent = typeof caseEvents.$inferInsert;
 
+// ─── Document Requests (lawyer asks client to upload a document) ─────────────
+export const documentRequests = mysqlTable("document_requests", {
+  id: int("id").autoincrement().primaryKey(),
+  firmId: int("firmId").notNull(),
+  caseId: int("caseId").notNull(),
+  requestedByUserId: int("requestedByUserId").notNull(),
+  title: varchar("title", { length: 255 }).notNull(),
+  description: text("description"),
+  status: mysqlEnum("status", ["pending", "fulfilled", "cancelled"]).notNull().default("pending"),
+  dueDate: timestamp("dueDate"),
+  fulfilledDocumentId: int("fulfilledDocumentId"),
+  fulfilledAt: timestamp("fulfilledAt"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type DocumentRequest = typeof documentRequests.$inferSelect;
+export type InsertDocumentRequest = typeof documentRequests.$inferInsert;
+
+// ─── Platform Leads (homepage firm signup / demo requests) ───────────────────
+export const platformLeads = mysqlTable("platform_leads", {
+  id: int("id").autoincrement().primaryKey(),
+  type: mysqlEnum("type", ["demo", "signup"]).notNull(),
+  firmName: varchar("firmName", { length: 255 }).notNull(),
+  contactName: varchar("contactName", { length: 200 }).notNull(),
+  email: varchar("email", { length: 320 }).notNull(),
+  phone: varchar("phone", { length: 50 }),
+  message: text("message"),
+  status: mysqlEnum("status", ["new", "contacted", "qualified", "closed"]).notNull().default("new"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type PlatformLead = typeof platformLeads.$inferSelect;
+export type InsertPlatformLead = typeof platformLeads.$inferInsert;
+
 // ─── Document Folders ─────────────────────────────────────────────────────────
 export const documentFolders = mysqlTable("document_folders", {
   id: int("id").autoincrement().primaryKey(),
