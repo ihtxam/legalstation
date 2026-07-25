@@ -342,7 +342,8 @@
     "creditorBuildingNumber": "Nr.",
     "creditorPostalCode": "PLZ",
     "creditorCity": "Ort",
-    "creditorCountry": "Land (ISO)"
+    "creditorCountry": "Land (ISO)",
+    "tabRoles": "Rollen"
   },
   "notFound": {
     "title": "Seite nicht gefunden",
@@ -973,6 +974,35 @@
     "subadmin": "Sub-Admin",
     "lawyer": "Anwalt",
     "assistant": "Assistent",
-    "client": "Mandant"
+    "client": "Mandant",
+    "matrixTitle": "Rollen & Berechtigungen",
+    "matrixHint": "Standard-Rollen der Kanzlei und ihre Rechte. Benutzer werden per Einladung einer Rolle zugewiesen — eigene Rollen sind noch nicht möglich.",
+    "function": "Funktion",
+    "howToCreateTitle": "Benutzer anlegen",
+    "howToCreateBody": "Als Admin (oder Sub-Admin): Einstellungen → Team → Kollege mit Rolle einladen. Anwälte können Mandanten vom Mandantenprofil einladen. Nur der Admin kann einen Sub-Admin einladen.",
+    "access": {
+      "full": "Erlaubt",
+      "own": "Nur eigene / zugewiesene",
+      "ownShort": "Eigene",
+      "view": "Nur ansehen",
+      "viewShort": "Ansehen",
+      "none": "Nicht erlaubt"
+    },
+    "capabilities": {
+      "firmSettings": "Kanzlei-Einstellungen & Uploads",
+      "inviteStaff": "Personal einladen (Anwalt, Assistent, Sub-Admin)",
+      "inviteClients": "Mandanten zum Portal einladen",
+      "cmsAnalyticsAudit": "CMS, Analytics & Audit-Log",
+      "allCases": "Alle Kanzlei-Fälle",
+      "assignedCases": "Zugewiesene Fälle",
+      "allInvoices": "Alle Kanzlei-Rechnungen",
+      "caseInvoices": "Rechnungen zu zugewiesenen Fällen",
+      "createEditInvoices": "Rechnungen erstellen & bearbeiten",
+      "securityLanguage": "Eigene Sicherheit & Sprache"
+    },
+    "notes": {
+      "inviteStaff": "Sub-Admin kann Anwalt/Assistent/Mandant einladen, keinen weiteren Admin.",
+      "caseInvoices": "Mandanten sehen nur eigene Nicht-Entwürfe. Nie plattformweit."
+    }
   }
 }

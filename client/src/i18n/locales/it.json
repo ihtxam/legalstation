@@ -342,7 +342,8 @@
     "creditorBuildingNumber": "N.",
     "creditorPostalCode": "NPA",
     "creditorCity": "Città",
-    "creditorCountry": "Paese (ISO)"
+    "creditorCountry": "Paese (ISO)",
+    "tabRoles": "Ruoli"
   },
   "notFound": {
     "title": "Pagina non trovata",
@@ -973,6 +974,35 @@
     "subadmin": "Sub-admin",
     "lawyer": "Avvocato",
     "assistant": "Assistente",
-    "client": "Cliente"
+    "client": "Cliente",
+    "matrixTitle": "Ruoli e autorizzazioni",
+    "matrixHint": "Ruoli predefiniti dello studio e relative funzioni. Gli utenti si creano tramite invito in uno di questi ruoli — ruoli personalizzati non ancora disponibili.",
+    "function": "Funzione",
+    "howToCreateTitle": "Creare utenti",
+    "howToCreateBody": "Come admin (o sub-admin), apri Impostazioni → Team e invita un collega con un ruolo. Gli avvocati possono invitare clienti dalla scheda cliente. Solo l’admin può invitare un sub-admin.",
+    "access": {
+      "full": "Consentito",
+      "own": "Solo propri / assegnati",
+      "ownShort": "Propri",
+      "view": "Solo lettura",
+      "viewShort": "Vedi",
+      "none": "Non consentito"
+    },
+    "capabilities": {
+      "firmSettings": "Impostazioni studio e upload",
+      "inviteStaff": "Invitare personale (avvocato, assistente, sub-admin)",
+      "inviteClients": "Invitare clienti al portale",
+      "cmsAnalyticsAudit": "CMS, analytics e audit",
+      "allCases": "Tutte le pratiche dello studio",
+      "assignedCases": "Pratiche assegnate",
+      "allInvoices": "Tutte le fatture dello studio",
+      "caseInvoices": "Fatture delle pratiche assegnate",
+      "createEditInvoices": "Creare e modificare fatture",
+      "securityLanguage": "Sicurezza e lingua personali"
+    },
+    "notes": {
+      "inviteStaff": "Il sub-admin può invitare avvocato/assistente/cliente, non un altro admin.",
+      "caseInvoices": "I clienti vedono solo le proprie fatture non bozza. Mai a livello piattaforma."
+    }
   }
 }

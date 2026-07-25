@@ -342,7 +342,8 @@
     "creditorBuildingNumber": "Building no.",
     "creditorPostalCode": "Postal code",
     "creditorCity": "City",
-    "creditorCountry": "Country (ISO)"
+    "creditorCountry": "Country (ISO)",
+    "tabRoles": "Roles"
   },
   "notFound": {
     "title": "Page Not Found",
@@ -973,6 +974,35 @@
     "subadmin": "Sub-admin",
     "lawyer": "Lawyer",
     "assistant": "Assistant",
-    "client": "Client"
+    "client": "Client",
+    "matrixTitle": "Roles & authorizations",
+    "matrixHint": "Default firm roles and what each can do. Users are created by invite into one of these roles — custom roles are not available yet.",
+    "function": "Function",
+    "howToCreateTitle": "Creating users",
+    "howToCreateBody": "As admin (or sub-admin), open Settings → Team and invite a colleague with a role. Lawyers can invite clients from the client profile. Only the firm admin can invite a sub-admin.",
+    "access": {
+      "full": "Allowed",
+      "own": "Own / assigned only",
+      "ownShort": "Own",
+      "view": "View only",
+      "viewShort": "View",
+      "none": "Not allowed"
+    },
+    "capabilities": {
+      "firmSettings": "Firm settings & upload policy",
+      "inviteStaff": "Invite staff (lawyer, assistant, sub-admin)",
+      "inviteClients": "Invite clients to portal",
+      "cmsAnalyticsAudit": "CMS, analytics & audit log",
+      "allCases": "All firm cases",
+      "assignedCases": "Assigned cases",
+      "allInvoices": "All firm invoices",
+      "caseInvoices": "Invoices on assigned cases",
+      "createEditInvoices": "Create & edit invoices",
+      "securityLanguage": "Own security & language settings"
+    },
+    "notes": {
+      "inviteStaff": "Sub-admin can invite lawyer/assistant/client, not another admin.",
+      "caseInvoices": "Clients see their own non-draft invoices only. Never platform-wide."
+    }
   }
 }

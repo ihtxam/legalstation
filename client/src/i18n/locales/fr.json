@@ -342,7 +342,8 @@
     "creditorBuildingNumber": "N°",
     "creditorPostalCode": "NPA",
     "creditorCity": "Ville",
-    "creditorCountry": "Pays (ISO)"
+    "creditorCountry": "Pays (ISO)",
+    "tabRoles": "Rôles"
   },
   "notFound": {
     "title": "Page introuvable",
@@ -973,6 +974,35 @@
     "subadmin": "Sous-admin",
     "lawyer": "Avocat",
     "assistant": "Assistant",
-    "client": "Client"
+    "client": "Client",
+    "matrixTitle": "Rôles et autorisations",
+    "matrixHint": "Rôles par défaut du cabinet et leurs droits. Les utilisateurs sont créés par invitation dans l’un de ces rôles — pas de rôles personnalisés pour l’instant.",
+    "function": "Fonction",
+    "howToCreateTitle": "Créer des utilisateurs",
+    "howToCreateBody": "En tant qu’admin (ou sous-admin), ouvrez Paramètres → Équipe et invitez un collègue avec un rôle. Les avocats peuvent inviter des clients depuis la fiche client. Seul l’admin peut inviter un sous-admin.",
+    "access": {
+      "full": "Autorisé",
+      "own": "Propres / assignés seulement",
+      "ownShort": "Propres",
+      "view": "Lecture seule",
+      "viewShort": "Voir",
+      "none": "Non autorisé"
+    },
+    "capabilities": {
+      "firmSettings": "Paramètres du cabinet & uploads",
+      "inviteStaff": "Inviter le personnel (avocat, assistant, sous-admin)",
+      "inviteClients": "Inviter des clients au portail",
+      "cmsAnalyticsAudit": "CMS, analytique & journal d’audit",
+      "allCases": "Tous les dossiers du cabinet",
+      "assignedCases": "Dossiers assignés",
+      "allInvoices": "Toutes les factures du cabinet",
+      "caseInvoices": "Factures des dossiers assignés",
+      "createEditInvoices": "Créer et modifier des factures",
+      "securityLanguage": "Sécurité & langue personnelles"
+    },
+    "notes": {
+      "inviteStaff": "Le sous-admin peut inviter avocat/assistant/client, pas un autre admin.",
+      "caseInvoices": "Les clients ne voient que leurs factures non brouillon. Jamais tout le plateforme."
+    }
   }
 }
