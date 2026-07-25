@@ -200,7 +200,7 @@ export const superadminRouter = router({
         address: z.string().optional(),
         phone: z.string().optional(),
         vatNumber: z.string().optional(),
-        slug: z.string().min(2).max(50).regex(/^[a-z0-9-]+$/).optional(),
+        slug: z.string().max(50).optional(),
         planId: z.number(),
         billingCycle: z.enum(["monthly", "yearly"]).default("monthly"),
         sendCredentials: z.boolean().default(true),
@@ -781,7 +781,7 @@ export const superadminRouter = router({
         defaultCurrency: z.string().length(3).optional(),
         defaultVatRate: z.number().min(0).max(100).optional(),
         customDomain: z.string().max(255).optional().nullable(),
-        slug: z.string().min(2).max(50).regex(/^[a-z0-9-]+$/).optional(),
+        slug: z.string().max(50).optional(),
       })
     )
     .mutation(async ({ ctx, input }) => {
@@ -791,12 +791,22 @@ export const superadminRouter = router({
       const [firm] = await db.select().from(firms).where(eq(firms.id, input.firmId)).limit(1);
       if (!firm) throw new TRPCError({ code: "NOT_FOUND" });
 
-      if (input.slug && input.slug !== firm.slug) {
-        if (isReservedSubdomain(input.slug)) {
-          throw new TRPCError({ code: "BAD_REQUEST", message: "Subdomain reserved" });
+      let nextSlug: string | undefined;
+      if (input.slug !== undefined) {
+        nextSlug = slugifyFirmName(input.slug || input.name || firm.name);
+        if (!nextSlug || nextSlug.length < 2) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "Subdomain must use letters, numbers, and hyphens only",
+          });
         }
-        const clash = await db.select().from(firms).where(eq(firms.slug, input.slug)).limit(1);
-        if (clash[0]) throw new TRPCError({ code: "CONFLICT", message: "Slug already taken" });
+        if (nextSlug !== firm.slug) {
+          if (isReservedSubdomain(nextSlug)) {
+            throw new TRPCError({ code: "BAD_REQUEST", message: "Subdomain reserved" });
+          }
+          const clash = await db.select().from(firms).where(eq(firms.slug, nextSlug)).limit(1);
+          if (clash[0]) throw new TRPCError({ code: "CONFLICT", message: "Slug already taken" });
+        }
       }
 
       await db
@@ -811,11 +821,14 @@ export const superadminRouter = router({
           defaultVatRate:
             input.defaultVatRate != null ? input.defaultVatRate.toFixed(2) : undefined,
           customDomain: input.customDomain === undefined ? undefined : input.customDomain,
-          slug: input.slug,
+          slug: nextSlug,
         })
         .where(eq(firms.id, input.firmId));
 
-      await audit(ctx.user.id, "update_firm", "firm", input.firmId, input);
+      await audit(ctx.user.id, "update_firm", "firm", input.firmId, {
+        ...input,
+        slug: nextSlug ?? input.slug,
+      });
       return { success: true };
     }),
 

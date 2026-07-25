@@ -1054,7 +1054,11 @@ export default function SuperadminDashboard() {
                           firmId: selectedFirmId,
                           name: editName,
                           email: editEmail,
-                          slug: editSlug,
+                          // Server slugifies; strip obvious junk before send
+                          slug: editSlug
+                            .toLowerCase()
+                            .replace(/[^a-z0-9]+/g, "-")
+                            .replace(/^-+|-+$/g, ""),
                           phone: editPhone,
                           address: editAddress,
                           vatNumber: editVat,
