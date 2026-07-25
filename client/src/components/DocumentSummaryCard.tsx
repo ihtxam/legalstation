@@ -2,6 +2,7 @@ import { Loader, AlertCircle, CheckCircle, Lightbulb, TrendingUp } from "lucide-
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useTranslation } from "react-i18next";
 
 interface DocumentSummaryProps {
   summary?: {
@@ -22,13 +23,15 @@ interface DocumentSummaryProps {
 }
 
 export function DocumentSummaryCard({ summary, isLoading }: DocumentSummaryProps) {
+  const { t } = useTranslation();
+
   if (isLoading) {
     return (
       <Card className="bg-gradient-to-br from-blue-50 to-indigo-50 border-blue-200">
         <CardHeader>
           <CardTitle className="text-base flex items-center gap-2">
             <Loader className="w-4 h-4 animate-spin text-blue-600" />
-            Analyzing Document...
+            {t("docs.analyzing")}
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
@@ -54,11 +57,11 @@ export function DocumentSummaryCard({ summary, isLoading }: DocumentSummaryProps
         <CardHeader>
           <CardTitle className="text-base flex items-center gap-2 text-red-700">
             <AlertCircle className="w-4 h-4" />
-            Analysis Failed
+            {t("docs.analysisFailed")}
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-sm text-red-600">{summary.error || "Unknown error occurred"}</p>
+          <p className="text-sm text-red-600">{summary.error || t("docs.analysisUnknownError")}</p>
         </CardContent>
       </Card>
     );
@@ -70,17 +73,16 @@ export function DocumentSummaryCard({ summary, isLoading }: DocumentSummaryProps
         <CardHeader>
           <CardTitle className="text-base flex items-center gap-2">
             <Loader className="w-4 h-4 animate-spin text-blue-600" />
-            Analyzing Document...
+            {t("docs.analyzing")}
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-sm text-blue-600">AI analysis in progress. This may take a moment.</p>
+          <p className="text-sm text-blue-600">{t("docs.analyzingHint")}</p>
         </CardContent>
       </Card>
     );
   }
 
-  // Parse JSON fields
   let keyPoints: string[] = [];
   let entities: any[] = [];
 
@@ -104,7 +106,7 @@ export function DocumentSummaryCard({ summary, isLoading }: DocumentSummaryProps
           <div className="flex-1">
             <CardTitle className="text-base flex items-center gap-2">
               <CheckCircle className="w-4 h-4 text-green-600" />
-              AI Analysis Summary
+              {t("docs.aiSummary")}
             </CardTitle>
           </div>
           <div className="flex items-center gap-2">
@@ -125,20 +127,18 @@ export function DocumentSummaryCard({ summary, isLoading }: DocumentSummaryProps
       </CardHeader>
 
       <CardContent className="space-y-4">
-        {/* Summary */}
         {summary.summary && (
           <div>
-            <p className="text-sm font-medium text-foreground mb-1">Summary</p>
+            <p className="text-sm font-medium text-foreground mb-1">{t("docs.summary")}</p>
             <p className="text-sm text-muted-foreground leading-relaxed">{summary.summary}</p>
           </div>
         )}
 
-        {/* Key Points */}
         {keyPoints.length > 0 && (
           <div>
             <p className="text-sm font-medium text-foreground mb-2 flex items-center gap-1.5">
               <Lightbulb className="w-3.5 h-3.5 text-amber-600" />
-              Key Points
+              {t("docs.keyPoints")}
             </p>
             <ul className="space-y-1">
               {keyPoints.map((point, idx) => (
@@ -151,45 +151,43 @@ export function DocumentSummaryCard({ summary, isLoading }: DocumentSummaryProps
           </div>
         )}
 
-        {/* Extracted Entities */}
         {entities.length > 0 && (
           <div>
             <p className="text-sm font-medium text-foreground mb-2 flex items-center gap-1.5">
               <TrendingUp className="w-3.5 h-3.5 text-purple-600" />
-              Important Details
+              {t("docs.importantDetails")}
             </p>
             <div className="flex flex-wrap gap-1.5">
               {entities.slice(0, 5).map((entity, idx) => (
                 <Badge key={idx} variant="secondary" className="text-xs">
-                  {entity}
+                  {String(entity)}
                 </Badge>
               ))}
               {entities.length > 5 && (
                 <Badge variant="secondary" className="text-xs">
-                  +{entities.length - 5} more
+                  +{entities.length - 5}
                 </Badge>
               )}
             </div>
           </div>
         )}
 
-        {/* Metadata */}
         <div className="flex items-center gap-4 pt-2 border-t border-indigo-200">
           {summary.wordCount !== null && (
             <div>
-              <p className="text-xs text-muted-foreground">Word Count</p>
+              <p className="text-xs text-muted-foreground">{t("docs.wordCount")}</p>
               <p className="text-sm font-medium text-foreground">{summary.wordCount}</p>
             </div>
           )}
           {summary.readingTime !== null && (
             <div>
-              <p className="text-xs text-muted-foreground">Reading Time</p>
+              <p className="text-xs text-muted-foreground">{t("docs.readingTime")}</p>
               <p className="text-sm font-medium text-foreground">~{summary.readingTime} min</p>
             </div>
           )}
           {summary.analyzedAt && (
             <div className="ml-auto">
-              <p className="text-xs text-muted-foreground">Analyzed</p>
+              <p className="text-xs text-muted-foreground">{t("docs.analyzed")}</p>
               <p className="text-xs font-medium text-foreground">
                 {new Date(summary.analyzedAt).toLocaleDateString()}
               </p>

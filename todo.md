@@ -224,3 +224,10 @@
 - [x] Demo auth (passwordless) + seed script for admin/lawyer/client
 - [x] Smoke E2E tests against seeded demo users (`pnpm test:smoke`)
 - [x] Online testing guide with demo login path (docs/online-testing.md)
+
+## Phase 15: Portal, payments, AI, compliance, Hetzner
+- [x] Client portal: branding for clients, upload/download, compose messages, AI loading
+- [x] Client-safe invoices.get + Stripe/Adyen checkout; hide payment-plan editor from clients
+- [x] Document analysis ACL + Forge precondition errors + summary loading UX
+- [x] Compliance ops doc + SIEM/runtime checklist (`docs/compliance-ops.md`)
+- [x] Hetzner deploy guide + helper script (`docs/hetzner-deploy.md`)

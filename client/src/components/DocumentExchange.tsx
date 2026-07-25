@@ -210,10 +210,10 @@ export function DocumentExchange({
                 </div>
               </div>
               </div>
-              {summaries[doc.id] && (
+              {(summaries[doc.id] || summariesLoading[doc.id]) && (
                 <DocumentSummaryCard
                   summary={summaries[doc.id]}
-                  isLoading={summariesLoading[doc.id]}
+                  isLoading={!!summariesLoading[doc.id] && !summaries[doc.id]}
                 />
               )}
             </div>

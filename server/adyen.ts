@@ -1,4 +1,4 @@
-import { ENV } from "./_core/env";
+import crypto from "crypto";
 
 /**
  * Adyen Payment Integration
@@ -13,6 +13,7 @@ export interface AdyenPaymentLinkRequest {
   returnUrl: string;
   merchantAccount: string;
   apiKey: string;
+  environment?: "test" | "live";
 }
 
 export interface AdyenPaymentLinkResponse {
@@ -26,13 +27,28 @@ export interface AdyenPaymentLinkResponse {
   status: string;
 }
 
+function checkoutBaseUrl(environment: "test" | "live" = "test") {
+  return environment === "live"
+    ? "https://checkout-live.adyen.com/v71/paymentLinks"
+    : "https://checkout-test.adyen.com/v71/paymentLinks";
+}
+
 /**
  * Create a payment link for an invoice
  */
 export async function createAdyenPaymentLink(
   request: AdyenPaymentLinkRequest
 ): Promise<AdyenPaymentLinkResponse> {
-  const { amount, currency, reference, description, returnUrl, merchantAccount, apiKey } = request;
+  const {
+    amount,
+    currency,
+    reference,
+    description,
+    returnUrl,
+    merchantAccount,
+    apiKey,
+    environment = "test",
+  } = request;
 
   const payload = {
     amount: {
@@ -46,7 +62,7 @@ export async function createAdyenPaymentLink(
   };
 
   try {
-    const response = await fetch("https://checkout-test.adyen.com/v71/paymentLinks", {
+    const response = await fetch(checkoutBaseUrl(environment), {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -56,8 +72,10 @@ export async function createAdyenPaymentLink(
     });
 
     if (!response.ok) {
-      const error = await response.json();
-      throw new Error(`Adyen error: ${error.errorCode} - ${error.message}`);
+      const error = await response.json().catch(() => ({}));
+      throw new Error(
+        `Adyen error: ${error.errorCode || response.status} - ${error.message || response.statusText}`
+      );
     }
 
     const data = await response.json();
@@ -75,16 +93,25 @@ export async function createAdyenPaymentLink(
 }
 
 /**
- * Verify webhook signature from Adyen
+ * Verify webhook HMAC signature from Adyen (hex HMAC-SHA256 over the payload).
+ * Returns false when hmacKey is missing or signature does not match.
  */
 export function verifyAdyenWebhookSignature(
   body: string,
   signature: string,
   hmacKey: string
 ): boolean {
-  // TODO: Implement HMAC verification
-  // For now, return true (implement proper verification in production)
-  return true;
+  if (!hmacKey || !signature) return false;
+  try {
+    const key = Buffer.from(hmacKey, "hex");
+    const digest = crypto.createHmac("sha256", key).update(body, "utf8").digest("base64");
+    const a = Buffer.from(digest);
+    const b = Buffer.from(signature);
+    if (a.length !== b.length) return false;
+    return crypto.timingSafeEqual(a, b);
+  } catch {
+    return false;
+  }
 }
 
 /**
@@ -95,17 +122,15 @@ export function handleAdyenWebhookEvent(event: any) {
 
   switch (eventType) {
     case "payment":
-      // Handle successful payment
       return {
         action: "updateInvoiceStatus",
         status: "paid",
-        reference: event.originalReference,
+        reference: event.originalReference || event.merchantReference,
       };
     case "paymentExpired":
-      // Handle expired payment link
       return {
         action: "expirePaymentLink",
-        reference: event.originalReference,
+        reference: event.originalReference || event.merchantReference,
       };
     default:
       return null;

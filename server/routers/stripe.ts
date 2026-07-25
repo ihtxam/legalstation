@@ -1,17 +1,15 @@
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { protectedProcedure, router } from "../_core/trpc";
-import { getFirmMemberByUserId, getInvoiceById, updateInvoice } from "../db";
+import { updateInvoice } from "../db";
 import { getStripe } from "../stripe";
+import { assertInvoiceAccess } from "../access";
 
 export const stripeRouter = router({
   createPaymentIntent: protectedProcedure
     .input(z.object({ invoiceId: z.number() }))
     .mutation(async ({ ctx, input }) => {
-      const member = await getFirmMemberByUserId(ctx.user.id);
-      if (!member) throw new TRPCError({ code: "UNAUTHORIZED" });
-      const invoice = await getInvoiceById(input.invoiceId, member.firmId);
-      if (!invoice) throw new TRPCError({ code: "NOT_FOUND" });
+      const { invoice } = await assertInvoiceAccess(ctx.user.id, input.invoiceId);
       if (invoice.status === "paid") throw new TRPCError({ code: "BAD_REQUEST", message: "Invoice already paid" });
       const stripe = getStripe();
       const paymentIntent = await stripe.paymentIntents.create({
@@ -20,11 +18,11 @@ export const stripeRouter = router({
         metadata: {
           invoiceId: invoice.id.toString(),
           invoiceNumber: invoice.invoiceNumber,
-          firmId: member.firmId.toString(),
+          firmId: invoice.firmId.toString(),
         },
         automatic_payment_methods: { enabled: true },
       });
-      await updateInvoice(invoice.id, member.firmId, {
+      await updateInvoice(invoice.id, invoice.firmId, {
         stripePaymentIntentId: paymentIntent.id,
       } as any);
       return { clientSecret: paymentIntent.client_secret };
@@ -33,12 +31,19 @@ export const stripeRouter = router({
   createCheckoutSession: protectedProcedure
     .input(z.object({ invoiceId: z.number() }))
     .mutation(async ({ ctx, input }) => {
-      const member = await getFirmMemberByUserId(ctx.user.id);
-      if (!member) throw new TRPCError({ code: "UNAUTHORIZED" });
-      const invoice = await getInvoiceById(input.invoiceId, member.firmId);
-      if (!invoice) throw new TRPCError({ code: "NOT_FOUND" });
+      const { invoice } = await assertInvoiceAccess(ctx.user.id, input.invoiceId);
       if (invoice.status === "paid") throw new TRPCError({ code: "BAD_REQUEST", message: "Invoice already paid" });
+      if (invoice.status === "cancelled") {
+        throw new TRPCError({ code: "BAD_REQUEST", message: "Invoice cancelled" });
+      }
+      if (!process.env.STRIPE_SECRET_KEY) {
+        throw new TRPCError({
+          code: "PRECONDITION_FAILED",
+          message: "Stripe is not configured (STRIPE_SECRET_KEY)",
+        });
+      }
       const stripe = getStripe();
+      const origin = String(ctx.req.headers.origin || "");
       const session = await stripe.checkout.sessions.create({
         payment_method_types: ["card"],
         line_items: [{
@@ -55,14 +60,20 @@ export const stripeRouter = router({
         metadata: {
           invoiceId: invoice.id.toString(),
           invoiceNumber: invoice.invoiceNumber,
-          firmId: member.firmId.toString(),
+          firmId: invoice.firmId.toString(),
           user_id: ctx.user.id.toString(),
         },
-        success_url: `${ctx.req.headers.origin}/invoices/${invoice.id}?payment=success`,
-        cancel_url: `${ctx.req.headers.origin}/invoices/${invoice.id}?payment=cancelled`,
+        success_url: `${origin}/invoices/${invoice.id}?payment=success`,
+        cancel_url: `${origin}/invoices/${invoice.id}?payment=cancelled`,
         allow_promotion_codes: true,
       });
-      return { url: session.url };
+
+      if (session.url) {
+        await updateInvoice(invoice.id, invoice.firmId, {
+          stripePaymentUrl: session.url,
+        } as any);
+      }
+
+      return { url: session.url, sessionId: session.id };
     }),
 });
-

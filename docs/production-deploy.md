@@ -2,6 +2,8 @@
 
 LexFlow needs **Node 22+**, **MySQL 8 / MariaDB**, and HTTPS for OAuth cookies.
 
+**Hetzner VPS step-by-step:** see [`docs/hetzner-deploy.md`](./hetzner-deploy.md) (`scripts/hetzner-deploy.sh`).
+
 ## Quick path: Docker Compose
 
 ```bash

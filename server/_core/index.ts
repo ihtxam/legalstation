@@ -14,6 +14,7 @@ import { getStripe } from "../stripe";
 import { getDb } from "../db";
 import { invoices } from "../../drizzle/schema";
 import { eq, and } from "drizzle-orm";
+// `and` used by Stripe webhook firm-scoped paid updates
 import { processDuePaymentPlanInstallments } from "../paymentPlanInvoices";
 import { ENV } from "./env";
 
@@ -97,10 +98,19 @@ async function startServer() {
       if (event.type === "checkout.session.completed") {
         const session = event.data.object as any;
         const invoiceId = session.metadata?.invoiceId;
+        const firmId = session.metadata?.firmId;
         if (invoiceId) {
           const db = await getDb();
           if (db) {
-            await db.update(invoices).set({ status: "paid", paidAt: new Date() }).where(eq(invoices.id, parseInt(invoiceId)));
+            const id = parseInt(invoiceId, 10);
+            if (firmId) {
+              await db
+                .update(invoices)
+                .set({ status: "paid", paidAt: new Date() })
+                .where(and(eq(invoices.id, id), eq(invoices.firmId, parseInt(firmId, 10))));
+            } else {
+              await db.update(invoices).set({ status: "paid", paidAt: new Date() }).where(eq(invoices.id, id));
+            }
           }
         }
       }
@@ -110,6 +120,46 @@ async function startServer() {
       res.status(400).send(`Webhook Error: ${err.message}`);
     }
   });
+
+  // Adyen webhook (notification JSON). Verify HMAC when ADYEN_HMAC_KEY is set.
+  app.post("/api/adyen/webhook", express.json(), async (req: any, res: any) => {
+    try {
+      const { verifyAdyenWebhookSignature, handleAdyenWebhookEvent } = await import("../adyen");
+      const hmacKey = process.env.ADYEN_HMAC_KEY || "";
+      const signature =
+        req.get("hmacsignature") ||
+        req.get("x-adyen-signature") ||
+        req.body?.additionalData?.hmacSignature ||
+        "";
+      const raw = JSON.stringify(req.body ?? {});
+      if (hmacKey && !verifyAdyenWebhookSignature(raw, signature, hmacKey)) {
+        return res.status(401).json({ error: "Invalid HMAC signature" });
+      }
+      const notificationItems = req.body?.notificationItems || [{ NotificationRequestItem: req.body }];
+      const db = await getDb();
+      for (const wrapper of notificationItems) {
+        const item = wrapper.NotificationRequestItem || wrapper;
+        const handled = handleAdyenWebhookEvent({
+          type: item.eventCode === "AUTHORISATION" && item.success === "true" ? "payment" : item.eventCode,
+          originalReference: item.merchantReference,
+        });
+        if (handled?.action === "updateInvoiceStatus" && handled.reference && db) {
+          const match = String(handled.reference).match(/INV-(\d+)/i);
+          if (match) {
+            await db
+              .update(invoices)
+              .set({ status: "paid", paidAt: new Date() })
+              .where(eq(invoices.id, parseInt(match[1], 10)));
+          }
+        }
+      }
+      return res.json({ notificationResponse: "[accepted]" });
+    } catch (err: any) {
+      console.error("[Adyen Webhook]", err);
+      return res.status(500).json({ error: err.message ?? "Webhook failed" });
+    }
+  });
+
   // tRPC API
   app.use(
     "/api/trpc",

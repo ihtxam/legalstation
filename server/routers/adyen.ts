@@ -1,56 +1,70 @@
 import { z } from "zod";
 import { protectedProcedure, router } from "../_core/trpc";
 import { TRPCError } from "@trpc/server";
-import { getDb, getInvoiceById } from "../db";
+import { getDb, updateInvoice } from "../db";
 import { createAdyenPaymentLink } from "../adyen";
-import { invoices, agencySettings } from "../../drizzle/schema";
+import { agencySettings } from "../../drizzle/schema";
 import { eq } from "drizzle-orm";
+import { assertInvoiceAccess } from "../access";
+
+async function getAdyenConfig() {
+  const apiKey = process.env.ADYEN_API_KEY || "";
+  const merchantFromEnv = process.env.ADYEN_MERCHANT_ACCOUNT || "";
+  const environment = (process.env.ADYEN_ENVIRONMENT || "test").toLowerCase();
+
+  let merchantAccount = merchantFromEnv;
+  if (!merchantAccount) {
+    const db = await getDb();
+    if (db) {
+      const rows = await db
+        .select()
+        .from(agencySettings)
+        .where(eq(agencySettings.key, "adyen_merchant_account"))
+        .limit(1);
+      merchantAccount = rows[0]?.value || "";
+    }
+  }
+
+  if (!apiKey || !merchantAccount) {
+    throw new TRPCError({
+      code: "PRECONDITION_FAILED",
+      message: "Adyen not configured (ADYEN_API_KEY + ADYEN_MERCHANT_ACCOUNT)",
+    });
+  }
+
+  return { apiKey, merchantAccount, environment };
+}
 
 export const adyenRouter = router({
-  // ─── Create Payment Link for Invoice ────────────────────────────────────────
   createPaymentLink: protectedProcedure
     .input(z.object({ invoiceId: z.number() }))
     .mutation(async ({ ctx, input }) => {
-      const db = await getDb();
-      if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
-
-      // Get invoice
-      const invoice = await getInvoiceById(input.invoiceId, 0);
-      if (!invoice) throw new TRPCError({ code: "NOT_FOUND", message: "Invoice not found" });
-
-      // Get Adyen settings
-      const adyenSettings = await db
-        .select()
-        .from(agencySettings)
-        .where(eq(agencySettings.key, "adyen_merchant_account"));
-
-      if (!adyenSettings.length) {
-        throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Adyen not configured" });
+      const { invoice } = await assertInvoiceAccess(ctx.user.id, input.invoiceId);
+      if (invoice.status === "paid") {
+        throw new TRPCError({ code: "BAD_REQUEST", message: "Invoice already paid" });
       }
 
-      // Create payment link
-      const amount = typeof invoice.total === 'string' 
-        ? Math.round(parseFloat(invoice.total) * 100) 
-        : Math.round(invoice.total * 100);
+      const { apiKey, merchantAccount, environment } = await getAdyenConfig();
+      const amount =
+        typeof invoice.total === "string"
+          ? Math.round(parseFloat(invoice.total) * 100)
+          : Math.round(Number(invoice.total) * 100);
 
       const paymentLink = await createAdyenPaymentLink({
         amount,
         currency: invoice.currency || "CHF",
         reference: `INV-${invoice.id}`,
         description: `Invoice ${invoice.invoiceNumber}`,
-        returnUrl: `${ctx.req.headers.origin || 'https://lexflow.app'}/invoices/${invoice.id}?paid=true`,
-        merchantAccount: adyenSettings[0].value,
-        apiKey: "", // Will be set from env in production
+        returnUrl: `${ctx.req.headers.origin || "https://lexflow.app"}/invoices/${invoice.id}?paid=true`,
+        merchantAccount,
+        apiKey,
+        environment: environment === "live" ? "live" : "test",
       });
 
-      // Store payment link in database
-      await db
-        .update(invoices)
-        .set({
-          adyenPaymentLinkId: paymentLink.id,
-          adyenPaymentLinkUrl: paymentLink.url,
-        })
-        .where(eq(invoices.id, input.invoiceId));
+      await updateInvoice(invoice.id, invoice.firmId, {
+        adyenPaymentLinkId: paymentLink.id,
+        adyenPaymentLinkUrl: paymentLink.url,
+      } as any);
 
       return {
         paymentUrl: paymentLink.url,
@@ -58,13 +72,10 @@ export const adyenRouter = router({
       };
     }),
 
-  // ─── Get Payment Link Status ────────────────────────────────────────────────
   getPaymentLinkStatus: protectedProcedure
     .input(z.object({ invoiceId: z.number() }))
     .query(async ({ ctx, input }) => {
-      const invoice = await getInvoiceById(input.invoiceId, 0);
-      if (!invoice) throw new TRPCError({ code: "NOT_FOUND" });
-
+      const { invoice } = await assertInvoiceAccess(ctx.user.id, input.invoiceId);
       return {
         paymentLinkId: invoice.adyenPaymentLinkId,
         paymentLinkUrl: invoice.adyenPaymentLinkUrl,

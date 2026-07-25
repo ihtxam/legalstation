@@ -35,10 +35,8 @@ export const invoicesRouter = router({
   get: protectedProcedure
     .input(z.object({ id: z.number() }))
     .query(async ({ ctx, input }) => {
-      const member = await getFirmMemberByUserId(ctx.user.id);
-      if (!member) throw new TRPCError({ code: "UNAUTHORIZED" });
-      const invoice = await getInvoiceById(input.id, member.firmId);
-      if (!invoice) throw new TRPCError({ code: "NOT_FOUND" });
+      const { assertInvoiceAccess } = await import("../access");
+      const { invoice } = await assertInvoiceAccess(ctx.user.id, input.id);
       const items = await getInvoiceItems(invoice.id);
       return { ...invoice, items };
     }),

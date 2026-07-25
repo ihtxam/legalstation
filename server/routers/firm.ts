@@ -16,6 +16,7 @@ import {
   getInvitationByToken,
   updateFirm,
 } from "../db";
+import { resolveFirmContext } from "../access";
 import { protectedProcedure, router } from "../_core/trpc";
 import { isSingleTenant } from "../deployment";
 import { evaluateLicense } from "../license";
@@ -29,11 +30,11 @@ export const firmRouter = router({
     return firm ? { firm, member } : null;
   }),
 
-  // Get firm branding (logo, name) - accessible to clients
+  // Get firm branding (logo, name) - accessible to firm members and clients
   branding: protectedProcedure.query(async ({ ctx }) => {
-    const member = await getFirmMemberByUserId(ctx.user.id);
-    if (!member) return null;
-    const firm = await getFirmById(member.firmId);
+    const firmCtx = await resolveFirmContext(ctx.user.id);
+    if (!firmCtx) return null;
+    const firm = await getFirmById(firmCtx.firmId);
     if (!firm) return null;
     return {
       name: firm.name,

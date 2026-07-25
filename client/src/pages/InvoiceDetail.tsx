@@ -294,6 +294,37 @@ function NewInvoiceForm() {
   );
 }
 
+function AdyenPayButton({ invoiceId, existingUrl }: { invoiceId: number; existingUrl?: string | null }) {
+  const createLink = trpc.adyen.createPaymentLink.useMutation({
+    onSuccess: (data) => {
+      if (data.paymentUrl) {
+        toast.success("Redirecting to Adyen…");
+        window.open(data.paymentUrl, "_blank");
+      }
+    },
+    onError: (e) => toast.error(e.message),
+  });
+  return (
+    <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-4 flex items-center justify-between gap-4">
+      <div>
+        <p className="font-medium text-emerald-900 text-sm">Pay with Adyen</p>
+        <p className="text-xs text-emerald-700 mt-0.5">Alternative checkout for Swiss cards and local methods.</p>
+      </div>
+      <Button
+        className="bg-emerald-700 hover:bg-emerald-800 text-white shrink-0"
+        disabled={createLink.isPending}
+        onClick={() => {
+          if (existingUrl) window.open(existingUrl, "_blank");
+          else createLink.mutate({ invoiceId });
+        }}
+      >
+        <CreditCard className="w-4 h-4 mr-1.5" />
+        {createLink.isPending ? "Preparing…" : existingUrl ? "Open Adyen link" : "Pay with Adyen"}
+      </Button>
+    </div>
+  );
+}
+
 export default function InvoiceDetailPage() {
   const [location] = useLocation();
   const isNewInvoice = location === "/invoices/new";
@@ -302,6 +333,8 @@ export default function InvoiceDetailPage() {
   const { isAuthenticated, loading } = useAuth();
   const [, navigate] = useLocation();
   const { data: branding } = trpc.firm.branding.useQuery(undefined, { enabled: isAuthenticated });
+  const { data: firmData } = trpc.firm.myFirm.useQuery(undefined, { enabled: isAuthenticated });
+  const isFirmMember = !!firmData;
 
   useEffect(() => { if (!loading && !isAuthenticated) startLogin(); }, [isAuthenticated, loading]);
 
@@ -444,7 +477,7 @@ export default function InvoiceDetailPage() {
           </div>
         )}
 
-        {/* Payment plans */}
+        {/* Payment plans — lawyers manage; clients only see timeline */}
         {paymentPlans && paymentPlans.length > 0 ? (
           <div className="space-y-4">
             {paymentPlans.map((plan) => (
@@ -452,9 +485,15 @@ export default function InvoiceDetailPage() {
                 key={plan.id}
                 invoiceNumber={invoice.invoiceNumber}
                 totalAmount={parseFloat(String(plan.totalAmount))}
-                generatingId={generateInstallment.isPending ? generateInstallment.variables?.installmentId ?? null : null}
-                onGenerateInvoice={(installmentId) =>
-                  generateInstallment.mutate({ installmentId })
+                generatingId={
+                  isFirmMember && generateInstallment.isPending
+                    ? generateInstallment.variables?.installmentId ?? null
+                    : null
+                }
+                onGenerateInvoice={
+                  isFirmMember
+                    ? (installmentId) => generateInstallment.mutate({ installmentId })
+                    : undefined
                 }
                 installments={(plan.installments || []).map((inst) => {
                   const due = new Date(inst.dueDate);
@@ -472,18 +511,24 @@ export default function InvoiceDetailPage() {
               />
             ))}
           </div>
-        ) : (
+        ) : isFirmMember ? (
           <PaymentPlanScheduler
             invoiceId={invoiceId}
             totalAmount={total}
             onCreated={() => void refetchPlans()}
           />
-        )}
+        ) : null}
 
         {/* Payment section */}
-        {invoice.status !== "paid" && (
+        {invoice.status !== "paid" && invoice.status !== "cancelled" && (
           <div className="space-y-3">
             <StripePayButton invoiceId={invoiceId} />
+            <AdyenPayButton invoiceId={invoiceId} existingUrl={invoice.adyenPaymentLinkUrl} />
+            {invoice.stripePaymentUrl && (
+              <p className="text-xs text-muted-foreground">
+                Stripe link saved for this invoice (also embedded on PDF when available).
+              </p>
+            )}
           </div>
         )}
 
@@ -497,7 +542,7 @@ export default function InvoiceDetailPage() {
             <Download className="w-4 h-4 mr-1.5" />
             {generatePdf.isPending ? "Generating…" : "Download PDF"}
           </Button>
-          {invoice.status === "draft" && (
+          {isFirmMember && invoice.status === "draft" && (
             <Button className="bg-[var(--color-navy)] hover:bg-[var(--color-navy-light)] text-white" onClick={() => updateStatus.mutate({ id: invoiceId, status: "sent" })}>
               <Send className="w-4 h-4 mr-1.5" /> Send to Client
             </Button>

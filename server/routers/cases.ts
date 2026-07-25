@@ -19,6 +19,7 @@ import {
   getClientsByFirm,
 } from "../db";
 import { protectedProcedure, router } from "../_core/trpc";
+import { assertCaseAccess } from "../access";
 
 async function requireFirmMember(userId: number) {
   const member = await getFirmMemberByUserId(userId);
@@ -55,12 +56,9 @@ export const casesRouter = router({
   get: protectedProcedure
     .input(z.object({ id: z.number() }))
     .query(async ({ ctx, input }) => {
-      const member = await getFirmMemberByUserId(ctx.user.id);
-      if (!member) throw new TRPCError({ code: "UNAUTHORIZED" });
-      const c = await getCaseById(input.id, member.firmId);
-      if (!c) throw new TRPCError({ code: "NOT_FOUND" });
-      const assignments = await getCaseAssignments(c.id);
-      return { ...c, assignments };
+      const { caseRow, includeInternal } = await assertCaseAccess(ctx.user.id, input.id);
+      const assignments = includeInternal ? await getCaseAssignments(caseRow.id) : [];
+      return { ...caseRow, assignments };
     }),
 
   create: protectedProcedure
@@ -143,9 +141,8 @@ export const casesRouter = router({
   getEvents: protectedProcedure
     .input(z.object({ caseId: z.number() }))
     .query(async ({ ctx, input }) => {
-      const member = await getFirmMemberByUserId(ctx.user.id);
-      const isLawyerOrAdmin = member && ["admin", "lawyer", "assistant"].includes(member.firmRole);
-      return getCaseEvents(input.caseId, isLawyerOrAdmin ?? false);
+      const { includeInternal } = await assertCaseAccess(ctx.user.id, input.caseId);
+      return getCaseEvents(input.caseId, includeInternal);
     }),
 
   addNote: protectedProcedure

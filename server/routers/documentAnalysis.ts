@@ -1,5 +1,6 @@
 import { router, protectedProcedure } from "../_core/trpc";
 import { z } from "zod";
+import { TRPCError } from "@trpc/server";
 import {
   createDocumentSummary,
   getDocumentSummary,
@@ -12,11 +13,14 @@ import {
   extractDocumentContent,
   parseAnalysisResponse,
 } from "../documentContent";
+import { assertDocumentAccess } from "../access";
+import { ENV } from "../_core/env";
 
 export const documentAnalysisRouter = router({
   getSummary: protectedProcedure
     .input(z.object({ documentId: z.number() }))
-    .query(async ({ input }) => {
+    .query(async ({ ctx, input }) => {
+      await assertDocumentAccess(ctx.user.id, input.documentId);
       return getDocumentSummary(input.documentId);
     }),
 
@@ -29,7 +33,16 @@ export const documentAnalysisRouter = router({
         mimeType: z.string(),
       })
     )
-    .mutation(async ({ input }) => {
+    .mutation(async ({ ctx, input }) => {
+      await assertDocumentAccess(ctx.user.id, input.documentId);
+
+      if (!ENV.forgeApiUrl || !ENV.forgeApiKey) {
+        throw new TRPCError({
+          code: "PRECONDITION_FAILED",
+          message: "AI analysis is not configured (BUILT_IN_FORGE_API_URL / BUILT_IN_FORGE_API_KEY)",
+        });
+      }
+
       try {
         await createDocumentSummary({
           documentId: input.documentId,
@@ -53,6 +66,17 @@ export const documentAnalysisRouter = router({
           buffer,
           fallbackText: `Document: ${input.fileName}`,
         });
+
+        if (!buffer && (extracted.kind === "unsupported" || extracted.wordCount === 0)) {
+          await markAnalysisFailed(
+            input.documentId,
+            "Could not read document content for analysis"
+          );
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "Could not read document content for analysis",
+          });
+        }
 
         const contentPreview = extracted.text;
         const analysisPrompt = `Analyze the following document and provide:
@@ -86,7 +110,6 @@ Respond in JSON format with keys: summary, keyPoints (array), sentiment, documen
           const messageContent = choice?.message?.content;
           const textContent = typeof messageContent === "string" ? messageContent : "";
           analysis = parseAnalysisResponse(textContent, contentPreview);
-          // Prefer extracted word count
           analysis.wordCount = extracted.wordCount || analysis.wordCount;
         } catch (parseError) {
           console.error("Failed to parse LLM response:", parseError);
@@ -104,10 +127,11 @@ Respond in JSON format with keys: summary, keyPoints (array), sentiment, documen
           },
         };
       } catch (error) {
+        if (error instanceof TRPCError) throw error;
         const errorMessage =
           error instanceof Error ? error.message : "Unknown error";
         await markAnalysisFailed(input.documentId, errorMessage);
-        throw error;
+        throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: errorMessage });
       }
     }),
 });
