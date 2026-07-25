@@ -57,6 +57,10 @@ export const firms = mysqlTable("firms", {
   onboardingStep: int("onboardingStep").notNull().default(0),
   onboardingCompletedAt: timestamp("onboardingCompletedAt"),
   credentialsSentAt: timestamp("credentialsSentAt"),
+  /** Max document upload size in bytes (firm admin setting; capped by server hard limit). */
+  maxUploadBytes: int("maxUploadBytes").notNull().default(10_485_760),
+  /** JSON array of allowed file extensions, e.g. ["pdf","jpg","png"]. */
+  allowedUploadTypes: text("allowedUploadTypes"),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 });
@@ -244,6 +248,8 @@ export const documents = mysqlTable("documents", {
   size: int("size").notNull(),
   fileKey: text("fileKey").notNull(),
   fileUrl: text("fileUrl").notNull(),
+  /** Short note about the uploaded file */
+  description: text("description"),
   visibility: mysqlEnum("visibility", ["internal", "shared"]).notNull().default("internal"),
   currentVersion: int("currentVersion").notNull().default(1),
   isDeleted: boolean("isDeleted").notNull().default(false),

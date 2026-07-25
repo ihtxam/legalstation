@@ -152,6 +152,11 @@ export const firmRouter = router({
     if (!firmCtx) return null;
     const firm = await getFirmById(firmCtx.firmId);
     if (!firm) return null;
+    const { resolveUploadPolicy } = await import("@shared/uploadPolicy");
+    const uploadPolicy = resolveUploadPolicy({
+      maxUploadBytes: firm.maxUploadBytes,
+      allowedUploadTypes: firm.allowedUploadTypes,
+    });
     return {
       name: firm.name,
       logoUrl: firm.logoUrl,
@@ -165,6 +170,9 @@ export const firmRouter = router({
       subdomainStatus: firm.subdomainStatus,
       onboardingCompletedAt: firm.onboardingCompletedAt,
       onboardingStep: firm.onboardingStep,
+      maxUploadBytes: uploadPolicy.maxUploadBytes,
+      allowedUploadTypes: uploadPolicy.allowedExtensions,
+      uploadPolicy,
     };
   }),
 
@@ -232,15 +240,30 @@ export const firmRouter = router({
       primaryColor: z.string().regex(/^#[0-9A-Fa-f]{6}$/).optional().nullable(),
       secondaryColor: z.string().regex(/^#[0-9A-Fa-f]{6}$/).optional().nullable(),
       customDomain: z.string().max(255).optional().nullable(),
+      /** Max upload size in MB (converted to bytes server-side). */
+      maxUploadMb: z.number().min(0.1).max(50).optional(),
+      /** Allowed extensions without dots, e.g. ["pdf","jpg","png"]. */
+      allowedUploadTypes: z.array(z.string().min(1).max(20)).max(40).optional(),
     }))
     .mutation(async ({ ctx, input }) => {
       const member = await getFirmMemberByUserId(ctx.user.id);
       if (!member || member.firmRole !== "admin") throw new TRPCError({ code: "FORBIDDEN" });
-      const { defaultVatRate, defaultCurrency, ...rest } = input;
+      const { defaultVatRate, defaultCurrency, maxUploadMb, allowedUploadTypes, ...rest } = input;
+      const { UPLOAD_HARD_MAX_BYTES } = await import("@shared/uploadPolicy");
       await updateFirm(member.firmId, {
         ...rest,
         defaultCurrency: defaultCurrency?.toUpperCase(),
         defaultVatRate: defaultVatRate != null ? defaultVatRate.toFixed(2) : undefined,
+        maxUploadBytes:
+          maxUploadMb != null
+            ? Math.min(Math.round(maxUploadMb * 1024 * 1024), UPLOAD_HARD_MAX_BYTES)
+            : undefined,
+        allowedUploadTypes:
+          allowedUploadTypes != null
+            ? JSON.stringify(
+                allowedUploadTypes.map((e) => e.toLowerCase().replace(/^\./, "").trim()).filter(Boolean)
+              )
+            : undefined,
       });
       return { success: true };
     }),

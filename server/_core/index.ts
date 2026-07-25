@@ -44,11 +44,66 @@ async function startServer() {
   app.use(express.json({ limit: "50mb" }));
   app.use(express.urlencoded({ limit: "50mb", extended: true }));
 
-  // File upload endpoint
-  const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 50 * 1024 * 1024 } });
-  app.post("/api/upload", upload.single("file"), async (req: any, res: any) => {
+  // File upload endpoint (enforces firm upload policy when session is present)
+  const { UPLOAD_HARD_MAX_BYTES, validateUploadFile, formatBytes } = await import(
+    "../../shared/uploadPolicy"
+  );
+  const { resolveUploadPolicyFromRequest } = await import("../uploadPolicyResolve");
+  const upload = multer({
+    storage: multer.memoryStorage(),
+    limits: { fileSize: UPLOAD_HARD_MAX_BYTES },
+  });
+  app.post("/api/upload", (req: any, res: any, next: any) => {
+    upload.single("file")(req, res, (err: any) => {
+      if (err instanceof multer.MulterError && err.code === "LIMIT_FILE_SIZE") {
+        return res.status(413).json({
+          error: `File is too large. Maximum size is ${formatBytes(UPLOAD_HARD_MAX_BYTES)}.`,
+          code: "FILE_TOO_LARGE",
+          maxBytes: UPLOAD_HARD_MAX_BYTES,
+        });
+      }
+      if (err) {
+        return res.status(400).json({ error: err.message || "Upload failed" });
+      }
+      next();
+    });
+  }, async (req: any, res: any) => {
     try {
       if (!req.file) return res.status(400).json({ error: "No file provided" });
+      const purpose = String(req.body?.purpose || "document");
+      // Firm logos: allow common image types up to 5MB (separate from document policy)
+      if (purpose === "logo") {
+        const mime = String(req.file.mimetype || "").toLowerCase();
+        if (!mime.startsWith("image/")) {
+          return res.status(400).json({
+            error: "Logo must be an image file (PNG, JPEG, GIF, or WebP).",
+            code: "FILE_TYPE_NOT_ALLOWED",
+          });
+        }
+        if (req.file.size > 5 * 1024 * 1024) {
+          return res.status(400).json({
+            error: "Logo is too large. Maximum size is 5 MB.",
+            code: "FILE_TOO_LARGE",
+            maxBytes: 5 * 1024 * 1024,
+          });
+        }
+      } else {
+        const policy = await resolveUploadPolicyFromRequest(req);
+        const check = validateUploadFile({
+          fileName: req.file.originalname || "file",
+          mimeType: req.file.mimetype,
+          size: req.file.size,
+          policy,
+        });
+        if (!check.ok) {
+          return res.status(400).json({
+            error: check.message,
+            code: check.code,
+            maxBytes: policy.maxUploadBytes,
+            allowedExtensions: policy.allowedExtensions,
+          });
+        }
+      }
       const key = `documents/${Date.now()}_${req.file.originalname.replace(/[^a-zA-Z0-9._-]/g, "_")}`;
       const result = await storagePut(key, req.file.buffer, req.file.mimetype);
       res.json(result);

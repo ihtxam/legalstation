@@ -92,6 +92,13 @@
       "when": 1785096400000,
       "tag": "0012_firm_trial_signup",
       "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "5",
+      "when": 1785182800000,
+      "tag": "0013_document_upload_policy",
+      "breakpoints": true
     }
   ]
 }

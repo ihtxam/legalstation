@@ -27,6 +27,8 @@ import { DocumentVersionHistory } from "@/components/DocumentVersionHistory";
 import CaseTimePanel from "@/components/CaseTimePanel";
 import CaseTasksPanel from "@/components/CaseTasksPanel";
 import { useTranslation } from "react-i18next";
+import { fileAccept, postFileUpload, precheckFile, uploadPolicyHint } from "@/lib/uploadHelpers";
+import { isImageUpload, resolveUploadPolicy } from "@shared/uploadPolicy";
 
 function CaseTimeline({ caseId, isInternal }: { caseId: number; isInternal: boolean }) {
   const { t } = useTranslation();
@@ -138,8 +140,13 @@ function CaseDocuments({ caseId, firmId }: { caseId: number; firmId: number }) {
   const [requestDescription, setRequestDescription] = useState("");
   const [requestDue, setRequestDue] = useState("");
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [uploadDescription, setUploadDescription] = useState("");
   const [folderId, setFolderId] = useState("");
+  const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const { data: policyData } = trpc.documents.uploadPolicy.useQuery();
+  const policy = policyData || resolveUploadPolicy();
+  const policyHint = uploadPolicyHint(policy);
   
   const updateVisibility = trpc.documents.updateVisibility.useMutation({ onSuccess: () => refetch() });
   const logAccess = trpc.documents.logAccess.useMutation();
@@ -242,54 +249,107 @@ function CaseDocuments({ caseId, firmId }: { caseId: number; firmId: number }) {
           )}
         </div>
       )}
-      <Dialog open={showUpload} onOpenChange={setShowUpload}>
+      <Dialog
+        open={showUpload}
+        onOpenChange={(open) => {
+          setShowUpload(open);
+          if (!open) {
+            setSelectedFile(null);
+            setUploadDescription("");
+          }
+        }}
+      >
         <DialogContent>
-          <DialogHeader><DialogTitle>Upload Document</DialogTitle></DialogHeader>
+          <DialogHeader><DialogTitle>{t("docs.uploadDocument")}</DialogTitle></DialogHeader>
           <div className="space-y-4 py-2">
-            <input ref={fileInputRef} type="file" className="hidden" onChange={e => setSelectedFile(e.target.files?.[0] || null)} />
+            <p className="text-xs text-muted-foreground">{policyHint}</p>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept={fileAccept(policy)}
+              className="hidden"
+              onChange={(e) => {
+                const file = e.target.files?.[0] || null;
+                if (!file) {
+                  setSelectedFile(null);
+                  return;
+                }
+                const err = precheckFile(file, policy);
+                if (err) {
+                  toast.error(err);
+                  e.target.value = "";
+                  return;
+                }
+                setSelectedFile(file);
+              }}
+            />
             <Button variant="outline" onClick={() => fileInputRef.current?.click()}>
               {selectedFile ? selectedFile.name : t("caseDetail.chooseFile")}
             </Button>
+            <div>
+              <Label htmlFor="caseDocDesc">{t("docs.description")}</Label>
+              <Textarea
+                id="caseDocDesc"
+                className="mt-1.5"
+                rows={2}
+                maxLength={2000}
+                placeholder={t("docs.descriptionPlaceholder")}
+                value={uploadDescription}
+                onChange={(e) => setUploadDescription(e.target.value)}
+              />
+            </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setShowUpload(false)}>Cancel</Button>
-            <Button disabled={!selectedFile || register.isPending}
+            <Button variant="outline" onClick={() => setShowUpload(false)}>{t("common.cancel")}</Button>
+            <Button
+              disabled={!selectedFile || register.isPending || uploading}
               onClick={async () => {
                 if (!selectedFile) return;
                 const file = selectedFile;
-                const formData = new FormData();
-                formData.append('file', file);
-                formData.append('caseId', caseId.toString());
-                const res = await fetch('/api/upload', { method: 'POST', body: formData });
-                const { fileKey, fileUrl } = await res.json();
-                const result = await register.mutateAsync({
-                  caseId,
-                  name: file.name,
-                  originalName: file.name,
-                  mimeType: file.type,
-                  size: file.size,
-                  fileKey,
-                  fileUrl,
-                  folderId: folderId ? parseInt(folderId) : undefined,
-                });
-                setShowUpload(false);
-                setSelectedFile(null);
-                refetch();
-                toast.success(t("caseDetail.docUploaded"));
-                if (result.documentId) {
-                  toast.loading(t("caseDetail.analyzing"), { id: "doc-analysis" });
-                  analyzeDocument.mutate(
-                    {
-                      documentId: result.documentId,
-                      documentUrl: fileUrl,
-                      fileName: file.name,
-                      mimeType: file.type || "application/octet-stream",
-                    },
-                    { onSettled: () => toast.dismiss("doc-analysis") }
-                  );
+                const err = precheckFile(file, policy);
+                if (err) {
+                  toast.error(err);
+                  return;
                 }
-              }}>
-              Upload
+                setUploading(true);
+                try {
+                  const { fileKey, fileUrl } = await postFileUpload(file);
+                  const result = await register.mutateAsync({
+                    caseId,
+                    name: file.name,
+                    originalName: file.name,
+                    mimeType: file.type || "application/octet-stream",
+                    size: file.size,
+                    fileKey,
+                    fileUrl,
+                    description: uploadDescription.trim() || undefined,
+                    folderId: folderId ? parseInt(folderId, 10) : undefined,
+                  });
+                  setShowUpload(false);
+                  setSelectedFile(null);
+                  setUploadDescription("");
+                  refetch();
+                  toast.success(t("caseDetail.docUploaded"));
+                  if (result.documentId && !isImageUpload(file.type, file.name)) {
+                    toast.loading(t("caseDetail.analyzing"), { id: "doc-analysis" });
+                    analyzeDocument.mutate(
+                      {
+                        documentId: result.documentId,
+                        documentUrl: fileUrl,
+                        fileName: file.name,
+                        mimeType: file.type || "application/octet-stream",
+                      },
+                      { onSettled: () => toast.dismiss("doc-analysis") }
+                    );
+                  }
+                } catch (e) {
+                  toast.error(e instanceof Error ? e.message : t("docs.uploadFailed"));
+                } finally {
+                  setUploading(false);
+                }
+              }}
+            >
+              {uploading || register.isPending ? t("docs.uploading") : t("docs.upload")}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -369,6 +429,9 @@ function DocList({ docs, onToggle, onLog }: { docs: any[]; onToggle: (v: any) =>
             <div className="flex-1 min-w-0">
               <p className="text-sm font-medium text-foreground truncate">{doc.name}</p>
               <p className="text-xs text-muted-foreground">{(doc.size / 1024).toFixed(1)} KB · v{doc.currentVersion}</p>
+              {doc.description && (
+                <p className="text-xs text-muted-foreground mt-0.5 truncate">{doc.description}</p>
+              )}
             </div>
             <StatusBadge status={doc.visibility} />
             <div className="flex items-center gap-1">

@@ -3,16 +3,21 @@ import { FileText, Upload, Download, Lock, Globe, Trash2, Share2, History, Check
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { DocumentSummaryCard } from "./DocumentSummaryCard";
 import { DocumentVersionHistory } from "./DocumentVersionHistory";
 import { useTranslation } from "react-i18next";
+import { trpc } from "@/lib/trpc";
+import { fileAccept, precheckFile, uploadPolicyHint } from "@/lib/uploadHelpers";
+import { resolveUploadPolicy } from "@shared/uploadPolicy";
 
 interface DocumentExchangeProps {
   docs: any[];
   isLoading: boolean;
-  onUpload: (file: File, folderId?: number) => Promise<void>;
+  onUpload: (file: File, opts?: { folderId?: number; description?: string }) => Promise<void>;
   onToggleVisibility: (id: number, visibility: "internal" | "shared") => void;
   onDelete: (id: number) => void;
   onDownload: (id: number, name: string) => void;
@@ -37,12 +42,26 @@ export function DocumentExchange({
   const { t } = useTranslation();
   const [showUpload, setShowUpload] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [description, setDescription] = useState("");
   const [dragActive, setDragActive] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [selectedDoc, setSelectedDoc] = useState<any | null>(null);
   const [showShareDialog, setShowShareDialog] = useState(false);
   const [versionDocId, setVersionDocId] = useState<number | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const { data: policyData } = trpc.documents.uploadPolicy.useQuery();
+  const policy = policyData || resolveUploadPolicy();
+  const policyHint = uploadPolicyHint(policy);
+
+  const pickFile = (file: File | null | undefined) => {
+    if (!file) return;
+    const err = precheckFile(file, policy);
+    if (err) {
+      toast.error(err);
+      return;
+    }
+    setSelectedFile(file);
+  };
 
   const handleDrag = (e: React.DragEvent) => {
     e.preventDefault();
@@ -55,21 +74,25 @@ export function DocumentExchange({
     e.stopPropagation();
     setDragActive(false);
     const files = e.dataTransfer.files;
-    if (files?.[0]) {
-      setSelectedFile(files[0]);
-    }
+    if (files?.[0]) pickFile(files[0]);
   };
 
   const handleUpload = async () => {
     if (!selectedFile) return;
+    const err = precheckFile(selectedFile, policy);
+    if (err) {
+      toast.error(err);
+      return;
+    }
     setUploading(true);
     try {
-      await onUpload(selectedFile);
+      await onUpload(selectedFile, { description: description.trim() || undefined });
       setSelectedFile(null);
+      setDescription("");
       setShowUpload(false);
       toast.success(t("docs.uploaded"));
     } catch (error) {
-      toast.error(t("docs.uploadFailed"));
+      toast.error(error instanceof Error ? error.message : t("docs.uploadFailed"));
     } finally {
       setUploading(false);
     }
@@ -157,6 +180,9 @@ export function DocumentExchange({
                     {(doc.size / 1024).toFixed(1)} KB • v{doc.currentVersion} •{" "}
                     {format(new Date(doc.createdAt), "dd MMM yyyy")}
                   </p>
+                  {doc.description && (
+                    <p className="text-xs text-muted-foreground mt-1">{doc.description}</p>
+                  )}
                 </div>
 
                 {/* Actions */}
@@ -229,6 +255,7 @@ export function DocumentExchange({
           </DialogHeader>
 
           <div className="space-y-4 py-4">
+            <p className="text-xs text-muted-foreground">{policyHint}</p>
             {/* Drag & Drop Zone */}
             <div
               onDragEnter={handleDrag}
@@ -244,8 +271,9 @@ export function DocumentExchange({
               <input
                 ref={fileInputRef}
                 type="file"
+                accept={fileAccept(policy)}
                 className="hidden"
-                onChange={(e) => setSelectedFile(e.target.files?.[0] || null)}
+                onChange={(e) => pickFile(e.target.files?.[0])}
               />
 
               {selectedFile ? (
@@ -271,11 +299,24 @@ export function DocumentExchange({
               )}
 
               <button
+                type="button"
                 onClick={() => fileInputRef.current?.click()}
                 className="mt-4 text-sm text-[var(--color-navy)] hover:underline"
               >
                 {t("docs.browseFiles")}
               </button>
+            </div>
+            <div>
+              <Label htmlFor="docDescription">{t("docs.description")}</Label>
+              <Textarea
+                id="docDescription"
+                className="mt-1.5"
+                rows={2}
+                maxLength={2000}
+                placeholder={t("docs.descriptionPlaceholder")}
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+              />
             </div>
           </div>
 

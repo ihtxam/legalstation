@@ -14,6 +14,14 @@ import { useTranslation } from "react-i18next";
 import { setAppLocale } from "@/i18n";
 import { APP_LOCALES, APP_LOCALE_LABELS, isAppLocale, type AppLocale } from "@shared/locales";
 import CustomDomainDnsHelp from "@/components/CustomDomainDnsHelp";
+import { Checkbox } from "@/components/ui/checkbox";
+import {
+  DEFAULT_ALLOWED_UPLOAD_EXTENSIONS,
+  DEFAULT_MAX_UPLOAD_BYTES,
+  parseAllowedExtensions,
+} from "@shared/uploadPolicy";
+
+const UPLOAD_TYPE_OPTIONS = [...DEFAULT_ALLOWED_UPLOAD_EXTENSIONS];
 
 export default function SettingsPage() {
   const { t } = useTranslation();
@@ -27,9 +35,16 @@ export default function SettingsPage() {
   const [logoPreview, setLogoPreview] = useState<string>("");
   const [hasChanges, setHasChanges] = useState(false);
   const [originalForm, setOriginalForm] = useState({ name: "", address: "", email: "", phone: "", vatNumber: "", logoUrl: "" });
+  const [maxUploadMb, setMaxUploadMb] = useState("10");
+  const [allowedTypes, setAllowedTypes] = useState<string[]>([...UPLOAD_TYPE_OPTIONS] as string[]);
+  const [originalUpload, setOriginalUpload] = useState<{ maxUploadMb: string; allowedTypes: string[] }>({
+    maxUploadMb: "10",
+    allowedTypes: [...UPLOAD_TYPE_OPTIONS],
+  });
   const [totpSetup, setTotpSetup] = useState<{ qrDataUrl: string; secret: string } | null>(null);
   const [totpCode, setTotpCode] = useState("");
   const [locale, setLocale] = useState<AppLocale>("en");
+  const isFirmAdmin = firmData?.member?.firmRole === "admin";
 
   const setupTotp = trpc.auth.setupTotp.useMutation({
     onSuccess: (data) => setTotpSetup({ qrDataUrl: data.qrDataUrl, secret: data.secret }),
@@ -78,6 +93,7 @@ export default function SettingsPage() {
     onSuccess: () => { 
       toast.success(t("settings.firmSaved"));
       setOriginalForm(firmForm);
+      setOriginalUpload({ maxUploadMb, allowedTypes: [...allowedTypes] });
       setHasChanges(false);
       refetch(); 
     },
@@ -151,13 +167,22 @@ export default function SettingsPage() {
         vatNumber: firmData.firm.vatNumber ?? "",
         logoUrl: firmData.firm.logoUrl ?? "",
       });
+      const bytes = firmData.firm.maxUploadBytes ?? DEFAULT_MAX_UPLOAD_BYTES;
+      const mb = String(Math.round((bytes / (1024 * 1024)) * 10) / 10);
+      const types = parseAllowedExtensions(firmData.firm.allowedUploadTypes);
+      setMaxUploadMb(mb);
+      setAllowedTypes(types);
+      setOriginalUpload({ maxUploadMb: mb, allowedTypes: types });
     }
   }, [firmData]);
 
   useEffect(() => {
-    const changed = JSON.stringify(firmForm) !== JSON.stringify(originalForm);
-    setHasChanges(changed);
-  }, [firmForm, originalForm]);
+    const firmChanged = JSON.stringify(firmForm) !== JSON.stringify(originalForm);
+    const uploadChanged =
+      maxUploadMb !== originalUpload.maxUploadMb ||
+      JSON.stringify([...allowedTypes].sort()) !== JSON.stringify([...originalUpload.allowedTypes].sort());
+    setHasChanges(firmChanged || uploadChanged);
+  }, [firmForm, originalForm, maxUploadMb, allowedTypes, originalUpload]);
 
   const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -175,17 +200,33 @@ export default function SettingsPage() {
     try {
       const formData = new FormData();
       formData.append("file", logoFile);
-      const res = await fetch("/api/upload", { method: "POST", body: formData });
-      const data = await res.json();
+      formData.append("purpose", "logo");
+      const res = await fetch("/api/upload", {
+        method: "POST",
+        body: formData,
+        credentials: "include",
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        toast.error(data.error || t("settings.logoUploadFailed"));
+        return;
+      }
       if (data.url) {
-        setFirmForm(f => ({ ...f, logoUrl: data.url }));
+        setFirmForm((f) => ({ ...f, logoUrl: data.url }));
         setLogoFile(null);
         setHasChanges(true);
         toast.success(t("settings.logoUploaded"));
       }
-    } catch (e) {
+    } catch {
       toast.error(t("settings.logoUploadFailed"));
     }
+  };
+
+  const toggleUploadType = (ext: string, checked: boolean) => {
+    setAllowedTypes((prev) => {
+      if (checked) return prev.includes(ext) ? prev : [...prev, ext];
+      return prev.filter((x) => x !== ext);
+    });
   };
 
   const isFirmStaff = Boolean(firmData?.member);
@@ -236,9 +277,76 @@ export default function SettingsPage() {
                   {logoFile && <Button onClick={handleLogoUpload} className="bg-blue-600 hover:bg-blue-700 text-white">{t("docs.upload")}</Button>}
                 </div>
               </div>
-              <Button className={`${hasChanges ? 'bg-blue-600 hover:bg-blue-700' : 'bg-[var(--color-navy)] hover:bg-[var(--color-navy-light)]'} text-white`} disabled={updateFirm.isPending || !hasChanges}
-                onClick={() => updateFirm.mutate({ name: firmForm.name, address: firmForm.address, email: firmForm.email || null, phone: firmForm.phone, vatNumber: firmForm.vatNumber || null, logoUrl: firmForm.logoUrl || null })}>
-                {updateFirm.isPending ? t("settings.saving") : hasChanges ? t("settings.saveUnsavedChanges") : t("settings.noChanges")}
+              {isFirmAdmin && (
+                <div className="border-t border-border pt-4 space-y-3">
+                  <div>
+                    <h4 className="font-semibold text-foreground">{t("settings.uploadPolicyTitle")}</h4>
+                    <p className="text-sm text-muted-foreground mt-1">{t("settings.uploadPolicyHint")}</p>
+                  </div>
+                  <div>
+                    <Label htmlFor="maxUploadMb">{t("settings.maxUploadMb")}</Label>
+                    <Input
+                      id="maxUploadMb"
+                      type="number"
+                      min={0.1}
+                      max={50}
+                      step={0.1}
+                      className="mt-1.5 max-w-[180px]"
+                      value={maxUploadMb}
+                      onChange={(e) => setMaxUploadMb(e.target.value)}
+                    />
+                    <p className="text-xs text-muted-foreground mt-1">{t("settings.maxUploadMbHelp")}</p>
+                  </div>
+                  <div>
+                    <Label>{t("settings.allowedFileTypes")}</Label>
+                    <div className="mt-2 grid grid-cols-2 sm:grid-cols-3 gap-2">
+                      {UPLOAD_TYPE_OPTIONS.map((ext) => (
+                        <label key={ext} className="flex items-center gap-2 text-sm">
+                          <Checkbox
+                            checked={allowedTypes.includes(ext)}
+                            onCheckedChange={(c) => toggleUploadType(ext, Boolean(c))}
+                          />
+                          <span className="uppercase">{ext}</span>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
+              <Button
+                className={`${hasChanges ? "bg-blue-600 hover:bg-blue-700" : "bg-[var(--color-navy)] hover:bg-[var(--color-navy-light)]"} text-white`}
+                disabled={updateFirm.isPending || !hasChanges || (isFirmAdmin && allowedTypes.length === 0)}
+                onClick={() => {
+                  const mb = parseFloat(maxUploadMb);
+                  if (isFirmAdmin && (!(mb > 0) || mb > 50)) {
+                    toast.error(t("settings.maxUploadMbHelp"));
+                    return;
+                  }
+                  if (isFirmAdmin && allowedTypes.length === 0) {
+                    toast.error(t("settings.allowedFileTypesRequired"));
+                    return;
+                  }
+                  updateFirm.mutate({
+                    name: firmForm.name,
+                    address: firmForm.address,
+                    email: firmForm.email || null,
+                    phone: firmForm.phone,
+                    vatNumber: firmForm.vatNumber || null,
+                    logoUrl: firmForm.logoUrl || null,
+                    ...(isFirmAdmin
+                      ? {
+                          maxUploadMb: mb,
+                          allowedUploadTypes: allowedTypes,
+                        }
+                      : {}),
+                  });
+                }}
+              >
+                {updateFirm.isPending
+                  ? t("settings.saving")
+                  : hasChanges
+                    ? t("settings.saveUnsavedChanges")
+                    : t("settings.noChanges")}
               </Button>
               {firmData?.firm && (
                 <CustomDomainDnsHelp

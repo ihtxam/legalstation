@@ -129,12 +129,13 @@ export default function ClientPortalPage() {
   });
   const utils = trpc.useUtils();
 
-  const uploadAndRegister = async (caseId: number, file: File) => {
-    const formData = new FormData();
-    formData.append("file", file);
-    const res = await fetch("/api/upload", { method: "POST", body: formData });
-    if (!res.ok) throw new Error("Upload failed");
-    const { fileKey, fileUrl } = await res.json();
+  const uploadAndRegister = async (
+    caseId: number,
+    file: File,
+    opts?: { description?: string }
+  ) => {
+    const { postFileUpload } = await import("@/lib/uploadHelpers");
+    const { fileKey, fileUrl } = await postFileUpload(file);
     const result = await registerDocument.mutateAsync({
       caseId,
       name: file.name,
@@ -143,6 +144,7 @@ export default function ClientPortalPage() {
       size: file.size,
       fileKey,
       fileUrl,
+      description: opts?.description,
       visibility: "shared",
     });
     return { result, fileUrl, file };
@@ -404,10 +406,13 @@ export default function ClientPortalPage() {
                       isLoading={docsLoading}
                       canUpload={true}
                       canShare={false}
-                      onUpload={async (file) => {
-                        const { result, fileUrl } = await uploadAndRegister(selectedCaseId!, file);
+                      onUpload={async (file, opts) => {
+                        const { isImageUpload } = await import("@shared/uploadPolicy");
+                        const { result, fileUrl } = await uploadAndRegister(selectedCaseId!, file, {
+                          description: opts?.description,
+                        });
                         await refetchDocs();
-                        if (result.documentId) {
+                        if (result.documentId && !isImageUpload(file.type, file.name)) {
                           const docId = result.documentId;
                           setSummariesLoading((prev) => ({ ...prev, [docId]: true }));
                           try {

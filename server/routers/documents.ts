@@ -10,6 +10,7 @@ import {
   getDocumentFolders,
   getDocumentsByCase,
   getDocumentVersions,
+  getFirmById,
   getFirmMemberByUserId,
   updateDocument,
 } from "../db";
@@ -17,6 +18,8 @@ import { protectedProcedure, router } from "../_core/trpc";
 import { sendDocumentUploadNotificationEmail } from "../email";
 import { getCaseNotificationRecipients } from "../caseNotifications";
 import { assertCaseAccess, assertDocumentAccess } from "../access";
+import { resolveUploadPolicy, validateUploadFile } from "@shared/uploadPolicy";
+import { resolveFirmUploadPolicyForUser } from "../uploadPolicyResolve";
 
 export const documentsRouter = router({
   getFolders: protectedProcedure
@@ -42,6 +45,12 @@ export const documentsRouter = router({
       return getDocumentsByCase(input.caseId, includeInternal);
     }),
 
+  /** Public firm upload limits for the current user's firm (staff or client). */
+  uploadPolicy: protectedProcedure.query(async ({ ctx }) => {
+    const policy = await resolveFirmUploadPolicyForUser(ctx.user.id);
+    return policy;
+  }),
+
   // Upload document (file already uploaded to S3 via multipart, we register it here)
   register: protectedProcedure
     .input(z.object({
@@ -53,10 +62,26 @@ export const documentsRouter = router({
       size: z.number(),
       fileKey: z.string(),
       fileUrl: z.string(),
+      description: z.string().max(2000).optional().nullable(),
       visibility: z.enum(["internal", "shared"]).default("internal"),
     }))
     .mutation(async ({ ctx, input }) => {
       const { ctx: firmCtx, caseRow } = await assertCaseAccess(ctx.user.id, input.caseId);
+
+      const firm = await getFirmById(firmCtx.firmId);
+      const policy = resolveUploadPolicy({
+        maxUploadBytes: firm?.maxUploadBytes,
+        allowedUploadTypes: firm?.allowedUploadTypes,
+      });
+      const check = validateUploadFile({
+        fileName: input.originalName || input.name,
+        mimeType: input.mimeType,
+        size: input.size,
+        policy,
+      });
+      if (!check.ok) {
+        throw new TRPCError({ code: "BAD_REQUEST", message: check.message });
+      }
 
       // Clients may only upload shared documents on their assigned cases
       const visibility = firmCtx.kind === "client" ? "shared" : input.visibility;
@@ -70,6 +95,7 @@ export const documentsRouter = router({
         size: input.size,
         fileKey: input.fileKey,
         fileUrl: input.fileUrl,
+        description: input.description?.trim() || null,
         visibility,
         firmId: firmCtx.firmId,
         uploadedByUserId: ctx.user.id,

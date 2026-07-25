@@ -318,7 +318,13 @@
     "sending": "Envoi…",
     "teamMembers": "Membres de l'équipe ({{count}})",
     "noTeamMembers": "Aucun membre de l'équipe",
-    "logoPreview": "Aperçu du logo"
+    "logoPreview": "Aperçu du logo",
+    "uploadPolicyTitle": "Téléversements de documents",
+    "uploadPolicyHint": "Choisissez les types de fichiers et la taille maximale autorisés.",
+    "maxUploadMb": "Taille max. (Mo)",
+    "maxUploadMbHelp": "Entre 0,1 et 50 Mo. Par défaut : 10 Mo.",
+    "allowedFileTypes": "Types de fichiers autorisés",
+    "allowedFileTypesRequired": "Sélectionnez au moins un type de fichier."
   },
   "notFound": {
     "title": "Page introuvable",
@@ -365,7 +371,10 @@
     "importantDetails": "Détails importants",
     "wordCount": "Nombre de mots",
     "readingTime": "Temps de lecture",
-    "analyzed": "Analysé"
+    "analyzed": "Analysé",
+    "description": "Description",
+    "descriptionPlaceholder": "Courte note sur ce fichier (optionnel)",
+    "policyHint": "Autorisés : {{types}}. Taille max. : {{max}}."
   },
   "twoFactor": {
     "title": "Authentification à deux facteurs",

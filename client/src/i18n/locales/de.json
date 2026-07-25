@@ -318,7 +318,13 @@
     "sending": "Wird gesendet…",
     "teamMembers": "Teammitglieder ({{count}})",
     "noTeamMembers": "Keine Teammitglieder",
-    "logoPreview": "Logo-Vorschau"
+    "logoPreview": "Logo-Vorschau",
+    "uploadPolicyTitle": "Dokument-Uploads",
+    "uploadPolicyHint": "Erlaubte Dateitypen und maximale Dateigröße festlegen.",
+    "maxUploadMb": "Max. Dateigröße (MB)",
+    "maxUploadMbHelp": "Zwischen 0,1 und 50 MB. Standard: 10 MB.",
+    "allowedFileTypes": "Erlaubte Dateitypen",
+    "allowedFileTypesRequired": "Mindestens einen Dateityp auswählen."
   },
   "notFound": {
     "title": "Seite nicht gefunden",
@@ -365,7 +371,10 @@
     "importantDetails": "Wichtige Details",
     "wordCount": "Wortanzahl",
     "readingTime": "Lesezeit",
-    "analyzed": "Analysiert"
+    "analyzed": "Analysiert",
+    "description": "Beschreibung",
+    "descriptionPlaceholder": "Kurze Notiz zu dieser Datei (optional)",
+    "policyHint": "Erlaubt: {{types}}. Max. Größe: {{max}}."
   },
   "twoFactor": {
     "title": "Zwei-Faktor-Authentifizierung",

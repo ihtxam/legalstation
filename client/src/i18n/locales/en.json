@@ -318,7 +318,13 @@
     "sending": "Sending…",
     "teamMembers": "Team Members ({{count}})",
     "noTeamMembers": "No team members",
-    "logoPreview": "Logo preview"
+    "logoPreview": "Logo preview",
+    "uploadPolicyTitle": "Document uploads",
+    "uploadPolicyHint": "Choose which file types lawyers and clients may upload, and the maximum size per file.",
+    "maxUploadMb": "Max file size (MB)",
+    "maxUploadMbHelp": "Between 0.1 and 50 MB. Default is 10 MB.",
+    "allowedFileTypes": "Allowed file types",
+    "allowedFileTypesRequired": "Select at least one allowed file type."
   },
   "notFound": {
     "title": "Page Not Found",
@@ -365,7 +371,10 @@
     "importantDetails": "Important details",
     "wordCount": "Word count",
     "readingTime": "Reading time",
-    "analyzed": "Analyzed"
+    "analyzed": "Analyzed",
+    "description": "Description",
+    "descriptionPlaceholder": "Short note about this file (optional)",
+    "policyHint": "Allowed: {{types}}. Max size: {{max}}."
   },
   "twoFactor": {
     "title": "Two-factor authentication",
