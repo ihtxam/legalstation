@@ -8,15 +8,26 @@ export function isOAuthConfigured(): boolean {
   return Boolean(import.meta.env.VITE_OAUTH_PORTAL_URL && import.meta.env.VITE_APP_ID);
 }
 
+/** Allow only same-origin relative paths (e.g. /invite/abc). */
+export function safeNextPath(next: string | null | undefined): string | null {
+  if (!next) return null;
+  if (!next.startsWith("/") || next.startsWith("//")) return null;
+  if (next.includes("://")) return null;
+  return next;
+}
+
 /**
  * Navigate to the SaaS login page (email/password).
  * Use `portal: "platform"` for LexFlow superadmin login only.
+ * Pass `next` to return the user to a page after login (e.g. invite link).
  */
-export const startLogin = (opts?: { portal?: "app" | "platform" }) => {
+export const startLogin = (opts?: { portal?: "app" | "platform"; next?: string }) => {
   const portal = opts?.portal ?? "app";
   const loginPath = portal === "platform" ? "/platform/login" : "/login";
-  if (window.location.pathname !== loginPath) {
-    window.location.href = loginPath;
+  const next = safeNextPath(opts?.next);
+  const href = next ? `${loginPath}?next=${encodeURIComponent(next)}` : loginPath;
+  if (window.location.pathname + window.location.search !== href) {
+    window.location.href = href;
   }
 };
 

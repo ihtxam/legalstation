@@ -6,7 +6,7 @@ import { Scale, ArrowRight, Building2 } from "lucide-react";
 import { FormEvent, useEffect, useState } from "react";
 import { useLocation, useSearch } from "wouter";
 import { toast } from "sonner";
-import { isOAuthConfigured, startOAuthLogin } from "@/const";
+import { isOAuthConfigured, safeNextPath, startOAuthLogin } from "@/const";
 import { useTranslation } from "react-i18next";
 
 type TenantInfo =
@@ -24,10 +24,12 @@ export default function LoginPage() {
   const { isAuthenticated, loading, refresh, user } = useAuth();
   const [, navigate] = useLocation();
   const search = useSearch();
-  const firmHint = new URLSearchParams(search).get("firm");
+  const params = new URLSearchParams(search);
+  const firmHint = params.get("firm");
+  const nextPath = safeNextPath(params.get("next"));
   const oauthEnabled = isOAuthConfigured();
 
-  const [email, setEmail] = useState("");
+  const [email, setEmail] = useState(() => params.get("email")?.trim() || "");
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
   const [tenant, setTenant] = useState<TenantInfo | null>(null);
@@ -52,8 +54,8 @@ export default function LoginPage() {
       navigate("/platform/login");
       return;
     }
-    navigate("/dashboard");
-  }, [isAuthenticated, loading, user, navigate]);
+    navigate(nextPath || "/dashboard");
+  }, [isAuthenticated, loading, user, navigate, nextPath]);
 
   const brandName = tenant?.mode === "firm" ? tenant.name : "LexFlow";
   const primary = tenant?.mode === "firm" && tenant.primaryColor ? tenant.primaryColor : "#001f3f";
@@ -77,7 +79,7 @@ export default function LoginPage() {
         return;
       }
       toast.success(t("login.signedIn"));
-      navigate(data.redirectTo || "/dashboard");
+      navigate(nextPath || data.redirectTo || "/dashboard");
     } catch (err) {
       toast.error(err instanceof Error ? err.message : t("login.loginFailed"));
     } finally {
@@ -107,7 +109,7 @@ export default function LoginPage() {
       if (!res.ok) throw new Error(data.error || "Failed to change password");
       await refresh();
       toast.success(t("login.passwordUpdated"));
-      navigate("/onboarding");
+      navigate(nextPath || "/onboarding");
     } catch (err) {
       toast.error(err instanceof Error ? err.message : t("login.loginFailed"));
     } finally {

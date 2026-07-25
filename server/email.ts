@@ -77,7 +77,7 @@ export async function sendFirmInviteEmail(
           <p>${inviterName} has invited you to join <strong>${firmName}</strong> on LexFlow, a modern legal practice management platform.</p>
           <p style="margin: 30px 0;">
             <a href="${inviteUrl}" style="background-color: #001f3f; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block;">
-              Accept Invitation
+              Create account &amp; join
             </a>
           </p>
           <p style="color: #666; font-size: 14px;">This invitation expires in 7 days. If you have questions, contact your firm administrator.</p>

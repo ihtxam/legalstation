@@ -1,6 +1,8 @@
 import { TRPCError } from "@trpc/server";
 import { nanoid } from "nanoid";
+import { eq } from "drizzle-orm";
 import { z } from "zod";
+import { COOKIE_NAME, ONE_YEAR_MS } from "@shared/const";
 import { sendFirmInviteEmail, sendClientInviteEmail } from "../email";
 import {
   acceptInvitation,
@@ -8,16 +10,22 @@ import {
   createFirm,
   createFirmMember,
   createInvitation,
+  getDb,
   getFirmById,
   getFirmBySlug,
   getFirmMember,
   getFirmMemberByUserId,
   getFirmMembers,
   getInvitationByToken,
+  getUserByEmail,
   updateFirm,
 } from "../db";
+import { clients, users } from "../../drizzle/schema";
 import { resolveFirmContext } from "../access";
-import { protectedProcedure, router } from "../_core/trpc";
+import { getSessionCookieOptions } from "../_core/cookies";
+import { sdk } from "../_core/sdk";
+import { protectedProcedure, publicProcedure, router } from "../_core/trpc";
+import { hashPassword } from "../auth/password";
 import { isSingleTenant } from "../deployment";
 import { evaluateLicense } from "../license";
 import { getAppBaseUrl } from "../tenant";
@@ -27,6 +35,58 @@ const inviteEmailSchema = z
   .trim()
   .toLowerCase()
   .pipe(z.email({ error: "Invalid email address" }));
+
+function normalizeEmail(email: string | null | undefined) {
+  return (email || "").trim().toLowerCase();
+}
+
+async function applyInvitationToUser(opts: {
+  invitation: NonNullable<Awaited<ReturnType<typeof getInvitationByToken>>>;
+  userId: number;
+  userEmail: string | null | undefined;
+}) {
+  const invitedEmail = normalizeEmail(opts.invitation.email);
+  const userEmail = normalizeEmail(opts.userEmail);
+  if (!userEmail || userEmail !== invitedEmail) {
+    throw new TRPCError({
+      code: "FORBIDDEN",
+      message: `This invitation is for ${opts.invitation.email}. Sign in with that email address.`,
+    });
+  }
+  if (opts.invitation.acceptedAt) {
+    throw new TRPCError({ code: "CONFLICT", message: "Invitation already accepted" });
+  }
+  if (opts.invitation.expiresAt < new Date()) {
+    throw new TRPCError({ code: "BAD_REQUEST", message: "Invitation expired" });
+  }
+
+  const existingMember = await getFirmMemberByUserId(opts.userId);
+  if (opts.invitation.role === "client") {
+    if (opts.invitation.clientId) {
+      const db = await getDb();
+      if (db) {
+        await db
+          .update(clients)
+          .set({ userId: opts.userId, status: "active" })
+          .where(eq(clients.id, opts.invitation.clientId));
+      }
+    }
+  } else if (!existingMember) {
+    await createFirmMember({
+      firmId: opts.invitation.firmId,
+      userId: opts.userId,
+      firmRole: opts.invitation.role as "admin" | "lawyer" | "assistant",
+    });
+  } else if (existingMember.firmId !== opts.invitation.firmId) {
+    throw new TRPCError({
+      code: "CONFLICT",
+      message: "You already belong to another firm",
+    });
+  }
+
+  await acceptInvitation(opts.invitation.id);
+  return { success: true as const, firmId: opts.invitation.firmId, role: opts.invitation.role };
+}
 
 export const firmRouter = router({
   // Get current user's firm context
@@ -278,30 +338,115 @@ export const firmRouter = router({
       return { token, inviteUrl, emailSent, emailError };
     }),
 
-  // Accept an invitation
+  /** Public preview for invite landing page (no auth). */
+  getInvite: publicProcedure
+    .input(z.object({ token: z.string().min(10) }))
+    .query(async ({ input }) => {
+      const invitation = await getInvitationByToken(input.token);
+      if (!invitation) {
+        throw new TRPCError({ code: "NOT_FOUND", message: "Invitation not found" });
+      }
+      const firm = await getFirmById(invitation.firmId);
+      const existingUser = await getUserByEmail(invitation.email);
+      return {
+        email: invitation.email,
+        role: invitation.role,
+        firmName: firm?.name ?? "LexFlow",
+        firmSlug: firm?.slug ?? null,
+        expired: invitation.expiresAt < new Date(),
+        accepted: Boolean(invitation.acceptedAt),
+        expiresAt: invitation.expiresAt,
+        accountExists: Boolean(existingUser),
+      };
+    }),
+
+  /**
+   * Create a password account for the invited email and join the firm in one step.
+   * Used when the invitee has no LexFlow account yet.
+   */
+  registerFromInvite: publicProcedure
+    .input(
+      z.object({
+        token: z.string().min(10),
+        name: z.string().trim().min(1).max(200),
+        password: z.string().min(8).max(200),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const invitation = await getInvitationByToken(input.token);
+      if (!invitation) {
+        throw new TRPCError({ code: "NOT_FOUND", message: "Invitation not found" });
+      }
+      if (invitation.acceptedAt) {
+        throw new TRPCError({ code: "CONFLICT", message: "Invitation already accepted" });
+      }
+      if (invitation.expiresAt < new Date()) {
+        throw new TRPCError({ code: "BAD_REQUEST", message: "Invitation expired" });
+      }
+
+      const email = normalizeEmail(invitation.email);
+      const existing = await getUserByEmail(email);
+      if (existing) {
+        throw new TRPCError({
+          code: "CONFLICT",
+          message: "An account with this email already exists. Sign in to accept the invitation.",
+        });
+      }
+
+      const db = await getDb();
+      if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database unavailable" });
+
+      const openId = `password-invite-${nanoid(12)}`;
+      await db.insert(users).values({
+        openId,
+        email,
+        name: input.name.trim(),
+        role: "user",
+        loginMethod: "password",
+        passwordHash: hashPassword(input.password),
+        mustChangePassword: false,
+        lastSignedIn: new Date(),
+      });
+
+      const user = await getUserByEmail(email);
+      if (!user) {
+        throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Failed to create account" });
+      }
+
+      const result = await applyInvitationToUser({
+        invitation,
+        userId: user.id,
+        userEmail: user.email,
+      });
+
+      const sessionToken = await sdk.createSessionToken(user.openId, {
+        name: user.name || user.email || user.openId,
+        expiresInMs: ONE_YEAR_MS,
+      });
+      const cookieOptions = getSessionCookieOptions(ctx.req);
+      ctx.res.cookie(COOKIE_NAME, sessionToken, { ...cookieOptions, maxAge: ONE_YEAR_MS });
+
+      const redirectTo =
+        invitation.role === "client" ? "/client-portal" : "/dashboard";
+
+      return {
+        ...result,
+        redirectTo,
+        user: { id: user.id, email: user.email, name: user.name },
+      };
+    }),
+
+  // Accept an invitation (existing authenticated user)
   acceptInvite: protectedProcedure
     .input(z.object({ token: z.string() }))
     .mutation(async ({ ctx, input }) => {
       const invitation = await getInvitationByToken(input.token);
       if (!invitation) throw new TRPCError({ code: "NOT_FOUND", message: "Invitation not found" });
-      if (invitation.acceptedAt) throw new TRPCError({ code: "CONFLICT", message: "Invitation already accepted" });
-      if (invitation.expiresAt < new Date()) throw new TRPCError({ code: "BAD_REQUEST", message: "Invitation expired" });
-      const existingMember = await getFirmMemberByUserId(ctx.user.id);
-      if (invitation.role === "client") {
-        // For client invitations, link the user account to the client profile
-        if (invitation.clientId) {
-          const db = await import("../db").then(m => m.getDb());
-          if (db) {
-            const { clients } = await import("../../drizzle/schema");
-            const { eq } = await import("drizzle-orm");
-            await db.update(clients).set({ userId: ctx.user.id, status: "active" }).where(eq(clients.id, invitation.clientId));
-          }
-        }
-      } else if (!existingMember) {
-        await createFirmMember({ firmId: invitation.firmId, userId: ctx.user.id, firmRole: invitation.role as "admin" | "lawyer" | "assistant" });
-      }
-      await acceptInvitation(invitation.id);
-      return { success: true, firmId: invitation.firmId };
+      return applyInvitationToUser({
+        invitation,
+        userId: ctx.user.id,
+        userEmail: ctx.user.email,
+      });
     }),
 });
 
