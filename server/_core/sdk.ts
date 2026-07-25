@@ -170,8 +170,9 @@ class SDKServer {
     return this.signSession(
       {
         openId,
-        appId: ENV.appId,
-        name: options.name || "",
+        // Fallback when Manus OAuth is not configured (demo / local HTTP hosts)
+        appId: ENV.appId || "lexflow-demo",
+        name: options.name || openId,
       },
       options
     );
