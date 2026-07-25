@@ -217,3 +217,10 @@
 - [x] Add loading skeletons for stat cards
 - [x] Format revenue as Swiss currency (CHF)
 - [x] Add "Platform Overview" section header
+
+## Phase 14: Online testing readiness
+- [x] Expand i18n FR/DE/EN across Home, Dashboard, Cases, Clients, Invoices, Messages, Portal, Settings, DocumentExchange
+- [x] Production Dockerfile + docker-compose.prod.yml + docs/production-deploy.md
+- [x] Demo auth (passwordless) + seed script for admin/lawyer/client
+- [x] Smoke E2E tests against seeded demo users (`pnpm test:smoke`)
+- [x] Online testing guide with demo login path (docs/online-testing.md)
