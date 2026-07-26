@@ -114,7 +114,7 @@ export const ondemandServicesRouter = router({
         category: categoryEnum.default("advice"),
         fulfillmentType: fulfillmentTypeEnum.optional(),
         price: z.number().min(0),
-        currency: z.string().length(3).default("CHF"),
+        currency: z.string().length(3).optional(),
         estimatedHours: z.number().min(0).max(1000).default(1),
         deliveryNotes: z.string().optional(),
         defaultCaseType: caseTypeEnum.default("other"),
@@ -130,6 +130,24 @@ export const ondemandServicesRouter = router({
       const fulfillmentType =
         input.fulfillmentType ||
         (input.category === "advice" ? "consultation" : "document");
+      const { firms } = await import("../../drizzle/schema");
+      const [firmRow] = await db
+        .select({ defaultCurrency: firms.defaultCurrency })
+        .from(firms)
+        .where(eq(firms.id, member.firmId))
+        .limit(1);
+      let currency = (firmRow?.defaultCurrency || "CHF").toUpperCase();
+      if (input.currency) {
+        try {
+          const { assertCurrencyEnabled } = await import("../platformCurrencies");
+          currency = await assertCurrencyEnabled(input.currency);
+        } catch (e) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: e instanceof Error ? e.message : "Invalid currency",
+          });
+        }
+      }
       const result = await db.insert(firmOndemandServices).values({
         firmId: member.firmId,
         name: input.name,
@@ -137,7 +155,7 @@ export const ondemandServicesRouter = router({
         category: input.category,
         fulfillmentType,
         price: input.price.toFixed(2),
-        currency: input.currency.toUpperCase(),
+        currency,
         estimatedHours: input.estimatedHours.toFixed(2),
         deliveryNotes: input.deliveryNotes || null,
         defaultCaseType: input.defaultCaseType,
@@ -187,7 +205,21 @@ export const ondemandServicesRouter = router({
           ...("category" in rest ? { category: rest.category } : {}),
           ...("fulfillmentType" in rest ? { fulfillmentType: rest.fulfillmentType } : {}),
           ...("price" in rest && rest.price != null ? { price: rest.price.toFixed(2) } : {}),
-          ...("currency" in rest && rest.currency ? { currency: rest.currency.toUpperCase() } : {}),
+          ...("currency" in rest && rest.currency
+            ? {
+                currency: await (async () => {
+                  try {
+                    const { assertCurrencyEnabled } = await import("../platformCurrencies");
+                    return await assertCurrencyEnabled(rest.currency!);
+                  } catch (e) {
+                    throw new TRPCError({
+                      code: "BAD_REQUEST",
+                      message: e instanceof Error ? e.message : "Invalid currency",
+                    });
+                  }
+                })(),
+              }
+            : {}),
           ...("estimatedHours" in rest && rest.estimatedHours != null
             ? { estimatedHours: rest.estimatedHours.toFixed(2) }
             : {}),

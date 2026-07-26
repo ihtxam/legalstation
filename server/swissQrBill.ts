@@ -52,6 +52,7 @@ export type SwissQrSkipReason =
   | "missing_iban"
   | "invalid_iban"
   | "invalid_qr_iban"
+  | "unsupported_currency"
   | "render_failed"
   | null;
 
@@ -163,7 +164,12 @@ export function buildSwissQrBillData(opts: {
   const debtorCity = toPdfSafeText((opts.debtor.city || "").slice(0, 35), "City");
   const debtorCountry = (opts.debtor.country || "CH").slice(0, 2).toUpperCase();
 
-  const currency = (opts.currency || "CHF").toUpperCase() === "EUR" ? "EUR" : "CHF";
+  const requested = (opts.currency || "CHF").toUpperCase();
+  // Swiss QR-bill only supports CHF and EUR — never silently rewrite other currencies.
+  if (requested !== "CHF" && requested !== "EUR") {
+    return null;
+  }
+  const currency = requested;
 
   return {
     amount: Math.round(opts.amount * 100) / 100,
@@ -233,6 +239,10 @@ export async function appendSwissQrBillPage(
     language?: "DE" | "EN" | "FR" | "IT" | "RM";
   }
 ): Promise<{ buffer: Buffer; includedQrBill: boolean; skipReason: SwissQrSkipReason }> {
+  const requested = (opts.currency || "CHF").toUpperCase();
+  if (requested !== "CHF" && requested !== "EUR") {
+    return { buffer: invoicePdf, includedQrBill: false, skipReason: "unsupported_currency" };
+  }
   const skipReason = getSwissQrBillSkipReason(opts.firm);
   const data = buildSwissQrBillData(opts);
   if (!data) return { buffer: invoicePdf, includedQrBill: false, skipReason: skipReason || "missing_iban" };

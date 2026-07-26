@@ -234,6 +234,17 @@ export const superadminRouter = router({
       }
       const slug = await uniqueFirmSlug(baseSlug);
 
+      let defaultCurrency = input.defaultCurrency.toUpperCase();
+      try {
+        const { assertCurrencyEnabled } = await import("../platformCurrencies");
+        defaultCurrency = await assertCurrencyEnabled(defaultCurrency);
+      } catch (e) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: e instanceof Error ? e.message : "Invalid currency",
+        });
+      }
+
       const result = await db.insert(firms).values({
         name: input.name,
         slug,
@@ -241,7 +252,7 @@ export const superadminRouter = router({
         address: input.address,
         phone: input.phone,
         vatNumber: input.vatNumber,
-        defaultCurrency: input.defaultCurrency.toUpperCase(),
+        defaultCurrency,
         defaultVatRate: input.defaultVatRate.toFixed(2),
         subdomainStatus: "pending",
         onboardingStep: 0,
@@ -816,6 +827,19 @@ export const superadminRouter = router({
         }
       }
 
+      let nextCurrency: string | undefined;
+      if (input.defaultCurrency !== undefined) {
+        try {
+          const { assertCurrencyEnabled } = await import("../platformCurrencies");
+          nextCurrency = await assertCurrencyEnabled(input.defaultCurrency);
+        } catch (e) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: e instanceof Error ? e.message : "Invalid currency",
+          });
+        }
+      }
+
       const { gbToBytes } = await import("../firmStorage");
       await db
         .update(firms)
@@ -825,7 +849,7 @@ export const superadminRouter = router({
           address: input.address === undefined ? undefined : input.address,
           phone: input.phone === undefined ? undefined : input.phone,
           vatNumber: input.vatNumber === undefined ? undefined : input.vatNumber,
-          defaultCurrency: input.defaultCurrency?.toUpperCase(),
+          defaultCurrency: nextCurrency,
           defaultVatRate:
             input.defaultVatRate != null ? input.defaultVatRate.toFixed(2) : undefined,
           customDomain: input.customDomain === undefined ? undefined : input.customDomain,
@@ -914,6 +938,17 @@ export const superadminRouter = router({
           return ["en", "fr", "de", "it", "ar"];
         }
       })(),
+      defaultCurrency: settings.default_currency || "CHF",
+      supportedCurrencies: (() => {
+        try {
+          return JSON.parse(
+            settings.supported_currencies ||
+              '["CHF","EUR","USD","GBP","AED","SAR","QAR","KWD","BHD","OMR","JOD"]'
+          ) as string[];
+        } catch {
+          return ["CHF", "EUR", "USD", "GBP", "AED", "SAR", "QAR", "KWD", "BHD", "OMR", "JOD"];
+        }
+      })(),
       supportEmail: settings.support_email || null,
     };
   }),
@@ -932,12 +967,16 @@ export const superadminRouter = router({
     } catch {
       /* defaults */
     }
+    const { getPlatformCurrencyConfig } = await import("../platformCurrencies");
+    const currencyConfig = await getPlatformCurrencyConfig();
     return {
       agencyName: settings.agency_name || "Cliavo",
       logoUrl: settings.logo_url || "",
       supportEmail: settings.support_email || "",
       defaultLocale: (settings.default_locale as "en" | "fr" | "de" | "it" | "ar") || "en",
       supportedLocales,
+      defaultCurrency: currencyConfig.defaultCurrency,
+      supportedCurrencies: currencyConfig.supportedCurrencies,
       vatRates,
       adyen: {
         apiKeySet: Boolean(settings.adyen_api_key),
@@ -966,6 +1005,13 @@ export const superadminRouter = router({
         supportEmail: z.string().email().optional().or(z.literal("")),
         defaultLocale: z.enum(["en", "fr", "de", "it", "ar"]).optional(),
         supportedLocales: z.array(z.enum(["en", "fr", "de", "it", "ar"])).min(1).optional(),
+        defaultCurrency: z
+          .enum(["CHF", "EUR", "USD", "GBP", "AED", "SAR", "QAR", "KWD", "BHD", "OMR", "JOD"])
+          .optional(),
+        supportedCurrencies: z
+          .array(z.enum(["CHF", "EUR", "USD", "GBP", "AED", "SAR", "QAR", "KWD", "BHD", "OMR", "JOD"]))
+          .min(1)
+          .optional(),
         vatRates: z
           .object({
             standard: z.number().min(0).max(100),
@@ -992,6 +1038,30 @@ export const superadminRouter = router({
       if (input.defaultLocale !== undefined) await upsertAgencySetting("default_locale", input.defaultLocale);
       if (input.supportedLocales !== undefined) {
         await upsertAgencySetting("supported_locales", JSON.stringify(input.supportedLocales));
+      }
+      if (input.supportedCurrencies !== undefined) {
+        const list = Array.from(new Set(input.supportedCurrencies));
+        if (!list.length) {
+          throw new TRPCError({ code: "BAD_REQUEST", message: "Enable at least one currency" });
+        }
+        const defaultCurrency =
+          input.defaultCurrency && list.includes(input.defaultCurrency)
+            ? input.defaultCurrency
+            : list.includes("CHF")
+              ? "CHF"
+              : list[0]!;
+        await upsertAgencySetting("supported_currencies", JSON.stringify(list));
+        await upsertAgencySetting("default_currency", defaultCurrency);
+      } else if (input.defaultCurrency !== undefined) {
+        const { getPlatformCurrencyConfig } = await import("../platformCurrencies");
+        const { supportedCurrencies } = await getPlatformCurrencyConfig();
+        if (!supportedCurrencies.includes(input.defaultCurrency)) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "Default currency must be in the enabled list",
+          });
+        }
+        await upsertAgencySetting("default_currency", input.defaultCurrency);
       }
       if (input.vatRates !== undefined) {
         await upsertAgencySetting("vat_rates", JSON.stringify(input.vatRates));

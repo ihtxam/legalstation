@@ -17,6 +17,7 @@ interface PaymentInstallmentTimelineProps {
   invoiceNumber: string;
   installments: Installment[];
   totalAmount: number;
+  currency?: string;
   onGenerateInvoice?: (installmentId: number) => void;
   generatingId?: number | null;
 }
@@ -25,6 +26,7 @@ export function PaymentInstallmentTimeline({
   invoiceNumber,
   installments,
   totalAmount,
+  currency = "CHF",
   onGenerateInvoice,
   generatingId,
 }: PaymentInstallmentTimelineProps) {
@@ -114,7 +116,7 @@ export function PaymentInstallmentTimeline({
                     </div>
                     <div className="text-right">
                       <div className="font-semibold">
-                        {formatCurrency(installment.amount)}
+                        {formatCurrency(installment.amount, currency)}
                       </div>
                       <Badge
                         variant={
@@ -166,7 +168,7 @@ export function PaymentInstallmentTimeline({
         <div className="border-t pt-4 grid grid-cols-3 gap-4 text-center">
           <div>
             <div className="text-2xl font-bold text-emerald-600">
-              {formatCurrency(paidAmount)}
+              {formatCurrency(paidAmount, currency)}
             </div>
             <div className="text-xs text-muted-foreground">Paid</div>
           </div>
@@ -175,7 +177,8 @@ export function PaymentInstallmentTimeline({
               {formatCurrency(
                 sorted
                   .filter((i) => i.status === "pending")
-                  .reduce((sum, i) => sum + i.amount, 0)
+                  .reduce((sum, i) => sum + i.amount, 0),
+                currency
               )}
             </div>
             <div className="text-xs text-muted-foreground">Pending</div>
@@ -185,7 +188,8 @@ export function PaymentInstallmentTimeline({
               {formatCurrency(
                 sorted
                   .filter((i) => i.status === "overdue")
-                  .reduce((sum, i) => sum + i.amount, 0)
+                  .reduce((sum, i) => sum + i.amount, 0),
+                currency
               )}
             </div>
             <div className="text-xs text-muted-foreground">Overdue</div>

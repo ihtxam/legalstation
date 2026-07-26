@@ -19,8 +19,10 @@ import { Plus, Trash2, Send, CheckCircle, Download, CreditCard, CheckCircle2, Pe
 import PaymentPlanScheduler from "@/pages/PaymentPlanScheduler";
 import { PaymentInstallmentTimeline } from "@/components/PaymentInstallmentTimeline";
 import { useTranslation } from "react-i18next";
-function formatCHF(amount: string | number) {
-  return new Intl.NumberFormat("de-CH", { style: "currency", currency: "CHF" }).format(Number(amount));
+import { formatCurrency } from "@/lib/utils";
+
+function money(amount: string | number, currency?: string | null) {
+  return formatCurrency(Number(amount), currency || "CHF");
 }
 
 interface LineItem {
@@ -307,6 +309,8 @@ function NewInvoiceForm() {
   const [, navigate] = useLocation();
   const { data: clients } = trpc.clients.list.useQuery();
   const { data: cases } = trpc.cases.list.useQuery();
+  const { data: branding } = trpc.firm.branding.useQuery();
+  const currency = branding?.defaultCurrency || "CHF";
   const [form, setForm] = useState<InvoiceFormState>({
     clientId: null,
     caseId: null,
@@ -315,6 +319,11 @@ function NewInvoiceForm() {
     notes: "",
     items: [{ description: "", billingType: "hourly", quantity: 1, unitPrice: 0 }],
   });
+  useEffect(() => {
+    if (branding?.defaultVatRate != null) {
+      setForm((f) => ({ ...f, vatRate: String(branding.defaultVatRate) }));
+    }
+  }, [branding?.defaultVatRate]);
   const [showPreview, setShowPreview] = useState(false);
   const [sendAfterCreate, setSendAfterCreate] = useState(false);
   const sendAfterCreateRef = useRef(false);
@@ -368,6 +377,7 @@ function NewInvoiceForm() {
       caseId: form.caseId ?? undefined,
       dueDate: new Date(form.dueDate).getTime(),
       vatRate: parseFloat(form.vatRate),
+      currency,
       notes: form.notes || undefined,
       items: toPayloadItems(form.items),
     });
@@ -386,18 +396,18 @@ function NewInvoiceForm() {
         <div className="bg-card border border-border rounded-xl p-6 space-y-3">
           <div className="flex justify-between text-sm">
             <span className="text-muted-foreground">{t("invoiceDetail.subtotal")}</span>
-            <span className="font-medium">{formatCHF(subtotal)}</span>
+            <span className="font-medium">{money(subtotal, currency)}</span>
           </div>
           <div className="flex justify-between text-sm">
             <span className="text-muted-foreground">
               {t("invoiceDetail.vat")} ({form.vatRate}%)
             </span>
-            <span className="font-medium">{formatCHF(vatAmount)}</span>
+            <span className="font-medium">{money(vatAmount, currency)}</span>
           </div>
           <Separator />
           <div className="flex justify-between text-lg font-semibold">
             <span>{t("invoiceDetail.total")}</span>
-            <span>{formatCHF(total)}</span>
+            <span>{money(total, currency)}</span>
           </div>
         </div>
 
@@ -471,18 +481,18 @@ function NewInvoiceForm() {
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">{t("invoiceDetail.subtotal")}</span>
-                  <span className="font-medium">{formatCHF(subtotal)}</span>
+                  <span className="font-medium">{money(subtotal, currency)}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">
                     {t("invoiceDetail.vat")} ({form.vatRate}%)
                   </span>
-                  <span className="font-medium">{formatCHF(vatAmount)}</span>
+                  <span className="font-medium">{money(vatAmount, currency)}</span>
                 </div>
                 <Separator />
                 <div className="flex justify-between text-base font-semibold">
                   <span>{t("invoiceDetail.total")}</span>
-                  <span>{formatCHF(total)}</span>
+                  <span>{money(total, currency)}</span>
                 </div>
               </div>
               {form.notes && (
@@ -730,6 +740,7 @@ export default function InvoiceDetailPage() {
     );
 
   const invoice = invoiceData;
+  const currency = invoice.currency || branding?.defaultCurrency || "CHF";
   const canEdit = canManageInvoices && invoice.status === "draft";
   const client = clients?.find((c) => c.id === invoice.clientId);
   const caseRow = cases?.find((c) => c.id === invoice.caseId);
@@ -827,7 +838,7 @@ export default function InvoiceDetailPage() {
                 </div>
                 <div>
                   <p className="text-muted-foreground">{t("invoiceDetail.total")}</p>
-                  <p className="font-semibold text-lg text-foreground">{formatCHF(displayTotal)}</p>
+                  <p className="font-semibold text-lg text-foreground">{money(displayTotal, currency)}</p>
                 </div>
               </div>
             </>
@@ -850,18 +861,18 @@ export default function InvoiceDetailPage() {
             <div className="bg-card border border-border rounded-xl p-6 space-y-3">
               <div className="flex justify-between text-sm">
                 <span className="text-muted-foreground">{t("invoiceDetail.subtotal")}</span>
-                <span className="font-medium">{formatCHF(displaySubtotal)}</span>
+                <span className="font-medium">{money(displaySubtotal, currency)}</span>
               </div>
               <div className="flex justify-between text-sm">
                 <span className="text-muted-foreground">
                   {t("invoiceDetail.vat")} ({displayVatRate}%)
                 </span>
-                <span className="font-medium">{formatCHF(displayVatAmount)}</span>
+                <span className="font-medium">{money(displayVatAmount, currency)}</span>
               </div>
               <Separator />
               <div className="flex justify-between text-lg font-semibold">
                 <span>{t("invoiceDetail.total")}</span>
-                <span>{formatCHF(displayTotal)}</span>
+                <span>{money(displayTotal, currency)}</span>
               </div>
             </div>
             <div className="flex gap-3 justify-end">
@@ -898,12 +909,12 @@ export default function InvoiceDetailPage() {
                         <p className="font-medium text-foreground">{item.description}</p>
                         <p className="text-xs text-muted-foreground">
                           {item.billingType === "hourly"
-                            ? `${item.quantity} hours @ ${formatCHF(item.unitPrice)}/hr`
+                            ? `${item.quantity} hours @ ${money(item.unitPrice, currency)}/hr`
                             : "Flat fee"}
                         </p>
                       </div>
                       <p className="font-medium text-foreground">
-                        {formatCHF(Number(item.quantity) * Number(item.unitPrice))}
+                        {money(Number(item.quantity) * Number(item.unitPrice), currency)}
                       </p>
                     </div>
                   )
@@ -914,18 +925,18 @@ export default function InvoiceDetailPage() {
             <div className="bg-card border border-border rounded-xl p-6 space-y-3">
               <div className="flex justify-between text-sm">
                 <span className="text-muted-foreground">{t("invoiceDetail.subtotal")}</span>
-                <span className="font-medium">{formatCHF(displaySubtotal)}</span>
+                <span className="font-medium">{money(displaySubtotal, currency)}</span>
               </div>
               <div className="flex justify-between text-sm">
                 <span className="text-muted-foreground">
                   {t("invoiceDetail.vat")} ({invoice.vatRate}%)
                 </span>
-                <span className="font-medium">{formatCHF(displayVatAmount)}</span>
+                <span className="font-medium">{money(displayVatAmount, currency)}</span>
               </div>
               <Separator />
               <div className="flex justify-between text-lg font-semibold">
                 <span>{t("invoiceDetail.total")}</span>
-                <span>{formatCHF(displayTotal)}</span>
+                <span>{money(displayTotal, currency)}</span>
               </div>
             </div>
 
@@ -955,6 +966,7 @@ export default function InvoiceDetailPage() {
                     key={plan.id}
                     invoiceNumber={invoice.invoiceNumber}
                     totalAmount={parseFloat(String(plan.totalAmount))}
+                    currency={currency}
                     generatingId={
                       isFirmMember && generateInstallment.isPending
                         ? generateInstallment.variables?.installmentId ?? null

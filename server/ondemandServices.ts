@@ -1,6 +1,7 @@
 import { and, asc, eq } from "drizzle-orm";
 import {
   firmOndemandServices,
+  firms,
   serviceOrderAttachments,
   serviceOrderEvents,
   serviceOrderItems,
@@ -9,6 +10,7 @@ import {
   type ServiceOrder,
 } from "../drizzle/schema";
 import { getDb } from "./db";
+import { DEFAULT_CURRENCY, normalizeCurrency } from "../shared/currencies";
 
 const LOCK_AFTER_MS = 7 * 24 * 60 * 60 * 1000;
 
@@ -78,13 +80,19 @@ export async function getOrCreateCart(opts: { firmId: number; clientId: number }
     )
     .limit(1);
   if (existing) return existing;
+  const [firmRow] = await db
+    .select({ defaultCurrency: firms.defaultCurrency })
+    .from(firms)
+    .where(eq(firms.id, opts.firmId))
+    .limit(1);
+  const currency = normalizeCurrency(firmRow?.defaultCurrency || DEFAULT_CURRENCY);
   const result = await db.insert(serviceOrders).values({
     firmId: opts.firmId,
     clientId: opts.clientId,
     orderNumber: makeOrderNumber(),
     status: "cart",
     subtotal: "0.00",
-    currency: "CHF",
+    currency,
   });
   const id = Number(result[0].insertId);
   const [created] = await db.select().from(serviceOrders).where(eq(serviceOrders.id, id)).limit(1);

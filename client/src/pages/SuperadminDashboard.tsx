@@ -5,6 +5,13 @@ import { trpc } from "@/lib/trpc";
 import { setAppLocale } from "@/i18n";
 import { useTranslation } from "react-i18next";
 import { APP_LOCALES, APP_LOCALE_LABELS, isAppLocale, type AppLocale } from "@shared/locales";
+import {
+  APP_CURRENCIES,
+  CURRENCY_META,
+  currencyLabel,
+  isAppCurrency,
+  type AppCurrency,
+} from "@shared/currencies";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -85,6 +92,7 @@ export default function SuperadminDashboard() {
   const [selectedFirmId, setSelectedFirmId] = useState<number | null>(null);
   const [createPlanId, setCreatePlanId] = useState("");
   const [createBilling, setCreateBilling] = useState<"monthly" | "yearly">("monthly");
+  const [createFirmCurrency, setCreateFirmCurrency] = useState<AppCurrency>("CHF");
   const [sendCredentials, setSendCredentials] = useState(true);
   const [lastCreatedCreds, setLastCreatedCreds] = useState<{
     loginUrl: string;
@@ -105,6 +113,8 @@ export default function SuperadminDashboard() {
   const [localeDe, setLocaleDe] = useState(true);
   const [localeIt, setLocaleIt] = useState(true);
   const [localeAr, setLocaleAr] = useState(true);
+  const [defaultCurrency, setDefaultCurrency] = useState<AppCurrency>("CHF");
+  const [enabledCurrencies, setEnabledCurrencies] = useState<AppCurrency[]>([...APP_CURRENCIES]);
   const [vatStandard, setVatStandard] = useState("8.1");
   const [vatReduced, setVatReduced] = useState("2.6");
   const [vatSpecial, setVatSpecial] = useState("3.8");
@@ -162,7 +172,10 @@ export default function SuperadminDashboard() {
   }, [user?.preferredLocale]);
 
   const formatCurrency = (amount: number) =>
-    new Intl.NumberFormat("de-CH", { style: "currency", currency: "CHF" }).format(amount);
+    new Intl.NumberFormat(CURRENCY_META[defaultCurrency].locale, {
+      style: "currency",
+      currency: defaultCurrency,
+    }).format(amount);
 
   const { data: stats, isLoading: statsLoading } = trpc.superadmin.getStats.useQuery(undefined, {
     enabled: isSuperadmin,
@@ -217,6 +230,16 @@ export default function SuperadminDashboard() {
     setLocaleDe(platformSettings.supportedLocales.includes("de"));
     setLocaleIt(platformSettings.supportedLocales.includes("it"));
     setLocaleAr(platformSettings.supportedLocales.includes("ar"));
+    const currencies = (platformSettings.supportedCurrencies || [])
+      .map((c) => String(c).toUpperCase())
+      .filter(isAppCurrency);
+    setEnabledCurrencies(currencies.length ? currencies : [...APP_CURRENCIES]);
+    setDefaultCurrency(
+      isAppCurrency(platformSettings.defaultCurrency) &&
+        (currencies.length ? currencies : APP_CURRENCIES).includes(platformSettings.defaultCurrency)
+        ? platformSettings.defaultCurrency
+        : "CHF"
+    );
     setVatStandard(String(platformSettings.vatRates.standard));
     setVatReduced(String(platformSettings.vatRates.reduced));
     setVatSpecial(String(platformSettings.vatRates.special));
@@ -455,7 +478,7 @@ export default function SuperadminDashboard() {
       planId: parseInt(createPlanId, 10),
       billingCycle: createBilling,
       sendCredentials,
-      defaultCurrency: ((formData.get("defaultCurrency") as string) || "CHF").toUpperCase(),
+      defaultCurrency: createFirmCurrency,
       defaultVatRate: parseFloat((formData.get("defaultVatRate") as string) || "8.1"),
     });
   };
@@ -521,12 +544,22 @@ export default function SuperadminDashboard() {
       toast.error(t("superadmin.defaultMustBeEnabled"));
       return;
     }
+    if (!enabledCurrencies.length) {
+      toast.error(t("superadmin.enableOneCurrency"));
+      return;
+    }
+    if (!enabledCurrencies.includes(defaultCurrency)) {
+      toast.error(t("superadmin.defaultCurrencyMustBeEnabled"));
+      return;
+    }
     updatePlatformMutation.mutate({
       agencyName,
       logoUrl,
       supportEmail,
       defaultLocale,
       supportedLocales: supported,
+      defaultCurrency,
+      supportedCurrencies: enabledCurrencies,
       vatRates: {
         standard: parseFloat(vatStandard) || 0,
         reduced: parseFloat(vatReduced) || 0,
@@ -817,8 +850,22 @@ export default function SuperadminDashboard() {
                     </div>
                     <div className="grid grid-cols-2 gap-3">
                       <div>
-                        <Label>Currency</Label>
-                        <Input name="defaultCurrency" defaultValue="CHF" maxLength={3} className="mt-1" />
+                        <Label>{t("superadmin.currency")}</Label>
+                        <Select
+                          value={createFirmCurrency}
+                          onValueChange={(v) => setCreateFirmCurrency(v as AppCurrency)}
+                        >
+                          <SelectTrigger className="mt-1">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {enabledCurrencies.map((code) => (
+                              <SelectItem key={code} value={code}>
+                                {currencyLabel(code)}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
                       </div>
                       <div>
                         <Label>VAT %</Label>
@@ -1108,8 +1155,23 @@ export default function SuperadminDashboard() {
                   </div>
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <Label>Currency</Label>
-                      <Input className="mt-1" value={editCurrency} onChange={(e) => setEditCurrency(e.target.value)} />
+                      <Label>{t("superadmin.currency")}</Label>
+                      <Select value={editCurrency} onValueChange={setEditCurrency}>
+                        <SelectTrigger className="mt-1">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {(
+                            enabledCurrencies.includes(editCurrency as AppCurrency)
+                              ? enabledCurrencies
+                              : [editCurrency as AppCurrency, ...enabledCurrencies]
+                          ).map((code) => (
+                            <SelectItem key={code} value={code}>
+                              {currencyLabel(code)}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                     </div>
                     <div>
                       <Label>Phone</Label>
@@ -1626,6 +1688,56 @@ export default function SuperadminDashboard() {
                       </div>
                     ))}
                   </div>
+                </CardContent>
+              </Card>
+
+              <Card className="shadow-none">
+                <CardHeader>
+                  <CardTitle className="text-base flex items-center gap-2">
+                    <DollarSign className="h-4 w-4" /> {t("superadmin.currencies")}
+                  </CardTitle>
+                  <CardDescription>{t("superadmin.currenciesDesc")}</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  <div>
+                    <Label>{t("superadmin.defaultCurrency")}</Label>
+                    <Select
+                      value={defaultCurrency}
+                      onValueChange={(v) => setDefaultCurrency(v as AppCurrency)}
+                    >
+                      <SelectTrigger className="mt-1">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {APP_CURRENCIES.map((code) => (
+                          <SelectItem key={code} value={code}>
+                            {currencyLabel(code)}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label>{t("superadmin.enabledCurrencies")}</Label>
+                    {APP_CURRENCIES.map((code) => {
+                      const on = enabledCurrencies.includes(code);
+                      return (
+                        <div key={code} className="flex items-center justify-between gap-3">
+                          <span className="text-sm">{currencyLabel(code)}</span>
+                          <Switch
+                            checked={on}
+                            onCheckedChange={(checked) => {
+                              setEnabledCurrencies((prev) => {
+                                if (checked) return prev.includes(code) ? prev : [...prev, code];
+                                return prev.filter((c) => c !== code);
+                              });
+                            }}
+                          />
+                        </div>
+                      );
+                    })}
+                  </div>
+                  <p className="text-xs text-muted-foreground">{t("superadmin.swissQrCurrencyNote")}</p>
                 </CardContent>
               </Card>
 

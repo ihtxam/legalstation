@@ -68,6 +68,7 @@ export default function FirmServicesPage() {
   const members = trpc.firm.members.useQuery(undefined, {
     enabled: isAuthenticated && !!firmData,
   });
+  const firmCurrency = firmData?.firm?.defaultCurrency || "CHF";
   const createSvc = trpc.ondemandServices.createService.useMutation({
     onSuccess: async () => {
       toast.success(t("services.created"));
@@ -174,6 +175,7 @@ export default function FirmServicesPage() {
       category: form.category,
       fulfillmentType: form.fulfillmentType,
       price: parseFloat(form.price) || 0,
+      currency: firmCurrency,
       estimatedHours: parseFloat(form.estimatedHours) || 1,
       deliveryNotes: form.deliveryNotes.trim() || undefined,
       isPublic: form.isPublic,
@@ -426,7 +428,9 @@ export default function FirmServicesPage() {
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <Label>{t("packages.price")}</Label>
+                <Label>
+                  {t("packages.price")} ({firmCurrency})
+                </Label>
                 <Input
                   className="mt-1.5"
                   type="number"

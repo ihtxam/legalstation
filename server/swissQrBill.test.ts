@@ -76,6 +76,26 @@ describe("swissQrBill helpers", () => {
     expect(isQRReferenceValid(data!.reference!)).toBe(true);
   });
 
+  it("rejects non CHF/EUR currencies for Swiss QR-bill data", () => {
+    const data = buildSwissQrBillData({
+      firm: {
+        name: "Gulf Counsel",
+        iban: "CH9300762011623852957",
+        street: "Rue du Rhône",
+        buildingNumber: "12",
+        postalCode: "1204",
+        city: "Genève",
+        country: "CH",
+      },
+      debtor: { name: "Client" },
+      amount: 500,
+      currency: "AED",
+      invoiceId: 9,
+      invoiceNumber: "INV-0009",
+    });
+    expect(data).toBeNull();
+  });
+
   it("renders a QR-bill PDF page and merges it as invoice page 2", async () => {
     const data = buildSwissQrBillData({
       firm: {

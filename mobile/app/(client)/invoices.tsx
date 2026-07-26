@@ -3,8 +3,12 @@ import { trpc } from "../../src/api/trpc";
 import { Badge, Card, Empty, Loading, Muted, Screen, Title } from "../../src/components/ui";
 import { colors } from "../../src/theme";
 
-function money(n: unknown) {
-  return new Intl.NumberFormat("de-CH", { style: "currency", currency: "CHF" }).format(Number(n || 0));
+function money(n: unknown, currency = "CHF") {
+  try {
+    return new Intl.NumberFormat(undefined, { style: "currency", currency }).format(Number(n || 0));
+  } catch {
+    return `${Number(n || 0).toFixed(2)} ${currency}`;
+  }
 }
 
 export default function ClientInvoices() {
@@ -34,7 +38,7 @@ export default function ClientInvoices() {
                 <Text style={{ fontWeight: "700", color: colors.text }}>
                   {item.invoiceNumber || `INV-${item.id}`}
                 </Text>
-                <Muted>{money(item.total)}</Muted>
+                <Muted>{money(item.total ?? item.invoice?.total, item.currency || item.invoice?.currency)}</Muted>
               </View>
               <Badge
                 label={item.status || "sent"}

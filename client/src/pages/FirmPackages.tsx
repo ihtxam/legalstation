@@ -14,7 +14,6 @@ import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 import { Package, Plus, Copy, Pencil } from "lucide-react";
-
 type FormState = {
   name: string;
   description: string;
@@ -80,6 +79,7 @@ export default function FirmPackagesPage() {
   const { t } = useTranslation();
   const { isAuthenticated, loading } = useAuth();
   const { data: firmData } = trpc.firm.myFirm.useQuery(undefined, { enabled: isAuthenticated });
+  const firmCurrency = firmData?.firm?.defaultCurrency || "CHF";
   const packages = trpc.clientPackages.listForFirm.useQuery(undefined, {
     enabled: isAuthenticated && !!firmData,
   });
@@ -172,6 +172,7 @@ export default function FirmPackagesPage() {
       monthlyPrice: parseFloat(form.monthlyPrice) || 0,
       biannualPrice: form.biannualPrice.trim() ? parseFloat(form.biannualPrice) || 0 : null,
       yearlyPrice: form.yearlyPrice.trim() ? parseFloat(form.yearlyPrice) || 0 : null,
+      currency: firmCurrency,
       casesPerPeriod: parseInt(form.casesPerPeriod, 10) || 0,
       consultationHoursPerPeriod: parseFloat(form.consultationHoursPerPeriod) || 0,
       includedFixedHours: parseFloat(form.includedFixedHours) || 0,
@@ -421,7 +422,7 @@ export default function FirmPackagesPage() {
               <p className="text-xs text-muted-foreground mb-2">{t("packages.pricesHint")}</p>
               <div className="grid grid-cols-3 gap-3">
                 <div>
-                  <Label>{t("packages.monthlyPrice")} (CHF)</Label>
+                  <Label>{t("packages.monthlyPrice")} ({firmCurrency})</Label>
                   <Input
                     className="mt-1.5"
                     type="number"
@@ -432,7 +433,7 @@ export default function FirmPackagesPage() {
                   />
                 </div>
                 <div>
-                  <Label>{t("packages.biannualPrice")} (CHF)</Label>
+                  <Label>{t("packages.biannualPrice")} ({firmCurrency})</Label>
                   <Input
                     className="mt-1.5"
                     type="number"
@@ -443,7 +444,7 @@ export default function FirmPackagesPage() {
                   />
                 </div>
                 <div>
-                  <Label>{t("packages.yearlyPrice")} (CHF)</Label>
+                  <Label>{t("packages.yearlyPrice")} ({firmCurrency})</Label>
                   <Input
                     className="mt-1.5"
                     type="number"

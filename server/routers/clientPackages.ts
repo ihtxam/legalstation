@@ -127,7 +127,7 @@ export const clientPackagesRouter = router({
         monthlyPrice: z.number().min(0).optional(),
         biannualPrice: z.number().min(0).nullable().optional(),
         yearlyPrice: z.number().min(0).nullable().optional(),
-        currency: z.string().length(3).default("CHF"),
+        currency: z.string().length(3).optional(),
         billingInterval: billingIntervalEnum.default("monthly"),
         minCommitmentMonths: z.number().int().min(12).max(60).default(12),
         /** Cases included per commitment year */
@@ -157,6 +157,23 @@ export const clientPackagesRouter = router({
           message: "Set at least one of monthly, biannual, or yearly price.",
         });
       }
+      const [firmRow] = await db
+        .select({ defaultCurrency: firms.defaultCurrency })
+        .from(firms)
+        .where(eq(firms.id, member.firmId))
+        .limit(1);
+      let currency = (firmRow?.defaultCurrency || "CHF").toUpperCase();
+      if (input.currency) {
+        try {
+          const { assertCurrencyEnabled } = await import("../platformCurrencies");
+          currency = await assertCurrencyEnabled(input.currency);
+        } catch (e) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: e instanceof Error ? e.message : "Invalid currency",
+          });
+        }
+      }
       const result = await db.insert(firmClientPackages).values({
         firmId: member.firmId,
         name: input.name,
@@ -165,7 +182,7 @@ export const clientPackagesRouter = router({
         monthlyPrice: monthly.toFixed(2),
         biannualPrice: biannual != null && biannual > 0 ? biannual.toFixed(2) : null,
         yearlyPrice: yearly != null && yearly > 0 ? yearly.toFixed(2) : null,
-        currency: input.currency.toUpperCase(),
+        currency,
         billingInterval: input.billingInterval,
         minCommitmentMonths: input.minCommitmentMonths,
         casesPerPeriod: input.casesPerPeriod,
@@ -246,7 +263,21 @@ export const clientPackagesRouter = router({
                     : null,
               }
             : {}),
-          ...("currency" in rest && rest.currency ? { currency: rest.currency.toUpperCase() } : {}),
+          ...("currency" in rest && rest.currency
+            ? {
+                currency: await (async () => {
+                  try {
+                    const { assertCurrencyEnabled } = await import("../platformCurrencies");
+                    return await assertCurrencyEnabled(rest.currency!);
+                  } catch (e) {
+                    throw new TRPCError({
+                      code: "BAD_REQUEST",
+                      message: e instanceof Error ? e.message : "Invalid currency",
+                    });
+                  }
+                })(),
+              }
+            : {}),
           ...("billingInterval" in rest ? { billingInterval: rest.billingInterval } : {}),
           ...("minCommitmentMonths" in rest && rest.minCommitmentMonths != null
             ? { minCommitmentMonths: rest.minCommitmentMonths }

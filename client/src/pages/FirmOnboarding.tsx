@@ -10,6 +10,9 @@ import { useLocation } from "wouter";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 import CustomDomainDnsHelp from "@/components/CustomDomainDnsHelp";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { currencyLabel, normalizeCurrency } from "@shared/currencies";
+import { useSupportedCurrencies } from "@/hooks/useSupportedCurrencies";
 
 const STEP_META = [
   { id: 1, titleKey: "onboarding.stepFirmProfile" as const, icon: Building2 },
@@ -37,6 +40,7 @@ export default function FirmOnboardingPage() {
     enabled: isAuthenticated,
   });
   const { data: signupInfo } = trpc.signup.info.useQuery();
+  const { supportedCurrencies, defaultCurrency: platformDefaultCurrency } = useSupportedCurrencies();
   const baseDomain =
     signupInfo?.appBaseDomain ||
     (typeof window !== "undefined" ? window.location.hostname.replace(/^www\./, "") : "platform.com");
@@ -78,11 +82,11 @@ export default function FirmOnboardingPage() {
     setLogoUrl(f.logoUrl || "");
     setPrimaryColor(f.primaryColor || "#00BFA6");
     setSecondaryColor(f.secondaryColor || "#64748B");
-    setCurrency(f.defaultCurrency || "CHF");
+    setCurrency(normalizeCurrency(f.defaultCurrency || platformDefaultCurrency));
     setVatRate(String(f.defaultVatRate || "8.10"));
     setSlug(sanitizeSlug(f.slug || f.name || ""));
     setCustomDomain(f.customDomain || "");
-  }, [firmData, navigate]);
+  }, [firmData, navigate, platformDefaultCurrency]);
 
   if (loading || isLoading) {
     return (
@@ -261,7 +265,18 @@ export default function FirmOnboardingPage() {
             <>
               <div>
                 <Label>{t("onboarding.defaultCurrency")}</Label>
-                <Input className="mt-1.5" maxLength={3} value={currency} onChange={(e) => setCurrency(e.target.value.toUpperCase())} />
+                <Select value={currency} onValueChange={(v) => setCurrency(normalizeCurrency(v))}>
+                  <SelectTrigger className="mt-1.5">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {supportedCurrencies.map((code) => (
+                      <SelectItem key={code} value={code}>
+                        {currencyLabel(code)}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
                 <p className="text-xs text-muted-foreground mt-1">{t("onboarding.currencyHint")}</p>
               </div>
               <div>

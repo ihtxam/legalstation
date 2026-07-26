@@ -4,6 +4,7 @@ import { adminProcedure, publicProcedure, router } from "./trpc";
 import { deploymentPublicInfo } from "../deployment";
 import { evaluateLicense } from "../license";
 import { getPlatformLocaleConfig } from "../platformLocales";
+import { getPlatformCurrencyConfig } from "../platformCurrencies";
 
 export const systemRouter = router({
   health: publicProcedure
@@ -21,6 +22,11 @@ export const systemRouter = router({
   /** Platform-enabled UI languages (respects superadmin supported_locales). */
   locales: publicProcedure.query(async () => {
     return getPlatformLocaleConfig();
+  }),
+
+  /** Platform-enabled billing currencies (respects superadmin supported_currencies). */
+  currencies: publicProcedure.query(async () => {
+    return getPlatformCurrencyConfig();
   }),
 
   notifyOwner: adminProcedure

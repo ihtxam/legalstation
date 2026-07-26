@@ -12,8 +12,10 @@ import { useLocation } from "wouter";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { useTranslation } from "react-i18next";
-function formatCHF(amount: string | number) {
-  return new Intl.NumberFormat("de-CH", { style: "currency", currency: "CHF" }).format(Number(amount));
+import { formatCurrency } from "@/lib/utils";
+
+function formatMoney(amount: string | number, currency?: string | null) {
+  return formatCurrency(Number(amount), currency || "CHF");
 }
 
 export default function InvoicesPage() {
@@ -96,7 +98,7 @@ export default function InvoicesPage() {
                       {client ? (client.companyName ?? `${client.firstName ?? ""} ${client.lastName ?? ""}`.trim()) : "—"}
                     </td>
                     <td className="px-4 py-3.5">
-                      <p className="font-semibold text-foreground text-sm">{formatCHF(invoice.total)}</p>
+                      <p className="font-semibold text-foreground text-sm">{formatMoney(invoice.total, invoice.currency)}</p>
                       <p className="text-xs text-muted-foreground">{t("invoices.includingVat", { rate: Number(invoice.vatRate) })}</p>
                     </td>
                     <td className="px-4 py-3.5"><StatusBadge status={invoice.status} /></td>

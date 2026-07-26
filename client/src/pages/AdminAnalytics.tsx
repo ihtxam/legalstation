@@ -32,10 +32,10 @@ import {
 import { Link } from "wouter";
 import { Target, TrendingUp, Package, BriefcaseBusiness, ArrowRight } from "lucide-react";
 
-function formatCHF(n: number) {
-  return new Intl.NumberFormat("de-CH", {
+function formatMoneyCompact(n: number, currency = "CHF") {
+  return new Intl.NumberFormat(undefined, {
     style: "currency",
-    currency: "CHF",
+    currency,
     maximumFractionDigits: 0,
   }).format(n || 0);
 }
@@ -64,6 +64,9 @@ export default function AdminAnalyticsPage() {
   const { t } = useTranslation();
   const { isAuthenticated, loading } = useAuth();
   const [scenario, setScenario] = useState<ScenarioId>("base");
+  const { data: firmData } = trpc.firm.myFirm.useQuery(undefined, { enabled: isAuthenticated });
+  const currency = firmData?.firm?.defaultCurrency || "CHF";
+  const formatCHF = (n: number) => formatMoneyCompact(n, currency);
 
   useEffect(() => {
     if (!loading && !isAuthenticated) startLogin();

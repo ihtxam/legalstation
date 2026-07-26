@@ -10,15 +10,11 @@ import { useEffect } from "react";
 import { useLocation } from "wouter";
 import { PaymentInstallmentTimeline } from "@/components/PaymentInstallmentTimeline";
 import { useTranslation } from "react-i18next";
-
-function formatCHF(amount: number) {
-  return new Intl.NumberFormat("de-CH", { style: "currency", currency: "CHF" }).format(amount);
-}
+import { formatCurrency } from "@/lib/utils";
 
 function LawyerDashboard() {
   const { t } = useTranslation();
   const { data: stats, isLoading } = trpc.dashboard.lawyerStats.useQuery();
-  const [, navigate] = useLocation();
 
   const statCards = [
     { label: t("dashboard.openCases"), value: stats?.openCases ?? 0, icon: Briefcase, color: "text-blue-600", bg: "bg-blue-50" },
@@ -54,7 +50,10 @@ function ClientDashboard() {
   const { t } = useTranslation();
   const { data: stats, isLoading } = trpc.dashboard.clientStats.useQuery();
   const { data: invoices } = trpc.invoices.list.useQuery();
+  const { data: branding } = trpc.firm.branding.useQuery();
   const [, navigate] = useLocation();
+  const currency = branding?.defaultCurrency || "CHF";
+  const money = (n: number) => formatCurrency(n, currency);
 
   const outstandingInvoices = invoices?.filter(inv => {
     const inv_obj = (inv as any).invoice || inv;
@@ -99,7 +98,7 @@ function ClientDashboard() {
           <CardContent className="p-5 flex items-center justify-between gap-4 flex-wrap">
             <div>
               <p className="font-semibold text-amber-800">{t("dashboard.outstandingBalance")}</p>
-              <p className="text-amber-700 text-2xl font-bold font-serif mt-1">{formatCHF(stats.outstandingBalance)}</p>
+              <p className="text-amber-700 text-2xl font-bold font-serif mt-1">{money(stats.outstandingBalance)}</p>
             </div>
             <Button className="bg-amber-700 hover:bg-amber-800 text-white" onClick={() => navigate("/invoices")}>
               {t("dashboard.viewInvoices")} <ArrowRight className="w-4 h-4 ml-1.5" />
@@ -128,6 +127,7 @@ function ClientDashboard() {
                 invoiceNumber={`#${invoice?.invoiceNumber || "N/A"}`}
                 installments={installments}
                 totalAmount={totalAmount}
+                currency={invoice?.currency || currency}
               />
             );
           })}
@@ -178,7 +178,11 @@ export default function Dashboard() {
 
   return (
     <AppLayout title={t("dashboard.title")}>
-      {isFirmMember ? <LawyerDashboard /> : <ClientDashboard />}
+      {isFirmMember ? (
+        <LawyerDashboard />
+      ) : (
+        <ClientDashboard />
+      )}
     </AppLayout>
   );
 }

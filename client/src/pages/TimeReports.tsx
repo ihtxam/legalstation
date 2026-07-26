@@ -18,10 +18,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import { AlertTriangle, ChevronLeft, ChevronRight, Pause, Play, Plus, Send, Trash2 } from "lucide-react";
 import { useTranslation } from "react-i18next";
-
-function formatCHF(amount: number) {
-  return new Intl.NumberFormat("de-CH", { style: "currency", currency: "CHF" }).format(amount);
-}
+import { formatCurrency } from "@/lib/utils";
 
 function formatDuration(minutes: number) {
   const h = Math.floor(minutes / 60);
@@ -50,6 +47,9 @@ export default function TimeReportsPage() {
   const { t } = useTranslation();
   const { isAuthenticated, loading } = useAuth();
   const [, navigate] = useLocation();
+  const { data: firmData } = trpc.firm.myFirm.useQuery(undefined, { enabled: isAuthenticated });
+  const currency = firmData?.firm?.defaultCurrency || "CHF";
+  const formatCHF = (amount: number) => formatCurrency(amount, currency);
   const [currentDate, setCurrentDate] = useState(new Date());
   const [dateFrom, setDateFrom] = useState(format(startOfMonth(currentDate), "yyyy-MM-dd"));
   const [dateTo, setDateTo] = useState(format(endOfMonth(currentDate), "yyyy-MM-dd"));

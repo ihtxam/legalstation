@@ -15,6 +15,7 @@ import {
   deleteTimeEntry,
   getCaseById,
   getCurrentLawyerRate,
+  getFirmById,
   getFirmMemberByUserId,
   getNextInvoiceNumber,
   getTimeEntriesByFirm,
@@ -28,6 +29,7 @@ import {
   deleteActiveTimer,
   elapsedSecondsFromTimer,
 } from "../db";
+import { DEFAULT_CURRENCY, normalizeCurrency } from "../../shared/currencies";
 import {
   canTransitionTimeEntryStatus,
   computeTimeEntryAmount,
@@ -489,6 +491,8 @@ export const timeEntriesRouter = router({
       const vatAmount = Math.round(subtotal * (input.vatRate / 100) * 100) / 100;
       const total = Math.round((subtotal + vatAmount) * 100) / 100;
       const invoiceNumber = await getNextInvoiceNumber(member.firmId);
+      const firm = await getFirmById(member.firmId);
+      const currency = normalizeCurrency(firm?.defaultCurrency || DEFAULT_CURRENCY);
 
       await createInvoice({
         firmId: member.firmId,
@@ -500,7 +504,7 @@ export const timeEntriesRouter = router({
         vatAmount: String(vatAmount.toFixed(2)),
         subtotal: String(subtotal.toFixed(2)),
         total: String(total.toFixed(2)),
-        currency: "CHF",
+        currency,
         notes: input.notes,
         createdByUserId: ctx.user.id,
         status: "draft",

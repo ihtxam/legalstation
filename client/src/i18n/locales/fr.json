@@ -372,7 +372,10 @@
     "customDomain": "Domaine personnalisé",
     "customDomainPlaceholder": "www.votrecabinet.ch",
     "languagePlatformHint": "Seules les langues activées par la plateforme apparaissent ici. La sélection s’applique immédiatement.",
-    "languageHintDynamic": "Choisissez {{languages}} pour l’interface."
+    "languageHintDynamic": "Choisissez {{languages}} pour l’interface.",
+    "defaultCurrency": "Devise par défaut",
+    "defaultVatRate": "Taux de TVA par défaut (%)",
+    "currencyHint": "Utilisée pour les nouvelles factures, forfaits et services. Les QR-factures suisses ne supportent que CHF et EUR."
   },
   "notFound": {
     "title": "Page introuvable",
@@ -575,7 +578,15 @@
     "ticketStatusUpdated": "Ticket status updated",
     "ticketReplySent": "Reply sent — firm admin notified by email",
     "ticketsPerMonth": "Tickets per firm / month",
-    "ticketsPerMonthHint": "Monthly limit for how many tickets each firm can open (default 10)."
+    "ticketsPerMonthHint": "Monthly limit for how many tickets each firm can open (default 10).",
+    "currencies": "Devises",
+    "currenciesDesc": "Activer les devises de facturation pour les cabinets (CH, UE, EAU, KSA, Moyen-Orient).",
+    "defaultCurrency": "Devise par défaut pour les nouveaux cabinets",
+    "enabledCurrencies": "Devises activées",
+    "currency": "Devise",
+    "enableOneCurrency": "Activez au moins une devise",
+    "defaultCurrencyMustBeEnabled": "La devise par défaut doit être activée",
+    "swissQrCurrencyNote": "Les QR-factures suisses ne sont générées que pour CHF et EUR. Les autres devises ignorent la page QR."
   },
   "login": {
     "email": "E-mail",
@@ -953,7 +964,7 @@
     "preview": "Aperçu — {{name}}",
     "yourFirm": "Votre cabinet",
     "defaultCurrency": "Devise par défaut",
-    "currencyHint": "Code ISO, ex. CHF, EUR, USD",
+    "currencyHint": "Choisissez la devise de facturation (UE, EAU, Arabie saoudite et Moyen-Orient pris en charge).",
     "defaultVat": "Taux de TVA par défaut (%)",
     "vatHint": "Le taux standard suisse MWST est actuellement de 8,1 %",
     "subdomain": "Sous-domaine",

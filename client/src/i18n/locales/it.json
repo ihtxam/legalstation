@@ -372,7 +372,10 @@
     "customDomain": "Dominio personalizzato",
     "customDomainPlaceholder": "www.ilmiostudio.ch",
     "languagePlatformHint": "Qui compaiono solo le lingue abilitate dalla piattaforma. La selezione si applica subito.",
-    "languageHintDynamic": "Scegli {{languages}} per l’interfaccia."
+    "languageHintDynamic": "Scegli {{languages}} per l’interfaccia.",
+    "defaultCurrency": "Valuta predefinita",
+    "defaultVatRate": "Aliquota IVA predefinita (%)",
+    "currencyHint": "Usata per nuove fatture, pacchetti e servizi. Le QR-bill svizzere supportano solo CHF ed EUR."
   },
   "notFound": {
     "title": "Pagina non trovata",
@@ -575,7 +578,15 @@
     "ticketStatusUpdated": "Ticket status updated",
     "ticketReplySent": "Reply sent — firm admin notified by email",
     "ticketsPerMonth": "Tickets per firm / month",
-    "ticketsPerMonthHint": "Monthly limit for how many tickets each firm can open (default 10)."
+    "ticketsPerMonthHint": "Monthly limit for how many tickets each firm can open (default 10).",
+    "currencies": "Valute",
+    "currenciesDesc": "Abilita le valute di fatturazione per gli studi (CH, UE, EAU, KSA, Medio Oriente).",
+    "defaultCurrency": "Valuta predefinita per i nuovi studi",
+    "enabledCurrencies": "Valute abilitate",
+    "currency": "Valuta",
+    "enableOneCurrency": "Abilita almeno una valuta",
+    "defaultCurrencyMustBeEnabled": "La valuta predefinita deve essere abilitata",
+    "swissQrCurrencyNote": "Le QR-bill svizzere vengono generate solo per CHF ed EUR. Altre valute saltano la pagina QR."
   },
   "login": {
     "email": "Email",
@@ -953,7 +964,7 @@
     "preview": "Anteprima — {{name}}",
     "yourFirm": "Il tuo studio",
     "defaultCurrency": "Valuta predefinita",
-    "currencyHint": "Codice ISO, es. CHF, EUR, USD",
+    "currencyHint": "Scegli la valuta di fatturazione (UE, EAU, KSA e Medio Oriente supportati).",
     "defaultVat": "Aliquota IVA predefinita (%)",
     "vatHint": "L'aliquota standard svizzera MWST è attualmente dell'8,1%",
     "subdomain": "Sottodominio",

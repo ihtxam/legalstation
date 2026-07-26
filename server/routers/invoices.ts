@@ -5,6 +5,7 @@ import {
   createInvoiceItem,
   deleteInvoiceItems,
   getAssignedCaseIdsForUser,
+  getFirmById,
   getFirmMemberByUserId,
   getInvoiceById,
   getInvoiceItems,
@@ -14,6 +15,7 @@ import {
   updateInvoice,
   getClientByUserId,
 } from "../db";
+import { DEFAULT_CURRENCY, normalizeCurrency } from "../../shared/currencies";
 import { protectedProcedure, router } from "../_core/trpc";
 import { canCreateInvoice, canSeeFirmWideInvoices } from "@shared/roles";
 import { getFirmCapabilityMatrix } from "../firmPermissions";
@@ -64,7 +66,7 @@ export const invoicesRouter = router({
       caseId: z.number().optional(),
       dueDate: z.number(),
       vatRate: z.number().default(7.7),
-      currency: z.string().default("CHF"),
+      currency: z.string().length(3).optional(),
       notes: z.string().optional(),
       items: z.array(z.object({
         description: z.string().min(1),
@@ -77,6 +79,19 @@ export const invoicesRouter = router({
       const member = await getFirmMemberByUserId(ctx.user.id);
       const { matrix } = member ? await getFirmCapabilityMatrix(member.firmId) : { matrix: undefined };
       if (!member || !canCreateInvoice(member.firmRole, matrix)) throw new TRPCError({ code: "FORBIDDEN" });
+      const firm = await getFirmById(member.firmId);
+      let currency = normalizeCurrency(firm?.defaultCurrency || DEFAULT_CURRENCY);
+      if (input.currency) {
+        try {
+          const { assertCurrencyEnabled } = await import("../platformCurrencies");
+          currency = await assertCurrencyEnabled(input.currency);
+        } catch (e) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: e instanceof Error ? e.message : "Invalid currency",
+          });
+        }
+      }
       const invoiceNumber = await getNextInvoiceNumber(member.firmId);
       const subtotal = input.items.reduce((sum, item) => sum + item.quantity * item.unitPrice, 0);
       const vatAmount = subtotal * (input.vatRate / 100);
@@ -91,7 +106,7 @@ export const invoicesRouter = router({
         vatAmount: String(vatAmount.toFixed(2)),
         subtotal: String(subtotal.toFixed(2)),
         total: String(total.toFixed(2)),
-        currency: input.currency,
+        currency,
         notes: input.notes,
         createdByUserId: ctx.user.id,
       });

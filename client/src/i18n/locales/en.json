@@ -372,7 +372,10 @@
     "customDomain": "Custom domain",
     "customDomainPlaceholder": "www.yourfirm.ch",
     "languagePlatformHint": "Only languages enabled by the platform appear here. Selection applies immediately.",
-    "languageHintDynamic": "Choose {{languages}} for the app UI."
+    "languageHintDynamic": "Choose {{languages}} for the app UI.",
+    "defaultCurrency": "Default currency",
+    "defaultVatRate": "Default VAT rate (%)",
+    "currencyHint": "Used for new invoices, packages, and on-demand services. Swiss QR-bills only support CHF and EUR."
   },
   "notFound": {
     "title": "Page Not Found",
@@ -575,7 +578,15 @@
     "ticketStatusUpdated": "Ticket status updated",
     "ticketReplySent": "Reply sent — firm admin notified by email",
     "ticketsPerMonth": "Tickets per firm / month",
-    "ticketsPerMonthHint": "Monthly limit for how many tickets each firm can open (default 10)."
+    "ticketsPerMonthHint": "Monthly limit for how many tickets each firm can open (default 10).",
+    "currencies": "Currencies",
+    "currenciesDesc": "Enable billing currencies for firms (CH, EU, UAE, KSA, Middle East).",
+    "defaultCurrency": "Default currency for new firms",
+    "enabledCurrencies": "Enabled currencies",
+    "currency": "Currency",
+    "enableOneCurrency": "Enable at least one currency",
+    "defaultCurrencyMustBeEnabled": "Default currency must be enabled",
+    "swissQrCurrencyNote": "Swiss QR-bills are only generated for CHF and EUR invoices. Other currencies skip the QR page."
   },
   "login": {
     "email": "Email",
@@ -953,7 +964,7 @@
     "preview": "Preview — {{name}}",
     "yourFirm": "Your firm",
     "defaultCurrency": "Default currency",
-    "currencyHint": "ISO code, e.g. CHF, EUR, USD",
+    "currencyHint": "Choose the billing currency for your firm (EU, UAE, KSA, and Middle East supported).",
     "defaultVat": "Default VAT rate (%)",
     "vatHint": "Swiss standard MWST is currently 8.1%",
     "subdomain": "Subdomain",

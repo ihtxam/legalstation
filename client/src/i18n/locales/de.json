@@ -372,7 +372,10 @@
     "customDomain": "Eigene Domain",
     "customDomainPlaceholder": "www.ihrekanzlei.ch",
     "languagePlatformHint": "Nur von der Plattform aktivierte Sprachen erscheinen hier. Die Auswahl gilt sofort.",
-    "languageHintDynamic": "Wählen Sie {{languages}} für die Oberfläche."
+    "languageHintDynamic": "Wählen Sie {{languages}} für die Oberfläche.",
+    "defaultCurrency": "Standardwährung",
+    "defaultVatRate": "Standard-MwSt.-Satz (%)",
+    "currencyHint": "Gilt für neue Rechnungen, Pakete und On-Demand-Services. Swiss QR-Rechnungen nur für CHF und EUR."
   },
   "notFound": {
     "title": "Seite nicht gefunden",
@@ -575,7 +578,15 @@
     "ticketStatusUpdated": "Ticket status updated",
     "ticketReplySent": "Reply sent — firm admin notified by email",
     "ticketsPerMonth": "Tickets per firm / month",
-    "ticketsPerMonthHint": "Monthly limit for how many tickets each firm can open (default 10)."
+    "ticketsPerMonthHint": "Monthly limit for how many tickets each firm can open (default 10).",
+    "currencies": "Währungen",
+    "currenciesDesc": "Rechnungswährungen für Kanzleien freischalten (CH, EU, VAE, KSA, Naher Osten).",
+    "defaultCurrency": "Standardwährung für neue Kanzleien",
+    "enabledCurrencies": "Aktivierte Währungen",
+    "currency": "Währung",
+    "enableOneCurrency": "Mindestens eine Währung aktivieren",
+    "defaultCurrencyMustBeEnabled": "Die Standardwährung muss aktiviert sein",
+    "swissQrCurrencyNote": "Swiss QR-Rechnungen werden nur für CHF und EUR erzeugt. Andere Währungen überspringen die QR-Seite."
   },
   "login": {
     "email": "E-Mail",
@@ -953,7 +964,7 @@
     "preview": "Vorschau — {{name}}",
     "yourFirm": "Ihre Kanzlei",
     "defaultCurrency": "Standardwährung",
-    "currencyHint": "ISO-Code, z. B. CHF, EUR, USD",
+    "currencyHint": "Wählen Sie die Rechnungswährung (EU, VAE, KSA und Naher Osten unterstützt).",
     "defaultVat": "Standard-MwSt.-Satz (%)",
     "vatHint": "Der Schweizer MWST-Standardsatz beträgt derzeit 8,1 %",
     "subdomain": "Subdomain",

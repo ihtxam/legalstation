@@ -17,7 +17,9 @@ import AppearanceControls from "@/components/AppearanceControls";
 import { useTranslation } from "react-i18next";
 import { setAppLocale } from "@/i18n";
 import { APP_LOCALE_LABELS, isAppLocale, type AppLocale } from "@shared/locales";
+import { currencyLabel, normalizeCurrency, type AppCurrency } from "@shared/currencies";
 import { useSupportedLocales } from "@/hooks/useSupportedLocales";
+import { useSupportedCurrencies } from "@/hooks/useSupportedCurrencies";
 import CustomDomainDnsHelp from "@/components/CustomDomainDnsHelp";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
@@ -49,6 +51,8 @@ export default function SettingsPage() {
     logoUrl: "",
     slug: "",
     customDomain: "",
+    defaultCurrency: "CHF",
+    defaultVatRate: "8.1",
     iban: "",
     qrIban: "",
     creditorStreet: "",
@@ -76,6 +80,7 @@ export default function SettingsPage() {
   const [locale, setLocale] = useState<AppLocale>("en");
   const isFirmAdmin = canManageFirm;
   const { supportedLocales, defaultLocale, isEnabled } = useSupportedLocales();
+  const { supportedCurrencies, defaultCurrency: platformDefaultCurrency } = useSupportedCurrencies();
   const { data: signupInfo } = trpc.signup.info.useQuery(undefined, { enabled: isAuthenticated });
   const platformBaseDomain =
     signupInfo?.appBaseDomain ||
@@ -221,6 +226,10 @@ export default function SettingsPage() {
         logoUrl: firmData.firm.logoUrl ?? "",
         slug: firmData.firm.slug ?? "",
         customDomain: firmData.firm.customDomain ?? "",
+        defaultCurrency: normalizeCurrency(
+          firmData.firm.defaultCurrency || platformDefaultCurrency
+        ),
+        defaultVatRate: String(firmData.firm.defaultVatRate ?? "8.1"),
         iban: firmData.firm.iban ?? "",
         qrIban: firmData.firm.qrIban ?? "",
         creditorStreet: firmData.firm.creditorStreet ?? "",
@@ -323,6 +332,45 @@ export default function SettingsPage() {
                 <div><Label>{t("settings.phone")}</Label><Input className={`mt-1.5 ${getFieldHighlight('phone')}`} value={firmForm.phone} onChange={e => setFirmForm(f => ({ ...f, phone: e.target.value }))} /></div>
               </div>
               <div><Label>{t("settings.vatNumber")}</Label><Input className={`mt-1.5 ${getFieldHighlight('vatNumber')}`} placeholder="CHE-123.456.789 MWST" value={firmForm.vatNumber} onChange={e => setFirmForm(f => ({ ...f, vatNumber: e.target.value }))} /></div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <Label>{t("settings.defaultCurrency")}</Label>
+                  <Select
+                    value={firmForm.defaultCurrency}
+                    onValueChange={(v) =>
+                      setFirmForm((f) => ({ ...f, defaultCurrency: normalizeCurrency(v) }))
+                    }
+                  >
+                    <SelectTrigger className={`mt-1.5 ${getFieldHighlight("defaultCurrency")}`}>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {(
+                        supportedCurrencies.includes(firmForm.defaultCurrency as AppCurrency)
+                          ? supportedCurrencies
+                          : [firmForm.defaultCurrency as AppCurrency, ...supportedCurrencies]
+                      ).map((code) => (
+                        <SelectItem key={code} value={code}>
+                          {currencyLabel(code)}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <p className="text-xs text-muted-foreground mt-1">{t("settings.currencyHint")}</p>
+                </div>
+                <div>
+                  <Label>{t("settings.defaultVatRate")}</Label>
+                  <Input
+                    className={`mt-1.5 ${getFieldHighlight("defaultVatRate")}`}
+                    type="number"
+                    min="0"
+                    max="100"
+                    step="0.1"
+                    value={firmForm.defaultVatRate}
+                    onChange={(e) => setFirmForm((f) => ({ ...f, defaultVatRate: e.target.value }))}
+                  />
+                </div>
+              </div>
               <div>
                 <Label>{t("settings.logo")}</Label>
                 <div className="mt-1.5 flex gap-3 items-end">
@@ -504,6 +552,8 @@ export default function SettingsPage() {
                     phone: firmForm.phone,
                     vatNumber: firmForm.vatNumber || null,
                     logoUrl: firmForm.logoUrl || null,
+                    defaultCurrency: firmForm.defaultCurrency,
+                    defaultVatRate: parseFloat(firmForm.defaultVatRate) || 0,
                     ...(isFirmAdmin
                       ? {
                           slug: firmForm.slug.trim() || undefined,

@@ -596,6 +596,18 @@ export const firmRouter = router({
         slug,
         ...rest
       } = input;
+      let nextCurrency: string | undefined;
+      if (defaultCurrency !== undefined) {
+        try {
+          const { assertCurrencyEnabled } = await import("../platformCurrencies");
+          nextCurrency = await assertCurrencyEnabled(defaultCurrency);
+        } catch (e) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: e instanceof Error ? e.message : "Invalid currency",
+          });
+        }
+      }
       const { UPLOAD_HARD_MAX_BYTES } = await import("@shared/uploadPolicy");
       const normalizeIban = (v?: string | null) =>
         v == null ? v : v.replace(/\s+/g, "").toUpperCase() || null;
@@ -655,7 +667,7 @@ export const firmRouter = router({
               ? creditorCountry.toUpperCase()
               : "CH"
             : undefined,
-        defaultCurrency: defaultCurrency?.toUpperCase(),
+        defaultCurrency: nextCurrency,
         defaultVatRate: defaultVatRate != null ? defaultVatRate.toFixed(2) : undefined,
         maxUploadBytes:
           maxUploadMb != null
@@ -714,7 +726,17 @@ export const firmRouter = router({
       if (input.logoUrl !== undefined) updates.logoUrl = input.logoUrl || null;
       if (input.primaryColor) updates.primaryColor = input.primaryColor;
       if (input.secondaryColor) updates.secondaryColor = input.secondaryColor;
-      if (input.defaultCurrency) updates.defaultCurrency = input.defaultCurrency.toUpperCase();
+      if (input.defaultCurrency) {
+        try {
+          const { assertCurrencyEnabled } = await import("../platformCurrencies");
+          updates.defaultCurrency = await assertCurrencyEnabled(input.defaultCurrency);
+        } catch (e) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: e instanceof Error ? e.message : "Invalid currency",
+          });
+        }
+      }
       if (input.defaultVatRate != null) updates.defaultVatRate = input.defaultVatRate.toFixed(2);
       if (input.customDomain !== undefined) {
         updates.customDomain = input.customDomain?.trim() ? input.customDomain.trim() : null;
