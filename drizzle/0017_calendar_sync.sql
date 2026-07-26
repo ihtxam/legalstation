@@ -19,7 +19,6 @@ CREATE TABLE IF NOT EXISTS `calendar_connections` (
   `updatedAt` timestamp NOT NULL DEFAULT (now()) ON UPDATE CURRENT_TIMESTAMP,
   CONSTRAINT `calendar_connections_id` PRIMARY KEY(`id`)
 );
---> statement-breakpoint
 CREATE TABLE IF NOT EXISTS `calendar_personal_events` (
   `id` int AUTO_INCREMENT NOT NULL,
   `userId` int NOT NULL,
@@ -34,7 +33,6 @@ CREATE TABLE IF NOT EXISTS `calendar_personal_events` (
   `updatedAt` timestamp NOT NULL DEFAULT (now()) ON UPDATE CURRENT_TIMESTAMP,
   CONSTRAINT `calendar_personal_events_id` PRIMARY KEY(`id`)
 );
---> statement-breakpoint
 CREATE TABLE IF NOT EXISTS `calendar_imported_events` (
   `id` int AUTO_INCREMENT NOT NULL,
   `connectionId` int NOT NULL,
@@ -52,7 +50,6 @@ CREATE TABLE IF NOT EXISTS `calendar_imported_events` (
   `updatedAt` timestamp NOT NULL DEFAULT (now()) ON UPDATE CURRENT_TIMESTAMP,
   CONSTRAINT `calendar_imported_events_id` PRIMARY KEY(`id`)
 );
---> statement-breakpoint
 CREATE TABLE IF NOT EXISTS `calendar_event_links` (
   `id` int AUTO_INCREMENT NOT NULL,
   `connectionId` int NOT NULL,
