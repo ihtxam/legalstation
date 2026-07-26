@@ -43,7 +43,7 @@ export const signupRouter = router({
       saasEnabled: isSaas() && !isSingleTenant(),
       appBaseDomain: ENV.appBaseDomain || null,
       appUrl: ENV.appUrl || null,
-      customDomainIp: process.env.APP_PUBLIC_IP || "46.224.188.217",
+      customDomainIp: process.env.APP_PUBLIC_IP || "179.237.107.63",
     };
   }),
 

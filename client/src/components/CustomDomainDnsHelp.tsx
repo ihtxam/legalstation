@@ -1,7 +1,7 @@
 import { Badge } from "@/components/ui/badge";
 import { useTranslation } from "react-i18next";
 
-const PROD_IP = "46.224.188.217";
+const PROD_IP = "179.237.107.63";
 
 export default function CustomDomainDnsHelp({
   customDomain,

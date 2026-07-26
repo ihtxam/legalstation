@@ -4,7 +4,7 @@ import Constants from "expo-constants";
 export const API_URL = (
   process.env.EXPO_PUBLIC_API_URL ||
   (Constants.expoConfig?.extra?.apiUrl as string | undefined) ||
-  "https://legal.webprintmedia.swiss"
+  "https://cliavo.com"
 ).replace(/\/$/, "");
 
 export const TRPC_URL = `${API_URL}/api/trpc`;

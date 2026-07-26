@@ -17,9 +17,9 @@ export const ENV = {
   emailFrom: process.env.EMAIL_FROM ?? "",
   emailFromName: process.env.EMAIL_FROM_NAME ?? "Cliavo",
 
-  /** Canonical public URL for emails / redirects (e.g. https://legal.webprintmedia.swiss) */
+  /** Canonical public URL for emails / redirects (e.g. https://cliavo.com) */
   appUrl: process.env.APP_URL ?? "",
-  /** Apex domain for firm subdomains (e.g. webprintmedia.swiss → firm.webprintmedia.swiss) */
+  /** Apex domain for firm subdomains (e.g. cliavo.com → firm.cliavo.com) */
   appBaseDomain: process.env.APP_BASE_DOMAIN ?? "",
   /** One-time secret to bootstrap the first platform superadmin via /api/auth/bootstrap-superadmin */
   superadminBootstrapSecret: process.env.SUPERADMIN_BOOTSTRAP_SECRET ?? "",

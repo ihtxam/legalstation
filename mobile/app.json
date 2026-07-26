@@ -15,14 +15,14 @@
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "swiss.webprintmedia.cliavo",
+      "bundleIdentifier": "com.cliavo.app",
       "infoPlist": {
         "NSCameraUsageDescription": "Scan and upload case documents with your camera.",
         "NSPhotoLibraryUsageDescription": "Attach photos of documents to your cases."
       }
     },
     "android": {
-      "package": "swiss.webprintmedia.cliavo",
+      "package": "com.cliavo.app",
       "adaptiveIcon": {
         "backgroundColor": "#0B1F3A",
         "foregroundImage": "./assets/android-icon-foreground.png",
@@ -50,7 +50,7 @@
       ]
     ],
     "extra": {
-      "apiUrl": "https://legal.webprintmedia.swiss",
+      "apiUrl": "https://cliavo.com",
       "router": {
         "origin": false
       }

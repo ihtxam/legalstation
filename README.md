@@ -44,7 +44,7 @@ Expo React Native app in [`mobile/`](mobile/) — **one app** for firm staff and
 
 ```bash
 cd mobile && npm install --legacy-peer-deps
-EXPO_PUBLIC_API_URL=https://legal.webprintmedia.swiss npm start
+EXPO_PUBLIC_API_URL=https://cliavo.com npm start
 ```
 
 ## Environment variables

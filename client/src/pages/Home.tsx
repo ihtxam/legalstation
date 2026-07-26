@@ -548,7 +548,7 @@ export default function Home() {
             </h2>
             <p className="text-muted-foreground leading-relaxed mb-4">{t("home.whitelabelDesc")}</p>
             <p className="text-sm text-muted-foreground">
-              {t("home.whitelabelDns", { ip: signupInfo?.customDomainIp || "46.224.188.217" })}
+              {t("home.whitelabelDns", { ip: signupInfo?.customDomainIp || "179.237.107.63" })}
             </p>
           </div>
           <div>

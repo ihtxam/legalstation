@@ -30,10 +30,10 @@ From `/superadmin`:
 ### Subdomains / custom domains
 
 - Firm slug is unique (e.g. `mueller-partner`).
-- Set `APP_BASE_DOMAIN` (e.g. `webprintmedia.swiss`) so login links become
+- Set `APP_BASE_DOMAIN` (e.g. `cliavo.com`) so login links become
   `https://{slug}.{APP_BASE_DOMAIN}/login`.
 - Set `APP_URL` for email links when not using subdomains yet
-  (e.g. `https://legal.webprintmedia.swiss`).
+  (e.g. `https://cliavo.com`).
 - Custom domains are stored on the firm and resolved from the `Host` header when
   `subdomainStatus = active`.
 
@@ -41,10 +41,10 @@ Nginx / DNS (example):
 
 ```
 # DNS
-*.webprintmedia.swiss  A  YOUR_SERVER_IP
+*.cliavo.com  A  YOUR_SERVER_IP
 
 # Nginx server_name
-server_name legal.webprintmedia.swiss *.webprintmedia.swiss;
+server_name cliavo.com *.cliavo.com;
 ```
 
 ## Time tracking
