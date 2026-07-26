@@ -137,6 +137,14 @@ export default function AdminAnalyticsPage() {
   }, [data]);
 
   const selected = data?.upsellForecast.scenarios[scenario];
+  const forecastSeries = useMemo(() => {
+    if (!data) return [];
+    const byScenario = data.upsellForecast.projectionsByScenario;
+    return (byScenario?.[scenario] || data.upsellForecast.projectionByMonth).map((row) => ({
+      ...row,
+      label: formatMonth(row.month),
+    }));
+  }, [data, scenario]);
 
   return (
     <AppLayout breadcrumb={[{ label: t("analytics.breadcrumb") }]}>
@@ -239,19 +247,23 @@ export default function AdminAnalyticsPage() {
                       })}
                     </p>
                     <ChartContainer config={forecastConfig} className="h-[260px] w-full aspect-auto">
-                      <AreaChart data={data.upsellForecast.projectionByMonth}>
+                      <AreaChart data={forecastSeries}>
                         <CartesianGrid vertical={false} strokeDasharray="3 3" />
                         <XAxis
-                          dataKey="month"
-                          tickFormatter={formatMonth}
+                          dataKey="label"
                           tickLine={false}
                           axisLine={false}
                         />
                         <YAxis
-                          tickFormatter={(v) => `${Math.round(Number(v) / 1000)}k`}
+                          tickFormatter={(v) => {
+                            const n = Number(v);
+                            if (!Number.isFinite(n)) return "";
+                            if (n >= 1000) return `${Math.round(n / 1000)}k`;
+                            return String(Math.round(n));
+                          }}
                           tickLine={false}
                           axisLine={false}
-                          width={40}
+                          width={44}
                         />
                         <ChartTooltip
                           content={
@@ -265,7 +277,6 @@ export default function AdminAnalyticsPage() {
                                   </span>
                                 </span>
                               )}
-                              labelFormatter={(label) => formatMonth(String(label))}
                             />
                           }
                         />
@@ -388,10 +399,15 @@ export default function AdminAnalyticsPage() {
                       <CartesianGrid vertical={false} strokeDasharray="3 3" />
                       <XAxis dataKey="label" tickLine={false} axisLine={false} />
                       <YAxis
-                        tickFormatter={(v) => `${Math.round(Number(v) / 1000)}k`}
+                        tickFormatter={(v) => {
+                          const n = Number(v);
+                          if (!Number.isFinite(n)) return "";
+                          if (n >= 1000) return `${Math.round(n / 1000)}k`;
+                          return String(Math.round(n));
+                        }}
                         tickLine={false}
                         axisLine={false}
-                        width={36}
+                        width={44}
                       />
                       <ChartTooltip
                         content={

@@ -291,24 +291,55 @@ export const dashboardRouter = router({
       totalWithBaseline6m: number;
     };
 
+    const baseSvcOrders =
+      avgMonthlyServiceRevenue > 0
+        ? avgMonthlyServiceRevenue / Math.max(1, avgServicePrice)
+        : Math.max(1, activeClients.length * 0.1);
+
+    /**
+     * Keep Conservative < On track < Ambitious even with tiny client bases
+     * (e.g. 2 clients without a package used to round to the same integers).
+     */
+    const packageClientsByScenario = (() => {
+      const pool = Math.max(0, clientsWithoutPackage);
+      if (pool <= 0) {
+        return { conservative: 0, base: 0, ambitious: 0 };
+      }
+      if (pool === 1) {
+        return { conservative: 0, base: 1, ambitious: 1 };
+      }
+      if (pool === 2) {
+        return { conservative: 1, base: 1, ambitious: 2 };
+      }
+      const conservative = Math.max(1, Math.floor(pool * 0.2));
+      const ambitious = Math.min(pool, Math.max(conservative + 2, Math.ceil(pool * 0.6)));
+      const base = Math.min(
+        ambitious - 1,
+        Math.max(conservative + 1, Math.round(pool * 0.35))
+      );
+      return { conservative, base, ambitious };
+    })();
+
+    const serviceOrdersByScenario = {
+      conservative: Math.max(1, Math.round(baseSvcOrders * 1)),
+      base: Math.max(2, Math.round(baseSvcOrders * 2)),
+      ambitious: Math.max(3, Math.round(baseSvcOrders * 3.5)),
+    };
+    // Enforce strict step-up
+    serviceOrdersByScenario.base = Math.max(
+      serviceOrdersByScenario.conservative + 1,
+      serviceOrdersByScenario.base
+    );
+    serviceOrdersByScenario.ambitious = Math.max(
+      serviceOrdersByScenario.base + 1,
+      serviceOrdersByScenario.ambitious
+    );
+
     const buildScenario = (
       id: Scenario["id"],
-      captureRate: number,
-      svcMultiplier: number
+      newPackageClients: number,
+      serviceOrdersPerMonth: number
     ): Scenario => {
-      const newPackageClients = Math.max(
-        0,
-        Math.round(clientsWithoutPackage * captureRate)
-      );
-      const serviceOrdersPerMonth = Math.max(
-        1,
-        Math.round(
-          (avgMonthlyServiceRevenue > 0
-            ? avgMonthlyServiceRevenue / Math.max(1, avgServicePrice)
-            : activeClients.length * 0.05) * svcMultiplier
-        )
-      );
-      // New package clients contribute ~6 months of MRR (commitment year, billed monthly equiv)
       const packageRevenue6m =
         packageMrr * 6 + newPackageClients * avgPackageMonthly * 6;
       const serviceRevenue6m = serviceOrdersPerMonth * avgServicePrice * 6;
@@ -328,33 +359,55 @@ export const dashboardRouter = router({
     };
 
     const scenarios = {
-      conservative: buildScenario("conservative", 0.15, 1.2),
-      base: buildScenario("base", 0.3, 1.8),
-      ambitious: buildScenario("ambitious", 0.5, 2.5),
+      conservative: buildScenario(
+        "conservative",
+        packageClientsByScenario.conservative,
+        serviceOrdersByScenario.conservative
+      ),
+      base: buildScenario(
+        "base",
+        packageClientsByScenario.base,
+        serviceOrdersByScenario.base
+      ),
+      ambitious: buildScenario(
+        "ambitious",
+        packageClientsByScenario.ambitious,
+        serviceOrdersByScenario.ambitious
+      ),
     };
 
-    // Forward 6-month projection series (base scenario) for charts
-    const projectionByMonth: {
-      month: string;
-      baseline: number;
-      packages: number;
-      services: number;
-      projected: number;
-    }[] = [];
-    const base = scenarios.base;
-    for (let i = 1; i <= 6; i++) {
-      const m = monthKey(addMonths(now, i));
-      const packagesAmt = packageMrr + (base.newPackageClients * avgPackageMonthly * i) / 6;
-      const servicesAmt = base.serviceOrdersPerMonth * avgServicePrice;
-      const baseline = avgMonthlyInvoiceRevenue;
-      projectionByMonth.push({
-        month: m,
-        baseline,
-        packages: packagesAmt,
-        services: servicesAmt,
-        projected: baseline + packagesAmt + servicesAmt,
-      });
-    }
+    const buildProjection = (scenario: Scenario) => {
+      const rows: {
+        month: string;
+        baseline: number;
+        packages: number;
+        services: number;
+        projected: number;
+      }[] = [];
+      for (let i = 1; i <= 6; i++) {
+        const m = monthKey(addMonths(now, i));
+        // Ramp new package MRR across the horizon; services assumed steady monthly
+        const packagesAmt =
+          packageMrr + (scenario.newPackageClients * avgPackageMonthly * i) / 6;
+        const servicesAmt = scenario.serviceOrdersPerMonth * avgServicePrice;
+        const baseline = avgMonthlyInvoiceRevenue;
+        rows.push({
+          month: m,
+          baseline,
+          packages: packagesAmt,
+          services: servicesAmt,
+          projected: baseline + packagesAmt + servicesAmt,
+        });
+      }
+      return rows;
+    };
+
+    const projectionByMonth = buildProjection(scenarios.base);
+    const projectionsByScenario = {
+      conservative: buildProjection(scenarios.conservative),
+      base: projectionByMonth,
+      ambitious: buildProjection(scenarios.ambitious),
+    };
 
     const revenueMix = [
       { name: "invoices", value: paidRevenue },
@@ -408,6 +461,9 @@ export const dashboardRouter = router({
         horizonMonths: 6,
         scenarios,
         projectionByMonth,
+        projectionsByScenario,
+        avgPackageMonthly,
+        avgServicePrice,
       },
       catalog: {
         activePackages: activePackages.length,
