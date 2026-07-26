@@ -9,8 +9,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { Building2, Users, Send, Upload, X, Shield, Languages, ShieldCheck } from "lucide-react";
+import { Building2, Users, Send, Upload, X, Shield, Languages, ShieldCheck, Calendar } from "lucide-react";
 import RolePermissionsTable from "@/components/RolePermissionsTable";
+import { CalendarIntegrations } from "@/components/CalendarIntegrations";
 import { useTranslation } from "react-i18next";
 import { setAppLocale } from "@/i18n";
 import { APP_LOCALES, APP_LOCALE_LABELS, isAppLocale, type AppLocale } from "@shared/locales";
@@ -272,6 +273,7 @@ export default function SettingsPage() {
                 <TabsTrigger value="roles"><ShieldCheck className="w-4 h-4 mr-1.5" />{t("settings.tabRoles")}</TabsTrigger>
               </>
             )}
+            <TabsTrigger value="calendar"><Calendar className="w-4 h-4 mr-1.5" />{t("settings.tabCalendar")}</TabsTrigger>
             <TabsTrigger value="security"><Shield className="w-4 h-4 mr-1.5" />{t("settings.tabSecurity")}</TabsTrigger>
             <TabsTrigger value="language"><Languages className="w-4 h-4 mr-1.5" />{t("settings.tabLanguage")}</TabsTrigger>
           </TabsList>
@@ -660,6 +662,12 @@ export default function SettingsPage() {
               </div>
             </TabsContent>
           )}
+
+          <TabsContent value="calendar">
+            <div className="bg-card border border-border rounded-xl p-6">
+              <CalendarIntegrations />
+            </div>
+          </TabsContent>
         </Tabs>
       </div>
     </LexLayout>

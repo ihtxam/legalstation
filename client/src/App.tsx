@@ -21,6 +21,7 @@ import InvoicesPage from "./pages/Invoices";
 import InvoiceDetailPage from "./pages/InvoiceDetail";
 import MessagesPage from "./pages/Messages";
 import SettingsPage from "./pages/Settings";
+import AgendaPage from "./pages/Agenda";
 import OnboardingPage from "./pages/Onboarding";
 import FirmOnboardingPage from "./pages/FirmOnboarding";
 import InvitePage from "./pages/Invite";
@@ -143,6 +144,7 @@ function Router() {
         <Route path="/invoices/:id" component={InvoiceDetailPage} />
         <Route path="/messages" component={MessagesPage} />
         <Route path="/settings" component={SettingsPage} />
+        <Route path="/agenda" component={AgendaPage} />
         <Route path="/superadmin" component={SuperadminDashboard} />
         <Route path="/superadmin/" component={SuperadminDashboard} />
         <Route path="/admin/settings" component={AdminSettings} />

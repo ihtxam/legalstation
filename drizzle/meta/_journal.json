@@ -120,6 +120,13 @@
       "when": 1785276400000,
       "tag": "0016_role_capability_overrides",
       "breakpoints": true
+    },
+    {
+      "idx": 17,
+      "version": "5",
+      "when": 1785362800000,
+      "tag": "0017_calendar_sync",
+      "breakpoints": true
     }
   ]
 }

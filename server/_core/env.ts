@@ -47,4 +47,13 @@ export const ENV = {
   tenantDekEnabled: boolEnv(process.env.TENANT_DEK_ENABLED),
   /** Base64 KEK used to wrap per-tenant DEKs when enabled */
   tenantKek: process.env.TENANT_KEK ?? "",
+
+  /** Google Calendar OAuth (optional) */
+  googleCalendarClientId: process.env.GOOGLE_CALENDAR_CLIENT_ID ?? "",
+  googleCalendarClientSecret: process.env.GOOGLE_CALENDAR_CLIENT_SECRET ?? "",
+
+  /** Microsoft / Outlook Calendar OAuth (optional) */
+  microsoftCalendarClientId: process.env.MICROSOFT_CALENDAR_CLIENT_ID ?? "",
+  microsoftCalendarClientSecret: process.env.MICROSOFT_CALENDAR_CLIENT_SECRET ?? "",
+  microsoftCalendarTenant: process.env.MICROSOFT_CALENDAR_TENANT ?? "common",
 };

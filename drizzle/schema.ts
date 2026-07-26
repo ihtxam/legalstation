@@ -708,3 +708,90 @@ export const firmPages = mysqlTable("firm_pages", {
 
 export type FirmPage = typeof firmPages.$inferSelect;
 export type InsertFirmPage = typeof firmPages.$inferInsert;
+
+// ─── Per-user external calendar connections (Google / Outlook / iCloud) ──────
+export const calendarConnections = mysqlTable("calendar_connections", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  firmId: int("firmId"),
+  provider: mysqlEnum("provider", ["google", "microsoft", "icloud"]).notNull(),
+  accountEmail: varchar("accountEmail", { length: 320 }),
+  /** AES-GCM encrypted access token (OAuth) or empty for CalDAV */
+  accessTokenEnc: text("accessTokenEnc"),
+  /** AES-GCM encrypted refresh token (OAuth) or iCloud app-specific password */
+  refreshTokenEnc: text("refreshTokenEnc"),
+  tokenExpiresAt: timestamp("tokenExpiresAt"),
+  /** Selected calendar id (Google/Graph) or CalDAV calendar href */
+  externalCalendarId: varchar("externalCalendarId", { length: 512 }),
+  externalCalendarName: varchar("externalCalendarName", { length: 255 }),
+  /** CalDAV principal / calendar home (iCloud) */
+  caldavUrl: varchar("caldavUrl", { length: 512 }),
+  caldavUsername: varchar("caldavUsername", { length: 320 }),
+  syncEnabled: boolean("syncEnabled").notNull().default(true),
+  /** both = two-way; push = LexFlow→external; pull = external→LexFlow */
+  syncDirection: mysqlEnum("syncDirection", ["both", "push", "pull"]).notNull().default("both"),
+  lastSyncedAt: timestamp("lastSyncedAt"),
+  lastError: text("lastError"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type CalendarConnection = typeof calendarConnections.$inferSelect;
+export type InsertCalendarConnection = typeof calendarConnections.$inferInsert;
+
+/** LexFlow-native personal agenda items (sync out to connected calendars). */
+export const calendarPersonalEvents = mysqlTable("calendar_personal_events", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  firmId: int("firmId"),
+  title: varchar("title", { length: 255 }).notNull(),
+  description: text("description"),
+  location: varchar("location", { length: 255 }),
+  startsAt: timestamp("startsAt").notNull(),
+  endsAt: timestamp("endsAt").notNull(),
+  allDay: boolean("allDay").notNull().default(false),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type CalendarPersonalEvent = typeof calendarPersonalEvents.$inferSelect;
+export type InsertCalendarPersonalEvent = typeof calendarPersonalEvents.$inferInsert;
+
+/** Events pulled from external calendars (shown in LexFlow agenda). */
+export const calendarImportedEvents = mysqlTable("calendar_imported_events", {
+  id: int("id").autoincrement().primaryKey(),
+  connectionId: int("connectionId").notNull(),
+  userId: int("userId").notNull(),
+  externalEventId: varchar("externalEventId", { length: 512 }).notNull(),
+  title: varchar("title", { length: 255 }).notNull(),
+  description: text("description"),
+  location: varchar("location", { length: 255 }),
+  startsAt: timestamp("startsAt").notNull(),
+  endsAt: timestamp("endsAt").notNull(),
+  allDay: boolean("allDay").notNull().default(false),
+  etag: varchar("etag", { length: 255 }),
+  rawUpdatedAt: timestamp("rawUpdatedAt"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type CalendarImportedEvent = typeof calendarImportedEvents.$inferSelect;
+export type InsertCalendarImportedEvent = typeof calendarImportedEvents.$inferInsert;
+
+/** Maps LexFlow agenda entities ↔ external calendar event ids (dedupe / two-way). */
+export const calendarEventLinks = mysqlTable("calendar_event_links", {
+  id: int("id").autoincrement().primaryKey(),
+  connectionId: int("connectionId").notNull(),
+  /** case_deadline | case_task | client_activity | personal | imported */
+  entityType: varchar("entityType", { length: 32 }).notNull(),
+  entityId: int("entityId").notNull(),
+  externalEventId: varchar("externalEventId", { length: 512 }).notNull(),
+  etag: varchar("etag", { length: 255 }),
+  lastPushedAt: timestamp("lastPushedAt"),
+  lastPulledAt: timestamp("lastPulledAt"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type CalendarEventLink = typeof calendarEventLinks.$inferSelect;
+export type InsertCalendarEventLink = typeof calendarEventLinks.$inferInsert;

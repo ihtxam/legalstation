@@ -116,6 +116,9 @@ async function startServer() {
   registerStorageProxy(app);
   registerOAuthRoutes(app);
 
+  const { registerCalendarOAuthRoutes } = await import("../calendar/oauthRoutes");
+  registerCalendarOAuthRoutes(app);
+
   const { registerDemoAuthRoutes } = await import("../demo/demoAuth");
   registerDemoAuthRoutes(app);
 
@@ -138,6 +141,24 @@ async function startServer() {
       return res.json({ ok: true, ...result });
     } catch (err: any) {
       console.error("[Scheduled] payment-plan-invoices", err);
+      return res.status(500).json({ error: err.message ?? "Job failed" });
+    }
+  });
+
+  app.post("/api/scheduled/calendar-sync", async (req, res) => {
+    try {
+      const secret = process.env.SCHEDULED_JOB_SECRET || ENV.cookieSecret;
+      const provided =
+        req.get("x-scheduled-job-secret") ||
+        (typeof req.query.secret === "string" ? req.query.secret : undefined);
+      if (secret && provided !== secret) {
+        return res.status(401).json({ error: "Unauthorized" });
+      }
+      const { syncAllEnabledConnections } = await import("../calendar/sync");
+      const result = await syncAllEnabledConnections();
+      return res.json({ ok: true, ...result });
+    } catch (err: any) {
+      console.error("[Scheduled] calendar-sync", err);
       return res.status(500).json({ error: err.message ?? "Job failed" });
     }
   });

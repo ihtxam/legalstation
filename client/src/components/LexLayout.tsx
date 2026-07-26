@@ -18,6 +18,7 @@ import {
   Bell,
   Target,
   Globe,
+  CalendarDays,
 } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -55,6 +56,7 @@ export default function LexLayout({ children, title, breadcrumb }: LexLayoutProp
   const clientNavItems = [
     { href: "/dashboard", label: t("nav.dashboard"), icon: LayoutDashboard },
     { href: "/client-portal", label: t("nav.myCases"), icon: Briefcase },
+    { href: "/agenda", label: t("nav.agenda"), icon: CalendarDays },
     { href: "/messages", label: t("nav.messages"), icon: MessageSquare },
     { href: "/invoices", label: t("nav.invoices"), icon: Receipt },
   ];
@@ -63,6 +65,7 @@ export default function LexLayout({ children, title, breadcrumb }: LexLayoutProp
     { href: "/dashboard", label: t("nav.dashboard"), icon: LayoutDashboard },
     { href: "/cases", label: t("nav.cases"), icon: Briefcase },
     { href: "/clients", label: t("nav.clients"), icon: Users },
+    { href: "/agenda", label: t("nav.agenda"), icon: CalendarDays },
     { href: "/leads", label: t("nav.leads"), icon: Target },
     { href: "/messages", label: t("nav.messages"), icon: MessageSquare },
     { href: "/invoices", label: t("nav.billing"), icon: Receipt },
@@ -80,6 +83,7 @@ export default function LexLayout({ children, title, breadcrumb }: LexLayoutProp
     { href: "/dashboard", label: t("nav.dashboard"), icon: LayoutDashboard },
     { href: "/cases", label: t("nav.cases"), icon: Briefcase },
     { href: "/clients", label: t("nav.clients"), icon: Users },
+    { href: "/agenda", label: t("nav.agenda"), icon: CalendarDays },
     { href: "/messages", label: t("nav.messages"), icon: MessageSquare },
     { href: "/invoices", label: t("nav.billing"), icon: Receipt },
   ];
