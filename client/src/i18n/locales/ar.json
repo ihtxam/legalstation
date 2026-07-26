@@ -796,12 +796,15 @@
     "timerStarted": "بدأ المؤقت",
     "savedMinutes": "تم حفظ {{count}} دقيقة",
     "entryAdded": "تمت إضافة إدخال الوقت",
-    "entryUpdated": "تم تحديث الإدخال",
+    "entryUpdated": "تم تحديث إدخال الوقت",
     "savedMin": "تم حفظ {{count}} د",
     "caseNumber": "قضية #{{id}}",
     "titleResume": "استئناف",
     "titlePause": "إيقاف مؤقت",
-    "titleStopSave": "إيقاف وحفظ"
+    "titleStopSave": "إيقاف وحفظ",
+    "ratePerHour": "{{currency}} في الساعة",
+    "colSaved": "وقت الحفظ",
+    "colWorkDate": "تاريخ العمل"
   },
   "paymentPlan": {
     "title": "خطة الدفع",

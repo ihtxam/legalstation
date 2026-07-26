@@ -796,12 +796,15 @@
     "timerStarted": "Timer gestartet",
     "savedMinutes": "{{count}} Minuten gespeichert",
     "entryAdded": "Zeiteintrag hinzugefügt",
-    "entryUpdated": "Eintrag aktualisiert",
+    "entryUpdated": "Zeiteintrag aktualisiert",
     "savedMin": "{{count}} Min. gespeichert",
     "caseNumber": "Fall #{{id}}",
     "titleResume": "Fortsetzen",
     "titlePause": "Pause",
-    "titleStopSave": "Stoppen & speichern"
+    "titleStopSave": "Stoppen & speichern",
+    "ratePerHour": "{{currency}} pro Stunde",
+    "colSaved": "Gespeichert",
+    "colWorkDate": "Arbeitsdatum"
   },
   "paymentPlan": {
     "title": "Zahlungsplan",

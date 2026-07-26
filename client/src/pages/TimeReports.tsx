@@ -16,9 +16,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
-import { AlertTriangle, ChevronLeft, ChevronRight, Pause, Play, Plus, Send, Trash2 } from "lucide-react";
+import { AlertTriangle, ChevronLeft, ChevronRight, Pause, Pencil, Play, Plus, Send, Trash2 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { formatCurrency } from "@/lib/utils";
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 function formatDuration(minutes: number) {
   const h = Math.floor(minutes / 60);
@@ -66,6 +67,14 @@ export default function TimeReportsPage() {
   const [manualMinutes, setManualMinutes] = useState("60");
   const [manualDate, setManualDate] = useState(format(new Date(), "yyyy-MM-dd"));
   const [hourlyRateInput, setHourlyRateInput] = useState("");
+
+  const [editingEntry, setEditingEntry] = useState<{
+    id: number;
+    caseId: string;
+    description: string;
+    minutes: string;
+    date: string;
+  } | null>(null);
 
   const [invoiceClientId, setInvoiceClientId] = useState<string>("");
   const [invoiceDueDate, setInvoiceDueDate] = useState(
@@ -124,6 +133,14 @@ export default function TimeReportsPage() {
     },
     onError: (e) => toast.error(e.message),
   });
+  const updateEntry = trpc.timeEntries.update.useMutation({
+    onSuccess: async () => {
+      toast.success(t("timeReports.entryUpdated"));
+      setEditingEntry(null);
+      await utils.timeEntries.invalidate();
+    },
+    onError: (e) => toast.error(e.message),
+  });
   const setRate = trpc.timeEntries.setHourlyRate.useMutation({
     onSuccess: async () => {
       toast.success(t("timeReports.rateSaved"));
@@ -144,7 +161,15 @@ export default function TimeReportsPage() {
     if (rateData?.hourlyRate != null) setHourlyRateInput(String(rateData.hourlyRate));
   }, [rateData?.hourlyRate]);
 
-  const entries = listQuery.data ?? [];
+  const entries = useMemo(() => {
+    const list = listQuery.data ?? [];
+    return [...list].sort((a, b) => {
+      const aTs = new Date(a.createdAt).getTime();
+      const bTs = new Date(b.createdAt).getTime();
+      if (bTs !== aTs) return bTs - aTs;
+      return new Date(b.date).getTime() - new Date(a.date).getTime();
+    });
+  }, [listQuery.data]);
   const summary = summaryQuery.data;
   const defaultRate = summary?.defaultHourlyRate ?? rateData?.hourlyRate ?? 0;
   const hasHourlyRate = Number(defaultRate) > 0;
@@ -347,55 +372,56 @@ export default function TimeReportsPage() {
                 </div>
               </div>
 
-              <div className="border-t pt-4 grid grid-cols-1 md:grid-cols-4 gap-3">
-                <div>
-                  <Label>{t("timeReports.case")}</Label>
-                  <Select value={manualCaseId} onValueChange={setManualCaseId}>
-                    <SelectTrigger className="mt-1.5">
-                      <SelectValue placeholder={t("timeReports.case")} />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {(cases ?? []).map((c) => (
-                        <SelectItem key={c.id} value={String(c.id)}>
-                          {c.title}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+              <div className="border-t pt-4 space-y-3">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                  <div>
+                    <Label>{t("timeReports.case")}</Label>
+                    <Select value={manualCaseId} onValueChange={setManualCaseId}>
+                      <SelectTrigger className="mt-1.5">
+                        <SelectValue placeholder={t("timeReports.case")} />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {(cases ?? []).map((c) => (
+                          <SelectItem key={c.id} value={String(c.id)}>
+                            {c.title}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <Label>{t("timeReports.minutes")}</Label>
+                    <Input
+                      className="mt-1.5"
+                      type="number"
+                      min={1}
+                      value={manualMinutes}
+                      onChange={(e) => setManualMinutes(e.target.value)}
+                    />
+                  </div>
+                  <div>
+                    <Label>{t("timeReports.date")}</Label>
+                    <Input
+                      className="mt-1.5"
+                      type="date"
+                      value={manualDate}
+                      onChange={(e) => setManualDate(e.target.value)}
+                    />
+                  </div>
                 </div>
                 <div>
-                  <Label>{t("timeReports.minutes")}</Label>
-                  <Input
-                    className="mt-1.5"
-                    type="number"
-                    min={1}
-                    value={manualMinutes}
-                    onChange={(e) => setManualMinutes(e.target.value)}
-                  />
-                </div>
-                <div>
-                  <Label>{t("timeReports.date")}</Label>
-                  <Input
-                    className="mt-1.5"
-                    type="date"
-                    value={manualDate}
-                    onChange={(e) => setManualDate(e.target.value)}
-                  />
-                </div>
-                <div className="flex items-end">
-                  <Button className="w-full" onClick={saveManualEntry} disabled={createEntry.isPending}>
-                    <Plus className="w-4 h-4 me-1.5" /> {t("timeReports.add")}
-                  </Button>
-                </div>
-                <div className="md:col-span-4">
                   <Label>{t("timeReports.description")}</Label>
                   <Textarea
                     className="mt-1.5"
                     value={manualDescription}
                     onChange={(e) => setManualDescription(e.target.value)}
                     rows={2}
+                    placeholder={t("timeReports.workingOn")}
                   />
                 </div>
+                <Button className="w-full sm:w-auto" onClick={saveManualEntry} disabled={createEntry.isPending}>
+                  <Plus className="w-4 h-4 me-1.5" /> {t("timeReports.add")}
+                </Button>
               </div>
             </CardContent>
           </Card>
@@ -413,7 +439,7 @@ export default function TimeReportsPage() {
                 <p className="text-sm text-amber-800">{t("timeReports.hourlyRateRequired")}</p>
               )}
               <div>
-                <Label htmlFor="hourly-rate">{t("timeReports.chfPerHour")}</Label>
+                <Label htmlFor="hourly-rate">{t("timeReports.ratePerHour", { currency })}</Label>
                 <Input
                   id="hourly-rate"
                   className="mt-1.5"
@@ -532,19 +558,20 @@ export default function TimeReportsPage() {
                 <TableHeader>
                   <TableRow>
                     <TableHead className="w-10" />
-                    <TableHead>{t("timeReports.colDate")}</TableHead>
+                    <TableHead>{t("timeReports.colSaved")}</TableHead>
+                    <TableHead>{t("timeReports.colWorkDate")}</TableHead>
                     <TableHead>{t("timeReports.colCase")}</TableHead>
                     <TableHead>{t("timeReports.colDescription")}</TableHead>
                     <TableHead>{t("timeReports.colDuration")}</TableHead>
                     <TableHead>{t("timeReports.colAmount")}</TableHead>
                     <TableHead>{t("timeReports.colStatus")}</TableHead>
-                    <TableHead className="w-12" />
+                    <TableHead className="w-20" />
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {entries.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={8} className="text-center text-muted-foreground py-8">
+                      <TableCell colSpan={9} className="text-center text-muted-foreground py-8">
                         {t("timeReports.emptyEntries")}
                       </TableCell>
                     </TableRow>
@@ -558,7 +585,12 @@ export default function TimeReportsPage() {
                             disabled={entry.status === "billed"}
                           />
                         </TableCell>
-                        <TableCell>{format(new Date(entry.date), "dd.MM.yyyy")}</TableCell>
+                        <TableCell className="whitespace-nowrap text-sm">
+                          {format(new Date(entry.createdAt), "dd.MM.yyyy HH:mm")}
+                        </TableCell>
+                        <TableCell className="whitespace-nowrap text-sm text-muted-foreground">
+                          {format(new Date(entry.date), "dd.MM.yyyy")}
+                        </TableCell>
                         <TableCell>{caseNameById.get(entry.caseId) ?? `#${entry.caseId}`}</TableCell>
                         <TableCell className="max-w-xs truncate">{entry.description}</TableCell>
                         <TableCell>{formatDuration(entry.durationMinutes)}</TableCell>
@@ -576,13 +608,32 @@ export default function TimeReportsPage() {
                         </TableCell>
                         <TableCell>
                           {entry.status !== "billed" && (
-                            <Button
-                              size="sm"
-                              variant="ghost"
-                              onClick={() => deleteEntry.mutate({ id: entry.id })}
-                            >
-                              <Trash2 className="w-4 h-4 text-destructive" />
-                            </Button>
+                            <div className="flex items-center gap-0.5">
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                title={t("common.edit")}
+                                onClick={() =>
+                                  setEditingEntry({
+                                    id: entry.id,
+                                    caseId: String(entry.caseId),
+                                    description: entry.description,
+                                    minutes: String(entry.durationMinutes),
+                                    date: format(new Date(entry.date), "yyyy-MM-dd"),
+                                  })
+                                }
+                              >
+                                <Pencil className="w-4 h-4" />
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                title={t("common.delete")}
+                                onClick={() => deleteEntry.mutate({ id: entry.id })}
+                              >
+                                <Trash2 className="w-4 h-4 text-destructive" />
+                              </Button>
+                            </div>
                           )}
                         </TableCell>
                       </TableRow>
@@ -722,6 +773,109 @@ export default function TimeReportsPage() {
             </Card>
           </TabsContent>
         </Tabs>
+
+        <Dialog open={!!editingEntry} onOpenChange={(open) => !open && setEditingEntry(null)}>
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle>{t("timeReports.editEntry")}</DialogTitle>
+            </DialogHeader>
+            {editingEntry && (
+              <div className="space-y-3">
+                <div>
+                  <Label>{t("timeReports.case")}</Label>
+                  <Select
+                    value={editingEntry.caseId}
+                    onValueChange={(v) => setEditingEntry((e) => (e ? { ...e, caseId: v } : e))}
+                  >
+                    <SelectTrigger className="mt-1.5">
+                      <SelectValue placeholder={t("timeReports.selectCase")} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {(cases ?? []).map((c) => (
+                        <SelectItem key={c.id} value={String(c.id)}>
+                          {c.title}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <Label>{t("timeReports.minutes")}</Label>
+                    <Input
+                      className="mt-1.5"
+                      type="number"
+                      min={1}
+                      value={editingEntry.minutes}
+                      onChange={(e) =>
+                        setEditingEntry((prev) => (prev ? { ...prev, minutes: e.target.value } : prev))
+                      }
+                    />
+                  </div>
+                  <div>
+                    <Label>{t("timeReports.date")}</Label>
+                    <Input
+                      className="mt-1.5"
+                      type="date"
+                      value={editingEntry.date}
+                      onChange={(e) =>
+                        setEditingEntry((prev) => (prev ? { ...prev, date: e.target.value } : prev))
+                      }
+                    />
+                  </div>
+                </div>
+                <div>
+                  <Label>{t("timeReports.description")}</Label>
+                  <Textarea
+                    className="mt-1.5"
+                    rows={3}
+                    value={editingEntry.description}
+                    onChange={(e) =>
+                      setEditingEntry((prev) =>
+                        prev ? { ...prev, description: e.target.value } : prev
+                      )
+                    }
+                  />
+                </div>
+              </div>
+            )}
+            <DialogFooter className="gap-2 sm:gap-0">
+              <Button variant="outline" onClick={() => setEditingEntry(null)}>
+                {t("common.cancel")}
+              </Button>
+              <Button
+                disabled={
+                  !editingEntry ||
+                  !editingEntry.caseId ||
+                  !editingEntry.description.trim() ||
+                  !(parseInt(editingEntry.minutes, 10) > 0) ||
+                  updateEntry.isPending
+                }
+                onClick={() => {
+                  if (!editingEntry) return;
+                  const minutes = parseInt(editingEntry.minutes, 10);
+                  if (!minutes || minutes < 1) {
+                    toast.error(t("timeReports.minutes"));
+                    return;
+                  }
+                  if (!editingEntry.description.trim()) {
+                    toast.error(t("timeReports.addDescription"));
+                    return;
+                  }
+                  updateEntry.mutate({
+                    id: editingEntry.id,
+                    caseId: Number(editingEntry.caseId),
+                    description: editingEntry.description.trim(),
+                    durationMinutes: minutes,
+                    date: editingEntry.date,
+                  });
+                }}
+              >
+                {updateEntry.isPending ? t("common.loading") : t("common.save")}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
     </AppLayout>
   );

@@ -698,7 +698,8 @@ export async function getTimeEntriesByFirm(
     .select()
     .from(timeEntries)
     .where(and(...conditions))
-    .orderBy(desc(timeEntries.date));
+    // Newest saved first (createdAt), then work date as tie-breaker.
+    .orderBy(desc(timeEntries.createdAt), desc(timeEntries.date));
 }
 
 export async function getTimeEntryById(id: number, firmId: number) {

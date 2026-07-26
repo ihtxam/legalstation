@@ -796,12 +796,15 @@
     "timerStarted": "Timer started",
     "savedMinutes": "Saved {{count}} minutes",
     "entryAdded": "Time entry added",
-    "entryUpdated": "Entry updated",
+    "entryUpdated": "Time entry updated",
     "savedMin": "Saved {{count}} min",
     "caseNumber": "Case #{{id}}",
     "titleResume": "Resume",
     "titlePause": "Pause",
-    "titleStopSave": "Stop & save"
+    "titleStopSave": "Stop & save",
+    "ratePerHour": "{{currency}} per hour",
+    "colSaved": "Saved",
+    "colWorkDate": "Work date"
   },
   "paymentPlan": {
     "title": "Payment Plan",

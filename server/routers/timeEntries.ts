@@ -153,6 +153,7 @@ export const timeEntriesRouter = router({
     .input(
       z.object({
         id: z.number(),
+        caseId: z.number().optional(),
         description: z
           .string()
           .trim()
@@ -175,7 +176,13 @@ export const timeEntriesRouter = router({
         throw new TRPCError({ code: "BAD_REQUEST", message: "Cannot edit billed time entries" });
       }
 
+      if (input.caseId != null) {
+        const caseRow = await getCaseById(input.caseId, member.firmId);
+        if (!caseRow) throw new TRPCError({ code: "NOT_FOUND", message: "Case not found" });
+      }
+
       await updateTimeEntry(input.id, member.firmId, {
+        caseId: input.caseId,
         description: input.description,
         durationMinutes: input.durationMinutes,
         date: input.date ? new Date(input.date) : undefined,
