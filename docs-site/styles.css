@@ -1,11 +1,13 @@
 :root {
-  --navy: #0f2744;
-  --navy-soft: #1a3a5c;
-  --ink: #142033;
-  --muted: #5b6b7c;
-  --line: #d9e1ea;
-  --paper: #f6f8fb;
-  --accent: #c9a227;
+  --accent: #14B8A6;
+  --accent-soft: #2DD4BF;
+  --dark: #111827;
+  --dark-soft: #1F2937;
+  --light: #F8FAFC;
+  --ink: #111827;
+  --muted: #64748B;
+  --line: #E2E8F0;
+  --paper: #F8FAFC;
   --white: #ffffff;
   --serif: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
   --sans: "Avenir Next", "Segoe UI", "Helvetica Neue", sans-serif;
@@ -18,13 +20,13 @@ body {
   font-family: var(--sans);
   color: var(--ink);
   background:
-    radial-gradient(1200px 500px at 10% -10%, rgba(201, 162, 39, 0.12), transparent 55%),
-    linear-gradient(180deg, #eef3f8 0%, var(--paper) 35%, #f8fafc 100%);
+    radial-gradient(1200px 500px at 10% -10%, rgba(20, 184, 166, 0.14), transparent 55%),
+    linear-gradient(180deg, #EEF2F7 0%, var(--paper) 35%, #F8FAFC 100%);
   min-height: 100vh;
   line-height: 1.55;
 }
 
-a { color: var(--navy); text-decoration: none; }
+a { color: var(--accent); text-decoration: none; }
 a:hover { text-decoration: underline; }
 
 .shell {
@@ -45,7 +47,7 @@ a:hover { text-decoration: underline; }
   font-family: var(--serif);
   font-size: 1.75rem;
   font-weight: 700;
-  color: var(--navy);
+  color: var(--dark);
   letter-spacing: -0.02em;
 }
 
@@ -68,12 +70,12 @@ a:hover { text-decoration: underline; }
 }
 
 .hero {
-  background: linear-gradient(135deg, var(--navy) 0%, var(--navy-soft) 100%);
+  background: linear-gradient(135deg, var(--dark) 0%, var(--dark-soft) 100%);
   color: var(--white);
   border-radius: 18px;
   padding: 2.25rem 2rem;
   margin-bottom: 2rem;
-  box-shadow: 0 18px 40px rgba(15, 39, 68, 0.18);
+  box-shadow: 0 18px 40px rgba(17, 24, 39, 0.18);
 }
 
 .hero h1 {
@@ -86,7 +88,7 @@ a:hover { text-decoration: underline; }
 .hero p {
   margin: 0;
   max-width: 42rem;
-  color: rgba(255, 255, 255, 0.86);
+  color: rgba(248, 250, 252, 0.86);
 }
 
 .grid {
@@ -100,19 +102,20 @@ a:hover { text-decoration: underline; }
   border: 1px solid var(--line);
   border-radius: 14px;
   padding: 1.15rem 1.2rem;
-  transition: transform 180ms ease, box-shadow 180ms ease;
+  transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease;
 }
 
 .card:hover {
   transform: translateY(-2px);
-  box-shadow: 0 10px 24px rgba(15, 39, 68, 0.08);
+  box-shadow: 0 10px 24px rgba(17, 24, 39, 0.08);
+  border-color: rgba(20, 184, 166, 0.45);
   text-decoration: none;
 }
 
 .card h3 {
   margin: 0 0 0.4rem;
   font-size: 1.05rem;
-  color: var(--navy);
+  color: var(--dark);
 }
 
 .card p {
@@ -131,7 +134,7 @@ a:hover { text-decoration: underline; }
 .article h1 {
   font-family: var(--serif);
   margin: 0 0 0.75rem;
-  color: var(--navy);
+  color: var(--dark);
   font-size: 2rem;
 }
 
@@ -139,7 +142,7 @@ a:hover { text-decoration: underline; }
   margin-top: 1.75rem;
   margin-bottom: 0.5rem;
   font-size: 1.2rem;
-  color: var(--navy);
+  color: var(--dark);
 }
 
 .article p, .article li {
@@ -148,7 +151,7 @@ a:hover { text-decoration: underline; }
 
 .article ul { padding-left: 1.2rem; }
 .article code {
-  background: #eef2f7;
+  background: #EEF2F7;
   padding: 0.1rem 0.35rem;
   border-radius: 4px;
   font-size: 0.9em;

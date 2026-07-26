@@ -47,7 +47,7 @@ export default function FirmOnboardingPage() {
   const [phone, setPhone] = useState("");
   const [vatNumber, setVatNumber] = useState("");
   const [logoUrl, setLogoUrl] = useState("");
-  const [primaryColor, setPrimaryColor] = useState("#001f3f");
+  const [primaryColor, setPrimaryColor] = useState("#111827");
   const [secondaryColor, setSecondaryColor] = useState("#c9a227");
   const [currency, setCurrency] = useState("CHF");
   const [vatRate, setVatRate] = useState("8.10");
@@ -72,7 +72,7 @@ export default function FirmOnboardingPage() {
     setPhone(f.phone || "");
     setVatNumber(f.vatNumber || "");
     setLogoUrl(f.logoUrl || "");
-    setPrimaryColor(f.primaryColor || "#001f3f");
+    setPrimaryColor(f.primaryColor || "#111827");
     setSecondaryColor(f.secondaryColor || "#c9a227");
     setCurrency(f.defaultCurrency || "CHF");
     setVatRate(String(f.defaultVatRate || "8.10"));

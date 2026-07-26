@@ -59,7 +59,7 @@ export default function LoginPage() {
   }, [isAuthenticated, loading, user, navigate, nextPath]);
 
   const brandName = tenant?.mode === "firm" ? tenant.name : "Cliavo";
-  const primary = tenant?.mode === "firm" && tenant.primaryColor ? tenant.primaryColor : "#001f3f";
+  const primary = tenant?.mode === "firm" && tenant.primaryColor ? tenant.primaryColor : "#111827";
 
   const onLogin = async (e: FormEvent) => {
     e.preventDefault();

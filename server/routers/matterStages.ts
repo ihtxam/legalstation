@@ -48,7 +48,7 @@ export const matterStagesRouter = router({
           name: s.name,
           sortOrder: s.sortOrder,
           isClosedStage: s.isClosedStage,
-          color: "#001f3f",
+          color: "#111827",
         }))
       );
       rows = await db
@@ -88,7 +88,7 @@ export const matterStagesRouter = router({
       const [result] = await db.insert(matterStages).values({
         firmId: member.firmId,
         name: input.name,
-        color: input.color ?? "#001f3f",
+        color: input.color ?? "#111827",
         isClosedStage: input.isClosedStage ?? false,
         sortOrder,
       });

@@ -125,7 +125,7 @@ export async function notifyTicketCreated(opts: {
   const html = `
     <html><body style="font-family:sans-serif;color:#1a1a1a">
       <div style="max-width:600px;margin:0 auto;padding:20px">
-        <h2 style="color:#001f3f">New support ticket ${esc(opts.ticketNumber)}</h2>
+        <h2 style="color:#111827">New support ticket ${esc(opts.ticketNumber)}</h2>
         <p><strong>Firm:</strong> ${esc(opts.firmName)}</p>
         <p><strong>From:</strong> ${esc(opts.creatorName)} (${esc(opts.creatorEmail)})</p>
         <p><strong>Sensitivity:</strong> ${esc(opts.sensitivity)}</p>
@@ -158,7 +158,7 @@ export async function notifyTicketReply(opts: {
   const html = `
     <html><body style="font-family:sans-serif;color:#1a1a1a">
       <div style="max-width:600px;margin:0 auto;padding:20px">
-        <h2 style="color:#001f3f">Reply on ${esc(opts.ticketNumber)}</h2>
+        <h2 style="color:#111827">Reply on ${esc(opts.ticketNumber)}</h2>
         <p><strong>From:</strong> ${esc(opts.fromLabel)}</p>
         <p><strong>Subject:</strong> ${esc(opts.subject)}</p>
         <p style="white-space:pre-wrap">${esc(opts.replyBody)}</p>
@@ -187,7 +187,7 @@ export async function notifyTicketStatusChange(opts: {
   const html = `
     <html><body style="font-family:sans-serif;color:#1a1a1a">
       <div style="max-width:600px;margin:0 auto;padding:20px">
-        <h2 style="color:#001f3f">Ticket ${esc(opts.ticketNumber)} updated</h2>
+        <h2 style="color:#111827">Ticket ${esc(opts.ticketNumber)} updated</h2>
         <p>Status is now <strong>${esc(opts.status.replace(/_/g, " "))}</strong>.</p>
         <p><strong>Subject:</strong> ${esc(opts.subject)}</p>
         <p><a href="${base}/support">Open Support</a></p>

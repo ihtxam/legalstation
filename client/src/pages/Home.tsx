@@ -203,7 +203,8 @@ export default function Home() {
       </nav>
 
       <section className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-[var(--color-navy)] via-[oklch(0.25_0.06_255)] to-[oklch(0.20_0.04_255)]" />
+        <div className="absolute inset-0 bg-gradient-to-br from-[var(--color-navy)] via-[#1F2937] to-[#0B1220]" />
+        <div className="absolute inset-x-0 bottom-0 h-1 bg-[var(--color-gold)]" />
         <div
           className="absolute inset-0 opacity-5"
           style={{

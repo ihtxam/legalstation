@@ -685,7 +685,7 @@ export default function CaseDetailPage() {
                 <StatusBadge status={caseData.status} />
                 {currentStage && (
                   <Badge
-                    style={{ backgroundColor: currentStage.color || "#001f3f" }}
+                    style={{ backgroundColor: currentStage.color || "#111827" }}
                     className="text-white"
                   >
                     {currentStage.name}
