@@ -8,6 +8,7 @@ import { sdk } from "../_core/sdk";
 import { ENV } from "../_core/env";
 import { hashPassword, verifyPassword } from "./password";
 import { resolveFirmFromHost } from "../tenant";
+import { TWO_FACTOR_COOKIE } from "../totp";
 
 async function findUserByEmail(email: string) {
   const db = await getDb();
@@ -27,6 +28,8 @@ async function issueSession(req: Request, res: Response, user: typeof users.$inf
   });
   const cookieOptions = getSessionCookieOptions(req);
   res.cookie(COOKIE_NAME, sessionToken, { ...cookieOptions, maxAge: ONE_YEAR_MS });
+  // Always re-challenge 2FA after a fresh password login (do not reuse prior 2FA cookie).
+  res.clearCookie(TWO_FACTOR_COOKIE, { ...cookieOptions, maxAge: -1 });
 
   const db = await getDb();
   let firmRole: string | null = null;
@@ -57,6 +60,7 @@ async function issueSession(req: Request, res: Response, user: typeof users.$inf
     sessionToken,
     redirectTo,
     mustChangePassword: Boolean(user.mustChangePassword),
+    requires2fa: Boolean(user.totpEnabled),
     user: {
       id: user.id,
       email: user.email,
