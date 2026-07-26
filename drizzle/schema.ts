@@ -310,6 +310,8 @@ export const serviceOrders = mysqlTable("service_orders", {
   clientNotes: text("clientNotes"),
   stripeCheckoutSessionId: varchar("stripeCheckoutSessionId", { length: 255 }),
   stripePaymentUrl: text("stripePaymentUrl"),
+  adyenPaymentLinkId: varchar("adyenPaymentLinkId", { length: 255 }),
+  adyenPaymentLinkUrl: text("adyenPaymentLinkUrl"),
   paidAt: timestamp("paidAt"),
   acceptedAt: timestamp("acceptedAt"),
   rejectedAt: timestamp("rejectedAt"),
@@ -648,14 +650,20 @@ export const paymentInstallments = mysqlTable("payment_installments", {
 export type PaymentInstallment = typeof paymentInstallments.$inferSelect;
 export type InsertPaymentInstallment = typeof paymentInstallments.$inferInsert;
 
-// ─── Adyen Accounts (per firm) ────────────────────────────────────────────────────
+// ─── Adyen Accounts (per firm payment gateway) ────────────────────────────────
 export const adyenAccounts = mysqlTable("adyen_accounts", {
   id: int("id").autoincrement().primaryKey(),
-  firmId: int("firmId").notNull(),
+  firmId: int("firmId").notNull().unique(),
   merchantAccount: varchar("merchantAccount", { length: 255 }).notNull(),
-  apiKey: text("apiKey").notNull(), // Encrypted
-  clientKey: text("clientKey").notNull(), // Public key for frontend
+  /** AES-GCM encrypted API key */
+  apiKey: text("apiKey").notNull(),
+  /** Public client key for Drop-in / Components (optional) */
+  clientKey: text("clientKey"),
+  /** AES-GCM encrypted HMAC key for webhook verification */
+  hmacKey: text("hmacKey"),
+  environment: mysqlEnum("environment", ["test", "live"]).notNull().default("test"),
   isActive: boolean("isActive").notNull().default(false),
+  lastWebhookAt: timestamp("lastWebhookAt"),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 });

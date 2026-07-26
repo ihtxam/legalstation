@@ -1,18 +1,49 @@
 import { z } from "zod";
 import { protectedProcedure, router } from "../_core/trpc";
 import { TRPCError } from "@trpc/server";
-import { getDb, updateInvoice } from "../db";
+import { getDb, getFirmMemberByUserId, updateInvoice } from "../db";
 import { createAdyenPaymentLink } from "../adyen";
 import { agencySettings } from "../../drizzle/schema";
 import { eq } from "drizzle-orm";
 import { assertInvoiceAccess } from "../access";
+import {
+  getFirmAdyenConfig,
+  getFirmAdyenPublic,
+  upsertFirmAdyenAccount,
+} from "../firmAdyen";
+import { getAppBaseUrl } from "../tenant";
 
-async function getAdyenConfig() {
+async function requireFirmAdmin(userId: number) {
+  const member = await getFirmMemberByUserId(userId);
+  if (!member) throw new TRPCError({ code: "FORBIDDEN" });
+  const { getFirmCapabilityMatrix } = await import("../firmPermissions");
+  const { canManageFirmSettings } = await import("@shared/roles");
+  const { matrix } = await getFirmCapabilityMatrix(member.firmId);
+  if (!canManageFirmSettings(member.firmRole, matrix)) {
+    throw new TRPCError({ code: "FORBIDDEN" });
+  }
+  return member;
+}
+
+/** Firm Adyen first; fall back to platform env / agency_settings. */
+export async function resolveAdyenConfig(firmId: number) {
+  const firm = await getFirmAdyenConfig(firmId);
+  if (firm) {
+    return {
+      source: "firm" as const,
+      apiKey: firm.apiKey,
+      merchantAccount: firm.merchantAccount,
+      environment: firm.environment,
+      clientKey: firm.clientKey,
+    };
+  }
+
   const apiKey = process.env.ADYEN_API_KEY || "";
-  const merchantFromEnv = process.env.ADYEN_MERCHANT_ACCOUNT || "";
-  const environment = (process.env.ADYEN_ENVIRONMENT || "test").toLowerCase();
+  let merchantAccount = process.env.ADYEN_MERCHANT_ACCOUNT || "";
+  const environment = (process.env.ADYEN_ENVIRONMENT || "test").toLowerCase() === "live"
+    ? ("live" as const)
+    : ("test" as const);
 
-  let merchantAccount = merchantFromEnv;
   if (!merchantAccount) {
     const db = await getDb();
     if (db) {
@@ -26,16 +57,81 @@ async function getAdyenConfig() {
   }
 
   if (!apiKey || !merchantAccount) {
-    throw new TRPCError({
-      code: "PRECONDITION_FAILED",
-      message: "Adyen not configured (ADYEN_API_KEY + ADYEN_MERCHANT_ACCOUNT)",
-    });
+    return null;
   }
 
-  return { apiKey, merchantAccount, environment };
+  return {
+    source: "platform" as const,
+    apiKey,
+    merchantAccount,
+    environment,
+    clientKey: null as string | null,
+  };
 }
 
 export const adyenRouter = router({
+  /** Firm Settings: public Adyen status + webhook URLs (no secrets). */
+  getFirmSettings: protectedProcedure.query(async ({ ctx }) => {
+    const member = await requireFirmAdmin(ctx.user.id);
+    const publicCfg = await getFirmAdyenPublic(member.firmId);
+    const base = getAppBaseUrl(ctx.req).replace(/\/$/, "");
+    return {
+      ...(publicCfg || {
+        configured: false as const,
+        merchantAccount: "",
+        clientKey: null,
+        environment: "test" as const,
+        isActive: false,
+        hasApiKey: false,
+        hasHmacKey: false,
+        lastWebhookAt: null,
+      }),
+      webhookUrl: `${base}/api/adyen/webhook/${member.firmId}`,
+      webhookUrlShared: `${base}/api/adyen/webhook`,
+      webhookHint:
+        "In Adyen Customer Area → Developers → Webhooks, add a Standard webhook pointing to the firm webhook URL. Enable AUTHORISATION and paste the HMAC key below.",
+    };
+  }),
+
+  upsertFirmSettings: protectedProcedure
+    .input(
+      z.object({
+        merchantAccount: z.string().min(1).max(255),
+        apiKey: z.string().optional(),
+        clientKey: z.string().optional().nullable(),
+        hmacKey: z.string().optional().nullable(),
+        environment: z.enum(["test", "live"]).default("test"),
+        isActive: z.boolean().default(true),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const member = await requireFirmAdmin(ctx.user.id);
+      const existing = await getFirmAdyenPublic(member.firmId);
+      if (!existing?.hasApiKey && !input.apiKey?.trim()) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "API key is required when configuring Adyen for the first time",
+        });
+      }
+      try {
+        await upsertFirmAdyenAccount({
+          firmId: member.firmId,
+          merchantAccount: input.merchantAccount,
+          apiKey: input.apiKey,
+          clientKey: input.clientKey,
+          hmacKey: input.hmacKey,
+          environment: input.environment,
+          isActive: input.isActive,
+        });
+      } catch (err: any) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: err?.message || "Could not save Adyen settings",
+        });
+      }
+      return { success: true as const };
+    }),
+
   createPaymentLink: protectedProcedure
     .input(z.object({ invoiceId: z.number() }))
     .mutation(async ({ ctx, input }) => {
@@ -44,21 +140,30 @@ export const adyenRouter = router({
         throw new TRPCError({ code: "BAD_REQUEST", message: "Invoice already paid" });
       }
 
-      const { apiKey, merchantAccount, environment } = await getAdyenConfig();
+      const config = await resolveAdyenConfig(invoice.firmId);
+      if (!config) {
+        throw new TRPCError({
+          code: "PRECONDITION_FAILED",
+          message:
+            "Adyen is not configured for this firm. Add your Adyen credentials in Settings → Payments.",
+        });
+      }
+
       const amount =
         typeof invoice.total === "string"
           ? Math.round(parseFloat(invoice.total) * 100)
           : Math.round(Number(invoice.total) * 100);
 
+      const origin = String(ctx.req.headers.origin || getAppBaseUrl(ctx.req));
       const paymentLink = await createAdyenPaymentLink({
         amount,
         currency: invoice.currency || "CHF",
         reference: `INV-${invoice.id}`,
         description: `Invoice ${invoice.invoiceNumber}`,
-        returnUrl: `${ctx.req.headers.origin || "https://cliavo.app"}/invoices/${invoice.id}?paid=true`,
-        merchantAccount,
-        apiKey,
-        environment: environment === "live" ? "live" : "test",
+        returnUrl: `${origin}/invoices/${invoice.id}?paid=true`,
+        merchantAccount: config.merchantAccount,
+        apiKey: config.apiKey,
+        environment: config.environment,
       });
 
       await updateInvoice(invoice.id, invoice.firmId, {
@@ -69,6 +174,7 @@ export const adyenRouter = router({
       return {
         paymentUrl: paymentLink.url,
         paymentLinkId: paymentLink.id,
+        gateway: config.source,
       };
     }),
 

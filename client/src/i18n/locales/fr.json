@@ -350,7 +350,8 @@
     "creditorPostalCode": "NPA",
     "creditorCity": "Ville",
     "creditorCountry": "Pays (ISO)",
-    "tabRoles": "Rôles"
+    "tabRoles": "Rôles",
+    "tabPayments": "Paiements"
   },
   "notFound": {
     "title": "Page introuvable",
@@ -1201,5 +1202,33 @@
       "corporate": "Corporate",
       "other": "Other"
     }
+  },
+  "adyen": {
+    "title": "Adyen payment gateway",
+    "hint": "Connect your firm’s own Adyen account to accept online payments for invoices and on-demand services. Funds settle to your merchant account.",
+    "active": "Active",
+    "inactive": "Inactive",
+    "notConfigured": "Not configured",
+    "webhookTitle": "Webhook URL",
+    "webhookHint": "Paste this URL in Adyen Customer Area → Developers → Webhooks (Standard notification). Enable AUTHORISATION events and copy the HMAC key into the field below.",
+    "copyWebhook": "Copy URL",
+    "webhookCopied": "Webhook URL copied",
+    "lastWebhook": "Last webhook received: {{date}}",
+    "noWebhookYet": "No webhook received yet — save settings and send a test notification from Adyen.",
+    "merchantAccount": "Merchant account",
+    "environment": "Environment",
+    "envTest": "Test",
+    "envLive": "Live",
+    "enableGateway": "Enable for this firm",
+    "enableHint": "When on, customers pay via your Adyen account first.",
+    "apiKey": "API key",
+    "hmacKey": "Webhook HMAC key",
+    "hmacPlaceholder": "Hex HMAC key from Adyen webhook settings",
+    "hmacHelp": "Required to verify Adyen notifications securely for your firm.",
+    "clientKey": "Client key (optional)",
+    "clientKeyHelp": "Only needed if you use Adyen Drop-in / Components on the frontend.",
+    "storedLeaveBlank": "stored — leave blank to keep",
+    "save": "Save Adyen settings",
+    "saved": "Adyen settings saved"
   }
 }

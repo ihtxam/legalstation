@@ -9,9 +9,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { Building2, Users, Send, Upload, X, Shield, Languages, ShieldCheck, Calendar } from "lucide-react";
+import { Building2, Users, Send, Upload, X, Shield, Languages, ShieldCheck, Calendar, CreditCard } from "lucide-react";
 import RolePermissionsTable from "@/components/RolePermissionsTable";
 import { CalendarIntegrations } from "@/components/CalendarIntegrations";
+import { FirmAdyenSettings } from "@/components/FirmAdyenSettings";
 import { useTranslation } from "react-i18next";
 import { setAppLocale } from "@/i18n";
 import { APP_LOCALES, APP_LOCALE_LABELS, isAppLocale, type AppLocale } from "@shared/locales";
@@ -269,6 +270,7 @@ export default function SettingsPage() {
             {canManageFirm && (
               <>
                 <TabsTrigger value="firm"><Building2 className="w-4 h-4 mr-1.5" />{t("settings.tabFirm")}</TabsTrigger>
+                <TabsTrigger value="payments"><CreditCard className="w-4 h-4 mr-1.5" />{t("settings.tabPayments")}</TabsTrigger>
                 <TabsTrigger value="team"><Users className="w-4 h-4 mr-1.5" />{t("settings.tabTeam")}</TabsTrigger>
                 <TabsTrigger value="roles"><ShieldCheck className="w-4 h-4 mr-1.5" />{t("settings.tabRoles")}</TabsTrigger>
               </>
@@ -474,6 +476,12 @@ export default function SettingsPage() {
               )}
             </div>
           </TabsContent>}
+
+          {canManageFirm && (
+            <TabsContent value="payments">
+              <FirmAdyenSettings />
+            </TabsContent>
+          )}
 
           <TabsContent value="security">
             <div className="bg-card border border-border rounded-xl p-6 space-y-4">

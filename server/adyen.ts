@@ -2,13 +2,13 @@ import crypto from "crypto";
 
 /**
  * Adyen Payment Integration
- * Handles payment link creation for invoices
+ * Payment links for invoices and on-demand service orders (firm or platform credentials).
  */
 
 export interface AdyenPaymentLinkRequest {
   amount: number; // in cents
   currency: string;
-  reference: string; // invoice ID
+  reference: string; // INV-{id} or SVC-{id}
   description: string;
   returnUrl: string;
   merchantAccount: string;
@@ -34,7 +34,7 @@ function checkoutBaseUrl(environment: "test" | "live" = "test") {
 }
 
 /**
- * Create a payment link for an invoice
+ * Create a payment link (Checkout API).
  */
 export async function createAdyenPaymentLink(
   request: AdyenPaymentLinkRequest
@@ -115,7 +115,41 @@ export function verifyAdyenWebhookSignature(
 }
 
 /**
- * Handle Adyen webhook events
+ * Adyen standard NotificationRequestItem HMAC
+ * (see https://docs.adyen.com/development-resources/webhooks/verify-hmac-signatures/)
+ */
+export function verifyAdyenNotificationItemHmac(
+  item: Record<string, any>,
+  hmacKey: string
+): boolean {
+  if (!hmacKey) return false;
+  const signature = item?.additionalData?.hmacSignature;
+  if (!signature || typeof signature !== "string") return false;
+  try {
+    const amount = item.amount || {};
+    const payload = [
+      item.pspReference ?? "",
+      item.originalReference ?? "",
+      item.merchantAccountCode ?? "",
+      item.merchantReference ?? "",
+      amount.value != null ? String(amount.value) : "",
+      amount.currency ?? "",
+      item.eventCode ?? "",
+      item.success ?? "",
+    ].join(":");
+    const key = Buffer.from(hmacKey, "hex");
+    const expected = crypto.createHmac("sha256", key).update(payload, "utf8").digest("base64");
+    const a = Buffer.from(expected);
+    const b = Buffer.from(signature);
+    if (a.length !== b.length) return false;
+    return crypto.timingSafeEqual(a, b);
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Handle Adyen webhook events (legacy helper for event mapping).
  */
 export function handleAdyenWebhookEvent(event: any) {
   const eventType = event.type;

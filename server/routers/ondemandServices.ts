@@ -23,6 +23,8 @@ import {
 import { sendCaseUpdateEmail } from "../email";
 import { getAppBaseUrl } from "../tenant";
 import { getStripe } from "../stripe";
+import { createAdyenPaymentLink } from "../adyen";
+import { resolveAdyenConfig } from "./adyen";
 import {
   getOrCreateCart,
   getOrderWithItems,
@@ -300,9 +302,10 @@ export const ondemandServicesRouter = router({
     }),
 
   /**
-   * Checkout cart:
-   * - With Stripe → pending_payment + Checkout URL
-   * - Without Stripe → mark paid / awaiting_acceptance (offline / invoice later)
+   * Checkout cart payment priority:
+   * 1) Firm Adyen (independent merchant)
+   * 2) Platform Stripe
+   * 3) Offline → awaiting_acceptance (firm marks paid)
    */
   checkout: protectedProcedure
     .input(
@@ -331,51 +334,87 @@ export const ondemandServicesRouter = router({
         })
         .where(eq(serviceOrders.id, cart.id));
 
-      const stripeReady = Boolean(process.env.STRIPE_SECRET_KEY) && !input.payOffline;
-      if (stripeReady) {
-        try {
-          const stripe = getStripe();
-          const origin = String(ctx.req.headers.origin || getAppBaseUrl(ctx.req));
-          const session = await stripe.checkout.sessions.create({
-            payment_method_types: ["card"],
-            mode: "payment",
-            customer_email: ctx.user.email ?? client.email ?? undefined,
-            line_items: full.items.map((item) => ({
-              price_data: {
-                currency: item.currency.toLowerCase(),
-                product_data: { name: item.serviceName },
-                unit_amount: Math.round(Number(item.unitPrice) * 100),
+      const origin = String(ctx.req.headers.origin || getAppBaseUrl(ctx.req));
+
+      if (!input.payOffline) {
+        const adyen = await resolveAdyenConfig(client.firmId);
+        if (adyen) {
+          try {
+            const amount = Math.round(Number(full.order.subtotal) * 100);
+            const paymentLink = await createAdyenPaymentLink({
+              amount,
+              currency: full.order.currency || "CHF",
+              reference: `SVC-${cart.id}`,
+              description: `Order ${cart.orderNumber}`,
+              returnUrl: `${origin}/client-portal?order=${cart.id}&payment=success`,
+              merchantAccount: adyen.merchantAccount,
+              apiKey: adyen.apiKey,
+              environment: adyen.environment,
+            });
+            await db
+              .update(serviceOrders)
+              .set({
+                adyenPaymentLinkId: paymentLink.id,
+                adyenPaymentLinkUrl: paymentLink.url,
+              })
+              .where(eq(serviceOrders.id, cart.id));
+            return {
+              orderId: cart.id,
+              orderNumber: cart.orderNumber,
+              status: "pending_payment" as const,
+              paymentUrl: paymentLink.url,
+              gateway: "adyen" as const,
+            };
+          } catch (err: any) {
+            console.error("[OnDemand] Adyen checkout failed:", err?.message);
+          }
+        }
+
+        if (process.env.STRIPE_SECRET_KEY) {
+          try {
+            const stripe = getStripe();
+            const session = await stripe.checkout.sessions.create({
+              payment_method_types: ["card"],
+              mode: "payment",
+              customer_email: ctx.user.email ?? client.email ?? undefined,
+              line_items: full.items.map((item) => ({
+                price_data: {
+                  currency: item.currency.toLowerCase(),
+                  product_data: { name: item.serviceName },
+                  unit_amount: Math.round(Number(item.unitPrice) * 100),
+                },
+                quantity: item.quantity,
+              })),
+              metadata: {
+                serviceOrderId: String(cart.id),
+                firmId: String(client.firmId),
+                clientId: String(client.id),
+                kind: "ondemand_service_order",
               },
-              quantity: item.quantity,
-            })),
-            metadata: {
-              serviceOrderId: String(cart.id),
-              firmId: String(client.firmId),
-              clientId: String(client.id),
-              kind: "ondemand_service_order",
-            },
-            success_url: `${origin}/client-portal?order=${cart.id}&payment=success`,
-            cancel_url: `${origin}/client-portal?order=${cart.id}&payment=cancelled`,
-          });
-          await db
-            .update(serviceOrders)
-            .set({
-              stripeCheckoutSessionId: session.id,
-              stripePaymentUrl: session.url,
-            })
-            .where(eq(serviceOrders.id, cart.id));
-          return {
-            orderId: cart.id,
-            orderNumber: cart.orderNumber,
-            status: "pending_payment" as const,
-            paymentUrl: session.url,
-          };
-        } catch (err: any) {
-          console.error("[OnDemand] Stripe checkout failed:", err?.message);
+              success_url: `${origin}/client-portal?order=${cart.id}&payment=success`,
+              cancel_url: `${origin}/client-portal?order=${cart.id}&payment=cancelled`,
+            });
+            await db
+              .update(serviceOrders)
+              .set({
+                stripeCheckoutSessionId: session.id,
+                stripePaymentUrl: session.url,
+              })
+              .where(eq(serviceOrders.id, cart.id));
+            return {
+              orderId: cart.id,
+              orderNumber: cart.orderNumber,
+              status: "pending_payment" as const,
+              paymentUrl: session.url,
+              gateway: "stripe" as const,
+            };
+          } catch (err: any) {
+            console.error("[OnDemand] Stripe checkout failed:", err?.message);
+          }
         }
       }
 
-      // Offline / no Stripe: place order as paid and waiting for firm acceptance
+      // Offline / no gateway: place order as paid and waiting for firm acceptance
       await markServiceOrderPaid(cart.id, client.firmId);
       await notifyFirmNewOrder(client.firmId, cart.id, ctx.req);
       return {
@@ -383,6 +422,7 @@ export const ondemandServicesRouter = router({
         orderNumber: cart.orderNumber,
         status: "awaiting_acceptance" as const,
         paymentUrl: null as string | null,
+        gateway: "offline" as const,
       };
     }),
 
