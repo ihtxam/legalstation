@@ -253,7 +253,15 @@
     "noMessages": "Aucun message pour l'instant",
     "placeholder": "Écrire un message…",
     "send": "Envoyer",
-    "message": "Message"
+    "message": "Message",
+    "conversationsHint": "Choisissez un dossier pour ouvrir la conversation.",
+    "selectCaseHint": "Les messages restent liés au dossier pour toute l’équipe.",
+    "noMessagesHint": "Écrivez un premier message — l’autre partie sera notifiée.",
+    "backToConversations": "Retour aux conversations",
+    "you": "Vous",
+    "today": "Aujourd’hui",
+    "yesterday": "Hier",
+    "sendHint": "Entrée pour envoyer · Maj+Entrée pour une nouvelle ligne"
   },
   "portal": {
     "title": "Mes dossiers",

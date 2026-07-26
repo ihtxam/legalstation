@@ -253,7 +253,15 @@
     "noMessages": "Noch keine Nachrichten",
     "placeholder": "Nachricht schreiben…",
     "send": "Senden",
-    "message": "Nachricht"
+    "message": "Nachricht",
+    "conversationsHint": "Wählen Sie einen Fall, um den Chat zu öffnen.",
+    "selectCaseHint": "Nachrichten bleiben am Fall — das ganze Team kann mitlesen.",
+    "noMessagesHint": "Schreiben Sie die erste Nachricht — die Gegenseite wird benachrichtigt.",
+    "backToConversations": "Zurück zu den Gesprächen",
+    "you": "Sie",
+    "today": "Heute",
+    "yesterday": "Gestern",
+    "sendHint": "Enter senden · Shift+Enter neue Zeile"
   },
   "portal": {
     "title": "Meine Mandate",

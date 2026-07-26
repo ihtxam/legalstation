@@ -253,7 +253,15 @@
     "noMessages": "No messages yet",
     "placeholder": "Write a message…",
     "send": "Send",
-    "message": "Message"
+    "message": "Message",
+    "conversationsHint": "Pick a case to open its message thread.",
+    "selectCaseHint": "Messages stay with the case so your whole team can follow the conversation.",
+    "noMessagesHint": "Say hello — the other party will be notified.",
+    "backToConversations": "Back to conversations",
+    "you": "You",
+    "today": "Today",
+    "yesterday": "Yesterday",
+    "sendHint": "Enter to send · Shift+Enter for a new line"
   },
   "portal": {
     "title": "My Cases",

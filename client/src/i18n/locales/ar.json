@@ -253,7 +253,15 @@
     "noMessages": "لا رسائل بعد",
     "placeholder": "اكتب رسالة…",
     "send": "إرسال",
-    "message": "رسالة"
+    "message": "رسالة",
+    "conversationsHint": "اختر قضية لفتح المحادثة.",
+    "selectCaseHint": "تبقى الرسائل مرتبطة بالقضية ليطلع عليها الفريق.",
+    "noMessagesHint": "اكتب أول رسالة — سيتم إشعار الطرف الآخر.",
+    "backToConversations": "العودة إلى المحادثات",
+    "you": "أنت",
+    "today": "اليوم",
+    "yesterday": "أمس",
+    "sendHint": "Enter للإرسال · Shift+Enter لسطر جديد"
   },
   "portal": {
     "title": "قضاياي",

@@ -253,7 +253,15 @@
     "noMessages": "Nessun messaggio ancora",
     "placeholder": "Scrivi un messaggio…",
     "send": "Invia",
-    "message": "Messaggio"
+    "message": "Messaggio",
+    "conversationsHint": "Scegli un fascicolo per aprire la chat.",
+    "selectCaseHint": "I messaggi restano sul fascicolo per tutto il team.",
+    "noMessagesHint": "Scrivi il primo messaggio — l’altra parte verrà avvisata.",
+    "backToConversations": "Torna alle conversazioni",
+    "you": "Tu",
+    "today": "Oggi",
+    "yesterday": "Ieri",
+    "sendHint": "Invio per inviare · Maiusc+Invio per nuova riga"
   },
   "portal": {
     "title": "Le mie pratiche",
