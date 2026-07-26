@@ -79,13 +79,31 @@ export default function SubscribePage() {
                     : "border-border hover:border-[var(--color-navy)]/40"
                 }`}
               >
-                <p className="font-semibold">{pkg.name}</p>
+                <p className="font-semibold">
+                  {pkg.highlightLabel ? `${pkg.highlightLabel} · ` : ""}
+                  {pkg.name}
+                </p>
                 <p className="text-sm text-muted-foreground mt-0.5">
-                  {Number(pkg.price).toFixed(2)} {pkg.currency} / {pkg.billingInterval} ·{" "}
-                  {t("packages.casesPerPeriod", { count: pkg.casesPerPeriod })}
+                  {Number(pkg.price).toFixed(2)} {pkg.currency} / {pkg.billingInterval}
+                  {pkg.consultationHoursPerPeriod > 0
+                    ? ` · ${t("packages.consultHours", { hours: pkg.consultationHoursPerPeriod })}`
+                    : ""}
+                  {pkg.casesPerPeriod > 0
+                    ? ` · ${t("packages.casesPerPeriod", { count: pkg.casesPerPeriod })}`
+                    : ""}
+                  {pkg.includedFixedHours > 0
+                    ? ` · ${t("packages.fixedHours", { hours: pkg.includedFixedHours })}`
+                    : ""}
                 </p>
                 {pkg.description ? (
                   <p className="text-sm text-muted-foreground mt-2">{pkg.description}</p>
+                ) : null}
+                {(pkg.features || []).length > 0 ? (
+                  <ul className="text-xs text-muted-foreground mt-2 list-disc ps-4 space-y-0.5">
+                    {(pkg.features as string[]).map((f) => (
+                      <li key={f}>{f}</li>
+                    ))}
+                  </ul>
                 ) : null}
               </button>
             ))

@@ -134,6 +134,13 @@
       "when": 1785449200000,
       "tag": "0018_client_subscription_packages",
       "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "5",
+      "when": 1785535600000,
+      "tag": "0019_ondemand_services_package_hours",
+      "breakpoints": true
     }
   ]
 }

@@ -168,8 +168,19 @@ export const firmClientPackages = mysqlTable("firm_client_packages", {
   billingInterval: mysqlEnum("billingInterval", ["monthly", "yearly"]).notNull().default("monthly"),
   /** Max new cases the subscriber may open per billing period */
   casesPerPeriod: int("casesPerPeriod").notNull().default(1),
+  /** Included consultation hours per billing period (e.g. 1h/month or 4h/year) */
+  consultationHoursPerPeriod: decimal("consultationHoursPerPeriod", { precision: 6, scale: 2 })
+    .notNull()
+    .default("0.00"),
+  /** Extra fixed hours bundled with included cases (optional) */
+  includedFixedHours: decimal("includedFixedHours", { precision: 6, scale: 2 })
+    .notNull()
+    .default("0.00"),
+  /** Short marketing label e.g. Basic / Plus / Premium */
+  highlightLabel: varchar("highlightLabel", { length: 64 }),
   /** JSON array of allowed case types, or null = all */
   allowedCaseTypes: text("allowedCaseTypes"),
+  /** JSON string array of included benefits shown to customers */
   features: text("features"),
   isActive: boolean("isActive").notNull().default(true),
   isPublic: boolean("isPublic").notNull().default(true),
@@ -223,6 +234,112 @@ export const caseIntakeSubmissions = mysqlTable("case_intake_submissions", {
 
 export type CaseIntakeSubmission = typeof caseIntakeSubmissions.$inferSelect;
 export type InsertCaseIntakeSubmission = typeof caseIntakeSubmissions.$inferInsert;
+
+/**
+ * One-shot legal services sold by a firm (T&Cs review, contract drafting,
+ * 1-hour advice, etc.). Distinct from recurring client packages.
+ */
+export const firmOndemandServices = mysqlTable("firm_ondemand_services", {
+  id: int("id").autoincrement().primaryKey(),
+  firmId: int("firmId").notNull(),
+  name: varchar("name", { length: 255 }).notNull(),
+  description: text("description"),
+  category: mysqlEnum("category", [
+    "advice",
+    "contract",
+    "documents",
+    "employment",
+    "corporate",
+    "other",
+  ])
+    .notNull()
+    .default("advice"),
+  price: decimal("price", { precision: 10, scale: 2 }).notNull().default("0.00"),
+  currency: varchar("currency", { length: 3 }).notNull().default("CHF"),
+  /** Expected lawyer time for delivery */
+  estimatedHours: decimal("estimatedHours", { precision: 6, scale: 2 }).notNull().default("1.00"),
+  deliveryNotes: text("deliveryNotes"),
+  defaultCaseType: mysqlEnum("defaultCaseType", [
+    "civil",
+    "criminal",
+    "corporate",
+    "family",
+    "real_estate",
+    "employment",
+    "tax",
+    "immigration",
+    "intellectual_property",
+    "other",
+  ])
+    .notNull()
+    .default("other"),
+  isActive: boolean("isActive").notNull().default(true),
+  isPublic: boolean("isPublic").notNull().default(true),
+  sortOrder: int("sortOrder").notNull().default(0),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type FirmOndemandService = typeof firmOndemandServices.$inferSelect;
+export type InsertFirmOndemandService = typeof firmOndemandServices.$inferInsert;
+
+/**
+ * Client cart / checkout / fulfillment for on-demand services.
+ * Flow: cart → pending_payment → paid/awaiting_acceptance → accepted → in_progress → completed
+ */
+export const serviceOrders = mysqlTable("service_orders", {
+  id: int("id").autoincrement().primaryKey(),
+  firmId: int("firmId").notNull(),
+  clientId: int("clientId").notNull(),
+  orderNumber: varchar("orderNumber", { length: 32 }).notNull(),
+  status: mysqlEnum("status", [
+    "cart",
+    "pending_payment",
+    "paid",
+    "awaiting_acceptance",
+    "accepted",
+    "in_progress",
+    "completed",
+    "cancelled",
+    "rejected",
+  ])
+    .notNull()
+    .default("cart"),
+  subtotal: decimal("subtotal", { precision: 10, scale: 2 }).notNull().default("0.00"),
+  currency: varchar("currency", { length: 3 }).notNull().default("CHF"),
+  clientNotes: text("clientNotes"),
+  stripeCheckoutSessionId: varchar("stripeCheckoutSessionId", { length: 255 }),
+  stripePaymentUrl: text("stripePaymentUrl"),
+  paidAt: timestamp("paidAt"),
+  acceptedAt: timestamp("acceptedAt"),
+  rejectedAt: timestamp("rejectedAt"),
+  completedAt: timestamp("completedAt"),
+  acceptedByUserId: int("acceptedByUserId"),
+  assignedLawyerUserId: int("assignedLawyerUserId"),
+  caseId: int("caseId"),
+  rejectionReason: text("rejectionReason"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type ServiceOrder = typeof serviceOrders.$inferSelect;
+export type InsertServiceOrder = typeof serviceOrders.$inferInsert;
+
+export const serviceOrderItems = mysqlTable("service_order_items", {
+  id: int("id").autoincrement().primaryKey(),
+  orderId: int("orderId").notNull(),
+  serviceId: int("serviceId").notNull(),
+  serviceName: varchar("serviceName", { length: 255 }).notNull(),
+  unitPrice: decimal("unitPrice", { precision: 10, scale: 2 }).notNull(),
+  quantity: int("quantity").notNull().default(1),
+  currency: varchar("currency", { length: 3 }).notNull().default("CHF"),
+  estimatedHours: decimal("estimatedHours", { precision: 6, scale: 2 }).notNull().default("1.00"),
+  clientBrief: text("clientBrief"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type ServiceOrderItem = typeof serviceOrderItems.$inferSelect;
+export type InsertServiceOrderItem = typeof serviceOrderItems.$inferInsert;
 
 // ─── Cases ───────────────────────────────────────────────────────────────────
 export const cases = mysqlTable("cases", {

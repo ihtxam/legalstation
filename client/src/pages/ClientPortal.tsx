@@ -36,6 +36,7 @@ import {
   Building2,
   Plus,
   Upload,
+  ShoppingCart,
 } from "lucide-react";
 import { format } from "date-fns";
 import { toast } from "sonner";
@@ -51,6 +52,9 @@ export default function ClientPortalPage() {
   const [showLitige, setShowLitige] = useState(false);
   const [showIntake, setShowIntake] = useState(false);
   const [showChangePlan, setShowChangePlan] = useState(false);
+  const [showCart, setShowCart] = useState(false);
+  const [orderNotes, setOrderNotes] = useState("");
+  const [serviceBrief, setServiceBrief] = useState<Record<number, string>>({});
   const [litigeForm, setLitigeForm] = useState({
     title: "",
     type: "other" as keyof typeof CASE_TYPE_LABELS,
@@ -65,10 +69,9 @@ export default function ClientPortalPage() {
     undefined,
     { enabled: isAuthenticated }
   );
-  const { data: publicCatalog } = trpc.clientPackages.listPublicByFirmSlug.useQuery(
-    { firmSlug: branding?.slug || "" },
-    { enabled: isAuthenticated && Boolean(branding?.slug) && mySub?.accessType === "subscriber" }
-  );
+  const { data: portalPackages } = trpc.clientPackages.listForClient.useQuery(undefined, {
+    enabled: isAuthenticated,
+  });
   const changePlan = trpc.clientPackages.changePlan.useMutation({
     onSuccess: async () => {
       toast.success(t("packages.planChanged"));
@@ -78,6 +81,35 @@ export default function ClientPortalPage() {
     onError: (e) => toast.error(e.message),
   });
   const isSubscriber = mySub?.accessType === "subscriber";
+  const shopServices = trpc.ondemandServices.listPublicForClient.useQuery(undefined, {
+    enabled: isAuthenticated,
+  });
+  const cart = trpc.ondemandServices.getCart.useQuery(undefined, { enabled: isAuthenticated });
+  const myOrders = trpc.ondemandServices.myOrders.useQuery(undefined, { enabled: isAuthenticated });
+  const addToCart = trpc.ondemandServices.addToCart.useMutation({
+    onSuccess: async () => {
+      toast.success(t("services.addedToCart"));
+      await cart.refetch();
+    },
+    onError: (e) => toast.error(e.message),
+  });
+  const updateCartItem = trpc.ondemandServices.updateCartItem.useMutation({
+    onSuccess: async () => {
+      await cart.refetch();
+    },
+    onError: (e) => toast.error(e.message),
+  });
+  const checkout = trpc.ondemandServices.checkout.useMutation({
+    onSuccess: async (res) => {
+      toast.success(t("services.checkoutSuccess"));
+      setShowCart(false);
+      setOrderNotes("");
+      await Promise.all([cart.refetch(), myOrders.refetch()]);
+      if (res.paymentUrl) window.location.href = res.paymentUrl;
+    },
+    onError: (e) => toast.error(e.message),
+  });
+  const cartCount = cart.data?.items.reduce((n, i) => n + i.quantity, 0) ?? 0;
 
   useEffect(() => {
     if (!loading && !isAuthenticated) startLogin();
@@ -231,6 +263,11 @@ export default function ClientPortalPage() {
           </div>
           <div className="flex items-center gap-3 flex-wrap">
             <LanguageSwitcher />
+            <Button variant="outline" onClick={() => setShowCart(true)}>
+              <ShoppingCart className="w-4 h-4 mr-1.5" />
+              {t("services.cart")}
+              {cartCount > 0 ? ` (${cartCount})` : ""}
+            </Button>
             <Button
               className="bg-[var(--color-navy)] hover:bg-[var(--color-navy-light)] text-white"
               onClick={() => (isSubscriber ? setShowIntake(true) : setShowLitige(true))}
@@ -242,32 +279,112 @@ export default function ClientPortalPage() {
           </div>
         </div>
 
-        {isSubscriber && (
-          <div className="bg-card border border-border rounded-xl p-4 flex flex-wrap items-center justify-between gap-3">
-            <div>
-              <p className="font-medium text-sm">
-                {mySub.hasSubscription
-                  ? t("packages.currentPlan", { name: mySub.package?.name })
-                  : t("packages.noActivePlan")}
+        <div className="bg-card border border-border rounded-xl p-4 flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <p className="font-medium text-sm">
+              {mySub?.hasSubscription
+                ? t("packages.currentPlan", { name: mySub.package?.name })
+                : t("packages.noActivePlan")}
+            </p>
+            {mySub?.hasSubscription ? (
+              <p className="text-xs text-muted-foreground mt-0.5">
+                {t("packages.quotaUsed", {
+                  used: mySub.quota.casesUsed,
+                  allowed: mySub.quota.casesAllowed,
+                })}
+                {mySub.package && Number(mySub.package.consultationHoursPerPeriod) > 0
+                  ? ` · ${t("packages.consultHours", {
+                      hours: mySub.package.consultationHoursPerPeriod,
+                    })}`
+                  : ""}
+                {" · "}
+                {t("packages.periodEnds", {
+                  date: new Date(mySub.subscription!.currentPeriodEnd).toLocaleDateString(),
+                })}
               </p>
-              {mySub.hasSubscription ? (
-                <p className="text-xs text-muted-foreground mt-0.5">
-                  {t("packages.quotaUsed", {
-                    used: mySub.quota.casesUsed,
-                    allowed: mySub.quota.casesAllowed,
-                  })}
-                  {" · "}
-                  {t("packages.periodEnds", {
-                    date: new Date(mySub.subscription!.currentPeriodEnd).toLocaleDateString(),
-                  })}
-                </p>
-              ) : (
-                <p className="text-xs text-muted-foreground mt-0.5">{t("packages.choosePlanHint")}</p>
-              )}
+            ) : (
+              <p className="text-xs text-muted-foreground mt-0.5">{t("packages.plansHint")}</p>
+            )}
+          </div>
+          <Button variant="outline" size="sm" onClick={() => setShowChangePlan(true)}>
+            {mySub?.hasSubscription ? t("packages.changePlan") : t("packages.plansForYou")}
+          </Button>
+        </div>
+
+        {(shopServices.data || []).length > 0 && (
+          <div className="space-y-3">
+            <div>
+              <h2 className="font-semibold text-foreground">{t("services.shopTitle")}</h2>
+              <p className="text-sm text-muted-foreground">{t("services.shopHint")}</p>
             </div>
-            <Button variant="outline" size="sm" onClick={() => setShowChangePlan(true)}>
-              {t("packages.changePlan")}
-            </Button>
+            <div className="grid gap-3 sm:grid-cols-2">
+              {(shopServices.data || []).map((svc) => (
+                <div key={svc.id} className="border border-border rounded-xl p-4 bg-card space-y-2">
+                  <div className="flex items-start justify-between gap-2">
+                    <div>
+                      <p className="font-medium">{svc.name}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {t(`services.cat.${svc.category}`)} · {svc.estimatedHours}h
+                      </p>
+                    </div>
+                    <p className="font-semibold text-sm whitespace-nowrap">
+                      {Number(svc.price).toFixed(2)} {svc.currency}
+                    </p>
+                  </div>
+                  {svc.description ? (
+                    <p className="text-sm text-muted-foreground">{svc.description}</p>
+                  ) : null}
+                  <Input
+                    placeholder={t("services.brief")}
+                    value={serviceBrief[svc.id] || ""}
+                    onChange={(e) =>
+                      setServiceBrief((prev) => ({ ...prev, [svc.id]: e.target.value }))
+                    }
+                  />
+                  <Button
+                    size="sm"
+                    className="w-full"
+                    disabled={addToCart.isPending}
+                    onClick={() =>
+                      addToCart.mutate({
+                        serviceId: svc.id,
+                        quantity: 1,
+                        clientBrief: serviceBrief[svc.id]?.trim() || undefined,
+                      })
+                    }
+                  >
+                    {t("services.addToCart")}
+                  </Button>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {(myOrders.data || []).length > 0 && (
+          <div className="space-y-2">
+            <h3 className="font-semibold text-sm">{t("services.myOrders")}</h3>
+            {(myOrders.data || []).slice(0, 5).map(({ order, items }) => (
+              <div
+                key={order.id}
+                className="border border-border rounded-xl px-4 py-3 text-sm flex flex-wrap justify-between gap-2 bg-card"
+              >
+                <div>
+                  <p className="font-medium">
+                    {order.orderNumber}{" "}
+                    <Badge variant="outline" className="capitalize ms-1">
+                      {order.status.replace(/_/g, " ")}
+                    </Badge>
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    {items.map((i) => i.serviceName).join(", ")}
+                  </p>
+                </div>
+                <p className="text-sm font-medium">
+                  {Number(order.subtotal).toFixed(2)} {order.currency}
+                </p>
+              </div>
+            ))}
           </div>
         )}
 
@@ -590,28 +707,119 @@ export default function ClientPortalPage() {
       <Dialog open={showChangePlan} onOpenChange={setShowChangePlan}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>{t("packages.changePlan")}</DialogTitle>
+            <DialogTitle>{t("packages.plansForYou")}</DialogTitle>
           </DialogHeader>
+          <p className="text-sm text-muted-foreground">{t("packages.plansHint")}</p>
           <div className="space-y-3">
-            {(publicCatalog?.packages || []).map((pkg) => (
+            {(portalPackages || []).map((pkg) => (
               <button
                 key={pkg.id}
                 type="button"
-                className="w-full text-start border rounded-xl p-3 hover:border-[var(--color-navy)]"
+                className="w-full text-start border rounded-xl p-3 hover:border-[var(--color-navy)] space-y-1"
                 disabled={changePlan.isPending}
                 onClick={() => changePlan.mutate({ packageId: pkg.id })}
               >
-                <p className="font-medium">{pkg.name}</p>
-                <p className="text-xs text-muted-foreground">
-                  {Number(pkg.price).toFixed(2)} {pkg.currency} / {pkg.billingInterval} ·{" "}
-                  {t("packages.casesPerPeriod", { count: pkg.casesPerPeriod })}
+                <p className="font-medium">
+                  {pkg.highlightLabel ? (
+                    <Badge variant="outline" className="me-2">
+                      {pkg.highlightLabel}
+                    </Badge>
+                  ) : null}
+                  {pkg.name}
                 </p>
+                <p className="text-xs text-muted-foreground">
+                  {Number(pkg.price).toFixed(2)} {pkg.currency} / {pkg.billingInterval}
+                  {pkg.consultationHoursPerPeriod > 0
+                    ? ` · ${t("packages.consultHours", { hours: pkg.consultationHoursPerPeriod })}`
+                    : ""}
+                  {pkg.casesPerPeriod > 0
+                    ? ` · ${t("packages.casesPerPeriod", { count: pkg.casesPerPeriod })}`
+                    : ""}
+                  {pkg.includedFixedHours > 0
+                    ? ` · ${t("packages.fixedHours", { hours: pkg.includedFixedHours })}`
+                    : ""}
+                </p>
+                {(pkg.features || []).length > 0 ? (
+                  <ul className="text-xs text-muted-foreground list-disc ps-4">
+                    {(pkg.features as string[]).slice(0, 4).map((f) => (
+                      <li key={f}>{f}</li>
+                    ))}
+                  </ul>
+                ) : null}
+                <p className="text-xs font-medium text-[var(--color-navy)]">{t("packages.buyPlan")}</p>
               </button>
             ))}
-            {!publicCatalog?.packages?.length ? (
+            {!portalPackages?.length ? (
               <p className="text-sm text-muted-foreground">{t("packages.noPublicPackages")}</p>
             ) : null}
           </div>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={showCart} onOpenChange={setShowCart}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{t("services.cart")}</DialogTitle>
+          </DialogHeader>
+          {(cart.data?.items || []).length === 0 ? (
+            <p className="text-sm text-muted-foreground">{t("services.cartEmpty")}</p>
+          ) : (
+            <div className="space-y-3">
+              {(cart.data?.items || []).map((item) => (
+                <div key={item.id} className="border rounded-xl p-3 space-y-2">
+                  <div className="flex justify-between gap-2">
+                    <p className="font-medium text-sm">{item.serviceName}</p>
+                    <p className="text-sm">
+                      {(Number(item.unitPrice) * item.quantity).toFixed(2)} {item.currency}
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Label className="text-xs">{t("services.quantity")}</Label>
+                    <Input
+                      type="number"
+                      min={0}
+                      className="w-20 h-8"
+                      value={item.quantity}
+                      onChange={(e) =>
+                        updateCartItem.mutate({
+                          itemId: item.id,
+                          quantity: Math.max(0, parseInt(e.target.value || "0", 10)),
+                        })
+                      }
+                    />
+                  </div>
+                </div>
+              ))}
+              <p className="font-semibold text-sm">
+                {Number(cart.data?.order.subtotal || 0).toFixed(2)} {cart.data?.order.currency}
+              </p>
+              <div>
+                <Label>{t("services.orderNotes")}</Label>
+                <Textarea
+                  className="mt-1.5"
+                  value={orderNotes}
+                  onChange={(e) => setOrderNotes(e.target.value)}
+                />
+              </div>
+            </div>
+          )}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowCart(false)}>
+              {t("common.cancel")}
+            </Button>
+            <Button
+              disabled={
+                checkout.isPending || !(cart.data?.items && cart.data.items.length > 0)
+              }
+              onClick={() =>
+                checkout.mutate({
+                  clientNotes: orderNotes.trim() || undefined,
+                })
+              }
+            >
+              {t("services.payAndOrder")}
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
 

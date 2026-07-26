@@ -114,6 +114,14 @@ export function parseAllowedCaseTypes(pkg: FirmClientPackage): string[] | null {
   }
 }
 
+export function parseFeatures(pkg: FirmClientPackage): string[] {
+  try {
+    return pkg.features ? JSON.parse(pkg.features) : [];
+  } catch {
+    return [];
+  }
+}
+
 export function publicPackage(pkg: FirmClientPackage) {
   return {
     id: pkg.id,
@@ -123,14 +131,11 @@ export function publicPackage(pkg: FirmClientPackage) {
     currency: pkg.currency,
     billingInterval: pkg.billingInterval,
     casesPerPeriod: pkg.casesPerPeriod,
+    consultationHoursPerPeriod: Number(pkg.consultationHoursPerPeriod || 0),
+    includedFixedHours: Number(pkg.includedFixedHours || 0),
+    highlightLabel: pkg.highlightLabel,
     allowedCaseTypes: parseAllowedCaseTypes(pkg),
-    features: (() => {
-      try {
-        return pkg.features ? JSON.parse(pkg.features) : [];
-      } catch {
-        return [];
-      }
-    })(),
+    features: parseFeatures(pkg),
     sortOrder: pkg.sortOrder,
   };
 }

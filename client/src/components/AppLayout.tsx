@@ -20,6 +20,7 @@ import {
   Globe,
   CalendarDays,
   Package,
+  BriefcaseBusiness,
 } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -68,6 +69,7 @@ export default function AppLayout({ children, title, breadcrumb }: AppLayoutProp
     { href: "/clients", label: t("nav.clients"), icon: Users },
     { href: "/agenda", label: t("nav.agenda"), icon: CalendarDays },
     { href: "/leads", label: t("nav.leads"), icon: Target },
+    { href: "/services", label: t("nav.services"), icon: BriefcaseBusiness },
     { href: "/messages", label: t("nav.messages"), icon: MessageSquare },
     { href: "/invoices", label: t("nav.billing"), icon: Receipt },
     { href: "/time-reports", label: t("nav.timeReports"), icon: FileText },

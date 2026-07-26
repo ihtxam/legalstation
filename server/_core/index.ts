@@ -178,6 +178,8 @@ async function startServer() {
         const session = event.data.object as any;
         const invoiceId = session.metadata?.invoiceId;
         const firmId = session.metadata?.firmId;
+        const serviceOrderId = session.metadata?.serviceOrderId;
+        const kind = session.metadata?.kind;
         if (invoiceId) {
           const db = await getDb();
           if (db) {
@@ -191,6 +193,13 @@ async function startServer() {
               await db.update(invoices).set({ status: "paid", paidAt: new Date() }).where(eq(invoices.id, id));
             }
           }
+        }
+        if (serviceOrderId && kind === "ondemand_service_order") {
+          const { markServiceOrderPaid } = await import("../ondemandServices");
+          await markServiceOrderPaid(
+            parseInt(serviceOrderId, 10),
+            firmId ? parseInt(firmId, 10) : undefined
+          );
         }
       }
       res.json({ received: true });

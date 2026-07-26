@@ -23,6 +23,10 @@ type FormState = {
   price: string;
   billingInterval: "monthly" | "yearly";
   casesPerPeriod: string;
+  consultationHoursPerPeriod: string;
+  includedFixedHours: string;
+  highlightLabel: string;
+  featuresText: string;
   isActive: boolean;
   isPublic: boolean;
 };
@@ -30,12 +34,23 @@ type FormState = {
 const emptyForm: FormState = {
   name: "",
   description: "",
-  price: "0",
+  price: "39",
   billingInterval: "monthly",
-  casesPerPeriod: "1",
+  casesPerPeriod: "0",
+  consultationHoursPerPeriod: "1",
+  includedFixedHours: "0",
+  highlightLabel: "Basic",
+  featuresText: "1 hour consultation per month\nEmail support",
   isActive: true,
   isPublic: true,
 };
+
+function parseFeatures(text: string) {
+  return text
+    .split("\n")
+    .map((s) => s.trim())
+    .filter(Boolean);
+}
 
 export default function FirmPackagesPage() {
   const { t } = useTranslation();
@@ -141,39 +156,69 @@ export default function FirmPackagesPage() {
               {t("packages.empty")}
             </div>
           ) : (
-            (packages.data || []).map((pkg) => (
-              <div key={pkg.id} className="border border-border rounded-xl p-4 bg-card space-y-2">
-                <div className="flex flex-wrap items-center justify-between gap-2">
-                  <div>
-                    <p className="font-semibold">{pkg.name}</p>
-                    <p className="text-sm text-muted-foreground">
-                      {Number(pkg.price).toFixed(2)} {pkg.currency} / {pkg.billingInterval} ·{" "}
-                      {t("packages.casesPerPeriod", { count: pkg.casesPerPeriod })}
-                    </p>
+            (packages.data || []).map((pkg) => {
+              let features: string[] = [];
+              try {
+                features = pkg.features ? JSON.parse(pkg.features) : [];
+              } catch {
+                features = [];
+              }
+              return (
+                <div key={pkg.id} className="border border-border rounded-xl p-4 bg-card space-y-2">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <div>
+                      <p className="font-semibold">
+                        {pkg.highlightLabel ? (
+                          <Badge variant="outline" className="me-2">
+                            {pkg.highlightLabel}
+                          </Badge>
+                        ) : null}
+                        {pkg.name}
+                      </p>
+                      <p className="text-sm text-muted-foreground">
+                        {Number(pkg.price).toFixed(2)} {pkg.currency} /{" "}
+                        {pkg.billingInterval === "yearly" ? t("packages.yearly") : t("packages.monthly")}
+                        {" · "}
+                        {t("packages.casesPerPeriod", { count: pkg.casesPerPeriod })}
+                        {Number(pkg.consultationHoursPerPeriod) > 0
+                          ? ` · ${t("packages.consultHours", { hours: Number(pkg.consultationHoursPerPeriod) })}`
+                          : ""}
+                        {Number(pkg.includedFixedHours) > 0
+                          ? ` · ${t("packages.fixedHours", { hours: Number(pkg.includedFixedHours) })}`
+                          : ""}
+                      </p>
+                    </div>
+                    <div className="flex gap-2">
+                      <Badge variant={pkg.isActive ? "default" : "secondary"}>
+                        {pkg.isActive ? t("common.active") : t("common.inactive")}
+                      </Badge>
+                      <Badge variant="outline">
+                        {pkg.isPublic ? t("packages.public") : t("packages.private")}
+                      </Badge>
+                    </div>
                   </div>
+                  {pkg.description ? (
+                    <p className="text-sm text-muted-foreground">{pkg.description}</p>
+                  ) : null}
+                  {features.length > 0 ? (
+                    <ul className="text-sm text-muted-foreground list-disc ps-5 space-y-0.5">
+                      {features.map((f) => (
+                        <li key={f}>{f}</li>
+                      ))}
+                    </ul>
+                  ) : null}
                   <div className="flex gap-2">
-                    <Badge variant={pkg.isActive ? "default" : "secondary"}>
-                      {pkg.isActive ? t("common.active") : t("common.inactive")}
-                    </Badge>
-                    <Badge variant="outline">{pkg.isPublic ? t("packages.public") : t("packages.private")}</Badge>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => updatePkg.mutate({ id: pkg.id, isActive: !pkg.isActive })}
+                    >
+                      {pkg.isActive ? t("packages.deactivate") : t("packages.activate")}
+                    </Button>
                   </div>
                 </div>
-                {pkg.description ? (
-                  <p className="text-sm text-muted-foreground">{pkg.description}</p>
-                ) : null}
-                <div className="flex gap-2">
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() =>
-                      updatePkg.mutate({ id: pkg.id, isActive: !pkg.isActive })
-                    }
-                  >
-                    {pkg.isActive ? t("packages.deactivate") : t("packages.activate")}
-                  </Button>
-                </div>
-              </div>
-            ))
+              );
+            })
           )}
         </div>
 
@@ -208,18 +253,30 @@ export default function FirmPackagesPage() {
       </div>
 
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent>
+        <DialogContent className="max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>{t("packages.create")}</DialogTitle>
           </DialogHeader>
           <div className="space-y-3">
-            <div>
-              <Label>{t("packages.name")}</Label>
-              <Input
-                className="mt-1.5"
-                value={form.name}
-                onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
-              />
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <Label>{t("packages.name")}</Label>
+                <Input
+                  className="mt-1.5"
+                  value={form.name}
+                  onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
+                  placeholder="Basic Legal Care"
+                />
+              </div>
+              <div>
+                <Label>{t("packages.highlightLabel")}</Label>
+                <Input
+                  className="mt-1.5"
+                  value={form.highlightLabel}
+                  onChange={(e) => setForm((f) => ({ ...f, highlightLabel: e.target.value }))}
+                  placeholder="Basic / Plus / Premium"
+                />
+              </div>
             </div>
             <div>
               <Label>{t("packages.description")}</Label>
@@ -231,7 +288,7 @@ export default function FirmPackagesPage() {
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <Label>{t("packages.price")}</Label>
+                <Label>{t("packages.price")} (CHF)</Label>
                 <Input
                   className="mt-1.5"
                   type="number"
@@ -242,32 +299,68 @@ export default function FirmPackagesPage() {
                 />
               </div>
               <div>
+                <Label>{t("packages.interval")}</Label>
+                <Select
+                  value={form.billingInterval}
+                  onValueChange={(v) =>
+                    setForm((f) => ({ ...f, billingInterval: v as "monthly" | "yearly" }))
+                  }
+                >
+                  <SelectTrigger className="mt-1.5">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="monthly">{t("packages.monthly")}</SelectItem>
+                    <SelectItem value="yearly">{t("packages.yearly")}</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <div className="grid grid-cols-3 gap-3">
+              <div>
+                <Label>{t("packages.consultHoursLabel")}</Label>
+                <Input
+                  className="mt-1.5"
+                  type="number"
+                  min="0"
+                  step="0.25"
+                  value={form.consultationHoursPerPeriod}
+                  onChange={(e) =>
+                    setForm((f) => ({ ...f, consultationHoursPerPeriod: e.target.value }))
+                  }
+                />
+              </div>
+              <div>
                 <Label>{t("packages.casesPerPeriodLabel")}</Label>
                 <Input
                   className="mt-1.5"
                   type="number"
-                  min="1"
+                  min="0"
                   value={form.casesPerPeriod}
                   onChange={(e) => setForm((f) => ({ ...f, casesPerPeriod: e.target.value }))}
                 />
               </div>
+              <div>
+                <Label>{t("packages.fixedHoursLabel")}</Label>
+                <Input
+                  className="mt-1.5"
+                  type="number"
+                  min="0"
+                  step="0.25"
+                  value={form.includedFixedHours}
+                  onChange={(e) => setForm((f) => ({ ...f, includedFixedHours: e.target.value }))}
+                />
+              </div>
             </div>
             <div>
-              <Label>{t("packages.interval")}</Label>
-              <Select
-                value={form.billingInterval}
-                onValueChange={(v) =>
-                  setForm((f) => ({ ...f, billingInterval: v as "monthly" | "yearly" }))
-                }
-              >
-                <SelectTrigger className="mt-1.5">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="monthly">{t("packages.monthly")}</SelectItem>
-                  <SelectItem value="yearly">{t("packages.yearly")}</SelectItem>
-                </SelectContent>
-              </Select>
+              <Label>{t("packages.featuresLabel")}</Label>
+              <Textarea
+                className="mt-1.5"
+                rows={4}
+                value={form.featuresText}
+                onChange={(e) => setForm((f) => ({ ...f, featuresText: e.target.value }))}
+                placeholder={t("packages.featuresPlaceholder")}
+              />
             </div>
             <div className="flex items-center justify-between">
               <Label>{t("packages.public")}</Label>
@@ -289,7 +382,11 @@ export default function FirmPackagesPage() {
                   description: form.description.trim() || undefined,
                   price: parseFloat(form.price) || 0,
                   billingInterval: form.billingInterval,
-                  casesPerPeriod: parseInt(form.casesPerPeriod, 10) || 1,
+                  casesPerPeriod: parseInt(form.casesPerPeriod, 10) || 0,
+                  consultationHoursPerPeriod: parseFloat(form.consultationHoursPerPeriod) || 0,
+                  includedFixedHours: parseFloat(form.includedFixedHours) || 0,
+                  highlightLabel: form.highlightLabel.trim() || undefined,
+                  features: parseFeatures(form.featuresText),
                   isActive: form.isActive,
                   isPublic: form.isPublic,
                 })

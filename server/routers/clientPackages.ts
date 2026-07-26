@@ -66,6 +66,26 @@ export const clientPackagesRouter = router({
       .orderBy(asc(firmClientPackages.sortOrder), desc(firmClientPackages.createdAt));
   }),
 
+  /** Logged-in client: packages available to buy/switch in the portal. */
+  listForClient: protectedProcedure.query(async ({ ctx }) => {
+    const client = await getClientByUserId(ctx.user.id);
+    if (!client) throw new TRPCError({ code: "FORBIDDEN" });
+    const db = await getDb();
+    if (!db) return [];
+    const rows = await db
+      .select()
+      .from(firmClientPackages)
+      .where(
+        and(
+          eq(firmClientPackages.firmId, client.firmId),
+          eq(firmClientPackages.isActive, true),
+          eq(firmClientPackages.isPublic, true)
+        )
+      )
+      .orderBy(asc(firmClientPackages.sortOrder));
+    return rows.map(publicPackage);
+  }),
+
   /** Public catalog for a firm (by slug) — subscriber signup page. */
   listPublicByFirmSlug: publicProcedure
     .input(z.object({ firmSlug: z.string().min(1) }))
@@ -99,7 +119,10 @@ export const clientPackagesRouter = router({
         price: z.number().min(0),
         currency: z.string().length(3).default("CHF"),
         billingInterval: z.enum(["monthly", "yearly"]).default("monthly"),
-        casesPerPeriod: z.number().int().min(1).max(1000).default(1),
+        casesPerPeriod: z.number().int().min(0).max(1000).default(1),
+        consultationHoursPerPeriod: z.number().min(0).max(1000).default(0),
+        includedFixedHours: z.number().min(0).max(1000).default(0),
+        highlightLabel: z.string().max(64).optional(),
         allowedCaseTypes: z.array(caseTypeEnum).optional(),
         features: z.array(z.string()).optional(),
         isActive: z.boolean().optional().default(true),
@@ -119,6 +142,9 @@ export const clientPackagesRouter = router({
         currency: input.currency.toUpperCase(),
         billingInterval: input.billingInterval,
         casesPerPeriod: input.casesPerPeriod,
+        consultationHoursPerPeriod: input.consultationHoursPerPeriod.toFixed(2),
+        includedFixedHours: input.includedFixedHours.toFixed(2),
+        highlightLabel: input.highlightLabel?.trim() || null,
         allowedCaseTypes: input.allowedCaseTypes ? JSON.stringify(input.allowedCaseTypes) : null,
         features: input.features ? JSON.stringify(input.features) : null,
         isActive: input.isActive,
@@ -137,7 +163,10 @@ export const clientPackagesRouter = router({
         price: z.number().min(0).optional(),
         currency: z.string().length(3).optional(),
         billingInterval: z.enum(["monthly", "yearly"]).optional(),
-        casesPerPeriod: z.number().int().min(1).max(1000).optional(),
+        casesPerPeriod: z.number().int().min(0).max(1000).optional(),
+        consultationHoursPerPeriod: z.number().min(0).max(1000).optional(),
+        includedFixedHours: z.number().min(0).max(1000).optional(),
+        highlightLabel: z.string().max(64).optional().nullable(),
         allowedCaseTypes: z.array(caseTypeEnum).optional().nullable(),
         features: z.array(z.string()).optional().nullable(),
         isActive: z.boolean().optional(),
@@ -165,6 +194,15 @@ export const clientPackagesRouter = router({
           ...("currency" in rest && rest.currency ? { currency: rest.currency.toUpperCase() } : {}),
           ...("billingInterval" in rest ? { billingInterval: rest.billingInterval } : {}),
           ...("casesPerPeriod" in rest ? { casesPerPeriod: rest.casesPerPeriod } : {}),
+          ...("consultationHoursPerPeriod" in rest && rest.consultationHoursPerPeriod != null
+            ? { consultationHoursPerPeriod: rest.consultationHoursPerPeriod.toFixed(2) }
+            : {}),
+          ...("includedFixedHours" in rest && rest.includedFixedHours != null
+            ? { includedFixedHours: rest.includedFixedHours.toFixed(2) }
+            : {}),
+          ...("highlightLabel" in rest
+            ? { highlightLabel: rest.highlightLabel?.trim() || null }
+            : {}),
           ...("allowedCaseTypes" in rest
             ? {
                 allowedCaseTypes:
@@ -306,17 +344,15 @@ export const clientPackagesRouter = router({
     };
   }),
 
+  /**
+   * Client buys / switches package from the portal.
+   * Standard firm clients become subscribers when they purchase a plan.
+   */
   changePlan: protectedProcedure
     .input(z.object({ packageId: z.number() }))
     .mutation(async ({ ctx, input }) => {
       const client = await getClientByUserId(ctx.user.id);
       if (!client) throw new TRPCError({ code: "FORBIDDEN" });
-      if (client.accessType !== "subscriber") {
-        throw new TRPCError({
-          code: "FORBIDDEN",
-          message: "Only subscribed customers can change plans. Contact your law firm for access changes.",
-        });
-      }
       const db = await getDb();
       if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
 
@@ -359,6 +395,12 @@ export const clientPackagesRouter = router({
           currentPeriodStart: start,
           currentPeriodEnd: end,
         });
+      }
+      if (client.accessType !== "subscriber") {
+        await db
+          .update(clients)
+          .set({ accessType: "subscriber", status: "active" })
+          .where(eq(clients.id, client.id));
       }
       return { success: true as const };
     }),
