@@ -52,6 +52,10 @@ export default function ClientPortalPage() {
   const [showLitige, setShowLitige] = useState(false);
   const [showIntake, setShowIntake] = useState(false);
   const [showChangePlan, setShowChangePlan] = useState(false);
+  const [planBillingInterval, setPlanBillingInterval] = useState<
+    "monthly" | "biannual" | "yearly" | null
+  >(null);
+  const [planPackageId, setPlanPackageId] = useState<number | null>(null);
   const [showCart, setShowCart] = useState(false);
   const [orderNotes, setOrderNotes] = useState("");
   const [serviceBrief, setServiceBrief] = useState<Record<number, string>>({});
@@ -292,15 +296,26 @@ export default function ClientPortalPage() {
                   used: mySub.quota.casesUsed,
                   allowed: mySub.quota.casesAllowed,
                 })}
-                {mySub.package && Number(mySub.package.consultationHoursPerPeriod) > 0
+                {mySub.package &&
+                Number(
+                  mySub.package.consultationHoursPerYear ??
+                    mySub.package.consultationHoursPerPeriod
+                ) > 0
                   ? ` · ${t("packages.consultHours", {
-                      hours: mySub.package.consultationHoursPerPeriod,
+                      hours:
+                        mySub.package.consultationHoursPerYear ??
+                        mySub.package.consultationHoursPerPeriod,
                     })}`
                   : ""}
                 {" · "}
                 {t("packages.periodEnds", {
                   date: new Date(mySub.subscription!.currentPeriodEnd).toLocaleDateString(),
                 })}
+                {mySub.subscription?.commitmentEndsAt
+                  ? ` · ${t("packages.commitmentEnds", {
+                      date: new Date(mySub.subscription.commitmentEndsAt).toLocaleDateString(),
+                    })}`
+                  : ""}
               </p>
             ) : (
               <p className="text-xs text-muted-foreground mt-0.5">{t("packages.plansHint")}</p>
@@ -704,51 +719,131 @@ export default function ClientPortalPage() {
         }}
       />
 
-      <Dialog open={showChangePlan} onOpenChange={setShowChangePlan}>
+      <Dialog
+        open={showChangePlan}
+        onOpenChange={(v) => {
+          setShowChangePlan(v);
+          if (!v) {
+            setPlanPackageId(null);
+            setPlanBillingInterval(null);
+          }
+        }}
+      >
         <DialogContent>
           <DialogHeader>
             <DialogTitle>{t("packages.plansForYou")}</DialogTitle>
           </DialogHeader>
           <p className="text-sm text-muted-foreground">{t("packages.plansHint")}</p>
           <div className="space-y-3">
-            {(portalPackages || []).map((pkg) => (
-              <button
-                key={pkg.id}
-                type="button"
-                className="w-full text-start border rounded-xl p-3 hover:border-[var(--color-navy)] space-y-1"
-                disabled={changePlan.isPending}
-                onClick={() => changePlan.mutate({ packageId: pkg.id })}
-              >
-                <p className="font-medium">
-                  {pkg.highlightLabel ? (
-                    <Badge variant="outline" className="me-2">
-                      {pkg.highlightLabel}
-                    </Badge>
+            {(portalPackages || []).map((pkg) => {
+              const intervals =
+                (pkg.availableIntervals as Array<"monthly" | "biannual" | "yearly"> | undefined) ||
+                [];
+              const selected = planPackageId === pkg.id;
+              return (
+                <div
+                  key={pkg.id}
+                  className={`w-full text-start border rounded-xl p-3 space-y-2 ${
+                    selected ? "border-[var(--color-navy)]" : "border-border"
+                  }`}
+                >
+                  <button
+                    type="button"
+                    className="w-full text-start space-y-1"
+                    disabled={changePlan.isPending}
+                    onClick={() => {
+                      setPlanPackageId(pkg.id);
+                      setPlanBillingInterval(intervals[0] || "monthly");
+                    }}
+                  >
+                    <p className="font-medium">
+                      {pkg.highlightLabel ? (
+                        <Badge variant="outline" className="me-2">
+                          {pkg.highlightLabel}
+                        </Badge>
+                      ) : null}
+                      {pkg.name}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      {[
+                        Number(pkg.monthlyPrice || 0) > 0
+                          ? `${Number(pkg.monthlyPrice).toFixed(2)} ${pkg.currency}/${t("packages.monthlyShort")}`
+                          : null,
+                        Number(pkg.biannualPrice || 0) > 0
+                          ? `${Number(pkg.biannualPrice).toFixed(2)} ${pkg.currency}/${t("packages.biannualShort")}`
+                          : null,
+                        Number(pkg.yearlyPrice || 0) > 0
+                          ? `${Number(pkg.yearlyPrice).toFixed(2)} ${pkg.currency}/${t("packages.yearlyShort")}`
+                          : null,
+                      ]
+                        .filter(Boolean)
+                        .join(" · ") ||
+                        `${Number(pkg.price).toFixed(2)} ${pkg.currency} / ${pkg.billingInterval}`}
+                      {(pkg.consultationHoursPerYear ?? pkg.consultationHoursPerPeriod) > 0
+                        ? ` · ${t("packages.consultHours", {
+                            hours:
+                              pkg.consultationHoursPerYear ?? pkg.consultationHoursPerPeriod,
+                          })}`
+                        : ""}
+                      {(pkg.casesPerYear ?? pkg.casesPerPeriod) > 0
+                        ? ` · ${t("packages.casesPerYear", {
+                            count: pkg.casesPerYear ?? pkg.casesPerPeriod,
+                          })}`
+                        : ""}
+                      {pkg.includedFixedHours > 0
+                        ? ` · ${t("packages.fixedHours", { hours: pkg.includedFixedHours })}`
+                        : ""}
+                    </p>
+                    <p className="text-xs text-muted-foreground">{t("packages.minCommitmentHint")}</p>
+                    {(pkg.features || []).length > 0 ? (
+                      <ul className="text-xs text-muted-foreground list-disc ps-4">
+                        {(pkg.features as string[]).slice(0, 4).map((f) => (
+                          <li key={f}>{f}</li>
+                        ))}
+                      </ul>
+                    ) : null}
+                  </button>
+                  {selected && intervals.length > 0 ? (
+                    <div className="space-y-2">
+                      <Label>{t("packages.chooseBilling")}</Label>
+                      <Select
+                        value={planBillingInterval || intervals[0]}
+                        onValueChange={(v) =>
+                          setPlanBillingInterval(v as "monthly" | "biannual" | "yearly")
+                        }
+                      >
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {intervals.map((iv) => (
+                            <SelectItem key={iv} value={iv}>
+                              {iv === "biannual"
+                                ? t("packages.biannual")
+                                : iv === "yearly"
+                                  ? t("packages.yearly")
+                                  : t("packages.monthly")}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <Button
+                        className="w-full"
+                        disabled={changePlan.isPending || !planBillingInterval}
+                        onClick={() =>
+                          changePlan.mutate({
+                            packageId: pkg.id,
+                            billingInterval: planBillingInterval || intervals[0],
+                          })
+                        }
+                      >
+                        {changePlan.isPending ? t("common.loading") : t("packages.buyPlan")}
+                      </Button>
+                    </div>
                   ) : null}
-                  {pkg.name}
-                </p>
-                <p className="text-xs text-muted-foreground">
-                  {Number(pkg.price).toFixed(2)} {pkg.currency} / {pkg.billingInterval}
-                  {pkg.consultationHoursPerPeriod > 0
-                    ? ` · ${t("packages.consultHours", { hours: pkg.consultationHoursPerPeriod })}`
-                    : ""}
-                  {pkg.casesPerPeriod > 0
-                    ? ` · ${t("packages.casesPerPeriod", { count: pkg.casesPerPeriod })}`
-                    : ""}
-                  {pkg.includedFixedHours > 0
-                    ? ` · ${t("packages.fixedHours", { hours: pkg.includedFixedHours })}`
-                    : ""}
-                </p>
-                {(pkg.features || []).length > 0 ? (
-                  <ul className="text-xs text-muted-foreground list-disc ps-4">
-                    {(pkg.features as string[]).slice(0, 4).map((f) => (
-                      <li key={f}>{f}</li>
-                    ))}
-                  </ul>
-                ) : null}
-                <p className="text-xs font-medium text-[var(--color-navy)]">{t("packages.buyPlan")}</p>
-              </button>
-            ))}
+                </div>
+              );
+            })}
             {!portalPackages?.length ? (
               <p className="text-sm text-muted-foreground">{t("packages.noPublicPackages")}</p>
             ) : null}

@@ -169,16 +169,28 @@ export const firmClientPackages = mysqlTable("firm_client_packages", {
   firmId: int("firmId").notNull(),
   name: varchar("name", { length: 255 }).notNull(),
   description: text("description"),
+  /** Legacy single price — kept in sync with monthlyPrice */
   price: decimal("price", { precision: 10, scale: 2 }).notNull().default("0.00"),
   currency: varchar("currency", { length: 3 }).notNull().default("CHF"),
-  billingInterval: mysqlEnum("billingInterval", ["monthly", "yearly"]).notNull().default("monthly"),
-  /** Max new cases the subscriber may open per billing period */
+  /** Default / suggested billing interval for marketing */
+  billingInterval: mysqlEnum("billingInterval", ["monthly", "biannual", "yearly"])
+    .notNull()
+    .default("monthly"),
+  monthlyPrice: decimal("monthlyPrice", { precision: 10, scale: 2 }).notNull().default("0.00"),
+  biannualPrice: decimal("biannualPrice", { precision: 10, scale: 2 }),
+  yearlyPrice: decimal("yearlyPrice", { precision: 10, scale: 2 }),
+  /** Minimum commitment in months (product default: 12) */
+  minCommitmentMonths: int("minCommitmentMonths").notNull().default(12),
+  /**
+   * Max new cases per commitment year (same regardless of monthly/biannual/yearly billing).
+   * Column name kept for compatibility; UI labels say "per year".
+   */
   casesPerPeriod: int("casesPerPeriod").notNull().default(1),
-  /** Included consultation hours per billing period (e.g. 1h/month or 4h/year) */
+  /** Included consultation hours per commitment year */
   consultationHoursPerPeriod: decimal("consultationHoursPerPeriod", { precision: 6, scale: 2 })
     .notNull()
     .default("0.00"),
-  /** Extra fixed hours bundled with included cases (optional) */
+  /** Extra fixed hours bundled with included cases (optional, per year) */
   includedFixedHours: decimal("includedFixedHours", { precision: 6, scale: 2 })
     .notNull()
     .default("0.00"),
@@ -206,9 +218,13 @@ export const clientSubscriptions = mysqlTable("client_subscriptions", {
   status: mysqlEnum("status", ["active", "past_due", "cancelled", "expired"])
     .notNull()
     .default("active"),
-  billingInterval: mysqlEnum("billingInterval", ["monthly", "yearly"]).notNull().default("monthly"),
+  billingInterval: mysqlEnum("billingInterval", ["monthly", "biannual", "yearly"])
+    .notNull()
+    .default("monthly"),
   currentPeriodStart: timestamp("currentPeriodStart").notNull(),
   currentPeriodEnd: timestamp("currentPeriodEnd").notNull(),
+  /** End of current 12-month (or configured) commitment / entitlement year */
+  commitmentEndsAt: timestamp("commitmentEndsAt"),
   cancelledAt: timestamp("cancelledAt"),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),

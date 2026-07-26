@@ -24,12 +24,18 @@ import { hashPassword } from "../auth/password";
 import { sendCaseUpdateEmail } from "../email";
 import { getAppBaseUrl } from "../tenant";
 import {
+  availableBillingIntervals,
+  commitmentEndFrom,
   getActiveClientSubscription,
   getQuotaStatus,
   parseAllowedCaseTypes,
   periodEndFrom,
+  priceForInterval,
   publicPackage,
+  type ClientBillingInterval,
 } from "../clientPackages";
+
+const billingIntervalEnum = z.enum(["monthly", "biannual", "yearly"]);
 
 const caseTypeEnum = z.enum([
   "civil",
@@ -116,10 +122,17 @@ export const clientPackagesRouter = router({
       z.object({
         name: z.string().min(1).max(255),
         description: z.string().optional(),
-        price: z.number().min(0),
+        /** @deprecated prefer monthlyPrice — kept for older clients */
+        price: z.number().min(0).optional(),
+        monthlyPrice: z.number().min(0).optional(),
+        biannualPrice: z.number().min(0).nullable().optional(),
+        yearlyPrice: z.number().min(0).nullable().optional(),
         currency: z.string().length(3).default("CHF"),
-        billingInterval: z.enum(["monthly", "yearly"]).default("monthly"),
+        billingInterval: billingIntervalEnum.default("monthly"),
+        minCommitmentMonths: z.number().int().min(12).max(60).default(12),
+        /** Cases included per commitment year */
         casesPerPeriod: z.number().int().min(0).max(1000).default(1),
+        /** Consultation hours included per commitment year */
         consultationHoursPerPeriod: z.number().min(0).max(1000).default(0),
         includedFixedHours: z.number().min(0).max(1000).default(0),
         highlightLabel: z.string().max(64).optional(),
@@ -134,13 +147,27 @@ export const clientPackagesRouter = router({
       const member = await requireFirmAdmin(ctx.user.id);
       const db = await getDb();
       if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+      const monthly =
+        input.monthlyPrice ?? input.price ?? 0;
+      const biannual = input.biannualPrice ?? null;
+      const yearly = input.yearlyPrice ?? null;
+      if (monthly <= 0 && (biannual == null || biannual <= 0) && (yearly == null || yearly <= 0)) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Set at least one of monthly, biannual, or yearly price.",
+        });
+      }
       const result = await db.insert(firmClientPackages).values({
         firmId: member.firmId,
         name: input.name,
         description: input.description || null,
-        price: input.price.toFixed(2),
+        price: monthly.toFixed(2),
+        monthlyPrice: monthly.toFixed(2),
+        biannualPrice: biannual != null && biannual > 0 ? biannual.toFixed(2) : null,
+        yearlyPrice: yearly != null && yearly > 0 ? yearly.toFixed(2) : null,
         currency: input.currency.toUpperCase(),
         billingInterval: input.billingInterval,
+        minCommitmentMonths: input.minCommitmentMonths,
         casesPerPeriod: input.casesPerPeriod,
         consultationHoursPerPeriod: input.consultationHoursPerPeriod.toFixed(2),
         includedFixedHours: input.includedFixedHours.toFixed(2),
@@ -161,8 +188,12 @@ export const clientPackagesRouter = router({
         name: z.string().min(1).max(255).optional(),
         description: z.string().optional().nullable(),
         price: z.number().min(0).optional(),
+        monthlyPrice: z.number().min(0).optional(),
+        biannualPrice: z.number().min(0).nullable().optional(),
+        yearlyPrice: z.number().min(0).nullable().optional(),
         currency: z.string().length(3).optional(),
-        billingInterval: z.enum(["monthly", "yearly"]).optional(),
+        billingInterval: billingIntervalEnum.optional(),
+        minCommitmentMonths: z.number().int().min(12).max(60).optional(),
         casesPerPeriod: z.number().int().min(0).max(1000).optional(),
         consultationHoursPerPeriod: z.number().min(0).max(1000).optional(),
         includedFixedHours: z.number().min(0).max(1000).optional(),
@@ -185,14 +216,41 @@ export const clientPackagesRouter = router({
         .limit(1);
       if (!row) throw new TRPCError({ code: "NOT_FOUND" });
       const { id: _id, ...rest } = input;
+      const monthlyNext =
+        rest.monthlyPrice !== undefined
+          ? rest.monthlyPrice
+          : rest.price !== undefined
+            ? rest.price
+            : undefined;
       await db
         .update(firmClientPackages)
         .set({
           ...("name" in rest ? { name: rest.name } : {}),
           ...("description" in rest ? { description: rest.description ?? null } : {}),
-          ...("price" in rest && rest.price != null ? { price: rest.price.toFixed(2) } : {}),
+          ...(monthlyNext !== undefined
+            ? { price: monthlyNext.toFixed(2), monthlyPrice: monthlyNext.toFixed(2) }
+            : {}),
+          ...("biannualPrice" in rest
+            ? {
+                biannualPrice:
+                  rest.biannualPrice != null && rest.biannualPrice > 0
+                    ? rest.biannualPrice.toFixed(2)
+                    : null,
+              }
+            : {}),
+          ...("yearlyPrice" in rest
+            ? {
+                yearlyPrice:
+                  rest.yearlyPrice != null && rest.yearlyPrice > 0
+                    ? rest.yearlyPrice.toFixed(2)
+                    : null,
+              }
+            : {}),
           ...("currency" in rest && rest.currency ? { currency: rest.currency.toUpperCase() } : {}),
           ...("billingInterval" in rest ? { billingInterval: rest.billingInterval } : {}),
+          ...("minCommitmentMonths" in rest && rest.minCommitmentMonths != null
+            ? { minCommitmentMonths: rest.minCommitmentMonths }
+            : {}),
           ...("casesPerPeriod" in rest ? { casesPerPeriod: rest.casesPerPeriod } : {}),
           ...("consultationHoursPerPeriod" in rest && rest.consultationHoursPerPeriod != null
             ? { consultationHoursPerPeriod: rest.consultationHoursPerPeriod.toFixed(2) }
@@ -244,6 +302,7 @@ export const clientPackagesRouter = router({
       z.object({
         firmSlug: z.string().min(1),
         packageId: z.number(),
+        billingInterval: billingIntervalEnum.optional(),
         email: z.string().email(),
         password: z.string().min(8).max(128),
         firstName: z.string().min(1).max(100),
@@ -270,6 +329,17 @@ export const clientPackagesRouter = router({
         )
         .limit(1);
       if (!pkg) throw new TRPCError({ code: "NOT_FOUND", message: "Package not available" });
+
+      const intervals = availableBillingIntervals(pkg);
+      const chosen = (input.billingInterval ||
+        intervals[0] ||
+        pkg.billingInterval) as ClientBillingInterval;
+      if (!intervals.includes(chosen) || !priceForInterval(pkg, chosen)) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Selected billing interval is not available for this package.",
+        });
+      }
 
       const email = input.email.trim().toLowerCase();
       const [existingUser] = await db.select().from(users).where(eq(users.email, email)).limit(1);
@@ -304,15 +374,17 @@ export const clientPackagesRouter = router({
       const clientId = clientInsert[0].insertId as number;
 
       const start = new Date();
-      const end = periodEndFrom(start, pkg.billingInterval);
+      const end = periodEndFrom(start, chosen);
+      const commitmentEndsAt = commitmentEndFrom(start, pkg.minCommitmentMonths ?? 12);
       await db.insert(clientSubscriptions).values({
         firmId: firm.id,
         clientId,
         packageId: pkg.id,
         status: "active",
-        billingInterval: pkg.billingInterval,
+        billingInterval: chosen,
         currentPeriodStart: start,
         currentPeriodEnd: end,
+        commitmentEndsAt,
       });
 
       return { ok: true as const, clientId, packageId: pkg.id, loginHint: email };
@@ -340,6 +412,7 @@ export const clientPackagesRouter = router({
         billingInterval: quota.subscription.billingInterval,
         currentPeriodStart: quota.subscription.currentPeriodStart,
         currentPeriodEnd: quota.subscription.currentPeriodEnd,
+        commitmentEndsAt: quota.subscription.commitmentEndsAt,
       },
     };
   }),
@@ -349,7 +422,12 @@ export const clientPackagesRouter = router({
    * Standard firm clients become subscribers when they purchase a plan.
    */
   changePlan: protectedProcedure
-    .input(z.object({ packageId: z.number() }))
+    .input(
+      z.object({
+        packageId: z.number(),
+        billingInterval: billingIntervalEnum.optional(),
+      })
+    )
     .mutation(async ({ ctx, input }) => {
       const client = await getClientByUserId(ctx.user.id);
       if (!client) throw new TRPCError({ code: "FORBIDDEN" });
@@ -369,19 +447,32 @@ export const clientPackagesRouter = router({
         .limit(1);
       if (!pkg) throw new TRPCError({ code: "NOT_FOUND", message: "Package not available" });
 
+      const intervals = availableBillingIntervals(pkg);
+      const chosen = (input.billingInterval ||
+        intervals[0] ||
+        pkg.billingInterval) as ClientBillingInterval;
+      if (!intervals.includes(chosen) || !priceForInterval(pkg, chosen)) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Selected billing interval is not available for this package.",
+        });
+      }
+
       const active = await getActiveClientSubscription(client.id);
       const start = new Date();
-      const end = periodEndFrom(start, pkg.billingInterval);
+      const end = periodEndFrom(start, chosen);
+      const commitmentEndsAt = commitmentEndFrom(start, pkg.minCommitmentMonths ?? 12);
 
       if (active) {
         await db
           .update(clientSubscriptions)
           .set({
             packageId: pkg.id,
-            billingInterval: pkg.billingInterval,
+            billingInterval: chosen,
             status: "active",
             currentPeriodStart: start,
             currentPeriodEnd: end,
+            commitmentEndsAt,
             cancelledAt: null,
           })
           .where(eq(clientSubscriptions.id, active.subscription.id));
@@ -391,9 +482,10 @@ export const clientPackagesRouter = router({
           clientId: client.id,
           packageId: pkg.id,
           status: "active",
-          billingInterval: pkg.billingInterval,
+          billingInterval: chosen,
           currentPeriodStart: start,
           currentPeriodEnd: end,
+          commitmentEndsAt,
         });
       }
       if (client.accessType !== "subscriber") {
@@ -464,7 +556,7 @@ export const clientPackagesRouter = router({
         if (!quota.canCreateCase) {
           throw new TRPCError({
             code: "FORBIDDEN",
-            message: `Case limit reached for this period (${quota.casesUsed}/${quota.casesAllowed}). Upgrade your plan or wait until the next period.`,
+            message: `Case limit reached for this commitment year (${quota.casesUsed}/${quota.casesAllowed}). Upgrade your plan or wait until the next year.`,
           });
         }
         const allowed = quota.package ? parseAllowedCaseTypes(quota.package) : null;

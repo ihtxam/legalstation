@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useLocation, useRoute } from "wouter";
 import { trpc } from "@/lib/trpc";
 import { Button } from "@/components/ui/button";
@@ -7,6 +7,49 @@ import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
+
+type BillingInterval = "monthly" | "biannual" | "yearly";
+
+function intervalLabel(interval: BillingInterval, t: (k: string) => string) {
+  if (interval === "biannual") return t("packages.biannual");
+  if (interval === "yearly") return t("packages.yearly");
+  return t("packages.monthly");
+}
+
+function priceFor(
+  pkg: {
+    monthlyPrice?: string | null;
+    biannualPrice?: string | null;
+    yearlyPrice?: string | null;
+    price: string;
+    availableIntervals?: BillingInterval[];
+    billingInterval: string;
+  },
+  interval: BillingInterval
+) {
+  if (interval === "monthly") return Number(pkg.monthlyPrice ?? (pkg.billingInterval === "monthly" ? pkg.price : 0));
+  if (interval === "biannual") return Number(pkg.biannualPrice ?? 0);
+  return Number(pkg.yearlyPrice ?? (pkg.billingInterval === "yearly" ? pkg.price : 0));
+}
+
+function intervalsFor(pkg: {
+  availableIntervals?: BillingInterval[];
+  monthlyPrice?: string | null;
+  biannualPrice?: string | null;
+  yearlyPrice?: string | null;
+  price: string;
+  billingInterval: string;
+}): BillingInterval[] {
+  if (pkg.availableIntervals?.length) return pkg.availableIntervals;
+  const out: BillingInterval[] = [];
+  if (priceFor(pkg, "monthly") > 0) out.push("monthly");
+  if (priceFor(pkg, "biannual") > 0) out.push("biannual");
+  if (priceFor(pkg, "yearly") > 0) out.push("yearly");
+  if (!out.length && Number(pkg.price) > 0) {
+    out.push(pkg.billingInterval === "yearly" ? "yearly" : "monthly");
+  }
+  return out;
+}
 
 export default function SubscribePage() {
   const { t } = useTranslation();
@@ -26,6 +69,7 @@ export default function SubscribePage() {
   });
 
   const [packageId, setPackageId] = useState<number | null>(null);
+  const [billingInterval, setBillingInterval] = useState<BillingInterval | null>(null);
   const [form, setForm] = useState({
     firstName: "",
     lastName: "",
@@ -33,6 +77,18 @@ export default function SubscribePage() {
     password: "",
     phone: "",
   });
+
+  const selected = (catalog.data?.packages || []).find((p) => p.id === packageId) || null;
+  const selectedIntervals = selected ? intervalsFor(selected) : [];
+
+  useEffect(() => {
+    if (!selected) {
+      setBillingInterval(null);
+      return;
+    }
+    const opts = intervalsFor(selected);
+    setBillingInterval((prev) => (prev && opts.includes(prev) ? prev : opts[0] || null));
+  }, [packageId, catalog.data?.packages]);
 
   if (catalog.isLoading) {
     return (
@@ -68,46 +124,88 @@ export default function SubscribePage() {
           {packages.length === 0 ? (
             <p className="text-sm text-muted-foreground">{t("packages.noPublicPackages")}</p>
           ) : (
-            packages.map((pkg) => (
-              <button
-                key={pkg.id}
-                type="button"
-                onClick={() => setPackageId(pkg.id)}
-                className={`w-full text-start border rounded-xl p-4 transition ${
-                  packageId === pkg.id
-                    ? "border-[var(--color-navy)] bg-[var(--color-navy)]/5"
-                    : "border-border hover:border-[var(--color-navy)]/40"
-                }`}
-              >
-                <p className="font-semibold">
-                  {pkg.highlightLabel ? `${pkg.highlightLabel} · ` : ""}
-                  {pkg.name}
-                </p>
-                <p className="text-sm text-muted-foreground mt-0.5">
-                  {Number(pkg.price).toFixed(2)} {pkg.currency} / {pkg.billingInterval}
-                  {pkg.consultationHoursPerPeriod > 0
-                    ? ` · ${t("packages.consultHours", { hours: pkg.consultationHoursPerPeriod })}`
-                    : ""}
-                  {pkg.casesPerPeriod > 0
-                    ? ` · ${t("packages.casesPerPeriod", { count: pkg.casesPerPeriod })}`
-                    : ""}
-                  {pkg.includedFixedHours > 0
-                    ? ` · ${t("packages.fixedHours", { hours: pkg.includedFixedHours })}`
-                    : ""}
-                </p>
-                {pkg.description ? (
-                  <p className="text-sm text-muted-foreground mt-2">{pkg.description}</p>
-                ) : null}
-                {(pkg.features || []).length > 0 ? (
-                  <ul className="text-xs text-muted-foreground mt-2 list-disc ps-4 space-y-0.5">
-                    {(pkg.features as string[]).map((f) => (
-                      <li key={f}>{f}</li>
-                    ))}
-                  </ul>
-                ) : null}
-              </button>
-            ))
+            packages.map((pkg) => {
+              const opts = intervalsFor(pkg);
+              return (
+                <button
+                  key={pkg.id}
+                  type="button"
+                  onClick={() => setPackageId(pkg.id)}
+                  className={`w-full text-start border rounded-xl p-4 transition ${
+                    packageId === pkg.id
+                      ? "border-[var(--color-navy)] bg-[var(--color-navy)]/5"
+                      : "border-border hover:border-[var(--color-navy)]/40"
+                  }`}
+                >
+                  <p className="font-semibold">
+                    {pkg.highlightLabel ? `${pkg.highlightLabel} · ` : ""}
+                    {pkg.name}
+                  </p>
+                  <p className="text-sm text-muted-foreground mt-0.5">
+                    {opts
+                      .map((iv) => {
+                        const amount = priceFor(pkg, iv);
+                        return `${amount.toFixed(2)} ${pkg.currency} / ${intervalLabel(iv, t)}`;
+                      })
+                      .join(" · ")}
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    {(pkg.consultationHoursPerYear ?? pkg.consultationHoursPerPeriod) > 0
+                      ? `${t("packages.consultHours", {
+                          hours: pkg.consultationHoursPerYear ?? pkg.consultationHoursPerPeriod,
+                        })} · `
+                      : ""}
+                    {(pkg.casesPerYear ?? pkg.casesPerPeriod) > 0
+                      ? t("packages.casesPerYear", {
+                          count: pkg.casesPerYear ?? pkg.casesPerPeriod,
+                        })
+                      : ""}
+                    {pkg.includedFixedHours > 0
+                      ? ` · ${t("packages.fixedHours", { hours: pkg.includedFixedHours })}`
+                      : ""}
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    {t("packages.minCommitmentHint")}
+                  </p>
+                  {pkg.description ? (
+                    <p className="text-sm text-muted-foreground mt-2">{pkg.description}</p>
+                  ) : null}
+                  {(pkg.features || []).length > 0 ? (
+                    <ul className="text-xs text-muted-foreground mt-2 list-disc ps-4 space-y-0.5">
+                      {(pkg.features as string[]).map((f) => (
+                        <li key={f}>{f}</li>
+                      ))}
+                    </ul>
+                  ) : null}
+                </button>
+              );
+            })
           )}
+
+          {selected && selectedIntervals.length > 0 ? (
+            <div>
+              <Label>{t("packages.chooseBilling")}</Label>
+              <div className="mt-1.5 grid gap-2">
+                {selectedIntervals.map((iv) => {
+                  const amount = priceFor(selected, iv);
+                  return (
+                    <button
+                      key={iv}
+                      type="button"
+                      onClick={() => setBillingInterval(iv)}
+                      className={`w-full text-start border rounded-lg px-3 py-2 text-sm ${
+                        billingInterval === iv
+                          ? "border-[var(--color-navy)] bg-[var(--color-navy)]/5"
+                          : "border-border"
+                      }`}
+                    >
+                      {intervalLabel(iv, t)} — {amount.toFixed(2)} {selected.currency}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          ) : null}
 
           <div className="grid grid-cols-2 gap-3 pt-2">
             <div>
@@ -158,6 +256,7 @@ export default function SubscribePage() {
             className="w-full bg-[var(--color-navy)] hover:bg-[var(--color-navy-light)] text-white"
             disabled={
               !packageId ||
+              !billingInterval ||
               !form.firstName ||
               !form.lastName ||
               !form.email ||
@@ -168,6 +267,7 @@ export default function SubscribePage() {
               register.mutate({
                 firmSlug,
                 packageId: packageId!,
+                billingInterval: billingInterval!,
                 firstName: form.firstName.trim(),
                 lastName: form.lastName.trim(),
                 email: form.email.trim(),

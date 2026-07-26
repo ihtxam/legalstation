@@ -162,6 +162,13 @@
       "when": 1785556400000,
       "tag": "0022_support_tickets",
       "breakpoints": true
+    },
+    {
+      "idx": 23,
+      "version": "5",
+      "when": 1785563600000,
+      "tag": "0023_client_package_multi_price",
+      "breakpoints": true
     }
   ]
 }
