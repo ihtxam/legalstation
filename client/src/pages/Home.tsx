@@ -188,7 +188,7 @@ export default function Home() {
           <div className="w-8 h-8 rounded-lg bg-[var(--color-navy)] flex items-center justify-center">
             <Scale className="w-4 h-4 text-white" />
           </div>
-          <span className="font-serif font-semibold text-xl text-foreground tracking-tight">LexFlow</span>
+          <span className="font-serif font-semibold text-xl text-foreground tracking-tight">Cliavo</span>
         </div>
         <div className="flex items-center gap-2">
           <LanguageSwitcher />
@@ -212,7 +212,7 @@ export default function Home() {
           }}
         />
         <div className="relative max-w-5xl mx-auto px-8 py-24 md:py-28 text-center">
-          <p className="font-serif text-white/90 text-2xl md:text-3xl tracking-tight mb-6">LexFlow</p>
+          <p className="font-serif text-white/90 text-2xl md:text-3xl tracking-tight mb-6">Cliavo</p>
           <h1 className="font-serif text-4xl md:text-5xl font-semibold text-white leading-tight mb-5">
             {t("home.title")}{" "}
             <span className="text-[var(--color-gold-light)]">{t("home.titleAccent")}</span>
@@ -556,7 +556,7 @@ export default function Home() {
             </h2>
             <p className="text-muted-foreground leading-relaxed mb-4">{t("home.onpremDesc")}</p>
             <Button variant="outline" asChild>
-              <a href="mailto:corporateshift@gmail.com?subject=LexFlow%20on-premise%20setup">
+              <a href="mailto:corporateshift@gmail.com?subject=Cliavo%20on-premise%20setup">
                 {t("home.contactOnprem")}
               </a>
             </Button>
@@ -568,10 +568,10 @@ export default function Home() {
         <div className="max-w-5xl mx-auto flex items-center justify-between text-muted-foreground text-sm flex-wrap gap-3">
           <div className="flex items-center gap-2">
             <Scale className="w-4 h-4" />
-            <span className="font-serif font-medium text-foreground">LexFlow</span>
+            <span className="font-serif font-medium text-foreground">Cliavo</span>
             <span>{t("home.footerTagline")}</span>
           </div>
-          <span>© {new Date().getFullYear()} LexFlow</span>
+          <span>© {new Date().getFullYear()} Cliavo</span>
         </div>
       </footer>
     </div>

@@ -1,7 +1,7 @@
 import { useAuth } from "@/_core/hooks/useAuth";
 import { startLogin } from "@/const";
 import { trpc } from "@/lib/trpc";
-import LexLayout from "@/components/LexLayout";
+import AppLayout from "@/components/AppLayout";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -41,7 +41,7 @@ export default function MessagesPage() {
   const selectedCase = cases?.find(c => c.id === selectedCaseId);
 
   return (
-    <LexLayout title={t("messages.title")} breadcrumb={[{ label: t("messages.title") }]}>
+    <AppLayout title={t("messages.title")} breadcrumb={[{ label: t("messages.title") }]}>
       <div className="flex h-full" style={{ height: "calc(100vh - 65px)" }}>
         {/* Case list sidebar */}
         <div className="w-72 border-r border-border bg-card flex flex-col shrink-0">
@@ -128,6 +128,6 @@ export default function MessagesPage() {
           )}
         </div>
       </div>
-    </LexLayout>
+    </AppLayout>
   );
 }

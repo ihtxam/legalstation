@@ -75,7 +75,7 @@ export function registerPasswordAuthRoutes(app: Express) {
       if (!firm) {
         return res.json({
           mode: "platform",
-          appName: "LexFlow",
+          appName: "Cliavo",
           loginHint: null,
         });
       }
@@ -93,7 +93,7 @@ export function registerPasswordAuthRoutes(app: Express) {
       console.error("[Auth] tenant resolve failed", err?.message || err);
       return res.json({
         mode: "platform",
-        appName: "LexFlow",
+        appName: "Cliavo",
         loginHint: null,
       });
     }
@@ -118,7 +118,7 @@ export function registerPasswordAuthRoutes(app: Express) {
       if (portal === "platform") {
         if (user.role !== "superadmin") {
           return res.status(403).json({
-            error: "Platform login is for LexFlow superadmins only. Use your firm login URL.",
+            error: "Platform login is for Cliavo superadmins only. Use your firm login URL.",
           });
         }
       } else {

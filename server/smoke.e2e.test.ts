@@ -74,7 +74,7 @@ describe("smoke e2e (seeded demo users)", () => {
     });
 
     const me = await caller.auth.me();
-    expect(me?.email).toBe("admin@demo.lexflow.ch");
+    expect(me?.email).toBe("admin@demo.cliavo.ch");
 
     const firm = await caller.firm.myFirm();
     expect(firm?.firm.slug).toBe("demo-cabinet");
@@ -83,7 +83,7 @@ describe("smoke e2e (seeded demo users)", () => {
     expect(cases.some((c) => c.referenceNumber === "DEMO-2026-001")).toBe(true);
 
     const clients = await caller.clients.list({});
-    expect(clients.some((c) => c.email === "client@demo.lexflow.ch")).toBe(true);
+    expect(clients.some((c) => c.email === "client@demo.cliavo.ch")).toBe(true);
 
     const clientUser = seeded.users.find((u) => u.openId === "demo-client")!;
     const clientCaller = makeCaller({

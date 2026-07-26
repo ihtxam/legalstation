@@ -242,7 +242,7 @@ export async function renderInvoicePdf(data: InvoicePdfData): Promise<Buffer> {
   doc.setFontSize(8);
   doc.setTextColor(140, 140, 140);
   doc.text(
-    `${data.firmName} · Generated ${formatDateSwiss(new Date())} · LexFlow`,
+    `${data.firmName} · Generated ${formatDateSwiss(new Date())} · Cliavo`,
     margin,
     pageHeight - 8
   );

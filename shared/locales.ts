@@ -1,4 +1,4 @@
-/** Supported UI locales for LexFlow (product + platform). */
+/** Supported UI locales for Cliavo (product + platform). */
 export const APP_LOCALES = ["en", "fr", "de", "it", "ar"] as const;
 
 export type AppLocale = (typeof APP_LOCALES)[number];

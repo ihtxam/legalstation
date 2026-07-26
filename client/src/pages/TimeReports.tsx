@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { format, startOfMonth, endOfMonth, subMonths } from "date-fns";
 import { toast } from "sonner";
 import { useLocation } from "wouter";
-import LexLayout from "@/components/LexLayout";
+import AppLayout from "@/components/AppLayout";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { startLogin } from "@/const";
 import { trpc } from "@/lib/trpc";
@@ -288,7 +288,7 @@ export default function TimeReportsPage() {
   };
 
   return (
-    <LexLayout breadcrumb={[{ label: t("timeReports.breadcrumb") }]}>
+    <AppLayout breadcrumb={[{ label: t("timeReports.breadcrumb") }]}>
       <div className="p-6 max-w-6xl mx-auto space-y-6">
         <div>
           <h1 className="text-3xl font-bold text-foreground">{t("timeReports.title")}</h1>
@@ -723,6 +723,6 @@ export default function TimeReportsPage() {
           </TabsContent>
         </Tabs>
       </div>
-    </LexLayout>
+    </AppLayout>
   );
 }

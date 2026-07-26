@@ -1,7 +1,7 @@
 import { useAuth } from "@/_core/hooks/useAuth";
 import { startLogin } from "@/const";
 import { trpc } from "@/lib/trpc";
-import LexLayout from "@/components/LexLayout";
+import AppLayout from "@/components/AppLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -158,7 +158,7 @@ export default function FirmLeadsPage() {
   };
 
   return (
-    <LexLayout breadcrumb={[{ label: t("nav.leads") }]}>
+    <AppLayout breadcrumb={[{ label: t("nav.leads") }]}>
       <div className="p-6 space-y-4">
         <div className="flex items-center justify-between gap-3 flex-wrap">
           <div>
@@ -386,6 +386,6 @@ export default function FirmLeadsPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </LexLayout>
+    </AppLayout>
   );
 }

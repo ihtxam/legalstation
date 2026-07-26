@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { startLogin } from "@/const";
 import { trpc } from "@/lib/trpc";
-import LexLayout from "@/components/LexLayout";
+import AppLayout from "@/components/AppLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -82,24 +82,24 @@ export default function FirmPackagesPage() {
 
   if (loading || !firmData) {
     return (
-      <LexLayout title={t("packages.title")}>
+      <AppLayout title={t("packages.title")}>
         <div className="p-6">
           <Skeleton className="h-64 w-full" />
         </div>
-      </LexLayout>
+      </AppLayout>
     );
   }
 
   if (!canManage) {
     return (
-      <LexLayout title={t("packages.title")}>
+      <AppLayout title={t("packages.title")}>
         <div className="p-6 text-muted-foreground">{t("packages.adminOnly")}</div>
-      </LexLayout>
+      </AppLayout>
     );
   }
 
   return (
-    <LexLayout title={t("packages.title")} breadcrumb={[{ label: t("packages.title") }]}>
+    <AppLayout title={t("packages.title")} breadcrumb={[{ label: t("packages.title") }]}>
       <div className="p-6 max-w-4xl mx-auto space-y-6">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
@@ -300,6 +300,6 @@ export default function FirmPackagesPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </LexLayout>
+    </AppLayout>
   );
 }

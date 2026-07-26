@@ -32,20 +32,20 @@ ensure_database() {
   local mysql_bin
   mysql_bin="$(command -v mariadb || command -v mysql)"
 
-  echo "[cloud-start] Ensuring lexflow database and user exist..."
+  echo "[cloud-start] Ensuring cliavo database and user exist..."
   sudo "$mysql_bin" -e "
-    CREATE DATABASE IF NOT EXISTS lexflow CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-    CREATE USER IF NOT EXISTS 'lexflow'@'%' IDENTIFIED BY 'lexflow';
-    CREATE USER IF NOT EXISTS 'lexflow'@'localhost' IDENTIFIED BY 'lexflow';
-    GRANT ALL PRIVILEGES ON lexflow.* TO 'lexflow'@'%';
-    GRANT ALL PRIVILEGES ON lexflow.* TO 'lexflow'@'localhost';
+    CREATE DATABASE IF NOT EXISTS cliavo CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+    CREATE USER IF NOT EXISTS 'cliavo'@'%' IDENTIFIED BY 'cliavo';
+    CREATE USER IF NOT EXISTS 'cliavo'@'localhost' IDENTIFIED BY 'cliavo';
+    GRANT ALL PRIVILEGES ON cliavo.* TO 'cliavo'@'%';
+    GRANT ALL PRIVILEGES ON cliavo.* TO 'cliavo'@'localhost';
     FLUSH PRIVILEGES;
   " 2>/dev/null || sudo "$mysql_bin" -uroot -e "
-    CREATE DATABASE IF NOT EXISTS lexflow CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-    CREATE USER IF NOT EXISTS 'lexflow'@'%' IDENTIFIED BY 'lexflow';
-    CREATE USER IF NOT EXISTS 'lexflow'@'localhost' IDENTIFIED BY 'lexflow';
-    GRANT ALL PRIVILEGES ON lexflow.* TO 'lexflow'@'%';
-    GRANT ALL PRIVILEGES ON lexflow.* TO 'lexflow'@'localhost';
+    CREATE DATABASE IF NOT EXISTS cliavo CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+    CREATE USER IF NOT EXISTS 'cliavo'@'%' IDENTIFIED BY 'cliavo';
+    CREATE USER IF NOT EXISTS 'cliavo'@'localhost' IDENTIFIED BY 'cliavo';
+    GRANT ALL PRIVILEGES ON cliavo.* TO 'cliavo'@'%';
+    GRANT ALL PRIVILEGES ON cliavo.* TO 'cliavo'@'localhost';
     FLUSH PRIVILEGES;
   "
 }
@@ -67,4 +67,4 @@ start_mariadb || true
 ensure_database || true
 ensure_env
 
-echo "[cloud-start] Ready. DATABASE_URL default: mysql://lexflow:lexflow@127.0.0.1:3306/lexflow"
+echo "[cloud-start] Ready. DATABASE_URL default: mysql://cliavo:cliavo@127.0.0.1:3306/cliavo"

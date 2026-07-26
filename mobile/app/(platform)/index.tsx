@@ -26,7 +26,7 @@ export default function PlatformHome() {
     <Screen>
       <ScrollView contentContainerStyle={{ paddingBottom: 40 }}>
         <Title>Platform</Title>
-        <Muted>Superadmin · {meName || "LexFlow"}</Muted>
+        <Muted>Superadmin · {meName || "Cliavo"}</Muted>
 
         <View style={styles.grid}>
           <Stat label="Firms" value={String(list.length)} />

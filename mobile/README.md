@@ -1,4 +1,4 @@
-# LexFlow Mobile (React Native / Expo)
+# Cliavo Mobile (React Native / Expo)
 
 One Android & iOS app for **law firm staff** and **clients**, with role-based navigation after login.
 
@@ -8,13 +8,13 @@ One Android & iOS app for **law firm staff** and **clients**, with role-based na
 | Client | My cases · Invoices · Profile |
 | Platform superadmin | Overview · Firms · Leads · Account |
 
-Clients can open a case, **scan documents with the camera**, pick photos/files, and message their lawyer. Staff see firm-wide (or assigned) cases according to LexFlow capabilities. Superadmins sign in with the same screen — the app retries `portal=platform` automatically.
+Clients can open a case, **scan documents with the camera**, pick photos/files, and message their lawyer. Staff see firm-wide (or assigned) cases according to Cliavo capabilities. Superadmins sign in with the same screen — the app retries `portal=platform` automatically.
 
 ## Prerequisites
 
 - Node 22+
 - [Expo Go](https://expo.dev/go) on a phone, or Android Studio / Xcode for simulators
-- Running LexFlow API (local or production)
+- Running Cliavo API (local or production)
 
 ## Configure API URL
 

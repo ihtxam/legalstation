@@ -46,7 +46,7 @@ export default function LoginScreen() {
         behavior={Platform.OS === "ios" ? "padding" : undefined}
       >
         <View style={styles.brand}>
-          <Text style={styles.brandName}>LexFlow</Text>
+          <Text style={styles.brandName}>Cliavo</Text>
           <Text style={styles.brandTag}>Firm · Client · Platform</Text>
         </View>
 

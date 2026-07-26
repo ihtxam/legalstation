@@ -15,7 +15,7 @@ export const ENV = {
   brevoApiKey: process.env.BREVO_API_KEY ?? "",
   /** Verified Brevo sender address (must match a sender in the Brevo account) */
   emailFrom: process.env.EMAIL_FROM ?? "",
-  emailFromName: process.env.EMAIL_FROM_NAME ?? "LexFlow",
+  emailFromName: process.env.EMAIL_FROM_NAME ?? "Cliavo",
 
   /** Canonical public URL for emails / redirects (e.g. https://legal.webprintmedia.swiss) */
   appUrl: process.env.APP_URL ?? "",

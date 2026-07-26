@@ -28,7 +28,7 @@ export function getAppBaseUrl(req?: Request): string {
   return "http://localhost:3000";
 }
 
-/** Extract subdomain from Host against APP_BASE_DOMAIN (e.g. firm.lexflow.ch → firm). */
+/** Extract subdomain from Host against APP_BASE_DOMAIN (e.g. firm.cliavo.ch → firm). */
 export function extractSubdomain(hostHeader: string | undefined): string | null {
   if (!hostHeader) return null;
   const host = hostHeader.split(":")[0]?.toLowerCase() ?? "";

@@ -20,7 +20,7 @@ function dayWindow(d: Date) {
   return { start, end: endOfDay(d) };
 }
 
-/** Aggregate LexFlow + imported events for the signed-in user. */
+/** Aggregate Cliavo + imported events for the signed-in user. */
 export async function listUserAgenda(opts: {
   userId: number;
   from: Date;

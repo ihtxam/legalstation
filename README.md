@@ -1,4 +1,4 @@
-# LexFlow (LegalStation)
+# Cliavo (LegalStation)
 
 Swiss legal practice management platform — multi-tenant SaaS for law firms: cases, documents, messaging, billing, time tracking, and client portal.
 
@@ -75,7 +75,7 @@ This repo includes a committed cloud environment:
 After the environment image builds once, agents will:
 
 1. `pnpm install --frozen-lockfile`
-2. Start MariaDB and ensure the `lexflow` database exists
+2. Start MariaDB and ensure the `cliavo` database exists
 3. Launch `pnpm dev` on port **3000**
 
 ## Project layout

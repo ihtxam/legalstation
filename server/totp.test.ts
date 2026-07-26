@@ -11,7 +11,7 @@ describe("totp helpers", () => {
   it("generates a verifiable TOTP secret", () => {
     const { secret } = generateTotpSecret("alice@example.com");
     const totp = new OTPAuth.TOTP({
-      issuer: "LexFlow",
+      issuer: "Cliavo",
       label: "alice@example.com",
       algorithm: "SHA1",
       digits: 6,

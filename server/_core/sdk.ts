@@ -171,7 +171,7 @@ class SDKServer {
       {
         openId,
         // Fallback when Manus OAuth is not configured (demo / local HTTP hosts)
-        appId: ENV.appId || "lexflow-demo",
+        appId: ENV.appId || "cliavo-demo",
         name: options.name || openId,
       },
       options

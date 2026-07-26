@@ -1,7 +1,7 @@
 import { useAuth } from "@/_core/hooks/useAuth";
 import { startLogin } from "@/const";
 import { trpc } from "@/lib/trpc";
-import LexLayout from "@/components/LexLayout";
+import AppLayout from "@/components/AppLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -262,7 +262,7 @@ export default function SettingsPage() {
   };
 
   return (
-    <LexLayout title={t("settings.title")} breadcrumb={[{ label: t("settings.title") }]}>
+    <AppLayout title={t("settings.title")} breadcrumb={[{ label: t("settings.title") }]}>
       <div className="p-6 max-w-5xl mx-auto">
         <Tabs defaultValue={canManageFirm ? "firm" : "language"}>
           <TabsList className="bg-muted mb-6 flex flex-wrap h-auto">
@@ -670,7 +670,7 @@ export default function SettingsPage() {
           </TabsContent>
         </Tabs>
       </div>
-    </LexLayout>
+    </AppLayout>
   );
 }
 

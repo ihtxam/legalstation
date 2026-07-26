@@ -18,13 +18,13 @@ interface EmailPayload {
 export function getEmailSender(): { email: string; name: string } {
   const email = (ENV.emailFrom || "").trim();
   if (email) {
-    return { email, name: ENV.emailFromName || "LexFlow" };
+    return { email, name: ENV.emailFromName || "Cliavo" };
   }
-  // Last resort — many Brevo accounts reject unverified domains like noreply@lexflow.ch
+  // Last resort — many Brevo accounts reject unverified domains like noreply@cliavo.ch
   console.warn(
-    "[Email] EMAIL_FROM is not set; using noreply@lexflow.ch (likely undeliverable until verified in Brevo)"
+    "[Email] EMAIL_FROM is not set; using noreply@cliavo.ch (likely undeliverable until verified in Brevo)"
   );
-  return { email: "noreply@lexflow.ch", name: ENV.emailFromName || "LexFlow" };
+  return { email: "noreply@cliavo.ch", name: ENV.emailFromName || "Cliavo" };
 }
 
 export async function sendEmail(payload: EmailPayload): Promise<{ messageId: string }> {
@@ -145,9 +145,9 @@ export async function sendFirmCredentialsEmail(opts: {
     <html>
       <body style="font-family: Inter, sans-serif; color: #1a1a1a;">
         <div style="max-width: 600px; margin: 0 auto; padding: 20px;">
-          <h2 style="color: #001f3f; margin-bottom: 20px;">Your LexFlow workspace is ready</h2>
+          <h2 style="color: #001f3f; margin-bottom: 20px;">Your Cliavo workspace is ready</h2>
           <p>Hi ${ownerName},</p>
-          <p>Your law firm <strong>${firmName}</strong> has been provisioned on LexFlow.</p>
+          <p>Your law firm <strong>${firmName}</strong> has been provisioned on Cliavo.</p>
           <p>Sign in with these credentials, then complete onboarding (branding, currency, taxes, subdomain):</p>
           <div style="background-color: #f5f5f5; padding: 16px; border-radius: 8px; margin: 20px 0;">
             <p style="margin: 0 0 8px;"><strong>Login URL:</strong> <a href="${loginUrl}">${loginUrl}</a></p>
@@ -157,11 +157,11 @@ export async function sendFirmCredentialsEmail(opts: {
           <p style="color: #666; font-size: 14px;">You will be asked to change this password on first login. Do not share these credentials.</p>
           <p style="margin: 30px 0;">
             <a href="${loginUrl}" style="background-color: #001f3f; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block;">
-              Sign in to LexFlow
+              Sign in to Cliavo
             </a>
           </p>
           <hr style="border: none; border-top: 1px solid #ddd; margin: 30px 0;" />
-          <p style="color: #999; font-size: 12px;">LexFlow — Swiss Legal Practice Management</p>
+          <p style="color: #999; font-size: 12px;">Cliavo — Swiss Legal Practice Management</p>
         </div>
       </body>
     </html>
@@ -169,7 +169,7 @@ export async function sendFirmCredentialsEmail(opts: {
 
   await sendEmail({
     to: [{ email, name: ownerName }],
-    subject: `${firmName} — your LexFlow login credentials`,
+    subject: `${firmName} — your Cliavo login credentials`,
     htmlContent,
   });
 }
@@ -197,7 +197,7 @@ export async function sendMessageNotificationEmail(
             </a>
           </p>
           <hr style="border: none; border-top: 1px solid #ddd; margin: 30px 0;" />
-          <p style="color: #999; font-size: 12px;">LexFlow — Swiss Legal Practice Management</p>
+          <p style="color: #999; font-size: 12px;">Cliavo — Swiss Legal Practice Management</p>
         </div>
       </body>
     </html>
@@ -233,7 +233,7 @@ export async function sendDocumentUploadNotificationEmail(
             </a>
           </p>
           <hr style="border: none; border-top: 1px solid #ddd; margin: 30px 0;" />
-          <p style="color: #999; font-size: 12px;">LexFlow — Swiss Legal Practice Management</p>
+          <p style="color: #999; font-size: 12px;">Cliavo — Swiss Legal Practice Management</p>
         </div>
       </body>
     </html>
@@ -271,7 +271,7 @@ export async function sendCaseUpdateEmail(opts: {
             </a>
           </p>
           <hr style="border: none; border-top: 1px solid #ddd; margin: 30px 0;" />
-          <p style="color: #999; font-size: 12px;">LexFlow — Swiss Legal Practice Management</p>
+          <p style="color: #999; font-size: 12px;">Cliavo — Swiss Legal Practice Management</p>
         </div>
       </body>
     </html>
@@ -309,7 +309,7 @@ export async function sendDocumentRequestEmail(opts: {
             </a>
           </p>
           <hr style="border: none; border-top: 1px solid #ddd; margin: 30px 0;" />
-          <p style="color: #999; font-size: 12px;">LexFlow — Swiss Legal Practice Management</p>
+          <p style="color: #999; font-size: 12px;">Cliavo — Swiss Legal Practice Management</p>
         </div>
       </body>
     </html>
@@ -346,7 +346,7 @@ export async function sendLeadNotificationEmail(opts: {
   `;
   await sendEmail({
     to: [{ email: opts.toEmail }],
-    subject: `LexFlow lead (${opts.type}): ${opts.firmName}`,
+    subject: `Cliavo lead (${opts.type}): ${opts.firmName}`,
     htmlContent,
   });
 }

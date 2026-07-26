@@ -19,7 +19,7 @@ describe("platform lead input", () => {
         contactName: "Anna Müller",
         email: "anna@example.ch",
         phone: "+41 44 123 45 67",
-        message: "Interested in LexFlow",
+        message: "Interested in Cliavo",
       });
       expect(parsed.type).toBe(type);
       expect(parsed.email).toBe("anna@example.ch");

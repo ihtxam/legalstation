@@ -1,4 +1,4 @@
-# Cursor Cloud Agent base image for LexFlow
+# Cursor Cloud Agent base image for Cliavo
 # Paths in environment.json are relative to `.cursor/`.
 # Do not COPY the project — Cursor checks out the commit into the workspace.
 

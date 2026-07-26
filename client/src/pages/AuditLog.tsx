@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { format } from "date-fns";
 import { toast } from "sonner";
-import LexLayout from "@/components/LexLayout";
+import AppLayout from "@/components/AppLayout";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { startLogin } from "@/const";
 import { trpc } from "@/lib/trpc";
@@ -38,14 +38,14 @@ export default function AuditLogPage() {
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `lexflow-audit-${new Date().toISOString().slice(0, 10)}.json`;
+    a.download = `cliavo-audit-${new Date().toISOString().slice(0, 10)}.json`;
     a.click();
     URL.revokeObjectURL(url);
     toast.success(t("audit.downloaded"));
   };
 
   return (
-    <LexLayout breadcrumb={[{ label: t("audit.breadcrumb") }]}>
+    <AppLayout breadcrumb={[{ label: t("audit.breadcrumb") }]}>
       <div className="p-6 max-w-6xl mx-auto space-y-6">
         <div>
           <h1 className="text-3xl font-bold">{t("audit.title")}</h1>
@@ -117,6 +117,6 @@ export default function AuditLogPage() {
           </Table>
         </div>
       </div>
-    </LexLayout>
+    </AppLayout>
   );
 }

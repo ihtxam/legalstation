@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { startLogin } from "@/const";
 import { trpc } from "@/lib/trpc";
-import LexLayout from "@/components/LexLayout";
+import AppLayout from "@/components/AppLayout";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -194,9 +194,9 @@ export default function ClientPortalPage() {
 
   if (loading) {
     return (
-      <LexLayout title={t("portal.title")}>
+      <AppLayout title={t("portal.title")}>
         <Skeleton className="h-64 w-full" />
-      </LexLayout>
+      </AppLayout>
     );
   }
 
@@ -205,7 +205,7 @@ export default function ClientPortalPage() {
   const pendingRequests = (docRequests || []).filter((r) => r.status === "pending");
 
   return (
-    <LexLayout breadcrumb={[{ label: t("portal.title") }]}>
+    <AppLayout breadcrumb={[{ label: t("portal.title") }]}>
       <div className="p-6 max-w-6xl mx-auto space-y-6">
         <div className="flex items-start justify-between gap-4 flex-wrap">
           <div className="flex items-start gap-4">
@@ -725,6 +725,6 @@ export default function ClientPortalPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </LexLayout>
+    </AppLayout>
   );
 }

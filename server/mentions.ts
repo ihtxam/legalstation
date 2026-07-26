@@ -59,7 +59,7 @@ export async function notifyMentionedUsers(opts: {
                 <div style="background:#f5f5f5;padding:12px;border-left:4px solid #001f3f;margin:16px 0;">
                   ${opts.preview.replace(/</g, "&lt;").slice(0, 500)}
                 </div>
-                <p><a href="${opts.url}" style="background:#001f3f;color:#fff;padding:10px 18px;text-decoration:none;border-radius:6px;display:inline-block;">Open in LexFlow</a></p>
+                <p><a href="${opts.url}" style="background:#001f3f;color:#fff;padding:10px 18px;text-decoration:none;border-radius:6px;display:inline-block;">Open in Cliavo</a></p>
               </div>
             </body></html>
           `,

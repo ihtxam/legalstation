@@ -2,7 +2,7 @@ import { createCipheriv, createDecipheriv, createHash, randomBytes } from "crypt
 import { ENV } from "../_core/env";
 
 function keyBytes(): Buffer {
-  return createHash("sha256").update(ENV.cookieSecret || "lexflow-calendar").digest();
+  return createHash("sha256").update(ENV.cookieSecret || "cliavo-calendar").digest();
 }
 
 /** Encrypt a secret string for DB storage (AES-256-GCM). */

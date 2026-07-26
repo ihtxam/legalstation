@@ -41,7 +41,7 @@ export function createIcloudCalendarClient(opts: {
     return [
       "BEGIN:VCALENDAR",
       "VERSION:2.0",
-      "PRODID:-//LexFlow//Calendar//EN",
+      "PRODID:-//Cliavo//Calendar//EN",
       "BEGIN:VEVENT",
       `UID:${input.uid}`,
       `DTSTAMP:${new Date().toISOString().replace(/[-:]/g, "").replace(/\.\d{3}Z$/, "Z")}`,
@@ -138,7 +138,7 @@ export function createIcloudCalendarClient(opts: {
     },
 
     async upsertEvent(input: UpsertExternalEventInput) {
-      const uid = input.externalId || `${randomUUID()}@lexflow`;
+      const uid = input.externalId || `${randomUUID()}@cliavo`;
       const href = `${calendarUrl}${encodeURIComponent(uid)}.ics`;
       const ical = toIcal({ ...input, uid });
       const { res } = await dav("PUT", href, ical, {

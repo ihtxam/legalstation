@@ -2,7 +2,7 @@
 
 Swiss DPA / TOMs templates live under `docs/`. This page lists **what the product implements today** vs **what operators must run**.
 
-## Implemented in LexFlow
+## Implemented in Cliavo
 
 | Control | Where |
 |---------|--------|
@@ -31,7 +31,7 @@ Swiss DPA / TOMs templates live under `docs/`. This page lists **what the produc
 
 1. Sign in as firm admin
 2. Open **Audit log** (`/audit`)
-3. Export JSON (`lexflow.audit.v1`) into your SIEM pipeline
+3. Export JSON (`cliavo.audit.v1`) into your SIEM pipeline
 
 Current export covers **document** access events (upload/view/download/delete). Auth and payment events should be scraped from reverse-proxy / Stripe / Adyen logs until those streams are unified.
 

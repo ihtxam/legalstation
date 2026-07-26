@@ -1,7 +1,7 @@
-# Encryption at Rest — LexFlow Configuration Guide
+# Encryption at Rest — Cliavo Configuration Guide
 
 ## Database (MySQL / MariaDB)
-LexFlow uses MySQL via Drizzle. Enable encryption at the infrastructure layer:
+Cliavo uses MySQL via Drizzle. Enable encryption at the infrastructure layer:
 
 1. Set `DB_ENCRYPTION_AT_REST=true` so the app reports encryption as configured.
 2. On managed MySQL: enable provider TDE / storage encryption.

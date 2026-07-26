@@ -1,4 +1,4 @@
-# Backup Encryption & Offsite Policy — LexFlow
+# Backup Encryption & Offsite Policy — Cliavo
 
 ## Objectives
 - RPO (Recovery Point Objective): ≤ 24 hours (target ≤ 4 hours for SaaS production)

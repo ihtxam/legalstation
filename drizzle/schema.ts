@@ -157,7 +157,7 @@ export const clients = mysqlTable("clients", {
 export type Client = typeof clients.$inferSelect;
 export type InsertClient = typeof clients.$inferInsert;
 
-// ─── Firm → client legal service packages (not LexFlow SaaS plans) ───────────
+// ─── Firm → client legal service packages (not Cliavo SaaS plans) ───────────
 export const firmClientPackages = mysqlTable("firm_client_packages", {
   id: int("id").autoincrement().primaryKey(),
   firmId: int("firmId").notNull(),
@@ -800,7 +800,7 @@ export const calendarConnections = mysqlTable("calendar_connections", {
   caldavUrl: varchar("caldavUrl", { length: 512 }),
   caldavUsername: varchar("caldavUsername", { length: 320 }),
   syncEnabled: boolean("syncEnabled").notNull().default(true),
-  /** both = two-way; push = LexFlow→external; pull = external→LexFlow */
+  /** both = two-way; push = Cliavo→external; pull = external→Cliavo */
   syncDirection: mysqlEnum("syncDirection", ["both", "push", "pull"]).notNull().default("both"),
   lastSyncedAt: timestamp("lastSyncedAt"),
   lastError: text("lastError"),
@@ -811,7 +811,7 @@ export const calendarConnections = mysqlTable("calendar_connections", {
 export type CalendarConnection = typeof calendarConnections.$inferSelect;
 export type InsertCalendarConnection = typeof calendarConnections.$inferInsert;
 
-/** LexFlow-native personal agenda items (sync out to connected calendars). */
+/** Cliavo-native personal agenda items (sync out to connected calendars). */
 export const calendarPersonalEvents = mysqlTable("calendar_personal_events", {
   id: int("id").autoincrement().primaryKey(),
   userId: int("userId").notNull(),
@@ -829,7 +829,7 @@ export const calendarPersonalEvents = mysqlTable("calendar_personal_events", {
 export type CalendarPersonalEvent = typeof calendarPersonalEvents.$inferSelect;
 export type InsertCalendarPersonalEvent = typeof calendarPersonalEvents.$inferInsert;
 
-/** Events pulled from external calendars (shown in LexFlow agenda). */
+/** Events pulled from external calendars (shown in Cliavo agenda). */
 export const calendarImportedEvents = mysqlTable("calendar_imported_events", {
   id: int("id").autoincrement().primaryKey(),
   connectionId: int("connectionId").notNull(),
@@ -850,7 +850,7 @@ export const calendarImportedEvents = mysqlTable("calendar_imported_events", {
 export type CalendarImportedEvent = typeof calendarImportedEvents.$inferSelect;
 export type InsertCalendarImportedEvent = typeof calendarImportedEvents.$inferInsert;
 
-/** Maps LexFlow agenda entities ↔ external calendar event ids (dedupe / two-way). */
+/** Maps Cliavo agenda entities ↔ external calendar event ids (dedupe / two-way). */
 export const calendarEventLinks = mysqlTable("calendar_event_links", {
   id: int("id").autoincrement().primaryKey(),
   connectionId: int("connectionId").notNull(),

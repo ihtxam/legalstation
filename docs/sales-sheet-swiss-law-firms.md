@@ -1,9 +1,9 @@
-# LexFlow — Sales Sheet for Swiss Law Firms
+# Cliavo — Sales Sheet for Swiss Law Firms
 
 ## One-liner
 Modern practice management for Swiss law firms: cases, documents, client portal, messaging, Swiss VAT billing, time tracking, and optional on-premise deployment.
 
-## Why Swiss firms choose LexFlow
+## Why Swiss firms choose Cliavo
 - **Swiss-ready billing:** CHF, Swiss VAT rates, Adyen/Stripe payment links  
 - **Client portal:** shared documents, case status, outstanding invoices  
 - **Security posture:** RBAC, audit logs, SIEM export, encryption controls  

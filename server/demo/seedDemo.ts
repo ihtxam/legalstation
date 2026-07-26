@@ -12,21 +12,21 @@ import { getDb } from "../db";
 export const DEMO_USERS = [
   {
     openId: "demo-admin",
-    email: "admin@demo.lexflow.ch",
+    email: "admin@demo.cliavo.ch",
     name: "Demo Admin",
     role: "admin" as const,
     firmRole: "admin" as const,
   },
   {
     openId: "demo-lawyer",
-    email: "lawyer@demo.lexflow.ch",
+    email: "lawyer@demo.cliavo.ch",
     name: "Demo Lawyer",
     role: "user" as const,
     firmRole: "lawyer" as const,
   },
   {
     openId: "demo-client",
-    email: "client@demo.lexflow.ch",
+    email: "client@demo.cliavo.ch",
     name: "Demo Client",
     role: "user" as const,
     firmRole: null,
@@ -51,7 +51,7 @@ export async function seedDemoData(): Promise<SeedDemoResult> {
     await db.insert(firms).values({
       name: "Cabinet Demo SA",
       slug,
-      email: "hello@demo.lexflow.ch",
+      email: "hello@demo.cliavo.ch",
       address: "Rue du Rhône 1, 1204 Genève",
       phone: "+41 22 000 00 00",
       vatNumber: "CHE-000.000.000 MWST",
@@ -118,7 +118,7 @@ export async function seedDemoData(): Promise<SeedDemoResult> {
   let [clientRow] = await db
     .select()
     .from(clients)
-    .where(eq(clients.email, "client@demo.lexflow.ch"))
+    .where(eq(clients.email, "client@demo.cliavo.ch"))
     .limit(1);
   if (!clientRow) {
     await db.insert(clients).values({
@@ -127,7 +127,7 @@ export async function seedDemoData(): Promise<SeedDemoResult> {
       type: "individual",
       firstName: "Demo",
       lastName: "Client",
-      email: "client@demo.lexflow.ch",
+      email: "client@demo.cliavo.ch",
       status: "active",
       country: "Switzerland",
       termsAcceptedAt: new Date(),
@@ -136,7 +136,7 @@ export async function seedDemoData(): Promise<SeedDemoResult> {
     [clientRow] = await db
       .select()
       .from(clients)
-      .where(eq(clients.email, "client@demo.lexflow.ch"))
+      .where(eq(clients.email, "client@demo.cliavo.ch"))
       .limit(1);
   } else if (!clientRow.userId) {
     await db.update(clients).set({ userId: clientUser.id, status: "active" }).where(eq(clients.id, clientRow.id));

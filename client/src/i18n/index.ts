@@ -8,7 +8,7 @@ import it from "./locales/it.json";
 import ar from "./locales/ar.json";
 
 const saved =
-  typeof window !== "undefined" ? localStorage.getItem("lexflow_locale") : null;
+  typeof window !== "undefined" ? localStorage.getItem("cliavo_locale") : null;
 const initialLng = isAppLocale(saved) ? saved : "en";
 
 void i18n.use(initReactI18next).init({
@@ -36,7 +36,7 @@ applyDocumentLocale(initialLng);
 export default i18n;
 
 export function setAppLocale(locale: AppLocale) {
-  localStorage.setItem("lexflow_locale", locale);
+  localStorage.setItem("cliavo_locale", locale);
   applyDocumentLocale(locale);
   void i18n.changeLanguage(locale);
 }

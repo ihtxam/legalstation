@@ -2,7 +2,7 @@ import * as OTPAuth from "otpauth";
 import { createHmac, timingSafeEqual } from "crypto";
 import { ENV } from "./_core/env";
 
-const ISSUER = "LexFlow";
+const ISSUER = "Cliavo";
 
 export function generateTotpSecret(accountName: string): {
   secret: string;
@@ -66,5 +66,5 @@ export function verifyTwoFactorOk(
   return timingSafeEqual(a, b);
 }
 
-export const TWO_FACTOR_COOKIE = "lexflow_2fa_ok";
+export const TWO_FACTOR_COOKIE = "cliavo_2fa_ok";
 export const TWO_FACTOR_TTL_MS = 12 * 60 * 60 * 1000;

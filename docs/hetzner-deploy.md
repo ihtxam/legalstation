@@ -1,4 +1,4 @@
-# Deploy LexFlow on a Hetzner server
+# Deploy Cliavo on a Hetzner server
 
 This guide targets a single **Hetzner Cloud** VPS (CX22 / CPX21 or larger) in a Swiss or EU location (`fsn1`, `nbg1`, or `hel1`). Prefer **Falkenstein (`fsn1`)** or **Nuremberg (`nbg1`)** for Swiss/EU data residency claims.
 
@@ -39,14 +39,14 @@ curl -fsSL https://get.docker.com | sh
 systemctl enable --now docker
 
 # Optional non-root user
-adduser --disabled-password --gecos "" lexflow
-usermod -aG docker,sudo lexflow
+adduser --disabled-password --gecos "" cliavo
+usermod -aG docker,sudo cliavo
 ```
 
 ## 3. Clone and configure
 
 ```bash
-su - lexflow
+su - cliavo
 git clone https://github.com/ihtxam/legalstation.git
 cd legalstation
 cp .env.example .env
@@ -58,7 +58,7 @@ Minimum production values:
 ```env
 NODE_ENV=production
 PORT=3000
-DATABASE_URL=mysql://lexflow:STRONG_DB_PASSWORD@mysql:3306/lexflow
+DATABASE_URL=mysql://cliavo:STRONG_DB_PASSWORD@mysql:3306/cliavo
 JWT_SECRET=LONG_RANDOM_SECRET
 DEPLOYMENT_MODE=saas
 # or: DEPLOYMENT_MODE=on_premise + LICENSE_KEY for single-tenant
@@ -88,7 +88,7 @@ Also set `MYSQL_PASSWORD` / `MYSQL_ROOT_PASSWORD` for Compose.
 ## 4. Deploy with Docker Compose
 
 ```bash
-# From the repo root as user lexflow
+# From the repo root as user cliavo
 export MYSQL_PASSWORD='STRONG_DB_PASSWORD'
 export MYSQL_ROOT_PASSWORD='STRONG_ROOT_PASSWORD'
 export JWT_SECRET='LONG_RANDOM_SECRET'
@@ -142,9 +142,9 @@ Stripe webhook endpoint:
 ## 6. Backups (compliance ops)
 
 ```bash
-# Daily MySQL dump (example cron as lexflow)
+# Daily MySQL dump (example cron as cliavo)
 crontab -e
-# 0 2 * * * docker exec lexflow-mysql-1 mysqldump -ulexflow -p"$MYSQL_PASSWORD" lexflow | gzip > /home/lexflow/backups/lexflow-$(date +\%F).sql.gz
+# 0 2 * * * docker exec cliavo-mysql-1 mysqldump -ucliavo -p"$MYSQL_PASSWORD" cliavo | gzip > /home/cliavo/backups/cliavo-$(date +\%F).sql.gz
 ```
 
 Store copies offsite (Hetzner Storage Box, S3-compatible, or another region). See `docs/backup-policy.md`.

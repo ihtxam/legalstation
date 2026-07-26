@@ -1,7 +1,7 @@
 import { useAuth } from "@/_core/hooks/useAuth";
 import { startLogin } from "@/const";
 import { trpc } from "@/lib/trpc";
-import LexLayout from "@/components/LexLayout";
+import AppLayout from "@/components/AppLayout";
 import { StatusBadge } from "@/components/StatusBadge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -81,11 +81,11 @@ export default function ClientDetailPage() {
     ? client.type === "company" ? (client.companyName ?? "Unnamed Company") : `${client.firstName ?? ""} ${client.lastName ?? ""}`.trim() || "Unnamed Client"
     : "";
 
-  if (isLoading) return <LexLayout title="Client"><div className="p-6"><Skeleton className="h-64 w-full" /></div></LexLayout>;
-  if (!client) return <LexLayout title="Not Found"><div className="p-6 text-center text-muted-foreground">Client not found</div></LexLayout>;
+  if (isLoading) return <AppLayout title="Client"><div className="p-6"><Skeleton className="h-64 w-full" /></div></AppLayout>;
+  if (!client) return <AppLayout title="Not Found"><div className="p-6 text-center text-muted-foreground">Client not found</div></AppLayout>;
 
   return (
-    <LexLayout breadcrumb={[{ label: "Clients", href: "/clients" }, { label: displayName }]}>
+    <AppLayout breadcrumb={[{ label: "Clients", href: "/clients" }, { label: displayName }]}>
       <div className="p-6 max-w-4xl mx-auto space-y-6">
         {/* Profile header */}
         <div className="bg-card border border-border rounded-xl p-6">
@@ -203,6 +203,6 @@ export default function ClientDetailPage() {
           </TabsContent>
         </Tabs>
       </div>
-    </LexLayout>
+    </AppLayout>
   );
 }

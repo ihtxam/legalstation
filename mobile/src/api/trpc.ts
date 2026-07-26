@@ -5,7 +5,7 @@ import { TRPC_URL } from "../config";
 import { getSessionToken } from "../auth/session";
 
 /**
- * Untyped proxy matching LexFlow `server/routers.ts`.
+ * Untyped proxy matching Cliavo `server/routers.ts`.
  * Cast to any: passing `any`/`AnyRouter` into createTRPCReact triggers
  * tRPC's built-in name-collision error type.
  */

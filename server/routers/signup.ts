@@ -67,7 +67,7 @@ export const signupRouter = router({
       if (!isSaas() || isSingleTenant()) {
         throw new TRPCError({
           code: "FORBIDDEN",
-          message: "Self-serve signup is only available on LexFlow Cloud. Contact us for on-premise.",
+          message: "Self-serve signup is only available on Cliavo Cloud. Contact us for on-premise.",
         });
       }
 
@@ -95,7 +95,7 @@ export const signupRouter = router({
       if (!plan) {
         throw new TRPCError({
           code: "PRECONDITION_FAILED",
-          message: "No subscription plan is configured. Please contact LexFlow support.",
+          message: "No subscription plan is configured. Please contact Cliavo support.",
         });
       }
 

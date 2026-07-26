@@ -28,7 +28,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
-interface LexLayoutProps {
+interface AppLayoutProps {
   children: React.ReactNode;
   title?: string;
   breadcrumb?: { label: string; href?: string }[];
@@ -42,7 +42,7 @@ function roleLabel(t: (key: string) => string, role?: string | null) {
   return t("roles.client");
 }
 
-export default function LexLayout({ children, title, breadcrumb }: LexLayoutProps) {
+export default function AppLayout({ children, title, breadcrumb }: AppLayoutProps) {
   const { t } = useTranslation();
   const { user, logout } = useAuth();
   const [location] = useLocation();
@@ -110,7 +110,7 @@ export default function LexLayout({ children, title, breadcrumb }: LexLayoutProp
           </div>
           {sidebarOpen && (
             <div className="min-w-0">
-              <span className="font-serif font-semibold text-white text-lg leading-none tracking-tight">LexFlow</span>
+              <span className="font-serif font-semibold text-white text-lg leading-none tracking-tight">Cliavo</span>
               {firmData?.firm && (
                 <p className="text-white/50 text-xs mt-0.5 truncate">{firmData.firm.name}</p>
               )}

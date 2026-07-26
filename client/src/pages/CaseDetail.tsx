@@ -1,7 +1,7 @@
 import { useAuth } from "@/_core/hooks/useAuth";
 import { startLogin } from "@/const";
 import { trpc } from "@/lib/trpc";
-import LexLayout from "@/components/LexLayout";
+import AppLayout from "@/components/AppLayout";
 import { StatusBadge } from "@/components/StatusBadge";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -670,11 +670,11 @@ export default function CaseDetailPage() {
   const isInternal = firmData && ["admin", "lawyer", "assistant"].includes(firmData.member.firmRole);
   const currentStage = matterStages?.find((s) => s.id === caseData?.matterStageId);
 
-  if (isLoading) return <LexLayout title={t("caseDetail.title")}><div className="p-6"><Skeleton className="h-64 w-full" /></div></LexLayout>;
-  if (!caseData) return <LexLayout title={t("common.notFound")}><div className="p-6 text-center text-muted-foreground">{t("caseDetail.notFound")}</div></LexLayout>;
+  if (isLoading) return <AppLayout title={t("caseDetail.title")}><div className="p-6"><Skeleton className="h-64 w-full" /></div></AppLayout>;
+  if (!caseData) return <AppLayout title={t("common.notFound")}><div className="p-6 text-center text-muted-foreground">{t("caseDetail.notFound")}</div></AppLayout>;
 
   return (
-    <LexLayout breadcrumb={[{ label: t("caseDetail.breadcrumb"), href: "/cases" }, { label: caseData.title }]}>
+    <AppLayout breadcrumb={[{ label: t("caseDetail.breadcrumb"), href: "/cases" }, { label: caseData.title }]}>
       <div className="p-6 max-w-5xl mx-auto space-y-6">
         {/* Case header */}
         <div className="bg-card border border-border rounded-xl p-6">
@@ -841,6 +841,6 @@ export default function CaseDetailPage() {
           </TabsContent>
         </Tabs>
       </div>
-    </LexLayout>
+    </AppLayout>
   );
 }

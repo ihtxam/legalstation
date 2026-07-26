@@ -1,5 +1,5 @@
 /**
- * LexFlow firm role model.
+ * Cliavo firm role model.
  *
  * Platform roles (users.role): user | admin | superadmin — separate from firm roles.
  * Clients are not firmMembers; they access the client portal via clients.userId.

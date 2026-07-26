@@ -31,7 +31,7 @@ export default function PlatformFirms() {
   return (
     <Screen>
       <Title>Firms</Title>
-      <Muted>All law firms on the LexFlow platform.</Muted>
+      <Muted>All law firms on the Cliavo platform.</Muted>
       <TextInput
         value={q}
         onChangeText={setQ}

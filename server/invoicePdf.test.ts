@@ -41,7 +41,7 @@ describe("renderInvoicePdf", () => {
       invoiceNumber: "INV-0002",
       issueDate: new Date("2026-03-01"),
       dueDate: new Date("2026-03-31"),
-      firmName: "LexFlow Demo Firm",
+      firmName: "Cliavo Demo Firm",
       firmAddress: "Zürich",
       firmVatId: "",
       clientName: "Acme GmbH",

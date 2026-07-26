@@ -1,6 +1,6 @@
 # Production deploy recipe
 
-LexFlow needs **Node 22+**, **MySQL 8 / MariaDB**, and HTTPS for OAuth cookies.
+Cliavo needs **Node 22+**, **MySQL 8 / MariaDB**, and HTTPS for OAuth cookies.
 
 **Hetzner VPS step-by-step:** see [`docs/hetzner-deploy.md`](./hetzner-deploy.md) (`scripts/hetzner-deploy.sh`).
 
@@ -33,8 +33,8 @@ App listens on `http://localhost:3000` (put a reverse proxy + TLS in front).
 `Dockerfile` builds the Vite client + bundled Express server into `dist/`, then runs `node dist/index.js`.
 
 ```bash
-docker build -t lexflow:latest .
-docker run --env-file .env -p 3000:3000 lexflow:latest
+docker build -t cliavo:latest .
+docker run --env-file .env -p 3000:3000 cliavo:latest
 ```
 
 ## Demo / online testing without Manus OAuth
@@ -45,7 +45,7 @@ DEMO_AUTH_ENABLED=true pnpm dev
 # open / → use Demo login buttons, or:
 curl -X POST http://localhost:3000/api/demo/login \
   -H 'content-type: application/json' \
-  -d '{"email":"admin@demo.lexflow.ch"}' -c /tmp/lexflow.cookies
+  -d '{"email":"admin@demo.cliavo.ch"}' -c /tmp/cliavo.cookies
 ```
 
 Never set `DEMO_AUTH_ALLOW_PRODUCTION=true` on a real customer deployment.

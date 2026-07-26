@@ -625,7 +625,7 @@ export const firmRouter = router({
       return {
         email: invitation.email,
         role: invitation.role,
-        firmName: firm?.name ?? "LexFlow",
+        firmName: firm?.name ?? "Cliavo",
         firmSlug: firm?.slug ?? null,
         emailLanguage: invitation.emailLanguage || "en",
         expired: invitation.expiresAt < new Date(),
@@ -637,7 +637,7 @@ export const firmRouter = router({
 
   /**
    * Create a password account for the invited email and join the firm in one step.
-   * Used when the invitee has no LexFlow account yet.
+   * Used when the invitee has no Cliavo account yet.
    */
   registerFromInvite: publicProcedure
     .input(

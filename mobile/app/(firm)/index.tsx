@@ -23,7 +23,7 @@ export default function FirmHome() {
   return (
     <Screen>
       <ScrollView contentContainerStyle={{ paddingBottom: 40 }}>
-        <Title>{firmName || "LexFlow"}</Title>
+        <Title>{firmName || "Cliavo"}</Title>
         <Muted>
           {meName} · {firmRole || "staff"}
         </Muted>

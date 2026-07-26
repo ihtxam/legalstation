@@ -1,4 +1,4 @@
-# LexFlow — Project TODO
+# Cliavo — Project TODO
 
 ## Phase 1: Foundation
 - [x] Design system: Inter + Playfair Display fonts, navy/slate/gold palette, CSS variables
@@ -13,7 +13,7 @@
 - [x] Firm onboarding: create firm/workspace after first login (admin)
 - [x] Invite flow: admin invites lawyers/assistants; lawyers invite clients via email token
 - [x] Role-based route guards on frontend
-- [x] LexLayout sidebar with role-aware navigation (firm member vs client views)
+- [x] AppLayout sidebar with role-aware navigation (firm member vs client views)
 
 ## Phase 3: Client Management
 - [x] Client list page with search and filter (by type: individual/company, status)

@@ -55,7 +55,7 @@ export const adyenRouter = router({
         currency: invoice.currency || "CHF",
         reference: `INV-${invoice.id}`,
         description: `Invoice ${invoice.invoiceNumber}`,
-        returnUrl: `${ctx.req.headers.origin || "https://lexflow.app"}/invoices/${invoice.id}?paid=true`,
+        returnUrl: `${ctx.req.headers.origin || "https://cliavo.app"}/invoices/${invoice.id}?paid=true`,
         merchantAccount,
         apiKey,
         environment: environment === "live" ? "live" : "test",

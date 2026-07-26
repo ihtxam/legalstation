@@ -1,4 +1,4 @@
-# Swiss Data Processing Agreement (DPA) — LexFlow Template
+# Swiss Data Processing Agreement (DPA) — Cliavo Template
 
 **Status:** Template for counsel review · Not legal advice  
 **Languages:** English (reference) · Français · Deutsch  
@@ -9,7 +9,7 @@
 ## 1. Parties / Parties / Parteien
 
 - **Controller / Responsable du traitement / Verantwortlicher:** [Law firm legal name], [address], Switzerland  
-- **Processor / Sous-traitant / Auftragsbearbeiter:** LexFlow operator / on-premise licensee as applicable  
+- **Processor / Sous-traitant / Auftragsbearbeiter:** Cliavo operator / on-premise licensee as applicable  
 
 ---
 
@@ -39,7 +39,7 @@ Special categories (health, biometric, etc.) only if the firm uploads them; firm
 
 ## 4. Purposes / Finalités / Zwecke
 
-- Provide LexFlow SaaS or on-premise software  
+- Provide Cliavo SaaS or on-premise software  
 - Authenticate users and enforce RBAC  
 - Store and exchange case documents  
 - Generate invoices and payment links  
@@ -63,7 +63,7 @@ Processor implements TOMs described in `docs/toms.md`, including encryption in t
 ## 7. Sub-processors / Sous-traitants / Unterauftragsbearbeiter
 
 SaaS: listed in Annex A (e.g. hosting, email, payments, object storage).  
-On-premise: firm controls infrastructure; LexFlow vendor may only receive support telemetry if contractually agreed.
+On-premise: firm controls infrastructure; Cliavo vendor may only receive support telemetry if contractually agreed.
 
 ---
 

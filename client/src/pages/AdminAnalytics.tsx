@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import LexLayout from "@/components/LexLayout";
+import AppLayout from "@/components/AppLayout";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { startLogin } from "@/const";
 import { trpc } from "@/lib/trpc";
@@ -27,7 +27,7 @@ export default function AdminAnalyticsPage() {
   );
 
   return (
-    <LexLayout breadcrumb={[{ label: t("analytics.breadcrumb") }]}>
+    <AppLayout breadcrumb={[{ label: t("analytics.breadcrumb") }]}>
       <div className="p-6 max-w-6xl mx-auto space-y-6">
         <div>
           <h1 className="text-3xl font-bold">{t("analytics.title")}</h1>
@@ -111,7 +111,7 @@ export default function AdminAnalyticsPage() {
           </>
         )}
       </div>
-    </LexLayout>
+    </AppLayout>
   );
 }
 

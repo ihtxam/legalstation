@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Idempotent LexFlow setup for local machines and Cursor Cloud Agents.
+# Idempotent Cliavo setup for local machines and Cursor Cloud Agents.
 # Usage:
 #   bash scripts/dev-setup.sh              # full setup (deps + env + optional DB)
 #   bash scripts/dev-setup.sh --install-only

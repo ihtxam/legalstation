@@ -5,7 +5,7 @@ import { format } from "date-fns";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { startLogin } from "@/const";
 import { trpc } from "@/lib/trpc";
-import LexLayout from "@/components/LexLayout";
+import AppLayout from "@/components/AppLayout";
 import { StatusBadge } from "@/components/StatusBadge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -374,7 +374,7 @@ function NewInvoiceForm() {
   };
 
   return (
-    <LexLayout
+    <AppLayout
       breadcrumb={[
         { label: t("nav.billing"), href: "/invoices" },
         { label: t("invoiceDetail.newInvoice") },
@@ -524,7 +524,7 @@ function NewInvoiceForm() {
           </DialogContent>
         </Dialog>
       </div>
-    </LexLayout>
+    </AppLayout>
   );
 }
 
@@ -698,35 +698,35 @@ export default function InvoiceDetailPage() {
   if (isNewInvoice) {
     if (!firmData) {
       return (
-        <LexLayout title={t("invoiceDetail.title")}>
+        <AppLayout title={t("invoiceDetail.title")}>
           <div className="p-6">
             <Skeleton className="h-64 w-full" />
           </div>
-        </LexLayout>
+        </AppLayout>
       );
     }
     if (!canManageInvoices) {
       return (
-        <LexLayout title={t("invoiceDetail.title")}>
+        <AppLayout title={t("invoiceDetail.title")}>
           <div className="p-6 text-center text-muted-foreground">{t("invoiceDetail.notFound")}</div>
-        </LexLayout>
+        </AppLayout>
       );
     }
     return <NewInvoiceForm />;
   }
   if (isLoading)
     return (
-      <LexLayout title={t("invoiceDetail.title")}>
+      <AppLayout title={t("invoiceDetail.title")}>
         <div className="p-6">
           <Skeleton className="h-64 w-full" />
         </div>
-      </LexLayout>
+      </AppLayout>
     );
   if (!invoiceData)
     return (
-      <LexLayout title={t("common.notFound")}>
+      <AppLayout title={t("common.notFound")}>
         <div className="p-6 text-center text-muted-foreground">{t("invoiceDetail.notFound")}</div>
-      </LexLayout>
+      </AppLayout>
     );
 
   const invoice = invoiceData;
@@ -775,7 +775,7 @@ export default function InvoiceDetailPage() {
   const displayTotal = displaySubtotal + displayVatAmount;
 
   return (
-    <LexLayout
+    <AppLayout
       breadcrumb={[
         { label: t("nav.billing"), href: "/invoices" },
         { label: `${t("invoiceDetail.title")} #${invoice.invoiceNumber}` },
@@ -1085,6 +1085,6 @@ export default function InvoiceDetailPage() {
           </>
         )}
       </div>
-    </LexLayout>
+    </AppLayout>
   );
 }

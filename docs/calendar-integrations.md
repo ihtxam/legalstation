@@ -1,17 +1,17 @@
 # Calendar integrations (Google · Outlook · iCloud)
 
-Per-user two-way sync between LexFlow agenda items and external calendars.
+Per-user two-way sync between Cliavo agenda items and external calendars.
 
 ## What syncs
 
-**LexFlow → external (push)**  
+**Cliavo → external (push)**  
 - Case deadlines  
 - Case tasks (assigned/created by you)  
 - Client activities / meetings  
-- Personal agenda events created in LexFlow  
+- Personal agenda events created in Cliavo  
 
-**External → LexFlow (pull)**  
-- Events from the connected calendar appear on **Agenda** (not duplicated if LexFlow already pushed them)
+**External → Cliavo (pull)**  
+- Events from the connected calendar appear on **Agenda** (not duplicated if Cliavo already pushed them)
 
 ## Connect
 

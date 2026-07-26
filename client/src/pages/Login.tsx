@@ -42,7 +42,7 @@ export default function LoginPage() {
     fetch("/api/auth/tenant")
       .then((r) => r.json())
       .then((data) => setTenant(data))
-      .catch(() => setTenant({ mode: "platform", appName: "LexFlow" }));
+      .catch(() => setTenant({ mode: "platform", appName: "Cliavo" }));
   }, []);
 
   useEffect(() => {
@@ -58,7 +58,7 @@ export default function LoginPage() {
     navigate(nextPath || "/dashboard");
   }, [isAuthenticated, loading, user, navigate, nextPath]);
 
-  const brandName = tenant?.mode === "firm" ? tenant.name : "LexFlow";
+  const brandName = tenant?.mode === "firm" ? tenant.name : "Cliavo";
   const primary = tenant?.mode === "firm" && tenant.primaryColor ? tenant.primaryColor : "#001f3f";
 
   const onLogin = async (e: FormEvent) => {

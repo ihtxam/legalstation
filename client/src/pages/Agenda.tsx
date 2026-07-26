@@ -2,7 +2,7 @@ import { useMemo, useState } from "react";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { startLogin } from "@/const";
 import { trpc } from "@/lib/trpc";
-import LexLayout from "@/components/LexLayout";
+import AppLayout from "@/components/AppLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -60,16 +60,16 @@ export default function AgendaPage() {
 
   if (loading || !isAuthenticated) {
     return (
-      <LexLayout title={t("calendar.agendaTitle")}>
+      <AppLayout title={t("calendar.agendaTitle")}>
         <div className="p-6">
           <Skeleton className="h-64 w-full" />
         </div>
-      </LexLayout>
+      </AppLayout>
     );
   }
 
   return (
-    <LexLayout
+    <AppLayout
       title={t("calendar.agendaTitle")}
       breadcrumb={[{ label: t("calendar.agendaTitle") }]}
     >
@@ -182,6 +182,6 @@ export default function AgendaPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </LexLayout>
+    </AppLayout>
   );
 }

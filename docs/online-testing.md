@@ -1,6 +1,6 @@
-# How to test LexFlow online
+# How to test Cliavo online
 
-LexFlow is a full-stack app (Express + Vite + MySQL). You need a Node host and MySQL.
+Cliavo is a full-stack app (Express + Vite + MySQL). You need a Node host and MySQL.
 
 ## Option A — Demo login (fastest, no Manus OAuth)
 
@@ -20,9 +20,9 @@ Demo accounts:
 
 | Role   | Email |
 |--------|-------|
-| Admin  | `admin@demo.lexflow.ch` |
-| Lawyer | `lawyer@demo.lexflow.ch` |
-| Client | `client@demo.lexflow.ch` |
+| Admin  | `admin@demo.cliavo.ch` |
+| Lawyer | `lawyer@demo.cliavo.ch` |
+| Client | `client@demo.cliavo.ch` |
 
 ## Option B — Cursor Cloud Agent
 

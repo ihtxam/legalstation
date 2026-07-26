@@ -1,12 +1,12 @@
 {
   "expo": {
-    "name": "LexFlow",
-    "slug": "lexflow",
+    "name": "Cliavo",
+    "slug": "cliavo",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
-    "scheme": "lexflow",
+    "scheme": "cliavo",
     "newArchEnabled": true,
     "splash": {
       "image": "./assets/splash-icon.png",
@@ -15,14 +15,14 @@
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "swiss.webprintmedia.lexflow",
+      "bundleIdentifier": "swiss.webprintmedia.cliavo",
       "infoPlist": {
         "NSCameraUsageDescription": "Scan and upload case documents with your camera.",
         "NSPhotoLibraryUsageDescription": "Attach photos of documents to your cases."
       }
     },
     "android": {
-      "package": "swiss.webprintmedia.lexflow",
+      "package": "swiss.webprintmedia.cliavo",
       "adaptiveIcon": {
         "backgroundColor": "#0B1F3A",
         "foregroundImage": "./assets/android-icon-foreground.png",
@@ -44,8 +44,8 @@
       [
         "expo-image-picker",
         {
-          "photosPermission": "Allow LexFlow to attach photos of documents.",
-          "cameraPermission": "Allow LexFlow to scan documents with the camera."
+          "photosPermission": "Allow Cliavo to attach photos of documents.",
+          "cameraPermission": "Allow Cliavo to scan documents with the camera."
         }
       ]
     ],

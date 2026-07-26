@@ -1,5 +1,5 @@
 {
-  "name": "lexflow-cloud",
+  "name": "cliavo-cloud",
   "build": {
     "dockerfile": "Dockerfile",
     "context": ".."
@@ -10,7 +10,7 @@
     {
       "name": "dev",
       "command": "pnpm dev",
-      "description": "LexFlow Express + Vite dev server on port 3000"
+      "description": "Cliavo Express + Vite dev server on port 3000"
     }
   ],
   "ports": [

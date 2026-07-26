@@ -2,7 +2,7 @@ import * as SecureStore from "expo-secure-store";
 import { Platform } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
-const TOKEN_KEY = "lexflow_session_token";
+const TOKEN_KEY = "cliavo_session_token";
 
 async function setItem(key: string, value: string) {
   if (Platform.OS === "web") {

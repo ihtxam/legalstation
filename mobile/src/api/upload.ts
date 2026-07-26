@@ -13,7 +13,7 @@ export type LocalFile = {
   size?: number;
 };
 
-/** Multipart upload to LexFlow `/api/upload`, then register via tRPC. */
+/** Multipart upload to Cliavo `/api/upload`, then register via tRPC. */
 export async function uploadFile(file: LocalFile): Promise<UploadedFile> {
   const token = await getSessionToken();
   const form = new FormData();

@@ -42,7 +42,7 @@ export const deploymentRouter = router({
       });
 
       return {
-        format: "lexflow.audit.v1",
+        format: "cliavo.audit.v1",
         exportedAt: new Date().toISOString(),
         firmId: member.firmId,
         count: rows.length,

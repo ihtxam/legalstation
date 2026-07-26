@@ -1,7 +1,7 @@
 import { useAuth } from "@/_core/hooks/useAuth";
 import { startLogin } from "@/const";
 import { trpc } from "@/lib/trpc";
-import LexLayout from "@/components/LexLayout";
+import AppLayout from "@/components/AppLayout";
 import { StatusBadge } from "@/components/StatusBadge";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -49,7 +49,7 @@ export default function ClientsPage() {
   };
 
   return (
-    <LexLayout title={t("clients.title")} breadcrumb={[{ label: t("clients.title") }]}>
+    <AppLayout title={t("clients.title")} breadcrumb={[{ label: t("clients.title") }]}>
       <div className="p-6 space-y-5 max-w-6xl mx-auto">
         {/* Header */}
         <div className="flex items-center justify-between">
@@ -195,6 +195,6 @@ export default function ClientsPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </LexLayout>
+    </AppLayout>
   );
 }

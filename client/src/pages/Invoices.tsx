@@ -1,7 +1,7 @@
 import { useAuth } from "@/_core/hooks/useAuth";
 import { startLogin } from "@/const";
 import { trpc } from "@/lib/trpc";
-import LexLayout from "@/components/LexLayout";
+import AppLayout from "@/components/AppLayout";
 import { StatusBadge } from "@/components/StatusBadge";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -36,7 +36,7 @@ export default function InvoicesPage() {
     : [];
 
   return (
-    <LexLayout title={t("invoices.billing")} breadcrumb={[{ label: t("invoices.billing") }]}>
+    <AppLayout title={t("invoices.billing")} breadcrumb={[{ label: t("invoices.billing") }]}>
       <div className="p-6 space-y-5 max-w-6xl mx-auto">
         <div className="flex items-center justify-between">
           <div>
@@ -108,6 +108,6 @@ export default function InvoicesPage() {
           )}
         </div>
       </div>
-    </LexLayout>
+    </AppLayout>
   );
 }

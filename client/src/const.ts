@@ -18,7 +18,7 @@ export function safeNextPath(next: string | null | undefined): string | null {
 
 /**
  * Navigate to the SaaS login page (email/password).
- * Use `portal: "platform"` for LexFlow superadmin login only.
+ * Use `portal: "platform"` for Cliavo superadmin login only.
  * Pass `next` to return the user to a page after login (e.g. invite link).
  */
 export const startLogin = (opts?: { portal?: "app" | "platform"; next?: string }) => {

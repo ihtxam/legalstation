@@ -895,7 +895,7 @@ export const superadminRouter = router({
       demoAuthAllowProduction: ENV.demoAuthAllowProduction,
       forgeConfigured: Boolean(ENV.forgeApiKey),
       bootstrapSecretConfigured: Boolean(ENV.superadminBootstrapSecret),
-      platformName: settings.agency_name || "LexFlow",
+      platformName: settings.agency_name || "Cliavo",
       defaultLocale: settings.default_locale || "en",
       supportedLocales: (() => {
         try {
@@ -923,7 +923,7 @@ export const superadminRouter = router({
       /* defaults */
     }
     return {
-      agencyName: settings.agency_name || "LexFlow",
+      agencyName: settings.agency_name || "Cliavo",
       logoUrl: settings.logo_url || "",
       supportEmail: settings.support_email || "",
       defaultLocale: (settings.default_locale as "en" | "fr" | "de" | "it" | "ar") || "en",

@@ -1,4 +1,4 @@
-# Technical and Organizational Measures (TOMs) — LexFlow
+# Technical and Organizational Measures (TOMs) — Cliavo
 
 Aligned with Swiss nFADP Art. 8 and common ISO 27001 control themes.
 
@@ -16,7 +16,7 @@ Aligned with Swiss nFADP Art. 8 and common ISO 27001 control themes.
 
 ## 3. Logging & monitoring
 - Document audit log (view/download/upload/delete/version)
-- SIEM export via `deployment.exportAuditLog` (JSON event schema `lexflow.audit.v1`)
+- SIEM export via `deployment.exportAuditLog` (JSON event schema `cliavo.audit.v1`)
 - Application and access logs retained per ops policy
 
 ## 4. Availability & backups

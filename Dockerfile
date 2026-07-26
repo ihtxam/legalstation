@@ -1,4 +1,4 @@
-# LexFlow production image (multi-stage)
+# Cliavo production image (multi-stage)
 FROM node:22-bookworm-slim AS deps
 WORKDIR /app
 RUN corepack enable && corepack prepare pnpm@10.4.1 --activate

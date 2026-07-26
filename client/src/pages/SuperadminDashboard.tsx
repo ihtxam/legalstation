@@ -83,7 +83,7 @@ export default function SuperadminDashboard() {
   const [uiLocale, setUiLocale] = useState<AppLocale>("en");
 
   // Platform settings form state
-  const [agencyName, setAgencyName] = useState("LexFlow");
+  const [agencyName, setAgencyName] = useState("Cliavo");
   const [logoUrl, setLogoUrl] = useState("");
   const [supportEmail, setSupportEmail] = useState("");
   const [defaultLocale, setDefaultLocale] = useState<AppLocale>("en");

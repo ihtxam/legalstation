@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Deploy LexFlow on a Hetzner (or any Docker) host using docker-compose.prod.yml
+# Deploy Cliavo on a Hetzner (or any Docker) host using docker-compose.prod.yml
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
@@ -16,7 +16,7 @@ source .env
 set +a
 
 : "${JWT_SECRET:?JWT_SECRET required}"
-: "${MYSQL_PASSWORD:=${MYSQL_PASSWORD:-lexflow}}"
+: "${MYSQL_PASSWORD:=${MYSQL_PASSWORD:-cliavo}}"
 export MYSQL_PASSWORD
 export MYSQL_ROOT_PASSWORD="${MYSQL_ROOT_PASSWORD:-${MYSQL_PASSWORD}}"
 

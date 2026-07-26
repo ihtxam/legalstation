@@ -1,7 +1,7 @@
 import { useAuth } from "@/_core/hooks/useAuth";
 import { startLogin } from "@/const";
 import { trpc } from "@/lib/trpc";
-import LexLayout from "@/components/LexLayout";
+import AppLayout from "@/components/AppLayout";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
@@ -177,8 +177,8 @@ export default function Dashboard() {
   const isFirmMember = firmData !== null && firmData !== undefined;
 
   return (
-    <LexLayout title={t("dashboard.title")}>
+    <AppLayout title={t("dashboard.title")}>
       {isFirmMember ? <LawyerDashboard /> : <ClientDashboard />}
-    </LexLayout>
+    </AppLayout>
   );
 }

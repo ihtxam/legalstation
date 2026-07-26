@@ -5,9 +5,9 @@ import { useLocation } from "wouter";
 import { useTranslation } from "react-i18next";
 
 const CONTINUE_MAIL =
-  "mailto:corporateshift@gmail.com?subject=LexFlow%20trial%20%E2%80%94%20continue%20SaaS";
+  "mailto:corporateshift@gmail.com?subject=Cliavo%20trial%20%E2%80%94%20continue%20SaaS";
 const ONPREM_MAIL =
-  "mailto:corporateshift@gmail.com?subject=LexFlow%20trial%20%E2%80%94%20on-premise%20setup";
+  "mailto:corporateshift@gmail.com?subject=Cliavo%20trial%20%E2%80%94%20on-premise%20setup";
 
 export default function TrialBanner() {
   const { t } = useTranslation();

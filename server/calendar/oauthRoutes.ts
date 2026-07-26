@@ -25,7 +25,7 @@ function appBase(req: Request) {
 
 function signState(payload: object) {
   const body = Buffer.from(JSON.stringify(payload)).toString("base64url");
-  const sig = createHmac("sha256", ENV.cookieSecret || "lexflow")
+  const sig = createHmac("sha256", ENV.cookieSecret || "cliavo")
     .update(body)
     .digest("base64url");
   return `${body}.${sig}`;
@@ -34,7 +34,7 @@ function signState(payload: object) {
 function verifyState(state: string): { userId: number; provider: string; ts: number } | null {
   const [body, sig] = state.split(".");
   if (!body || !sig) return null;
-  const expected = createHmac("sha256", ENV.cookieSecret || "lexflow")
+  const expected = createHmac("sha256", ENV.cookieSecret || "cliavo")
     .update(body)
     .digest("base64url");
   try {
