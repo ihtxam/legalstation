@@ -361,7 +361,8 @@
     "subdomain": "Subdomain",
     "subdomainHint": "Used for name.yourplatform.com and /site/name public pages.",
     "customDomain": "Custom domain",
-    "customDomainPlaceholder": "www.yourfirm.ch"
+    "customDomainPlaceholder": "www.yourfirm.ch",
+    "languagePlatformHint": "Only languages enabled by the platform appear here."
   },
   "notFound": {
     "title": "Page Not Found",

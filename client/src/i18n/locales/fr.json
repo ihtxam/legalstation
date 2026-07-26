@@ -361,7 +361,8 @@
     "subdomain": "Sous-domaine",
     "subdomainHint": "Utilisé pour nom.votreplateforme.com et /site/nom.",
     "customDomain": "Domaine personnalisé",
-    "customDomainPlaceholder": "www.votrecabinet.ch"
+    "customDomainPlaceholder": "www.votrecabinet.ch",
+    "languagePlatformHint": "Seules les langues activées par la plateforme apparaissent ici."
   },
   "notFound": {
     "title": "Page introuvable",

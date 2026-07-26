@@ -16,7 +16,8 @@ import { format } from "date-fns";
 import ClientActivityPanel from "@/components/ClientActivityPanel";
 import { useTranslation } from "react-i18next";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { APP_LOCALES, APP_LOCALE_LABELS, isAppLocale, type AppLocale } from "@shared/locales";
+import { APP_LOCALE_LABELS, isAppLocale, type AppLocale } from "@shared/locales";
+import { useSupportedLocales } from "@/hooks/useSupportedLocales";
 export default function ClientDetailPage() {
   const { t, i18n } = useTranslation();
   const { id } = useParams<{ id: string }>();
@@ -26,6 +27,7 @@ export default function ClientDetailPage() {
   const [, navigate] = useLocation();
   const [editing, setEditing] = useState(false);
   const [inviteEmail, setInviteEmail] = useState("");
+  const { supportedLocales, defaultLocale, isEnabled } = useSupportedLocales();
   const [inviteEmailLanguage, setInviteEmailLanguage] = useState<AppLocale>(
     isAppLocale(i18n.language) ? i18n.language : "en"
   );
@@ -70,12 +72,14 @@ export default function ClientDetailPage() {
 
   useEffect(() => { if (!loading && !isAuthenticated) startLogin(); }, [isAuthenticated, loading]);
   useEffect(() => {
-    if (isAppLocale(user?.preferredLocale)) {
+    if (isAppLocale(user?.preferredLocale) && isEnabled(user.preferredLocale)) {
       setInviteEmailLanguage(user.preferredLocale);
-    } else if (isAppLocale(i18n.language)) {
+    } else if (isAppLocale(i18n.language) && isEnabled(i18n.language)) {
       setInviteEmailLanguage(i18n.language);
+    } else {
+      setInviteEmailLanguage(defaultLocale);
     }
-  }, [user?.preferredLocale, i18n.language]);
+  }, [user?.preferredLocale, i18n.language, defaultLocale, isEnabled, supportedLocales]);
 
   const displayName = client
     ? client.type === "company" ? (client.companyName ?? "Unnamed Company") : `${client.firstName ?? ""} ${client.lastName ?? ""}`.trim() || "Unnamed Client"
@@ -144,7 +148,7 @@ export default function ClientDetailPage() {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    {APP_LOCALES.map((code) => (
+                    {supportedLocales.map((code) => (
                       <SelectItem key={code} value={code}>
                         {APP_LOCALE_LABELS[code]}
                       </SelectItem>

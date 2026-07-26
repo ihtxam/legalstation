@@ -361,7 +361,8 @@
     "subdomain": "Subdomain",
     "subdomainHint": "Für name.plattform.com und /site/name.",
     "customDomain": "Eigene Domain",
-    "customDomainPlaceholder": "www.ihrekanzlei.ch"
+    "customDomainPlaceholder": "www.ihrekanzlei.ch",
+    "languagePlatformHint": "Hier erscheinen nur von der Plattform aktivierte Sprachen."
   },
   "notFound": {
     "title": "Seite nicht gefunden",

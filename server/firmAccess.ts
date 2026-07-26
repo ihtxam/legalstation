@@ -22,9 +22,11 @@ export type FirmPlatformAccess = {
 export const LOCKED_FIRM_ALLOWED_PATHS = new Set([
   "auth.me",
   "auth.logout",
+  "auth.setLocale",
   "auth.setupTotp",
   "auth.enableTotp",
   "auth.disableTotp",
+  "system.locales",
   "firm.myFirm",
   "firm.account",
   "firm.listPlans",

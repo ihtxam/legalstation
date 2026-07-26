@@ -3,6 +3,7 @@ import { notifyOwner } from "./notification";
 import { adminProcedure, publicProcedure, router } from "./trpc";
 import { deploymentPublicInfo } from "../deployment";
 import { evaluateLicense } from "../license";
+import { getPlatformLocaleConfig } from "../platformLocales";
 
 export const systemRouter = router({
   health: publicProcedure
@@ -16,6 +17,11 @@ export const systemRouter = router({
       deployment: deploymentPublicInfo(),
       license: evaluateLicense(),
     })),
+
+  /** Platform-enabled UI languages (respects superadmin supported_locales). */
+  locales: publicProcedure.query(async () => {
+    return getPlatformLocaleConfig();
+  }),
 
   notifyOwner: adminProcedure
     .input(

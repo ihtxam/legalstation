@@ -361,7 +361,8 @@
     "subdomain": "Sottodominio",
     "subdomainHint": "Usato per name.piattaforma.com e /site/name.",
     "customDomain": "Dominio personalizzato",
-    "customDomainPlaceholder": "www.ilmiostudio.ch"
+    "customDomainPlaceholder": "www.ilmiostudio.ch",
+    "languagePlatformHint": "Qui compaiono solo le lingue abilitate dalla piattaforma."
   },
   "notFound": {
     "title": "Pagina non trovata",

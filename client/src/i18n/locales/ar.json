@@ -361,7 +361,8 @@
     "subdomain": "النطاق الفرعي",
     "subdomainHint": "يُستخدم لـ name.platform.com و /site/name.",
     "customDomain": "نطاق مخصص",
-    "customDomainPlaceholder": "www.yourfirm.ch"
+    "customDomainPlaceholder": "www.yourfirm.ch",
+    "languagePlatformHint": "تظهر هنا فقط اللغات المفعّلة على مستوى المنصة."
   },
   "notFound": {
     "title": "الصفحة غير موجودة",

@@ -1,8 +1,9 @@
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { setAppLocale } from "@/i18n";
 import { trpc } from "@/lib/trpc";
-import { APP_LOCALES, APP_LOCALE_LABELS, isAppLocale, type AppLocale } from "@shared/locales";
+import { APP_LOCALE_LABELS, isAppLocale, type AppLocale } from "@shared/locales";
 import { useAuth } from "@/_core/hooks/useAuth";
+import { useSupportedLocales } from "@/hooks/useSupportedLocales";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
@@ -16,10 +17,12 @@ type Props = {
 
 /**
  * Persist UI language for the signed-in user (and localStorage for guests).
+ * Only offers locales enabled at platform level.
  */
 export function LanguageSwitcher({ compact = true, className }: Props) {
   const { t, i18n } = useTranslation();
   const { isAuthenticated, user, refresh } = useAuth();
+  const { supportedLocales, defaultLocale, isEnabled } = useSupportedLocales();
   const [locale, setLocale] = useState<AppLocale>(
     isAppLocale(i18n.language) ? i18n.language : "en"
   );
@@ -35,15 +38,18 @@ export function LanguageSwitcher({ compact = true, className }: Props) {
   });
 
   useEffect(() => {
-    if (isAppLocale(user?.preferredLocale)) {
-      setLocale(user.preferredLocale);
-      return;
-    }
-    if (isAppLocale(i18n.language)) setLocale(i18n.language);
-  }, [user?.preferredLocale, i18n.language]);
+    const preferred = isAppLocale(user?.preferredLocale) ? user.preferredLocale : null;
+    const current = isAppLocale(i18n.language) ? i18n.language : null;
+    const next =
+      (preferred && isEnabled(preferred) && preferred) ||
+      (current && isEnabled(current) && current) ||
+      defaultLocale;
+    setLocale(next);
+    if (i18n.language !== next) setAppLocale(next);
+  }, [user?.preferredLocale, i18n.language, defaultLocale, isEnabled, supportedLocales]);
 
   const onChange = (value: string) => {
-    if (!isAppLocale(value)) return;
+    if (!isAppLocale(value) || !isEnabled(value)) return;
     setLocale(value);
     setAppLocale(value);
     if (isAuthenticated) {
@@ -62,7 +68,7 @@ export function LanguageSwitcher({ compact = true, className }: Props) {
           <SelectValue />
         </SelectTrigger>
         <SelectContent>
-          {APP_LOCALES.map((code) => (
+          {supportedLocales.map((code) => (
             <SelectItem key={code} value={code}>
               {APP_LOCALE_LABELS[code]}
             </SelectItem>

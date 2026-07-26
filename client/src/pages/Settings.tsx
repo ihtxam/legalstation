@@ -16,7 +16,8 @@ import { FirmAdyenSettings } from "@/components/FirmAdyenSettings";
 import AppearanceControls from "@/components/AppearanceControls";
 import { useTranslation } from "react-i18next";
 import { setAppLocale } from "@/i18n";
-import { APP_LOCALES, APP_LOCALE_LABELS, isAppLocale, type AppLocale } from "@shared/locales";
+import { APP_LOCALE_LABELS, isAppLocale, type AppLocale } from "@shared/locales";
+import { useSupportedLocales } from "@/hooks/useSupportedLocales";
 import CustomDomainDnsHelp from "@/components/CustomDomainDnsHelp";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
@@ -74,6 +75,7 @@ export default function SettingsPage() {
   const [totpCode, setTotpCode] = useState("");
   const [locale, setLocale] = useState<AppLocale>("en");
   const isFirmAdmin = canManageFirm;
+  const { supportedLocales, defaultLocale, isEnabled } = useSupportedLocales();
   const { data: signupInfo } = trpc.signup.info.useQuery(undefined, { enabled: isAuthenticated });
   const platformBaseDomain =
     signupInfo?.appBaseDomain ||
@@ -109,10 +111,12 @@ export default function SettingsPage() {
   });
 
   useEffect(() => {
-    if (isAppLocale(user?.preferredLocale)) {
+    if (isAppLocale(user?.preferredLocale) && isEnabled(user.preferredLocale)) {
       setLocale(user.preferredLocale);
+      return;
     }
-  }, [user?.preferredLocale]);
+    setLocale(defaultLocale);
+  }, [user?.preferredLocale, defaultLocale, isEnabled, supportedLocales]);
 
   const getFieldDirty = (field: string) => {
     return originalForm[field as keyof typeof originalForm] !== firmForm[field as keyof typeof firmForm];
@@ -136,7 +140,11 @@ export default function SettingsPage() {
     onSuccess: async (data) => {
       setInviteEmail("");
       setInviteRole("lawyer");
-      if (isAppLocale(user?.preferredLocale)) setInviteEmailLanguage(user.preferredLocale);
+      if (isAppLocale(user?.preferredLocale) && isEnabled(user.preferredLocale)) {
+        setInviteEmailLanguage(user.preferredLocale);
+      } else {
+        setInviteEmailLanguage(defaultLocale);
+      }
       if (data.emailSent) {
         toast.success(t("settings.inviteSent"));
         return;
@@ -183,10 +191,12 @@ export default function SettingsPage() {
 
   useEffect(() => { if (!loading && !isAuthenticated) startLogin(); }, [isAuthenticated, loading]);
   useEffect(() => {
-    if (isAppLocale(user?.preferredLocale)) {
+    if (isAppLocale(user?.preferredLocale) && isEnabled(user.preferredLocale)) {
       setInviteEmailLanguage(user.preferredLocale);
+      return;
     }
-  }, [user?.preferredLocale]);
+    if (!isEnabled(inviteEmailLanguage)) setInviteEmailLanguage(defaultLocale);
+  }, [user?.preferredLocale, defaultLocale, isEnabled, supportedLocales]);
   useEffect(() => {
     if (firmData?.firm) {
       const next = {
@@ -622,13 +632,14 @@ export default function SettingsPage() {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {APP_LOCALES.map((code) => (
+                  {supportedLocales.map((code) => (
                     <SelectItem key={code} value={code}>
                       {APP_LOCALE_LABELS[code]}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
+              <p className="text-xs text-muted-foreground">{t("settings.languagePlatformHint")}</p>
               <Button
                 onClick={() => setLocaleMutation.mutate({ locale })}
                 disabled={setLocaleMutation.isPending}
@@ -700,7 +711,7 @@ export default function SettingsPage() {
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                          {APP_LOCALES.map((code) => (
+                          {supportedLocales.map((code) => (
                             <SelectItem key={code} value={code}>
                               {APP_LOCALE_LABELS[code]}
                             </SelectItem>

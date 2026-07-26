@@ -194,6 +194,15 @@ export const appRouter = router({
     setLocale: protectedProcedure
       .input(z.object({ locale: z.enum(["en", "fr", "de", "it", "ar"]) }))
       .mutation(async ({ ctx, input }) => {
+        const { assertLocaleEnabled } = await import("./platformLocales");
+        try {
+          await assertLocaleEnabled(input.locale);
+        } catch (e: any) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: e?.message || "This language is disabled on the platform",
+          });
+        }
         await updateUserById(ctx.user.id, { preferredLocale: input.locale });
         return { success: true as const, locale: input.locale };
       }),
