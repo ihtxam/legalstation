@@ -310,7 +310,7 @@
     "lawyer": "Avocat",
     "assistant": "Assistant",
     "languageHeading": "Langue de l'interface",
-    "languageHint": "Choisissez l’anglais, le français, l’allemand, l’italien ou l’arabe pour l’interface.",
+    "languageHint": "Choisissez la langue de l’interface.",
     "firmSettings": "Paramètres du cabinet",
     "logoUploaded": "Logo téléversé avec succès",
     "logoUploadFailed": "Échec du téléversement du logo",
@@ -363,7 +363,8 @@
     "subdomainHint": "Utilisé pour nom.votreplateforme.com et /site/nom.",
     "customDomain": "Domaine personnalisé",
     "customDomainPlaceholder": "www.votrecabinet.ch",
-    "languagePlatformHint": "Seules les langues activées par la plateforme apparaissent ici."
+    "languagePlatformHint": "Seules les langues activées par la plateforme apparaissent ici. La sélection s’applique immédiatement.",
+    "languageHintDynamic": "Choisissez {{languages}} pour l’interface."
   },
   "notFound": {
     "title": "Page introuvable",

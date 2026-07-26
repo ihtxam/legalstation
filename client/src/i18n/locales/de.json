@@ -310,7 +310,7 @@
     "lawyer": "Anwalt",
     "assistant": "Assistent",
     "languageHeading": "Oberflächensprache",
-    "languageHint": "Wählen Sie Englisch, Französisch, Deutsch, Italienisch oder Arabisch für die App-UI.",
+    "languageHint": "Wählen Sie die Sprache der Oberfläche.",
     "firmSettings": "Kanzleieinstellungen",
     "logoUploaded": "Logo erfolgreich hochgeladen",
     "logoUploadFailed": "Logo konnte nicht hochgeladen werden",
@@ -363,7 +363,8 @@
     "subdomainHint": "Für name.plattform.com und /site/name.",
     "customDomain": "Eigene Domain",
     "customDomainPlaceholder": "www.ihrekanzlei.ch",
-    "languagePlatformHint": "Hier erscheinen nur von der Plattform aktivierte Sprachen."
+    "languagePlatformHint": "Nur von der Plattform aktivierte Sprachen erscheinen hier. Die Auswahl gilt sofort.",
+    "languageHintDynamic": "Wählen Sie {{languages}} für die Oberfläche."
   },
   "notFound": {
     "title": "Seite nicht gefunden",

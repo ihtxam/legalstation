@@ -310,7 +310,7 @@
     "lawyer": "Avvocato",
     "assistant": "Assistente",
     "languageHeading": "Lingua dell’interfaccia",
-    "languageHint": "Scegli inglese, francese, tedesco, italiano o arabo per l’interfaccia.",
+    "languageHint": "Scegli la lingua dell’interfaccia.",
     "firmSettings": "Impostazioni studio",
     "logoUploaded": "Logo caricato con successo",
     "logoUploadFailed": "Caricamento logo non riuscito",
@@ -363,7 +363,8 @@
     "subdomainHint": "Usato per name.piattaforma.com e /site/name.",
     "customDomain": "Dominio personalizzato",
     "customDomainPlaceholder": "www.ilmiostudio.ch",
-    "languagePlatformHint": "Qui compaiono solo le lingue abilitate dalla piattaforma."
+    "languagePlatformHint": "Qui compaiono solo le lingue abilitate dalla piattaforma. La selezione si applica subito.",
+    "languageHintDynamic": "Scegli {{languages}} per l’interfaccia."
   },
   "notFound": {
     "title": "Pagina non trovata",

@@ -310,7 +310,7 @@
     "lawyer": "Lawyer",
     "assistant": "Assistant",
     "languageHeading": "Interface language",
-    "languageHint": "Choose English, French, German, Italian, or Arabic for the app UI.",
+    "languageHint": "Choose a language for the app UI.",
     "firmSettings": "Firm Settings",
     "logoUploaded": "Logo uploaded successfully",
     "logoUploadFailed": "Failed to upload logo",
@@ -363,7 +363,8 @@
     "subdomainHint": "Used for name.yourplatform.com and /site/name public pages.",
     "customDomain": "Custom domain",
     "customDomainPlaceholder": "www.yourfirm.ch",
-    "languagePlatformHint": "Only languages enabled by the platform appear here."
+    "languagePlatformHint": "Only languages enabled by the platform appear here. Selection applies immediately.",
+    "languageHintDynamic": "Choose {{languages}} for the app UI."
   },
   "notFound": {
     "title": "Page Not Found",

@@ -103,8 +103,10 @@ export default function SettingsPage() {
     onError: (e) => toast.error(e.message),
   });
   const setLocaleMutation = trpc.auth.setLocale.useMutation({
-    onSuccess: (r) => {
+    onSuccess: async (r) => {
+      setLocale(r.locale);
       setAppLocale(r.locale);
+      await refresh();
       toast.success(t("settings.languageUpdated"));
     },
     onError: (e) => toast.error(e.message),
@@ -117,6 +119,17 @@ export default function SettingsPage() {
     }
     setLocale(defaultLocale);
   }, [user?.preferredLocale, defaultLocale, isEnabled, supportedLocales]);
+
+  const applyLocale = (value: string) => {
+    if (!isAppLocale(value) || !isEnabled(value)) return;
+    setLocale(value);
+    setAppLocale(value);
+    setLocaleMutation.mutate({ locale: value });
+  };
+
+  const languageListLabel = supportedLocales
+    .map((code) => APP_LOCALE_LABELS[code])
+    .join(", ");
 
   const getFieldDirty = (field: string) => {
     return originalForm[field as keyof typeof originalForm] !== firmForm[field as keyof typeof firmForm];
@@ -625,13 +638,22 @@ export default function SettingsPage() {
             <div className="bg-card border border-border rounded-xl p-6 space-y-4">
               <div>
                 <h3 className="font-semibold text-foreground">{t("settings.languageHeading")}</h3>
-                <p className="text-sm text-muted-foreground mt-1">{t("settings.languageHint")}</p>
+                <p className="text-sm text-muted-foreground mt-1">
+                  {t("settings.languageHintDynamic", {
+                    languages: languageListLabel,
+                    defaultValue: t("settings.languageHint"),
+                  })}
+                </p>
               </div>
-              <Select value={locale} onValueChange={(v) => setLocale(v as AppLocale)}>
-                <SelectTrigger className="max-w-xs">
+              <Select
+                value={locale}
+                onValueChange={applyLocale}
+                disabled={setLocaleMutation.isPending || supportedLocales.length === 0}
+              >
+                <SelectTrigger className="max-w-xs w-full">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent position="popper" className="z-[80]">
                   {supportedLocales.map((code) => (
                     <SelectItem key={code} value={code}>
                       {APP_LOCALE_LABELS[code]}
@@ -640,12 +662,9 @@ export default function SettingsPage() {
                 </SelectContent>
               </Select>
               <p className="text-xs text-muted-foreground">{t("settings.languagePlatformHint")}</p>
-              <Button
-                onClick={() => setLocaleMutation.mutate({ locale })}
-                disabled={setLocaleMutation.isPending}
-              >
-                {t("common.save")}
-              </Button>
+              {setLocaleMutation.isPending ? (
+                <p className="text-xs text-muted-foreground">{t("common.loading")}</p>
+              ) : null}
             </div>
           </TabsContent>
 

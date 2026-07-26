@@ -310,7 +310,7 @@
     "lawyer": "محامٍ",
     "assistant": "مساعد",
     "languageHeading": "لغة الواجهة",
-    "languageHint": "اختر الإنجليزية أو الفرنسية أو الألمانية أو الإيطالية أو العربية لواجهة التطبيق.",
+    "languageHint": "اختر لغة واجهة التطبيق.",
     "firmSettings": "إعدادات المكتب",
     "logoUploaded": "تم رفع الشعار بنجاح",
     "logoUploadFailed": "فشل رفع الشعار",
@@ -363,7 +363,8 @@
     "subdomainHint": "يُستخدم لـ name.platform.com و /site/name.",
     "customDomain": "نطاق مخصص",
     "customDomainPlaceholder": "www.yourfirm.ch",
-    "languagePlatformHint": "تظهر هنا فقط اللغات المفعّلة على مستوى المنصة."
+    "languagePlatformHint": "تظهر هنا فقط اللغات المفعّلة على المنصة. يتم التطبيق فور الاختيار.",
+    "languageHintDynamic": "اختر {{languages}} لواجهة التطبيق."
   },
   "notFound": {
     "title": "الصفحة غير موجودة",
