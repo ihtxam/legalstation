@@ -37,7 +37,7 @@ export default function SubscribePage() {
   if (catalog.isLoading) {
     return (
       <div className="min-h-screen bg-[var(--color-navy)] p-6">
-        <div className="max-w-xl mx-auto bg-white rounded-2xl p-6">
+        <div className="max-w-xl mx-auto bg-card rounded-2xl p-6 border border-border">
           <Skeleton className="h-40 w-full" />
         </div>
       </div>
@@ -63,7 +63,7 @@ export default function SubscribePage() {
           <p className="text-white/75 mt-1">{t("packages.subscribeHint")}</p>
         </div>
 
-        <div className="bg-white rounded-2xl p-6 space-y-4">
+        <div className="bg-card rounded-2xl p-6 space-y-4 border border-border">
           <h2 className="font-semibold text-lg">{t("packages.choosePlan")}</h2>
           {packages.length === 0 ? (
             <p className="text-sm text-muted-foreground">{t("packages.noPublicPackages")}</p>

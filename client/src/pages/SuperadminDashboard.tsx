@@ -571,7 +571,7 @@ export default function SuperadminDashboard() {
   ];
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-background">
       <div className="border-b bg-slate-950 text-slate-100">
         <div className="container mx-auto px-4 py-5 flex items-center justify-between gap-4 flex-wrap">
           <div>
@@ -629,7 +629,7 @@ export default function SuperadminDashboard() {
               {lastCreatedCreds.temporaryPassword && (
                 <p>
                   {t("superadmin.tempPassword")}{" "}
-                  <code className="bg-white px-1 rounded">{lastCreatedCreds.temporaryPassword}</code>
+                  <code className="bg-background px-1 rounded">{lastCreatedCreds.temporaryPassword}</code>
                 </p>
               )}
               <Button size="sm" variant="ghost" onClick={() => setLastCreatedCreds(null)}>
@@ -640,7 +640,7 @@ export default function SuperadminDashboard() {
         )}
 
         <Tabs value={tab} onValueChange={(v) => setTab(v as TabId)} className="space-y-6">
-          <TabsList className="bg-white border flex-wrap h-auto w-full justify-start overflow-x-auto">
+          <TabsList className="bg-card border flex-wrap h-auto w-full justify-start overflow-x-auto">
             <TabsTrigger value="overview">{t("superadmin.tabOverview")}</TabsTrigger>
             <TabsTrigger value="firms">{t("superadmin.tabFirms")}</TabsTrigger>
             <TabsTrigger value="plans">{t("superadmin.tabPlans")}</TabsTrigger>
@@ -728,12 +728,12 @@ export default function SuperadminDashboard() {
                     </div>
                   ))}
                   {!system?.oauthConfigured && (
-                    <div className="flex gap-2 items-start mt-3 p-3 rounded-lg bg-slate-50 border text-slate-700">
+                    <div className="flex gap-2 items-start mt-3 p-3 rounded-lg bg-muted border text-foreground">
                       <p className="text-xs">{t("superadmin.oauthHint")}</p>
                     </div>
                   )}
                   {!system?.forgeConfigured && (
-                    <div className="flex gap-2 items-start mt-3 p-3 rounded-lg bg-slate-50 border text-slate-700">
+                    <div className="flex gap-2 items-start mt-3 p-3 rounded-lg bg-muted border text-foreground">
                       <p className="text-xs">{t("superadmin.forgeHint")}</p>
                     </div>
                   )}
@@ -1514,7 +1514,7 @@ export default function SuperadminDashboard() {
               />
             </div>
 
-            <div className="border rounded-lg bg-white divide-y">
+            <div className="border rounded-lg bg-card divide-y">
               {(platformUsers || []).map((u) => (
                 <div key={u.id} className="px-4 py-3 flex items-center justify-between gap-3">
                   <div>
@@ -1813,7 +1813,7 @@ export default function SuperadminDashboard() {
                 </Select>
               </div>
             </div>
-            <div className="border rounded-lg bg-white divide-y">
+            <div className="border rounded-lg bg-card divide-y">
               {(supportTickets || []).map((ticket) => (
                 <button
                   key={ticket.id}
@@ -2039,7 +2039,7 @@ export default function SuperadminDashboard() {
                 </Button>
               </CardContent>
             </Card>
-            <div className="border rounded-lg bg-white divide-y">
+            <div className="border rounded-lg bg-card divide-y">
               {(announcements || []).map((a) => (
                 <div key={a.id} className="px-4 py-3 flex flex-col md:flex-row md:items-start md:justify-between gap-3">
                   <div className="space-y-1 min-w-0">
@@ -2090,7 +2090,7 @@ export default function SuperadminDashboard() {
               <h2 className="text-xl font-semibold">{t("superadmin.leadsTitle")}</h2>
               <p className="text-sm text-muted-foreground">{t("superadmin.leadsSubtitle")}</p>
             </div>
-            <div className="border rounded-lg bg-white divide-y">
+            <div className="border rounded-lg bg-card divide-y">
               {(platformLeads || []).map((lead) => (
                 <div key={lead.id} className="px-4 py-3 flex flex-col md:flex-row md:items-start md:justify-between gap-3">
                   <div className="space-y-1 min-w-0">
@@ -2144,7 +2144,7 @@ export default function SuperadminDashboard() {
               <h2 className="text-xl font-semibold">Audit log</h2>
               <p className="text-sm text-muted-foreground">Platform admin actions</p>
             </div>
-            <div className="border rounded-lg bg-white divide-y">
+            <div className="border rounded-lg bg-card divide-y">
               {(auditLog || []).map((row) => (
                 <div key={row.id} className="px-4 py-3 text-sm flex justify-between gap-3">
                   <div>

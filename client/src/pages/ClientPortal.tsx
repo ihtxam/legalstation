@@ -463,8 +463,8 @@ export default function ClientPortalPage() {
                     <Badge
                       className={
                         activeCase.status === "open"
-                          ? "bg-green-100 text-green-700 border-green-200"
-                          : "bg-gray-100 text-gray-700 border-gray-200"
+                          ? "bg-green-100 text-green-700 border-green-200 dark:bg-emerald-500/15 dark:text-emerald-300 dark:border-emerald-500/30"
+                          : "bg-gray-100 text-gray-700 border-gray-200 dark:bg-white/10 dark:text-zinc-300 dark:border-white/15"
                       }
                     >
                       {t(`common.${activeCase.status}`, { defaultValue: activeCase.status })}
@@ -494,7 +494,7 @@ export default function ClientPortalPage() {
                     {pendingRequests.map((req) => (
                       <div
                         key={req.id}
-                        className="flex items-start justify-between gap-3 flex-wrap bg-white/70 rounded-md border border-amber-100 p-3"
+                        className="flex items-start justify-between gap-3 flex-wrap bg-card/70 rounded-md border border-amber-200 dark:border-amber-500/30 p-3"
                       >
                         <div>
                           <p className="font-medium text-sm text-foreground">{req.title}</p>

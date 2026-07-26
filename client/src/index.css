@@ -61,39 +61,50 @@
   --color-info: #64748B;
 }
 
+/* Full night mode — near-black surfaces, high contrast, teal accents */
 .dark {
-  --color-background: #0F172A;
-  --color-foreground: #F1F5F9;
-  --color-card: #1E293B;
-  --color-card-foreground: #F1F5F9;
-  --color-popover: #1E293B;
-  --color-popover-foreground: #F1F5F9;
+  color-scheme: dark;
+  --color-background: #000000;
+  --color-foreground: #F8FAFC;
+  --color-card: #0A0A0A;
+  --color-card-foreground: #F8FAFC;
+  --color-popover: #0A0A0A;
+  --color-popover-foreground: #F8FAFC;
   --color-primary: #00BFA6;
-  --color-primary-foreground: #042F2E;
-  --color-secondary: #1E293B;
-  --color-secondary-foreground: #F1F5F9;
-  --color-muted: #1E293B;
-  --color-muted-foreground: #94A3B8;
-  --color-accent: #00BFA6;
-  --color-accent-foreground: #FFFFFF;
+  --color-primary-foreground: #001A16;
+  --color-secondary: #141414;
+  --color-secondary-foreground: #F8FAFC;
+  --color-muted: #111111;
+  --color-muted-foreground: #A1A1AA;
+  --color-accent: #141414;
+  --color-accent-foreground: #F8FAFC;
   --color-destructive: #EF4444;
   --color-destructive-foreground: #FFFFFF;
-  --color-border: #334155;
-  --color-input: #334155;
+  --color-border: #222222;
+  --color-input: #1A1A1A;
   --color-ring: #00BFA6;
-  --color-sidebar: #0F172A;
-  --color-sidebar-foreground: #F1F5F9;
+  --color-chart-1: #00BFA6;
+  --color-chart-2: #94A3B8;
+  --color-chart-3: #14D4BC;
+  --color-chart-4: #64748B;
+  --color-chart-5: #CBD5E1;
+  --color-sidebar: #000000;
+  --color-sidebar-foreground: #F8FAFC;
   --color-sidebar-primary: #00BFA6;
   --color-sidebar-primary-foreground: #FFFFFF;
-  --color-sidebar-accent: #1E293B;
-  --color-sidebar-accent-foreground: #F1F5F9;
-  --color-sidebar-border: #334155;
+  --color-sidebar-accent: #141414;
+  --color-sidebar-accent-foreground: #F8FAFC;
+  --color-sidebar-border: #1F1F1F;
   --color-sidebar-ring: #00BFA6;
 
   --color-navy: #00BFA6;
   --color-navy-light: #14D4BC;
   --color-gold: #00BFA6;
   --color-gold-light: #5EEAD4;
+  --color-success: #00BFA6;
+  --color-warning: #F59E0B;
+  --color-danger: #EF4444;
+  --color-info: #94A3B8;
 }
 
 /* Slightly smaller default type; user-adjustable via data-text-size */
@@ -147,15 +158,15 @@ html[data-text-size="lg"] {
     min-width: 0;
     min-height: 0;
   }
-  .status-open { @apply bg-emerald-50 text-emerald-700 border border-emerald-200; }
-  .status-pending { @apply bg-amber-50 text-amber-700 border border-amber-200; }
-  .status-closed { @apply bg-slate-100 text-slate-600 border border-slate-200; }
-  .status-archived { @apply bg-slate-50 text-slate-500 border border-slate-200; }
-  .status-draft { @apply bg-slate-100 text-slate-600 border border-slate-200; }
-  .status-sent { @apply bg-teal-50 text-teal-700 border border-teal-200; }
-  .status-paid { @apply bg-emerald-50 text-emerald-700 border border-emerald-200; }
-  .status-overdue { @apply bg-red-50 text-red-700 border border-red-200; }
-  .status-cancelled { @apply bg-slate-100 text-slate-500 border border-slate-200; }
+  .status-open { @apply bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-500/15 dark:text-emerald-300 dark:border-emerald-500/30; }
+  .status-pending { @apply bg-amber-50 text-amber-700 border border-amber-200 dark:bg-amber-500/15 dark:text-amber-300 dark:border-amber-500/30; }
+  .status-closed { @apply bg-slate-100 text-slate-600 border border-slate-200 dark:bg-white/10 dark:text-zinc-300 dark:border-white/15; }
+  .status-archived { @apply bg-slate-50 text-slate-500 border border-slate-200 dark:bg-white/5 dark:text-zinc-400 dark:border-white/10; }
+  .status-draft { @apply bg-slate-100 text-slate-600 border border-slate-200 dark:bg-white/10 dark:text-zinc-300 dark:border-white/15; }
+  .status-sent { @apply bg-teal-50 text-teal-700 border border-teal-200 dark:bg-teal-500/15 dark:text-teal-300 dark:border-teal-500/30; }
+  .status-paid { @apply bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-500/15 dark:text-emerald-300 dark:border-emerald-500/30; }
+  .status-overdue { @apply bg-red-50 text-red-700 border border-red-200 dark:bg-red-500/15 dark:text-red-300 dark:border-red-500/30; }
+  .status-cancelled { @apply bg-slate-100 text-slate-500 border border-slate-200 dark:bg-white/10 dark:text-zinc-400 dark:border-white/15; }
   .ease-snappy { transition-timing-function: cubic-bezier(0.23, 1, 0.32, 1); }
 
   .page-shell {

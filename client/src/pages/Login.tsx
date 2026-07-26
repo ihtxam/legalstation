@@ -121,7 +121,7 @@ export default function LoginPage() {
   if (loading) return null;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100 flex items-center justify-center p-6">
+    <div className="min-h-screen bg-background flex items-center justify-center p-6">
       <div className="w-full max-w-md">
         <div className="flex justify-end mb-4">
           <LanguageSwitcher />

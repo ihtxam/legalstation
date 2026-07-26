@@ -128,7 +128,7 @@ export default function ClientDetailPage() {
                   id="client-invite-email"
                   type="email"
                   autoComplete="email"
-                  className="bg-white mt-1.5"
+                  className="bg-background mt-1.5"
                   placeholder="client@example.com"
                   value={inviteEmail || client.email || ""}
                   onChange={e => setInviteEmail(e.target.value)}
@@ -140,7 +140,7 @@ export default function ClientDetailPage() {
                   value={inviteEmailLanguage}
                   onValueChange={(v) => setInviteEmailLanguage(v as AppLocale)}
                 >
-                  <SelectTrigger id="client-invite-lang" className="bg-white mt-1.5 max-w-xs">
+                  <SelectTrigger id="client-invite-lang" className="bg-background mt-1.5 max-w-xs">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>

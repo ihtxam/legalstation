@@ -162,7 +162,7 @@ export default function FirmOnboardingPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white">
+    <div className="min-h-screen bg-background">
       <div className="max-w-2xl mx-auto px-6 py-10">
         <div className="mb-8">
           <h1 className="font-serif text-3xl font-semibold text-foreground">{t("onboarding.welcome")}</h1>
@@ -180,7 +180,7 @@ export default function FirmOnboardingPage() {
                   ? "bg-[var(--color-navy)] text-white border-[var(--color-navy)]"
                   : step > s.id
                     ? "bg-emerald-50 text-emerald-700 border-emerald-200"
-                    : "bg-white text-muted-foreground border-border"
+                    : "bg-card text-muted-foreground border-border"
               }`}
             >
               <s.icon className="w-3.5 h-3.5" />
