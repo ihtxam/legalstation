@@ -22,6 +22,8 @@ import InvoiceDetailPage from "./pages/InvoiceDetail";
 import MessagesPage from "./pages/Messages";
 import SettingsPage from "./pages/Settings";
 import AgendaPage from "./pages/Agenda";
+import FirmPackagesPage from "./pages/FirmPackages";
+import SubscribePage from "./pages/Subscribe";
 import OnboardingPage from "./pages/Onboarding";
 import FirmOnboardingPage from "./pages/FirmOnboarding";
 import InvitePage from "./pages/Invite";
@@ -145,6 +147,8 @@ function Router() {
         <Route path="/messages" component={MessagesPage} />
         <Route path="/settings" component={SettingsPage} />
         <Route path="/agenda" component={AgendaPage} />
+        <Route path="/packages" component={FirmPackagesPage} />
+        <Route path="/subscribe/:firmSlug" component={SubscribePage} />
         <Route path="/superadmin" component={SuperadminDashboard} />
         <Route path="/superadmin/" component={SuperadminDashboard} />
         <Route path="/admin/settings" component={AdminSettings} />

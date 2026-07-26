@@ -143,6 +143,11 @@ export const clients = mysqlTable("clients", {
   country: varchar("country", { length: 100 }).default("Switzerland"),
   notes: text("notes"),
   status: mysqlEnum("status", ["invited", "active", "inactive"]).notNull().default("invited"),
+  /**
+   * standard = firm-created / invited client (CRM).
+   * subscriber = self-serve customer on a firm legal-service package.
+   */
+  accessType: mysqlEnum("accessType", ["standard", "subscriber"]).notNull().default("standard"),
   termsAcceptedAt: timestamp("termsAcceptedAt"),
   onboardingCompletedAt: timestamp("onboardingCompletedAt"),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
@@ -151,6 +156,73 @@ export const clients = mysqlTable("clients", {
 
 export type Client = typeof clients.$inferSelect;
 export type InsertClient = typeof clients.$inferInsert;
+
+// ─── Firm → client legal service packages (not LexFlow SaaS plans) ───────────
+export const firmClientPackages = mysqlTable("firm_client_packages", {
+  id: int("id").autoincrement().primaryKey(),
+  firmId: int("firmId").notNull(),
+  name: varchar("name", { length: 255 }).notNull(),
+  description: text("description"),
+  price: decimal("price", { precision: 10, scale: 2 }).notNull().default("0.00"),
+  currency: varchar("currency", { length: 3 }).notNull().default("CHF"),
+  billingInterval: mysqlEnum("billingInterval", ["monthly", "yearly"]).notNull().default("monthly"),
+  /** Max new cases the subscriber may open per billing period */
+  casesPerPeriod: int("casesPerPeriod").notNull().default(1),
+  /** JSON array of allowed case types, or null = all */
+  allowedCaseTypes: text("allowedCaseTypes"),
+  features: text("features"),
+  isActive: boolean("isActive").notNull().default(true),
+  isPublic: boolean("isPublic").notNull().default(true),
+  sortOrder: int("sortOrder").notNull().default(0),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type FirmClientPackage = typeof firmClientPackages.$inferSelect;
+export type InsertFirmClientPackage = typeof firmClientPackages.$inferInsert;
+
+export const clientSubscriptions = mysqlTable("client_subscriptions", {
+  id: int("id").autoincrement().primaryKey(),
+  firmId: int("firmId").notNull(),
+  clientId: int("clientId").notNull(),
+  packageId: int("packageId").notNull(),
+  status: mysqlEnum("status", ["active", "past_due", "cancelled", "expired"])
+    .notNull()
+    .default("active"),
+  billingInterval: mysqlEnum("billingInterval", ["monthly", "yearly"]).notNull().default("monthly"),
+  currentPeriodStart: timestamp("currentPeriodStart").notNull(),
+  currentPeriodEnd: timestamp("currentPeriodEnd").notNull(),
+  cancelledAt: timestamp("cancelledAt"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type ClientSubscription = typeof clientSubscriptions.$inferSelect;
+export type InsertClientSubscription = typeof clientSubscriptions.$inferInsert;
+
+/** Structured legal-issue intake from subscribed (or portal) clients. */
+export const caseIntakeSubmissions = mysqlTable("case_intake_submissions", {
+  id: int("id").autoincrement().primaryKey(),
+  firmId: int("firmId").notNull(),
+  caseId: int("caseId").notNull(),
+  clientId: int("clientId").notNull(),
+  formVersion: varchar("formVersion", { length: 32 }).notNull().default("intake_v1"),
+  privacyLevel: mysqlEnum("privacyLevel", ["private", "sensitive", "standard"])
+    .notNull()
+    .default("standard"),
+  relatedLawArea: varchar("relatedLawArea", { length: 64 }),
+  desiredOutcome: text("desiredOutcome"),
+  happenedAt: varchar("happenedAt", { length: 100 }),
+  howItHappened: text("howItHappened"),
+  involvement: text("involvement"),
+  /** Full questionnaire JSON for forward compatibility */
+  answersJson: text("answersJson"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type CaseIntakeSubmission = typeof caseIntakeSubmissions.$inferSelect;
+export type InsertCaseIntakeSubmission = typeof caseIntakeSubmissions.$inferInsert;
 
 // ─── Cases ───────────────────────────────────────────────────────────────────
 export const cases = mysqlTable("cases", {

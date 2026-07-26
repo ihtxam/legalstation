@@ -36,6 +36,7 @@ import { clientActivitiesRouter } from "./routers/clientActivities";
 import { firmLeadsRouter } from "./routers/firmLeads";
 import { firmPagesRouter } from "./routers/firmPages";
 import { calendarRouter } from "./routers/calendar";
+import { clientPackagesRouter } from "./routers/clientPackages";
 import { signupRouter } from "./routers/signup";
 import { updateUserById } from "./db";
 import {
@@ -218,6 +219,7 @@ export const appRouter = router({
   firmLeads: firmLeadsRouter,
   firmPages: firmPagesRouter,
   calendar: calendarRouter,
+  clientPackages: clientPackagesRouter,
 });
 
 export type AppRouter = typeof appRouter;

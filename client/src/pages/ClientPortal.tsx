@@ -11,6 +11,7 @@ import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import { DocumentExchange } from "@/components/DocumentExchange";
 import { CaseStatusTimeline } from "@/components/CaseStatusTimeline";
+import { CaseIntakeWizard } from "@/components/CaseIntakeWizard";
 import { Badge } from "@/components/ui/badge";
 import {
   Dialog,
@@ -48,6 +49,8 @@ export default function ClientPortalPage() {
   const [selectedCaseId, setSelectedCaseId] = useState<number | null>(null);
   const [newMessage, setNewMessage] = useState("");
   const [showLitige, setShowLitige] = useState(false);
+  const [showIntake, setShowIntake] = useState(false);
+  const [showChangePlan, setShowChangePlan] = useState(false);
   const [litigeForm, setLitigeForm] = useState({
     title: "",
     type: "other" as keyof typeof CASE_TYPE_LABELS,
@@ -58,6 +61,23 @@ export default function ClientPortalPage() {
   const fulfillFileRef = useRef<HTMLInputElement>(null);
   const [fulfillingRequestId, setFulfillingRequestId] = useState<number | null>(null);
   const { data: branding } = trpc.firm.branding.useQuery(undefined, { enabled: isAuthenticated });
+  const { data: mySub, refetch: refetchSub } = trpc.clientPackages.mySubscription.useQuery(
+    undefined,
+    { enabled: isAuthenticated }
+  );
+  const { data: publicCatalog } = trpc.clientPackages.listPublicByFirmSlug.useQuery(
+    { firmSlug: branding?.slug || "" },
+    { enabled: isAuthenticated && Boolean(branding?.slug) && mySub?.accessType === "subscriber" }
+  );
+  const changePlan = trpc.clientPackages.changePlan.useMutation({
+    onSuccess: async () => {
+      toast.success(t("packages.planChanged"));
+      setShowChangePlan(false);
+      await refetchSub();
+    },
+    onError: (e) => toast.error(e.message),
+  });
+  const isSubscriber = mySub?.accessType === "subscriber";
 
   useEffect(() => {
     if (!loading && !isAuthenticated) startLogin();
@@ -213,13 +233,43 @@ export default function ClientPortalPage() {
             <LanguageSwitcher />
             <Button
               className="bg-[var(--color-navy)] hover:bg-[var(--color-navy-light)] text-white"
-              onClick={() => setShowLitige(true)}
+              onClick={() => (isSubscriber ? setShowIntake(true) : setShowLitige(true))}
+              disabled={isSubscriber && mySub?.hasSubscription && !mySub.quota.canCreateCase}
             >
               <Plus className="w-4 h-4 mr-1.5" />
-              {t("portal.announceLitige")}
+              {isSubscriber ? t("packages.newLegalIssue") : t("portal.announceLitige")}
             </Button>
           </div>
         </div>
+
+        {isSubscriber && (
+          <div className="bg-card border border-border rounded-xl p-4 flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <p className="font-medium text-sm">
+                {mySub.hasSubscription
+                  ? t("packages.currentPlan", { name: mySub.package?.name })
+                  : t("packages.noActivePlan")}
+              </p>
+              {mySub.hasSubscription ? (
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  {t("packages.quotaUsed", {
+                    used: mySub.quota.casesUsed,
+                    allowed: mySub.quota.casesAllowed,
+                  })}
+                  {" · "}
+                  {t("packages.periodEnds", {
+                    date: new Date(mySub.subscription!.currentPeriodEnd).toLocaleDateString(),
+                  })}
+                </p>
+              ) : (
+                <p className="text-xs text-muted-foreground mt-0.5">{t("packages.choosePlanHint")}</p>
+              )}
+            </div>
+            <Button variant="outline" size="sm" onClick={() => setShowChangePlan(true)}>
+              {t("packages.changePlan")}
+            </Button>
+          </div>
+        )}
 
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
           <div className="lg:col-span-1">
@@ -238,8 +288,12 @@ export default function ClientPortalPage() {
                   <div className="p-6 text-center space-y-3">
                     <p className="text-muted-foreground text-sm font-medium">{t("portal.empty")}</p>
                     <p className="text-xs text-muted-foreground">{t("portal.emptyHintAnnounce")}</p>
-                    <Button size="sm" variant="outline" onClick={() => setShowLitige(true)}>
-                      {t("portal.announceLitige")}
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => (isSubscriber ? setShowIntake(true) : setShowLitige(true))}
+                    >
+                      {isSubscriber ? t("packages.newLegalIssue") : t("portal.announceLitige")}
                     </Button>
                   </div>
                 ) : (
@@ -521,6 +575,45 @@ export default function ClientPortalPage() {
           </div>
         </div>
       </div>
+
+      <CaseIntakeWizard
+        open={showIntake}
+        onOpenChange={setShowIntake}
+        allowedCaseTypes={mySub?.hasSubscription ? mySub.package?.allowedCaseTypes : null}
+        onCreated={async (caseId) => {
+          await refetchCases();
+          await refetchSub();
+          setSelectedCaseId(caseId);
+        }}
+      />
+
+      <Dialog open={showChangePlan} onOpenChange={setShowChangePlan}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{t("packages.changePlan")}</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3">
+            {(publicCatalog?.packages || []).map((pkg) => (
+              <button
+                key={pkg.id}
+                type="button"
+                className="w-full text-start border rounded-xl p-3 hover:border-[var(--color-navy)]"
+                disabled={changePlan.isPending}
+                onClick={() => changePlan.mutate({ packageId: pkg.id })}
+              >
+                <p className="font-medium">{pkg.name}</p>
+                <p className="text-xs text-muted-foreground">
+                  {Number(pkg.price).toFixed(2)} {pkg.currency} / {pkg.billingInterval} ·{" "}
+                  {t("packages.casesPerPeriod", { count: pkg.casesPerPeriod })}
+                </p>
+              </button>
+            ))}
+            {!publicCatalog?.packages?.length ? (
+              <p className="text-sm text-muted-foreground">{t("packages.noPublicPackages")}</p>
+            ) : null}
+          </div>
+        </DialogContent>
+      </Dialog>
 
       <Dialog open={showLitige} onOpenChange={setShowLitige}>
         <DialogContent className="max-w-lg">

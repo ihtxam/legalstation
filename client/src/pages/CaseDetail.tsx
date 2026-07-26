@@ -652,6 +652,10 @@ export default function CaseDetailPage() {
 
   const { data: caseData, isLoading, refetch } = trpc.cases.get.useQuery({ id: caseId }, { enabled: isAuthenticated && !isNaN(caseId) });
   const { data: firmData } = trpc.firm.myFirm.useQuery(undefined, { enabled: isAuthenticated });
+  const { data: intake } = trpc.clientPackages.getIntakeForCase.useQuery(
+    { caseId },
+    { enabled: isAuthenticated && !isNaN(caseId) }
+  );
   const { data: matterStages } = trpc.matterStages.list.useQuery(undefined, {
     enabled: isAuthenticated && !!firmData,
   });
@@ -732,6 +736,47 @@ export default function CaseDetailPage() {
             )}
           </div>
         </div>
+
+        {intake && (
+          <div className="bg-card border border-border rounded-xl p-6 space-y-4">
+            <div className="flex items-center justify-between gap-3 flex-wrap">
+              <h3 className="text-sm font-semibold text-foreground">{t("packages.intakeAnswers")}</h3>
+              <Badge variant="outline">{t(`packages.privacy${intake.privacyLevel === "private" ? "Private" : intake.privacyLevel === "sensitive" ? "Sensitive" : "Standard"}`)}</Badge>
+            </div>
+            <div className="grid gap-3 sm:grid-cols-2 text-sm">
+              {intake.relatedLawArea && (
+                <div>
+                  <p className="text-xs text-muted-foreground">{t("packages.lawArea")}</p>
+                  <p className="text-foreground mt-0.5">{intake.relatedLawArea}</p>
+                </div>
+              )}
+              {intake.happenedAt && (
+                <div>
+                  <p className="text-xs text-muted-foreground">{t("packages.whenHappened")}</p>
+                  <p className="text-foreground mt-0.5">{intake.happenedAt}</p>
+                </div>
+              )}
+            </div>
+            {intake.howItHappened && (
+              <div>
+                <p className="text-xs text-muted-foreground">{t("packages.howHappened")}</p>
+                <p className="text-foreground mt-0.5 whitespace-pre-wrap">{intake.howItHappened}</p>
+              </div>
+            )}
+            {intake.desiredOutcome && (
+              <div>
+                <p className="text-xs text-muted-foreground">{t("packages.desiredOutcome")}</p>
+                <p className="text-foreground mt-0.5 whitespace-pre-wrap">{intake.desiredOutcome}</p>
+              </div>
+            )}
+            {intake.involvement && (
+              <div>
+                <p className="text-xs text-muted-foreground">{t("packages.involvement")}</p>
+                <p className="text-foreground mt-0.5 whitespace-pre-wrap">{intake.involvement}</p>
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Edit dialog */}
         <Dialog open={editStatus} onOpenChange={setEditStatus}>

@@ -3,6 +3,7 @@ import { startLogin } from "@/const";
 import { trpc } from "@/lib/trpc";
 import LexLayout from "@/components/LexLayout";
 import { StatusBadge } from "@/components/StatusBadge";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -119,7 +120,14 @@ export default function ClientsPage() {
                           {c.type === "company" ? <Building2 className="w-4 h-4 text-[var(--color-navy)]" /> : <User className="w-4 h-4 text-[var(--color-navy)]" />}
                         </div>
                         <div>
-                          <p className="font-medium text-foreground text-sm">{displayName(c)}</p>
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <p className="font-medium text-foreground text-sm">{displayName(c)}</p>
+                            {c.accessType === "subscriber" && (
+                              <Badge variant="outline" className="text-[10px] px-1.5 py-0">
+                                {t("packages.subscriberBadge")}
+                              </Badge>
+                            )}
+                          </div>
                           {c.type === "company" && c.contactPerson && <p className="text-xs text-muted-foreground">{c.contactPerson}</p>}
                         </div>
                       </div>

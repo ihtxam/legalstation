@@ -19,6 +19,7 @@ import {
   Target,
   Globe,
   CalendarDays,
+  Package,
 } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -72,6 +73,7 @@ export default function LexLayout({ children, title, breadcrumb }: LexLayoutProp
     { href: "/time-reports", label: t("nav.timeReports"), icon: FileText },
     ...(isAdmin
       ? [
+          { href: "/packages", label: t("nav.packages"), icon: Package },
           { href: "/cms", label: t("nav.cms"), icon: Globe },
           { href: "/analytics", label: t("nav.analytics"), icon: BarChart3 },
           { href: "/audit", label: t("nav.auditLog"), icon: Shield },
