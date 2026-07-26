@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Website (CMS) &amp; Leads · Cliavo Hilfe</title>
+  <link rel="stylesheet" href="../styles.css" />
+</head>
+<body>
+  <div class="shell">
+    <header class="top">
+      <div class="brand">Cliavo<span>Hilfe-Center</span></div>
+      <div class="search">
+        <input type="search" id="searchInput" placeholder="Dokumentation durchsuchen…" autocomplete="off" />
+        <div class="search-results" id="searchResults" hidden></div>
+      </div>
+      <nav><a href="./index.html">Alle Themen</a></nav>
+      <div class="lang" aria-label="Sprache"><a href="../website-leads.html" lang="en">EN</a><a href="../fr/website-leads.html" lang="fr">FR</a><a class="active" href="./website-leads.html">DE</a><a href="../it/website-leads.html" lang="it">IT</a><a href="../ar/website-leads.html" lang="ar">AR</a></div>
+    </header>
+
+    <article class="article">
+      <h1>Website (CMS) &amp; Leads</h1>
+      <p>
+        Jede Kanzlei erhält eine öffentliche Website, gebaut mit dem CMS-Seiten-Editor — ganz ohne Webagentur.
+        Seiten werden aus vorgefertigten Blöcken zusammengesetzt, mit Live-Vorschau bearbeitet, mit Ihrem
+        Branding gestaltet und unter Ihrer Subdomain oder eigenen Domain veröffentlicht.
+      </p>
+
+      <h2 id="editor">Der Seiten-Editor</h2>
+      <ul>
+        <li>Erstellen Sie eine Seite im <strong>CMS</strong>: Es öffnet sich ein Vollbild-Editor mit der Blockliste auf der einen und einer <strong>Live-Vorschau</strong> auf der anderen Seite.</li>
+        <li>Ordnen Sie Blöcke per <strong>Drag-and-drop</strong> neu an (Anfasser) — die Vorschau aktualisiert sich sofort.</li>
+        <li>Jede Seite hat einen Titel, einen URL-Slug, einen <strong>Veröffentlicht</strong>-Schalter und einen <strong>Startseiten</strong>-Schalter (eine Seite ist die Startseite Ihrer Website).</li>
+        <li>Der <strong>SEO-Tab</strong> legt Meta-Titel und -Beschreibung fest, die von Suchmaschinen verwendet werden.</li>
+      </ul>
+
+      <h2 id="blocks">Blocktypen</h2>
+      <table>
+        <tr><th>Block</th><th>Was er zeigt</th></tr>
+        <tr><td>Hero</td><td>Grosse Überschrift, Untertitel und ein Call-to-Action-Button.</td></tr>
+        <tr><td>Text</td><td>Rich-Text-Abschnitt mit Überschrift für beliebige Inhalte.</td></tr>
+        <tr><td>Funktionen</td><td>Raster aus Funktionskarten (Icon, Titel, Text).</td></tr>
+        <tr><td>Kennzahlen</td><td>Zentrale Zahlen — Jahre Erfahrung, gewonnene Mandate, betreute Klienten.</td></tr>
+        <tr><td>Referenzen</td><td>Klientenzitate mit Namen.</td></tr>
+        <tr><td>Team</td><td>Ihre Anwälte mit Fotos, Funktionen und Kurzprofilen.</td></tr>
+        <tr><td>FAQ</td><td>Frage-Antwort-Akkordeon.</td></tr>
+        <tr><td>Galerie</td><td>Bilderraster.</td></tr>
+        <tr><td>Logo-Leiste</td><td>Leiste mit Verbands-/Klientenlogos.</td></tr>
+        <tr><td>Pakete</td><td><strong>Live-Block</strong> — zeigt automatisch Ihre veröffentlichten Abonnement-Pakete an.</td></tr>
+        <tr><td>Dienstleistungen</td><td><strong>Live-Block</strong> — zeigt automatisch Ihre veröffentlichten On-Demand-Dienstleistungen an.</td></tr>
+        <tr><td>Kontakt</td><td>Kontaktformular, das einen Lead in Ihrem CRM erstellt.</td></tr>
+      </table>
+      <p>
+        Listenartige Blöcke (Funktionen, Kennzahlen, Referenzen, Team, FAQ, Galerie, Logos) erlauben das freie
+        Hinzufügen und Entfernen von Einträgen. Die Blöcke <strong>Pakete</strong> und <strong>Dienstleistungen</strong> beziehen
+        Live-Daten aus dem <a href="./packages-services.html">Upselling</a> — veröffentlichen Sie ein neues Paket, und Ihre
+        Website aktualisiert sich von selbst.
+      </p>
+
+      <h2 id="templates">Vorlagen</h2>
+      <p>
+        Starten Sie mit einer Vorlage statt mit einer leeren Seite: <strong>Klassisch</strong>, <strong>Minimal</strong>,
+        <strong>Modern</strong>, <strong>Dienstleistungen &amp; Pakete</strong>, <strong>Team</strong> oder
+        <strong>Kontakt</strong>. Vorlagen füllen ein sinnvolles Block-Layout vor, das Sie anschliessend bearbeiten.
+      </p>
+
+      <h2 id="branding">Branding</h2>
+      <p>
+        Die öffentliche Website verwendet Ihr Logo und Ihre Markenfarben aus
+        <a href="./settings.html#branding">Einstellungen → Branding</a>, sodass Website, Arbeitsbereich und
+        Klientenportal einheitlich aussehen.
+      </p>
+
+      <h2 id="urls">Wo Ihre Website veröffentlicht wird</h2>
+      <ul>
+        <li><strong>Sofort</strong> (kein DNS nötig): <code>https://cliavo.com/site/your-slug</code></li>
+        <li><strong>Ihre Subdomain</strong>: <code>https://your-slug.cliavo.com</code> — dort melden sich auch Ihr Team und Ihre Klienten an.</li>
+        <li><strong>Eigene Domain</strong>: verbinden Sie z. B. <code>portal.yourfirm.ch</code> unter Einstellungen → Arbeitsbereich mit einem einzigen CNAME-Eintrag. Siehe <a href="./settings.html#domains">Domains</a>.</li>
+      </ul>
+
+      <h2 id="leads">Lead-Erfassung</h2>
+      <ul>
+        <li>Der <strong>Kontakt-Block</strong> auf Ihren öffentlichen Seiten leitet Eingaben direkt in Ihre <a href="./clients-crm.html#leads">CRM-Leads-Pipeline</a> mit der Quelle «website».</li>
+        <li>Paket- und Dienstleistungs-Blöcke führen Besucher zur Abonnement-Registrierung und zum Dienstleistungs-Checkout und machen Ihre Website so zum Schaufenster.</li>
+      </ul>
+
+      <div class="tip">
+        Tipp: Halten Sie eine veröffentlichte Startseite plus wenige fokussierte Seiten (Über uns, Dienstleistungen, Kontakt).
+        Suchmaschinen lesen Ihren SEO-Titel und die Beschreibung pro Seite — formulieren Sie sie wie eine Anzeige für die Seite.
+      </div>
+    </article>
+
+    <footer class="footer"><a href="./index.html">← Hilfe-Center</a> · support@cliavo.com</footer>
+  </div>
+  <script src="../search.js" defer></script>
+</body>
+</html>

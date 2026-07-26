@@ -75,6 +75,25 @@ a:hover { color: var(--teal-soft); text-decoration: underline; }
   max-width: 430px;
 }
 
+.lang {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.75rem;
+  letter-spacing: 0.04em;
+}
+
+.lang a { color: var(--slate); }
+.lang a:hover { color: var(--teal); text-decoration: none; }
+.lang a.active {
+  color: var(--teal);
+  font-weight: 700;
+  border-bottom: 2px solid var(--teal);
+}
+
+[dir="rtl"] .article ul { padding-left: 0; padding-right: 1.2rem; }
+[dir="rtl"] .article th, [dir="rtl"] .article td { text-align: right; }
+
 .search input {
   width: 100%;
   padding: 0.55rem 0.9rem;

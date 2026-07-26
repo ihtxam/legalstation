@@ -1,0 +1,578 @@
+[
+ {
+  "page": "Agenda & calendrier",
+  "title": "Agenda & calendrier",
+  "url": "./agenda-calendar.html",
+  "text": "Agenda & calendrier Un agenda unique pour tout ce qui porte une date : échéances de dossiers, tâches arrivant à échéance, réunions clients et rappels, vos propres événements personnels — et, si vous connectez un calendrier externe, vos événements Google / Outlook / iCloud également."
+ },
+ {
+  "page": "Agenda & calendrier",
+  "title": "Ce qui apparaît dans votre agenda",
+  "url": "./agenda-calendar.html#agenda",
+  "text": "Échéances de dossiers — issues du champ d'échéance des dossiers. Dates d'échéance des tâches — tâches de dossier qui vous sont attribuées. Activités clients — réunions, tâches et rappels datés. Événements personnels — créés directement dans le calendrier avec titre, lieu, début/fin, ou toute la journée. Événements importés — récupérés depuis les calendriers externes connectés."
+ },
+ {
+  "page": "Agenda & calendrier",
+  "title": "Connecter des calendriers externes",
+  "url": "./agenda-calendar.html#providers",
+  "text": "Chaque utilisateur peut connecter ses propres calendriers sous Calendrier → Connexions : Fournisseur Mode de connexion Google Calendar OAuth — connectez-vous avec Google et accordez l'accès au calendrier. Microsoft / Outlook OAuth — compte Microsoft 365 ou Outlook.com. Apple iCloud CalDAV avec votre identifiant Apple et un mot de passe pour application (créez-en un sur appleid.apple.com)."
+ },
+ {
+  "page": "Agenda & calendrier",
+  "title": "Synchronisation bidirectionnelle",
+  "url": "./agenda-calendar.html#sync",
+  "text": "Choisissez la direction de synchronisation par connexion : dans les deux sens , envoi uniquement (Cliavo → externe) ou réception uniquement (externe → Cliavo). Cliavo envoie les échéances, les réunions et les événements personnels vers le calendrier externe, et importe les événements externes afin que votre agenda reflète votre disponibilité réelle. La synchronisation s'exécute selon un planning et peut être déclenchée manuellement avec Synchroniser maintenant . La connexion affiche l'heure de la dernière synchronisation et toute erreur éventuelle. Les jetons d'accès sont stockés chiffrés ; la"
+ },
+ {
+  "page": "Facturation & factures",
+  "title": "Facturation & factures",
+  "url": "./billing.html",
+  "text": "Facturation & factures Créez des factures manuellement ou à partir du temps suivi, facturez dans la devise de votre client, joignez des sections de paiement QR suisses, répartissez les montants importants en plans de paiement échelonnés, et suivez chaque facture du brouillon au paiement."
+ },
+ {
+  "page": "Facturation & factures",
+  "title": "Créer une facture",
+  "url": "./billing.html#creating",
+  "text": "Choisissez le client (et éventuellement le dossier), une date d'échéance et le taux de TVA (la valeur par défaut de votre cabinet est prérenseignée). Ajoutez des lignes — chacune avec une description, un type de facturation horaire ou forfaitaire , une quantité et un prix unitaire. Les totaux et la TVA sont calculés automatiquement. Les factures issues des saisies de temps arrivent avec une ligne par saisie, prêtes à être ajustées. Les factures reçoivent un numéro séquentiel et peuvent être modifiées tant qu'elles sont en brouillon."
+ },
+ {
+  "page": "Facturation & factures",
+  "title": "Statuts des factures",
+  "url": "./billing.html#statuses",
+  "text": "Statut Signification Brouillon En préparation ; modifiable. Envoyée Émise au client (visible dans son portail). Payée Paiement reçu en totalité. En retard Date d'échéance dépassée sans paiement. Annulée Invalidée."
+ },
+ {
+  "page": "Facturation & factures",
+  "title": "Facturation multidevise",
+  "url": "./billing.html#currencies",
+  "text": "Votre cabinet a une devise par défaut (choisie lors de l'intégration ou dans les paramètres), et chaque facture porte sa propre devise. La plateforme prend en charge CHF, EUR, USD, GBP, AED, SAR, QAR, KWD, BHD, OMR et JOD (la disponibilité est contrôlée à l'échelle de la plateforme). Les montants sont toujours formatés avec le bon symbole et les bonnes règles décimales de la devise."
+ },
+ {
+  "page": "Facturation & factures",
+  "title": "QR-factures suisses",
+  "url": "./billing.html#qr-bill",
+  "text": "Ajoutez votre IBAN ou QR-IBAN et l'adresse du créancier (rue, numéro, code postal, ville, pays) dans les paramètres. Les factures au format PDF incluent alors une section de paiement QR suisse conforme, que les clients peuvent scanner dans leur e-banking. Les QR-factures ne sont générées que pour les factures en CHF et EUR (le standard suisse n'autorise pas d'autres devises) ; les autres devises omettent simplement la section QR. Les factures échelonnées incluent une section QR par montant d'échéance."
+ },
+ {
+  "page": "Facturation & factures",
+  "title": "Plans de paiement (échelonnements)",
+  "url": "./billing.html#payment-plans",
+  "text": "Répartissez une facture importante selon un échéancier adapté au client : Choisissez le nombre d'échéances (jusqu'à 12), l'intervalle et le montant par échéance. Cliavo peut générer automatiquement une facture par échéance à sa date d'exigibilité, et éventuellement l'envoyer par e-mail au client automatiquement (une tâche planifiée quotidienne s'en charge). Marquez les échéances comme payées au fur et à mesure des encaissements ; le plan affiche une chronologie de ce qui est payé, dû et à venir."
+ },
+ {
+  "page": "Facturation & factures",
+  "title": "Factures PDF & envoi",
+  "url": "./billing.html#pdf",
+  "text": "Chaque facture dispose d'un PDF prêt à imprimer (logo du cabinet, adresse, lignes, détail de la TVA et section QR le cas échéant). Les factures peuvent être envoyées par e-mail aux clients, qui les voient également dans leur portail ."
+ },
+ {
+  "page": "Facturation & factures",
+  "title": "Paiements en ligne",
+  "url": "./billing.html#online-payments",
+  "text": "Connectez Stripe ou Adyen (Paramètres → Paiements) pour permettre aux clients de payer leurs commandes de services et leurs factures en ligne. Les cabinets peuvent utiliser leur propre compte marchand Adyen — y compris des webhooks vérifiés par HMAC — ou les identifiants de la plateforme. Sans passerelle, les commandes peuvent toujours être marquées comme payées manuellement. Voir Paramètres → Paiements ."
+ },
+ {
+  "page": "Facturation & factures",
+  "title": "Vue d'ensemble des revenus",
+  "url": "./billing.html#dashboard",
+  "text": "Le tableau de bord affiche les montants en attente, en retard et encaissés dans la devise de votre cabinet, et les analyses administrateur ventilent les revenus dans le temps pour vous permettre de repérer les tendances."
+ },
+ {
+  "page": "Dossiers & affaires",
+  "title": "Dossiers & affaires",
+  "url": "./cases-clients.html",
+  "text": "Dossiers & affaires Les dossiers (affaires) sont le cœur de Cliavo : chaque dossier regroupe ses clients, les avocats attribués, les documents, les notes, les tâches, les saisies de temps, les messages et les échéances en un seul endroit."
+ },
+ {
+  "page": "Dossiers & affaires",
+  "title": "Créer un dossier",
+  "url": "./cases-clients.html#creating",
+  "text": "Un titre et un numéro de référence interne facultatif. Un type — civil, pénal, droit des sociétés, famille, immobilier, droit du travail, fiscal, immigration, propriété intellectuelle ou autre. Un statut — ouvert, en attente, clôturé ou archivé. Facultatif : une description , un nom de tribunal , un numéro de rôle et une échéance (les échéances apparaissent dans votre agenda ). Associez un ou plusieurs clients et attribuez des avocats immédiatement, ou plus tard depuis la page du dossier."
+ },
+ {
+  "page": "Dossiers & affaires",
+  "title": "Clients et avocats sur un dossier",
+  "url": "./cases-clients.html#assignments",
+  "text": "Un dossier peut avoir plusieurs clients et plusieurs avocats. Depuis la page de détail du dossier, utilisez Attribuer un client (choisissez un client existant ou créez-en un nouveau directement) et Attribuer un avocat . Les avocats voient les dossiers qui leur sont attribués ; les administrateurs et sous-administrateurs voient tous les dossiers du cabinet. Chaque attribution est enregistrée dans la chronologie du dossier."
+ },
+ {
+  "page": "Dossiers & affaires",
+  "title": "Étapes de dossier (tableau de flux de travail)",
+  "url": "./cases-clients.html#stages",
+  "text": "Les cabinets peuvent définir leurs propres étapes de dossier — p. ex. Admission → Recherche → Rédaction → Tribunal → Clôturé — chacune avec un nom, une couleur et un ordre. Les dossiers progressent d'étape en étape, ce qui vous permet de voir d'un coup d'œil où en est chaque affaire. Les étapes marquées comme étapes de clôture indiquent que l'affaire est terminée. Gérez les étapes depuis le tableau des dossiers ; faites glisser pour réordonner."
+ },
+ {
+  "page": "Dossiers & affaires",
+  "title": "Tâches & sous-tâches",
+  "url": "./cases-clients.html#tasks",
+  "text": "Créez des tâches sur un dossier avec un titre, une description, un responsable et une date d'échéance . Les tâches prennent en charge les sous-tâches (parent/enfant), les @mentions et le tri manuel. Statuts : à faire → en cours → terminé (ou annulé ). Les tâches terminées conservent leur horodatage d'achèvement. Les tâches peuvent être liées à une étape de dossier afin que les tableaux d'étapes affichent le travail en attente."
+ },
+ {
+  "page": "Dossiers & affaires",
+  "title": "Notes & chronologie du dossier",
+  "url": "./cases-clients.html#notes",
+  "text": "Les notes de dossier ont un titre, un corps en texte enrichi et un paramètre de visibilité : interne (équipe uniquement) ou partagée (visible par le client dans le portail). La chronologie du dossier (événements) enregistre tout ce qui se passe : création, attributions, téléversements, notes, changements de statut — une piste d'audit complète par affaire."
+ },
+ {
+  "page": "Dossiers & affaires",
+  "title": "Formulaires d'admission des clients",
+  "url": "./cases-clients.html#intake",
+  "text": "Pour les dossiers issus de forfaits d'abonnement ou de services à la demande, les clients remplissent un formulaire d'admission structuré : ce qui s'est passé, quand, comment, leur implication, le résultat souhaité et un niveau de confidentialité (standard, sensible, privé). La soumission est jointe au dossier afin que l'avocat attribué démarre avec tout le contexte."
+ },
+ {
+  "page": "Dossiers & affaires",
+  "title": "Dossiers issus de commandes et de litiges",
+  "url": "./cases-clients.html#litige",
+  "text": "Les commandes de services à la demande peuvent être converties automatiquement en dossiers lors de leur acceptation, en reprenant le client, le type de dossier par défaut du type de service et le brief du client. Voir le cycle de vie des commandes . Astuce : utilisez le minuteur global pendant que vous travaillez sur un dossier — il vous suit de page en page et enregistre le temps suivi directement sur le dossier. Voir Suivi du temps ."
+ },
+ {
+  "page": "Portail client",
+  "title": "Portail client",
+  "url": "./client-portal.html",
+  "text": "Portail client Le portail client est la vue sécurisée de votre cabinet réservée à vos clients : leurs dossiers, factures, documents, messages, abonnement et commandes de services — habillé de votre logo et de vos couleurs, disponible en cinq langues."
+ },
+ {
+  "page": "Portail client",
+  "title": "Comment les clients obtiennent l'accès",
+  "url": "./client-portal.html#access",
+  "text": "Invitation par le cabinet — envoyez une invitation client (Paramètres → Équipe ou la page du client). L'e-mail d'invitation renvoie vers une page d'inscription où le client définit un nom et un mot de passe. Auto-inscription via les forfaits — les visiteurs qui s'abonnent à un forfait sur votre site web obtiennent automatiquement un compte portail. Les clients se connectent à l'URL de connexion de votre cabinet avec e-mail + mot de passe, et peuvent activer la 2FA comme tout utilisateur."
+ },
+ {
+  "page": "Portail client",
+  "title": "Ce que voient les clients",
+  "url": "./client-portal.html#what-they-see",
+  "text": "Tableau de bord — dossiers actifs, factures ouvertes et activité récente en un coup d'œil. Dossiers — uniquement les dossiers auxquels ils sont rattachés, avec les notes partagées, le statut et la chronologie du dossier. Documents — les fichiers de leurs dossiers ; ils peuvent téléverser eux-mêmes des documents (p. ex. en réponse à une demande de document ). Messages — le fil de messages sécurisé par dossier, à la place des allers-retours par e-mail. Factures — les factures émises avec les montants, dates d'échéance, statuts et téléchargement PDF (avec la section QR suisse le cas échéant). Abo"
+ },
+ {
+  "page": "Portail client",
+  "title": "Ce que les clients ne peuvent jamais voir",
+  "url": "./client-portal.html#isolation",
+  "text": "Les dossiers, factures ou documents des autres clients — l'accès est strictement limité à leurs propres données. Les notes internes de dossier (seules les notes marquées partagées sont visibles). Les saisies de temps, les taux ou les tâches internes de votre équipe."
+ },
+ {
+  "page": "Portail client",
+  "title": "Sur mobile",
+  "url": "./client-portal.html#mobile-portal",
+  "text": "L'application mobile Cliavo dispose d'un mode client avec le même périmètre : dossiers, factures, documents (y compris la numérisation par appareil photo) et messages. Astuce : le portail est hébergé à l'URL de votre cabinet — your-slug.cliavo.com ou votre domaine personnalisé — vos clients voient donc toujours votre marque, pas la nôtre."
+ },
+ {
+  "page": "Clients & CRM",
+  "title": "Clients & CRM",
+  "url": "./clients-crm.html",
+  "text": "Clients & CRM L'espace Clients est le carnet d'adresses et le CRM léger de votre cabinet : chaque personne ou entreprise pour laquelle vous travaillez, ses coordonnées, ses dossiers, ses factures, ses activités et son accès au portail."
+ },
+ {
+  "page": "Clients & CRM",
+  "title": "Clients particuliers et entreprises",
+  "url": "./clients-crm.html#client-types",
+  "text": "Particuliers — prénom/nom, date de naissance et coordonnées. Un prénom ou un nom est requis. Entreprises — nom de l'entreprise (requis), numéro d'enregistrement et une personne de contact. Les deux types partagent e-mail, téléphone, adresse complète (rue, ville, code postal, pays) et des notes libres. Les clients ont un statut : invité (créé mais sans compte portail pour l'instant), actif ou inactif . Les administrateurs, sous-administrateurs et avocats peuvent créer des clients ; la liste des clients est consultable via la recherche et chaque client dispose d'une page de détail avec un formul"
+ },
+ {
+  "page": "Clients & CRM",
+  "title": "Créer des clients là où vous en avez besoin",
+  "url": "./clients-crm.html#create-anywhere",
+  "text": "Outre la page Clients, vous pouvez créer un client à la volée depuis la boîte de dialogue Attribuer un client à l'intérieur d'un dossier — basculez le sélecteur de Client existant vers Créer un client , remplissez le court formulaire, et le nouveau client est créé et attribué au dossier en une seule étape."
+ },
+ {
+  "page": "Clients & CRM",
+  "title": "Activités, notes & rappels",
+  "url": "./clients-crm.html#activities",
+  "text": "Chaque client dispose d'un fil d'activités pour le travail relationnel au quotidien : Notes — comptes rendus de réunion ou toute information à retenir. Réunions — avec une date, afin qu'elles apparaissent dans votre agenda. Tâches et actions à venir — attribuables à un membre de l'équipe avec une date d'échéance. Rappels — choisissez une heure de rappel pour être notifié des suivis. Vous pouvez @mentionner des collègues et marquer les éléments comme terminés une fois faits."
+ },
+ {
+  "page": "Clients & CRM",
+  "title": "Pipeline de leads",
+  "url": "./clients-crm.html#leads",
+  "text": "La section CRM comprend un pipeline de leads pour les clients potentiels qui ne sont pas (encore) clients. Chaque lead a un nom de contact, un e-mail, un téléphone, une entreprise, une source, des notes et un membre de l'équipe attribué, et progresse par étapes : Étape Signification Nouveau Vient d'arriver (p. ex. via le formulaire de contact de votre site web). Contacté Vous avez pris contact. Qualifié Potentiel réel — mérite d'être poursuivi. Consultation Une première consultation est planifiée ou effectuée. Proposition Vous avez envoyé une proposition de mandat ou un devis. Gagné / Perdu Is"
+ },
+ {
+  "page": "Clients & CRM",
+  "title": "Donner aux clients l'accès au portail",
+  "url": "./clients-crm.html#portal-access",
+  "text": "Les clients peuvent recevoir leur propre identifiant pour le portail client . Depuis Paramètres → Équipe (ou la page du client), envoyez une invitation client liée à la fiche client ; le client définit son propre mot de passe et ne voit que ses propres dossiers, factures et documents. Voir Invitations . Astuce : les clients abonnés (voir Forfaits ) peuvent s'inscrire eux-mêmes depuis votre site web public — la fiche client et le compte portail sont créés automatiquement."
+ },
+ {
+  "page": "Documents & messages",
+  "title": "Documents & messages",
+  "url": "./documents-messages.html",
+  "text": "Documents & messages Conservez chaque écriture, contrat et pièce à conviction sur le dossier auquel il appartient, demandez des documents à vos clients avec une échéance, et communiquez via la messagerie sécurisée par dossier plutôt que par fils d'e-mails."
+ },
+ {
+  "page": "Documents & messages",
+  "title": "Téléverser des documents",
+  "url": "./documents-messages.html#uploading",
+  "text": "Téléversez des fichiers sur la page du dossier (ou laissez les clients les téléverser via le portail / la numérisation par appareil photo de l'application mobile). Chaque document enregistre son nom de fichier, son type, sa taille, une description facultative et l'identité de la personne qui l'a téléversé. Les documents peuvent être organisés en répertoires par dossier. Les téléchargements sont servis via des liens authentifiés — aucune URL publique."
+ },
+ {
+  "page": "Documents & messages",
+  "title": "Règles de téléversement & quotas",
+  "url": "./documents-messages.html#policy",
+  "text": "Les cabinets disposent d'une limite de taille de téléversement par fichier et d'une liste de types de fichiers autorisés (p. ex. PDF, Word, images) — voir Paramètres → Politique de téléversement . Chaque cabinet dispose également d'un quota de stockage total ; les téléversements au-delà du quota sont refusés avec un message clair. Les quotas sont définis par offre et peuvent être ajustés par Cliavo. Les pièces jointes des tickets de support ont leur propre limite compacte (1&nbsp;Mo par fichier) et ne sont pas décomptées du stockage du cabinet."
+ },
+ {
+  "page": "Documents & messages",
+  "title": "Demandes de documents",
+  "url": "./documents-messages.html#requests",
+  "text": "Arrêtez de relancer vos clients par e-mail — demandez exactement ce dont vous avez besoin : Créez une demande sur un dossier avec un titre, une description et une date d'échéance (p. ex. « Procuration signée »). Le client voit la demande dans son portail et téléverse le fichier directement en réponse. La demande est marquée satisfaite avec un lien vers le document téléversé, ou peut être annulée si elle n'est plus nécessaire."
+ },
+ {
+  "page": "Documents & messages",
+  "title": "Messagerie par dossier",
+  "url": "./documents-messages.html#messaging",
+  "text": "Chaque dossier dispose d'un fil de messages privé entre le cabinet et le ou les clients de ce dossier. Les clients écrivent depuis leur portail ; les avocats répondent depuis la page du dossier. Les réponses prennent en charge les fils de discussion. Les compteurs de messages non lus dans la barre latérale indiquent où quelque chose vous attend, et les messages peuvent être marqués comme lus. Les messages restent attachés à l'affaire pour toujours — un historique propre et vérifiable de la communication client."
+ },
+ {
+  "page": "Documents & messages",
+  "title": "Intelligence documentaire",
+  "url": "./documents-messages.html#analysis",
+  "text": "Lorsque les fonctionnalités d'IA sont activées, les documents téléversés peuvent être analysés pour en extraire des résumés et des faits clés afin d'accélérer la revue. Contactez le support Cliavo si vous souhaitez activer cette option pour votre cabinet."
+ },
+ {
+  "page": "Premiers pas",
+  "title": "Premiers pas",
+  "url": "./getting-started.html",
+  "text": "Premiers pas Cliavo est une plateforme complète de gestion de cabinet pour les cabinets d'avocats. Chaque cabinet dispose de son propre espace de travail isolé avec sa propre identité visuelle, son équipe, ses clients, ses dossiers, sa facturation et son site web public. Ce guide vous accompagne de la création d'un compte jusqu'à un cabinet pleinement opérationnel."
+ },
+ {
+  "page": "Premiers pas",
+  "title": "Créer votre espace de travail",
+  "url": "./getting-started.html#create-workspace",
+  "text": "Un espace de travail de cabinet peut être créé de deux manières : Essai en libre-service — cliquez sur Commencer l'essai gratuit sur cliavo.com, saisissez le nom de votre cabinet, votre nom, votre e-mail et un mot de passe. Votre espace de travail est créé instantanément avec un essai de 15 jours sur l'offre de démarrage, et vous êtes dirigé directement vers l'intégration. Provisionné par Cliavo — notre équipe crée le cabinet pour vous et envoie au propriétaire un e-mail d'identifiants avec un mot de passe temporaire . Lors de la première connexion, il vous est demandé de définir votre propre "
+ },
+ {
+  "page": "Premiers pas",
+  "title": "L'assistant d'intégration",
+  "url": "./getting-started.html#onboarding",
+  "text": "Après l'inscription, vous complétez un court assistant. Tout peut être modifié plus tard dans les paramètres. 1 · Profil du cabinet — raison sociale, adresse, e-mail de contact, téléphone et numéro de TVA/IDE. Ces informations figurent sur vos factures. 2 · Identité visuelle — téléversez votre logo et choisissez vos couleurs de marque principale et secondaire. Elles habillent votre espace de travail, le portail client et le site web public. 3 · Devise & taxes — la devise de facturation par défaut pour les nouvelles factures et les forfaits (CHF, EUR, USD, GBP, AED, SAR et plus) et votre taux d"
+ },
+ {
+  "page": "Premiers pas",
+  "title": "Se connecter",
+  "url": "./getting-started.html#sign-in",
+  "text": "Les membres du cabinet et les clients se connectent avec e-mail + mot de passe à /login (ou sur le sous-domaine de votre cabinet). Si l' authentification à deux facteurs est activée, vous saisissez un code d'authentification à 6 chiffres après votre mot de passe. Si votre compte a été créé avec un mot de passe temporaire, il vous est demandé d'en définir un nouveau avant de pouvoir continuer. Vous n'avez pas besoin de ressaisir le mot de passe temporaire. Les opérateurs de la plateforme (personnel Cliavo) utilisent une connexion distincte à /platform/login ; les comptes superadmin ne peuvent j"
+ },
+ {
+  "page": "Premiers pas",
+  "title": "Premières étapes recommandées",
+  "url": "./getting-started.html#first-steps",
+  "text": "Invitez votre équipe depuis Paramètres → Équipe : les sous-administrateurs, avocats et assistants reçoivent chacun une invitation par e-mail. Voir Équipe & rôles . Ajoutez vos coordonnées bancaires (IBAN ou QR-IBAN plus adresse du créancier) dans les paramètres afin que des QR-factures suisses puissent être générées sur vos factures. Définissez votre taux horaire dans les rapports de temps afin que le temps suivi soit valorisé correctement. Créez votre premier client et votre premier dossier — voir Clients & CRM et Dossiers & affaires . Publiez votre site web — choisissez un modèle dans le CMS"
+ },
+ {
+  "page": "Premiers pas",
+  "title": "Langues",
+  "url": "./getting-started.html#languages",
+  "text": "L'interface est disponible en anglais, français, allemand, italien et arabe (avec une mise en page complète de droite à gauche pour l'arabe). Chaque utilisateur choisit sa propre langue depuis le sélecteur de langue ; les e-mails d'invitation peuvent également être envoyés dans la langue du destinataire. Les administrateurs de la plateforme contrôlent quelles langues sont activées."
+ },
+ {
+  "page": "Premiers pas",
+  "title": "Essai, offres & compte",
+  "url": "./getting-started.html#trial-plans",
+  "text": "Votre bannière d'essai indique le nombre de jours restants. À la fin de l'essai, l'espace de travail est verrouillé (accès en lecture seule au compte et au support) jusqu'à l'activation d'une offre. Sous Compte , vous pouvez consulter votre offre actuelle, son prix et son cycle de facturation, et effectuer une mise à niveau à tout moment. Si votre cabinet est suspendu ou si un paiement est en retard, les administrateurs conservent l'accès au compte, au support et au paiement de l'offre afin de pouvoir rétablir le service."
+ },
+ {
+  "page": "Premiers pas",
+  "title": "Application mobile",
+  "url": "./getting-started.html#mobile",
+  "text": "Cliavo dispose d'une application mobile compagnon (iOS et Android) pour les avocats et les clients : tableaux de bord, dossiers, factures et numérisation de documents avec l'appareil photo. Elle se connecte à https://cliavo.com avec les mêmes e-mail et mot de passe."
+ },
+ {
+  "page": "Tout savoir sur votre espace de travail Cliavo",
+  "title": "Tout savoir sur votre espace de travail Cliavo",
+  "url": "./index.html",
+  "text": "Centre d'aide Cliavo Cliavo Centre d'aide support@cliavo.com EN FR DE IT AR Tout savoir sur votre espace de travail Cliavo Des guides détaillés pour chaque fonctionnalité — de votre première connexion à la gestion des dossiers, au suivi du temps, à la facturation avec QR-factures suisses, à la publication du site web de votre cabinet et à la vente de forfaits et de services à la demande. Utilisez "
+ },
+ {
+  "page": "Forfaits & services (Ventes additionnelles)",
+  "title": "Forfaits & services (Ventes additionnelles)",
+  "url": "./packages-services.html",
+  "text": "Forfaits & services (Ventes additionnelles) Deux outils de revenus récurrents se trouvent sous Ventes additionnelles : les forfaits d'abonnement (plans de protection juridique facturés mensuellement/annuellement) et un catalogue de services à la demande (produits juridiques à prix fixe avec un flux de commande complet)."
+ },
+ {
+  "page": "Forfaits & services (Ventes additionnelles)",
+  "title": "Forfaits d'abonnement",
+  "url": "./packages-services.html#packages",
+  "text": "Chaque forfait a un nom, une description, une liste de prestations et un libellé de mise en avant (p. ex. « Le plus populaire »). Tarification par intervalle : prix mensuel, semestriel et annuel, plus un engagement minimum (p. ex. 12 mois). Droits inclus : dossiers par période, heures de consultation par période et heures de travail forfaitaire incluses. Restreignez les types de dossiers couverts par un forfait (p. ex. uniquement droit du travail et droit du bail). Activez séparément les interrupteurs actif (vendable) et public (visible sur votre site web), et ordonnez-les avec les poignées de"
+ },
+ {
+  "page": "Forfaits & services (Ventes additionnelles)",
+  "title": "Abonnés",
+  "url": "./packages-services.html#subscribers",
+  "text": "Les clients s'abonnent depuis votre site web public (le bloc forfaits renvoie vers l'inscription) — la fiche client, le compte portail et l'abonnement sont créés ensemble. Les abonnements suivent le statut ( actif, en retard de paiement, résilié, expiré ), la période de facturation en cours et la date de fin d'engagement. Les clients abonnés peuvent changer d'offre depuis leur portail ; l'utilisation des droits (dossiers, heures) est visible par période. Lorsqu'un abonné ouvre un dossier, il remplit un formulaire d'admission afin que l'avocat démarre avec le contexte."
+ },
+ {
+  "page": "Forfaits & services (Ventes additionnelles)",
+  "title": "Catalogue de services à la demande",
+  "url": "./packages-services.html#services",
+  "text": "Chaque service a un nom, une description, une catégorie (conseil, contrat, documents, droit du travail, droit des sociétés, autre) et un prix fixe. Type de prestation : document (vous livrez des fichiers) ou consultation (vous assurez un rendez-vous). Définissez les heures d'effort estimées, des notes de livraison et le type de dossier par défaut utilisé si la commande devient un dossier. Comme les forfaits : interrupteurs actif/public et tri manuel ; les services publics apparaissent automatiquement dans le bloc Services du site web."
+ },
+ {
+  "page": "Forfaits & services (Ventes additionnelles)",
+  "title": "Le cycle de vie des commandes",
+  "url": "./packages-services.html#orders",
+  "text": "Les clients achètent des services depuis leur portail (ou depuis votre site web après inscription) : Panier & paiement — le client choisit des services, ajoute un brief par article et valide sa commande. Avec Stripe/Adyen connecté, il paie en ligne ; sinon, le cabinet peut marquer la commande comme payée manuellement. Admission — après le paiement, le client soumet la description d'admission afin que votre équipe sache exactement ce qui est attendu. Acceptation — le cabinet examine et accepte (en attribuant éventuellement un avocat et en créant un dossier lié) ou refuse en motivant sa décision"
+ },
+ {
+  "page": "Forfaits & services (Ventes additionnelles)",
+  "title": "Devises",
+  "url": "./packages-services.html#currency",
+  "text": "Les forfaits et les services sont tarifés dans la devise de votre cabinet ; les commandes conservent leur devise de bout en bout. Voir facturation multidevise ."
+ },
+ {
+  "page": "Sécurité",
+  "title": "Sécurité",
+  "url": "./security.html",
+  "text": "Sécurité Les cabinets d'avocats traitent des informations couvertes par le secret professionnel : la sécurité est donc intégrée à chaque couche — authentification forte, isolation stricte des locataires, transport chiffré et opérations de plateforme auditées."
+ },
+ {
+  "page": "Sécurité",
+  "title": "Mots de passe & connexion",
+  "url": "./security.html#passwords",
+  "text": "Les mots de passe sont stockés sous forme de hachages scrypt salés — jamais en clair. Longueur minimale de 8 caractères ; le changement de mot de passe exige le mot de passe actuel. Les comptes provisionnés avec un mot de passe temporaire doivent définir un nouveau mot de passe à la première connexion. Les sessions sont des cookies signés et HTTP-only ; Se déconnecter invalide immédiatement le cookie de session. Les connexions superadmin (plateforme) sont séparées des connexions cabinet — un superadmin ne peut pas accéder à l'interface du cabinet via la connexion normale, et inversement."
+ },
+ {
+  "page": "Sécurité",
+  "title": "Authentification à deux facteurs (2FA)",
+  "url": "./security.html#two-factor",
+  "text": "Tout utilisateur peut activer la 2FA TOTP sous Paramètres → Sécurité : scannez le code QR avec Google Authenticator, 1Password ou toute application TOTP, puis confirmez avec un code. Après chaque connexion par mot de passe, un code à 6 chiffres est requis. La 2FA est redemandée à chaque nouvelle connexion — les codes ne sont jamais « mémorisés » d'une connexion à l'autre. La désactivation de la 2FA exige un code actuel valide."
+ },
+ {
+  "page": "Sécurité",
+  "title": "Isolation des locataires",
+  "url": "./security.html#isolation",
+  "text": "Chaque enregistrement (client, dossier, facture, document, message…) est rattaché à votre cabinet. Toutes les requêtes filtrent par appartenance au cabinet — un autre cabinet ne peut ni lire ni écrire vos données. Les clients n'accèdent qu'à leurs propres données via le portail ; les notes internes restent internes. Les vérifications de rôles s'appliquent à chaque opération côté serveur, pas seulement via des boutons masqués dans l'interface."
+ },
+ {
+  "page": "Sécurité",
+  "title": "Chiffrement & infrastructure",
+  "url": "./security.html#encryption",
+  "text": "Tout le trafic est en HTTPS (TLS via Let's Encrypt) ; les requêtes HTTP sont redirigées. Les jetons OAuth des calendriers sont stockés chiffrés au repos . L'hébergement repose sur une infrastructure suisse (résidence des données en CH) avec la base de données sur un réseau privé, inaccessible depuis internet. Les téléchargements de fichiers sont servis via des routes authentifiées avec vérification des chemins."
+ },
+ {
+  "page": "Sécurité",
+  "title": "Audit & opérations de plateforme",
+  "url": "./security.html#auditing",
+  "text": "Les chronologies de dossiers enregistrent chaque action importante par affaire. Les actions administratives au niveau de la plateforme (création de cabinets, changements d'offre, impersonation, annonces) sont consignées dans un journal d'audit superadmin . L'impersonation par le support est explicite, temporaire, auditée et clairement signalée dans l'interface pendant qu'elle est active."
+ },
+ {
+  "page": "Sécurité",
+  "title": "Sauvegardes & disponibilité",
+  "url": "./security.html#backups",
+  "text": "La base de données de production s'exécute avec des volumes persistants et des exports planifiés ; renseignez-vous auprès du support sur la politique actuelle de sauvegarde et de rétention de votre déploiement. Un déploiement sur site/mono-locataire avec licence hors ligne est disponible pour les cabinets ayant des exigences d'hébergement strictes — contactez Cliavo."
+ },
+ {
+  "page": "Sécurité",
+  "title": "Signaler un problème de sécurité",
+  "url": "./security.html#reporting",
+  "text": "Vous avez trouvé quelque chose ? Écrivez à support@cliavo.com avec « SECURITY » dans l'objet. Merci de ne pas effectuer de tests sur les données d'autres cabinets."
+ },
+ {
+  "page": "Paramètres",
+  "title": "Paramètres",
+  "url": "./settings.html",
+  "text": "Paramètres Toute la configuration de votre cabinet se trouve dans les paramètres. La plupart des onglets sont réservés aux administrateurs ; chaque utilisateur dispose de ses préférences personnelles de sécurité et de langue."
+ },
+ {
+  "page": "Paramètres",
+  "title": "Profil du cabinet",
+  "url": "./settings.html#profile",
+  "text": "Raison sociale, adresse, e-mail de contact, téléphone, site web et numéro de TVA/IDE — imprimés sur vos factures et affichés dans la section contact de votre site public."
+ },
+ {
+  "page": "Paramètres",
+  "title": "Identité visuelle",
+  "url": "./settings.html#branding",
+  "text": "Téléversez votre logo (PNG/JPEG/WebP, jusqu'à 5&nbsp;Mo). Choisissez vos couleurs principale et secondaire — elles habillent l'espace de travail, le portail client, les e-mails et le site web public."
+ },
+ {
+  "page": "Paramètres",
+  "title": "Devise & TVA par défaut",
+  "url": "./settings.html#billing-defaults",
+  "text": "La devise par défaut du cabinet est utilisée pour les nouvelles factures, les forfaits, les services et l'affichage des taux. Les devises disponibles (CHF, EUR, USD, GBP, AED, SAR, QAR, KWD, BHD, OMR, JOD) sont activées à l'échelle de la plateforme. Le taux de TVA par défaut préremplit les nouvelles factures (taux standard suisse de 8,1 %). Coordonnées bancaires pour la QR-facture suisse : IBAN / QR-IBAN et adresse du créancier. Voir QR-factures ."
+ },
+ {
+  "page": "Paramètres",
+  "title": "Domaines de l'espace de travail",
+  "url": "./settings.html#domains",
+  "text": "Sous-domaine — votre espace de travail et votre site public à your-slug.cliavo.com . Changer le slug change vos liens, choisissez donc avec soin. Domaine personnalisé — saisissez votre domaine (p. ex. portal.yourfirm.ch ) et créez un enregistrement CNAME chez votre fournisseur DNS pointant vers votre sous-domaine Cliavo : Type Nom (votre domaine) Valeur (pointe vers) CNAME portal.yourfirm.ch your-slug.cliavo.com Les domaines racine sans sous-domaine (p. ex. yourfirm.ch ) utilisent à la place un enregistrement A vers l'adresse IP de Cliavo. Les modifications DNS peuvent prendre jusqu'à 24–48 he"
+ },
+ {
+  "page": "Paramètres",
+  "title": "Passerelles de paiement",
+  "url": "./settings.html#payments",
+  "text": "Adyen — connectez votre propre compte marchand (clé API, compte marchand, clé HMAC, environnement test/production). Les webhooks mettent automatiquement à jour le statut de paiement des commandes. Stripe — paiement des commandes de services là où il est configuré. Pas de passerelle ? Les commandes peuvent être marquées comme payées manuellement — rien ne bloque votre flux de travail."
+ },
+ {
+  "page": "Paramètres",
+  "title": "Politique de téléversement & stockage",
+  "url": "./settings.html#uploads",
+  "text": "Limite de taille par fichier et types de fichiers autorisés pour les documents de dossier. Un quota de stockage à l'échelle du cabinet ; l'utilisation compte les documents de tous les dossiers. Les limites sont liées à votre offre et peuvent être augmentées — contactez le support."
+ },
+ {
+  "page": "Paramètres",
+  "title": "Équipe & rôles",
+  "url": "./settings.html#roles-settings",
+  "text": "Invitez des membres, définissez les rôles et personnalisez la matrice de permissions des rôles. Traité en détail dans Équipe & rôles ."
+ },
+ {
+  "page": "Paramètres",
+  "title": "Préférences personnelles",
+  "url": "./settings.html#personal",
+  "text": "Langue — chaque utilisateur choisit EN/FR/DE/IT/AR ; l'arabe bascule la mise en page en RTL. Sécurité — changer de mot de passe, activer/désactiver la 2FA . Connexions de calendrier — voir Agenda & calendrier ."
+ },
+ {
+  "page": "Paramètres",
+  "title": "Compte & offre",
+  "url": "./settings.html#account",
+  "text": "La page Compte affiche votre offre d'abonnement, son prix, le cycle de facturation, les jours d'essai restants, et vous permet d'effectuer une mise à niveau. Si l'espace de travail est verrouillé (essai terminé, suspension, paiement en retard), les administrateurs peuvent toujours accéder au compte et au support pour rétablir le service."
+ },
+ {
+  "page": "Support & stockage",
+  "title": "Support & stockage",
+  "url": "./storage-support.html",
+  "text": "Support & stockage Comment joindre Cliavo lorsqu'un point n'est pas clair, comment fonctionnent les tickets de support, ce que sont les annonces de la plateforme et comment se comportent les limites de stockage des documents."
+ },
+ {
+  "page": "Support & stockage",
+  "title": "Tickets de support",
+  "url": "./storage-support.html#tickets",
+  "text": "Les administrateurs du cabinet ouvrent des tickets sous Support avec un objet, une description et un niveau de sensibilité (faible → critique). Joignez jusqu'à 5 fichiers par ticket (documents ou captures d'écran, 1&nbsp;Mo maximum chacun) pour montrer exactement ce que vous voyez. Les tickets reçoivent un numéro du type TKT-2026-00042 et un statut : ouvert → en traitement → en cours d'examen → répondu → résolu → clos . Les réponses de Cliavo apparaissent dans le fil du ticket et sont signalées comme non lues dans votre barre latérale jusqu'à ce que vous les consultiez ; vous pouvez répondre a"
+ },
+ {
+  "page": "Support & stockage",
+  "title": "Annonces de la plateforme",
+  "url": "./storage-support.html#announcements",
+  "text": "Cliavo publie occasionnellement des annonces (maintenance, nouvelles fonctionnalités) qui apparaissent sous forme de bannière/fenêtre dans votre espace de travail. Niveaux de gravité : information, avertissement, critique. Le public visé est soit les administrateurs du cabinet uniquement, soit tous les membres. Cliquez sur Compris pour fermer — une annonce ne réapparaît pas une fois fermée, et les annonces publiées avant l'existence de votre compte ne vous sont jamais montrées."
+ },
+ {
+  "page": "Support & stockage",
+  "title": "Quotas de stockage",
+  "url": "./storage-support.html#storage",
+  "text": "Le stockage des documents de dossier est décompté du quota de stockage de votre cabinet (défini par votre offre). Les règles de taille par fichier et de types de fichiers sont configurables — voir Paramètres → Politique de téléversement . Lorsque le quota est atteint, les téléversements échouent avec un message clair ; supprimez d'anciens fichiers ou demandez au support un quota plus élevé. Les pièces jointes des tickets de support ne sont pas décomptées du stockage du cabinet."
+ },
+ {
+  "page": "Support & stockage",
+  "title": "Autres moyens de nous joindre",
+  "url": "./storage-support.html#contact",
+  "text": "E-mail : support@cliavo.com Ce centre d'aide : cliavo.com/help — utilisez la barre de recherche en haut de chaque page."
+ },
+ {
+  "page": "Équipe & rôles",
+  "title": "Équipe & rôles",
+  "url": "./team-roles.html",
+  "text": "Équipe & rôles Rassemblez tout votre cabinet dans un même espace de travail avec un accès basé sur les rôles : les administrateurs dirigent le cabinet, les sous-administrateurs aident à le gérer, les avocats travaillent sur leurs dossiers et les assistants soutiennent l'équipe."
+ },
+ {
+  "page": "Équipe & rôles",
+  "title": "Les quatre rôles du cabinet",
+  "url": "./team-roles.html#roles",
+  "text": "Rôle Personne type Accès par défaut Administrateur Propriétaire / associé gérant Tout : tous les dossiers, la facturation, les paramètres, l'équipe, les rôles, le site web, les ventes additionnelles. Sous-administrateur Responsable administratif Dossiers et clients de tout le cabinet, invitations, la plupart des écrans de gestion ; pas les paramètres critiques du cabinet. Avocat Collaborateur / associé Ses dossiers attribués, son propre suivi du temps, la facturation, les clients. Assistant Juriste assistant / secrétaire Accès de soutien aux dossiers attribués ; ni facturation ni paramètres pa"
+ },
+ {
+  "page": "Équipe & rôles",
+  "title": "Personnaliser les permissions des rôles",
+  "url": "./team-roles.html#capabilities",
+  "text": "Sous Paramètres → Rôles , les administrateurs peuvent affiner ce que chaque rôle peut faire par domaine — par exemple si les avocats voient tous les dossiers du cabinet ou seulement les leurs , qui peut créer des factures, gérer le site web ou inviter des personnes. Les personnalisations ne s'appliquent qu'à votre cabinet et peuvent être réinitialisées aux valeurs par défaut de la plateforme en un clic."
+ },
+ {
+  "page": "Équipe & rôles",
+  "title": "Invitations",
+  "url": "./team-roles.html#invites",
+  "text": "Invitez des collègues par e-mail avec un rôle choisi ; les invitations client sont liées à une fiche client. Choisissez la langue de l'e-mail par invitation (EN/FR/DE/IT/AR). L'invité ouvre le lien, définit son nom et son mot de passe, et arrive dans l'espace de travail — les invitations expirent après un certain temps et peuvent être renvoyées. Si l'invité possède déjà un compte Cliavo (même e-mail), il peut accepter l'invitation en étant connecté et rejoindre le cabinet avec ses identifiants existants."
+ },
+ {
+  "page": "Équipe & rôles",
+  "title": "Gérer les membres",
+  "url": "./team-roles.html#managing",
+  "text": "La page Équipe liste chaque membre avec son rôle et sa fonction. Chaque avocat gère son propre taux horaire ; les administrateurs peuvent consulter les taux à des fins de facturation. Les avocats peuvent être attribués à des dossiers, des tâches, des leads et des commandes de services. Astuce : donnez aux réceptionnistes le rôle assistant et n'accordez que ce dont ils ont besoin dans Paramètres → Rôles — la matrice de permissions vaut toujours mieux que le partage d'un identifiant administrateur."
+ },
+ {
+  "page": "Suivi du temps",
+  "title": "Suivi du temps",
+  "url": "./time-tracking.html",
+  "text": "Suivi du temps Suivez le temps facturable et non facturable avec un minuteur en direct ou des saisies manuelles, relisez et modifiez tout avant la soumission, et transformez le temps approuvé en factures en deux clics."
+ },
+ {
+  "page": "Suivi du temps",
+  "title": "Le minuteur en direct",
+  "url": "./time-tracking.html#timer",
+  "text": "Démarrez un minuteur depuis un dossier (ou depuis les rapports de temps) avec une description de ce que vous faites. Le minuteur flottant reste visible sur chaque page pendant qu'il tourne — il est stocké côté serveur, il continue donc à compter même si vous fermez l'onglet ou changez d'appareil. Vous pouvez mettre en pause / reprendre , modifier la description ou le dossier pendant qu'il tourne, et arrêter pour enregistrer le temps accumulé comme saisie en brouillon, ou l'abandonner."
+ },
+ {
+  "page": "Suivi du temps",
+  "title": "Saisies manuelles",
+  "url": "./time-tracking.html#manual",
+  "text": "Ajoutez une saisie avec un dossier, une description, une durée (minutes) et une date — pour le travail effectué loin de l'écran. Chaque saisie enregistrée reçoit un horodatage , et la liste affiche les saisies les plus récentes en haut. Les saisies peuvent être marquées facturables ou non facturables et peuvent porter un taux horaire personnalisé."
+ },
+ {
+  "page": "Suivi du temps",
+  "title": "Modification avant soumission",
+  "url": "./time-tracking.html#editing",
+  "text": "Les saisies en brouillon et soumises peuvent être modifiées — changez le dossier, la description, la durée ou la date — ou supprimées, jusqu'au moment où elles sont facturées. Une fois qu'une saisie est rattachée à une facture, elle est verrouillée pour garantir la cohérence de la facturation."
+ },
+ {
+  "page": "Suivi du temps",
+  "title": "Flux de travail des saisies",
+  "url": "./time-tracking.html#workflow",
+  "text": "Statut Signification Brouillon Vient d'être enregistrée ; entièrement modifiable. Soumise Marquée comme prête pour la facturation (vous pouvez en soumettre plusieurs à la fois). Facturée Incluse sur une facture ; verrouillée."
+ },
+ {
+  "page": "Suivi du temps",
+  "title": "Taux horaires",
+  "url": "./time-tracking.html#rates",
+  "text": "Chaque avocat définit son taux horaire (dans la devise du cabinet) dans les rapports de temps. Le taux est enregistré avec chaque saisie au moment de sa création, de sorte que les saisies historiques conservent le taux qui s'appliquait à ce moment-là. Les saisies individuelles peuvent remplacer le taux."
+ },
+ {
+  "page": "Suivi du temps",
+  "title": "Créer une facture à partir de saisies de temps",
+  "url": "./time-tracking.html#invoice-from-time",
+  "text": "Dans les rapports de temps , sélectionnez les saisies soumises que vous souhaitez facturer (éventuellement filtrées par dossier ou par client). Choisissez le client, une date d'échéance et le taux de TVA. Cliavo crée une facture avec une ligne par saisie (description, heures × taux) dans la devise par défaut de votre cabinet, et marque les saisies comme facturées. Voir Facturation & factures pour la suite."
+ },
+ {
+  "page": "Suivi du temps",
+  "title": "Rapports & synthèses",
+  "url": "./time-tracking.html#reports",
+  "text": "Les rapports de temps affichent les totaux par période, par dossier et par intervenant — heures suivies vs facturables et leur valeur — afin que vous puissiez évaluer la productivité avant les cycles de facturation et repérer le travail non facturé."
+ },
+ {
+  "page": "Site web (CMS) & leads",
+  "title": "Site web (CMS) & leads",
+  "url": "./website-leads.html",
+  "text": "Site web (CMS) & leads Chaque cabinet dispose d'un site web public créé avec le constructeur de pages du CMS — aucune agence web nécessaire. Les pages sont composées de blocs prêts à l'emploi, modifiées avec un aperçu en direct, habillées à votre identité visuelle et publiées sur votre sous-domaine ou votre domaine personnalisé."
+ },
+ {
+  "page": "Site web (CMS) & leads",
+  "title": "L'éditeur de pages",
+  "url": "./website-leads.html#editor",
+  "text": "Créez une page depuis le CMS : un éditeur plein écran s'ouvre avec la liste des blocs d'un côté et un aperçu en direct de l'autre. Réordonnez les blocs par glisser-déposer (poignée de préhension) — l'aperçu se met à jour instantanément. Chaque page a un titre, un slug d'URL, un interrupteur publiée et un interrupteur page d'accueil (une seule page est la page d'accueil de votre site). L' onglet SEO définit le titre et la description meta utilisés par les moteurs de recherche."
+ },
+ {
+  "page": "Site web (CMS) & leads",
+  "title": "Types de blocs",
+  "url": "./website-leads.html#blocks",
+  "text": "Bloc Ce qu'il affiche Héros Grand titre, sous-titre et bouton d'appel à l'action. Texte Section de texte enrichi avec titre, pour n'importe quel contenu. Fonctionnalités Grille de cartes de fonctionnalités (icône, titre, texte). Statistiques Chiffres clés — années d'expérience, affaires gagnées, clients servis. Témoignages Citations de clients avec leurs noms. Équipe Vos avocats avec photos, fonctions et biographies. FAQ Accordéon question/réponse. Galerie Grille d'images. Bandeau de logos Bande de logos d'associations / de clients. Forfaits Bloc dynamique — affiche automatiquement vos forfait"
+ },
+ {
+  "page": "Site web (CMS) & leads",
+  "title": "Modèles",
+  "url": "./website-leads.html#templates",
+  "text": "Partez d'un modèle plutôt que d'une page vierge : Classique , Minimal , Moderne , Services & forfaits , Équipe ou Contact . Les modèles préremplissent une disposition de blocs pertinente que vous modifiez ensuite."
+ },
+ {
+  "page": "Site web (CMS) & leads",
+  "title": "Identité visuelle",
+  "url": "./website-leads.html#branding",
+  "text": "Le site public utilise votre logo et vos couleurs de marque définis dans Paramètres → Identité visuelle , de sorte que le site web, l'espace de travail et le portail client sont tous assortis."
+ },
+ {
+  "page": "Site web (CMS) & leads",
+  "title": "Où votre site est publié",
+  "url": "./website-leads.html#urls",
+  "text": "Immédiatement (aucun DNS requis) : https://cliavo.com/site/your-slug Votre sous-domaine : https://your-slug.cliavo.com — c'est aussi là que votre équipe et vos clients se connectent. Domaine personnalisé : connectez p. ex. portal.yourfirm.ch dans Paramètres → Espace de travail avec un seul enregistrement CNAME. Voir Domaines ."
+ },
+ {
+  "page": "Site web (CMS) & leads",
+  "title": "Capture de leads",
+  "url": "./website-leads.html#leads",
+  "text": "Le bloc Contact de vos pages publiques envoie les soumissions directement dans votre pipeline de leads du CRM avec la source « site web ». Les blocs de forfaits et de services dirigent les visiteurs vers l'inscription à un abonnement et le paiement de services, transformant votre site web en vitrine de vente. Astuce : conservez une page d'accueil publiée plus quelques pages ciblées (À propos, Services, Contact). Les moteurs de recherche lisent votre titre/description SEO par page — rédigez-les comme une annonce publicitaire pour la page."
+ }
+]

@@ -1,0 +1,578 @@
+[
+ {
+  "page": "Agenda e calendario",
+  "title": "Agenda e calendario",
+  "url": "./agenda-calendar.html",
+  "text": "Agenda e calendario Un'unica agenda per tutto ciò che ha una data: scadenze delle pratiche, attività in scadenza, riunioni con i clienti e promemoria, i Suoi eventi personali — e, se collega un calendario esterno, anche i Suoi eventi Google / Outlook / iCloud."
+ },
+ {
+  "page": "Agenda e calendario",
+  "title": "Cosa compare nella Sua agenda",
+  "url": "./agenda-calendar.html#agenda",
+  "text": "Scadenze delle pratiche — dal campo scadenza delle pratiche. Date di scadenza delle attività — le attività delle pratiche assegnate a Lei. Attività dei clienti — riunioni, cose da fare e promemoria con date. Eventi personali — creati direttamente nel calendario con titolo, luogo, inizio/fine oppure giornata intera. Eventi importati — recuperati dai calendari esterni collegati."
+ },
+ {
+  "page": "Agenda e calendario",
+  "title": "Collegare calendari esterni",
+  "url": "./agenda-calendar.html#providers",
+  "text": "Ogni utente può collegare i propri calendari in Calendario → Connessioni: Provider Come si collega Google Calendar OAuth — acceda con Google e conceda l'accesso al calendario. Microsoft / Outlook OAuth — account Microsoft 365 o Outlook.com. Apple iCloud CalDAV con il Suo ID Apple e una password specifica per app (da creare su appleid.apple.com)."
+ },
+ {
+  "page": "Agenda e calendario",
+  "title": "Sincronizzazione bidirezionale",
+  "url": "./agenda-calendar.html#sync",
+  "text": "Scelga la direzione di sincronizzazione per ogni connessione: bidirezionale , solo invio (Cliavo → esterno) o solo ricezione (esterno → Cliavo). Cliavo invia scadenze, riunioni ed eventi personali al calendario esterno e importa gli eventi esterni, così la Sua agenda mostra la reale disponibilità. La sincronizzazione avviene su base pianificata e può essere avviata manualmente con Sincronizza ora . La connessione mostra l'ora dell'ultima sincronizzazione ed eventuali errori. I token di accesso sono memorizzati in forma crittografata; la disconnessione rimuove immediatamente il collegamento. Su"
+ },
+ {
+  "page": "Fatturazione e fatture",
+  "title": "Fatturazione e fatture",
+  "url": "./billing.html",
+  "text": "Fatturazione e fatture Crei fatture manualmente o dal tempo tracciato, fatturi nella valuta del Suo cliente, alleghi sezioni di pagamento QR svizzere, suddivida gli importi elevati in piani rateali e segua ogni fattura dalla bozza al pagamento."
+ },
+ {
+  "page": "Fatturazione e fatture",
+  "title": "Creare una fattura",
+  "url": "./billing.html#creating",
+  "text": "Scelga il cliente (ed eventualmente la pratica), una data di scadenza e l' aliquota IVA (il valore predefinito del Suo studio è precompilato). Aggiunga le righe — ciascuna con una descrizione, un tipo di fatturazione oraria o forfettaria , una quantità e un prezzo unitario. I totali e l'IVA vengono calcolati automaticamente. Le fatture create dalle registrazioni delle ore arrivano con una riga per registrazione, pronte da rettificare. Le fatture ricevono un numero progressivo e possono essere modificate finché sono in bozza."
+ },
+ {
+  "page": "Fatturazione e fatture",
+  "title": "Stati delle fatture",
+  "url": "./billing.html#statuses",
+  "text": "Stato Significato Bozza In preparazione; modificabile. Inviata Emessa al cliente (visibile nel suo portale). Pagata Pagamento ricevuto per intero. Scaduta Oltre la data di scadenza senza pagamento. Annullata Stornata."
+ },
+ {
+  "page": "Fatturazione e fatture",
+  "title": "Fatturazione multivaluta",
+  "url": "./billing.html#currencies",
+  "text": "Il Suo studio ha una valuta predefinita (scelta durante la configurazione iniziale o nelle Impostazioni), e ogni fattura ha la propria valuta. La piattaforma supporta CHF, EUR, USD, GBP, AED, SAR, QAR, KWD, BHD, OMR e JOD (la disponibilità è gestita a livello di piattaforma). Gli importi sono sempre formattati con il simbolo e le regole decimali corretti per la valuta."
+ },
+ {
+  "page": "Fatturazione e fatture",
+  "title": "QR-fatture svizzere",
+  "url": "./billing.html#qr-bill",
+  "text": "Aggiunga il Suo IBAN o QR-IBAN e l'indirizzo del creditore (via, numero, codice postale, città, Paese) nelle Impostazioni. I PDF delle fatture includono quindi una sezione di pagamento QR svizzera conforme, che i clienti possono scansionare nel loro e-banking. Le QR-fatture vengono generate solo per le fatture in CHF ed EUR (lo standard svizzero non consente altre valute); per le altre valute la sezione QR viene semplicemente omessa. Le fatture rateali includono una sezione QR per l'importo di ciascuna rata."
+ },
+ {
+  "page": "Fatturazione e fatture",
+  "title": "Piani di pagamento (rate)",
+  "url": "./billing.html#payment-plans",
+  "text": "Suddivida una fattura elevata in un piano sostenibile per il cliente: Scelga il numero di rate (fino a 12), l'intervallo e l'importo per rata. Cliavo può generare automaticamente una fattura per ciascuna rata alla scadenza, ed eventualmente inviarla per email al cliente in automatico (se ne occupa un processo pianificato giornaliero). Contrassegni le rate come pagate man mano che il denaro arriva; il piano mostra una cronologia di ciò che è pagato, in scadenza e in arrivo."
+ },
+ {
+  "page": "Fatturazione e fatture",
+  "title": "PDF delle fatture e invio",
+  "url": "./billing.html#pdf",
+  "text": "Ogni fattura dispone di un PDF pronto per la stampa (logo dello studio, indirizzo, righe, dettaglio IVA e la sezione QR ove applicabile). Le fatture possono essere inviate per email ai clienti, che le vedono anche nel loro portale ."
+ },
+ {
+  "page": "Fatturazione e fatture",
+  "title": "Pagamenti online",
+  "url": "./billing.html#online-payments",
+  "text": "Colleghi Stripe o Adyen (Impostazioni → Pagamenti) per consentire ai clienti di pagare online gli ordini di servizi e le fatture. Gli studi possono utilizzare il proprio account commerciante Adyen — inclusi i webhook con verifica HMAC — oppure le credenziali a livello di piattaforma. Senza un gateway, gli ordini possono sempre essere contrassegnati come pagati manualmente. Consulti Impostazioni → Pagamenti ."
+ },
+ {
+  "page": "Fatturazione e fatture",
+  "title": "Panoramica dei ricavi",
+  "url": "./billing.html#dashboard",
+  "text": "Il cruscotto mostra gli importi in sospeso, scaduti e incassati nella valuta del Suo studio, e le analisi per amministratori suddividono i ricavi nel tempo, così può individuare le tendenze."
+ },
+ {
+  "page": "Pratiche e mandati",
+  "title": "Pratiche e mandati",
+  "url": "./cases-clients.html",
+  "text": "Pratiche e mandati Le pratiche (mandati) sono il cuore di Cliavo: ogni pratica riunisce in un unico luogo i suoi clienti, gli avvocati assegnati, i documenti, le note, le attività, le registrazioni delle ore, i messaggi e le scadenze."
+ },
+ {
+  "page": "Pratiche e mandati",
+  "title": "Creare una pratica",
+  "url": "./cases-clients.html#creating",
+  "text": "Titolo e un numero di riferimento interno facoltativo. Tipo — civile, penale, societario, famiglia, immobiliare, lavoro, fiscale, immigrazione, proprietà intellettuale o altro. Stato — aperta, in sospeso, chiusa o archiviata. Facoltativi: descrizione , nome del tribunale , numero di ruolo del tribunale e una scadenza (le scadenze compaiono nella Sua agenda ). Colleghi uno o più clienti e assegni subito gli avvocati , oppure in seguito dalla pagina della pratica."
+ },
+ {
+  "page": "Pratiche e mandati",
+  "title": "Clienti e avvocati su una pratica",
+  "url": "./cases-clients.html#assignments",
+  "text": "Una pratica può avere più clienti e più avvocati. Dalla pagina di dettaglio della pratica utilizzi Assegna cliente (scelga un cliente esistente o ne crei uno nuovo direttamente) e Assegna avvocato . Gli avvocati vedono le pratiche a loro assegnate; gli amministratori e i sub-amministratori vedono tutte le pratiche dello studio. Ogni assegnazione viene registrata nella cronologia della pratica."
+ },
+ {
+  "page": "Pratiche e mandati",
+  "title": "Fasi della pratica (bacheca del flusso di lavoro)",
+  "url": "./cases-clients.html#stages",
+  "text": "Gli studi possono definire le proprie fasi della pratica — ad es. Acquisizione → Ricerca → Redazione → Tribunale → Chiusa — ciascuna con un nome, un colore e un ordine. Le pratiche avanzano attraverso le fasi, così può vedere a colpo d'occhio a che punto si trova ogni mandato. Le fasi contrassegnate come fasi di chiusura indicano che il mandato è concluso. Gestisca le fasi dalla bacheca delle pratiche; trascini per riordinarle."
+ },
+ {
+  "page": "Pratiche e mandati",
+  "title": "Attività e sottoattività",
+  "url": "./cases-clients.html#tasks",
+  "text": "Crei attività su una pratica con un titolo, una descrizione, un assegnatario e una data di scadenza . Le attività supportano sottoattività (padre/figlio), menzioni con @ e l'ordinamento manuale. Stati: da fare → in corso → completata (o annullata ). Le attività completate conservano la data e l'ora di completamento. Le attività possono essere collegate a una fase della pratica, così le bacheche delle fasi mostrano il lavoro in sospeso."
+ },
+ {
+  "page": "Pratiche e mandati",
+  "title": "Note e cronologia della pratica",
+  "url": "./cases-clients.html#notes",
+  "text": "Le note della pratica hanno un titolo, un corpo in testo formattato e un'impostazione di visibilità : interna (solo team) o condivisa (visibile al cliente nel portale). La cronologia della pratica (eventi) registra tutto ciò che accade: creazione, assegnazioni, caricamenti, note, cambi di stato — una traccia di controllo completa per ogni mandato."
+ },
+ {
+  "page": "Pratiche e mandati",
+  "title": "Moduli di acquisizione clienti",
+  "url": "./cases-clients.html#intake",
+  "text": "Per le pratiche che derivano da pacchetti in abbonamento o da servizi on-demand, i clienti compilano un modulo di acquisizione strutturato: cosa è successo, quando, come, il loro coinvolgimento, il risultato desiderato e un livello di riservatezza (standard, sensibile, privato). L'invio viene allegato alla pratica, così l'avvocato assegnato inizia con il contesto completo."
+ },
+ {
+  "page": "Pratiche e mandati",
+  "title": "Pratiche da ordini e controversie",
+  "url": "./cases-clients.html#litige",
+  "text": "Gli ordini di servizi on-demand possono essere convertiti automaticamente in pratiche al momento dell'accettazione, riprendendo il cliente, il tipo di pratica predefinito del tipo di servizio e le indicazioni del cliente. Consulti il ciclo di vita degli ordini . Suggerimento: utilizzi il timer globale mentre lavora su una pratica — La segue in tutte le pagine e registra il tempo tracciato direttamente sulla pratica. Consulti Monitoraggio delle ore ."
+ },
+ {
+  "page": "Portale clienti",
+  "title": "Portale clienti",
+  "url": "./client-portal.html",
+  "text": "Portale clienti Il portale clienti è la vista sicura e personale dei Suoi clienti sullo studio: le loro pratiche, fatture, documenti, messaggi, il loro abbonamento e i loro ordini di servizi — personalizzato con il Suo logo e i Suoi colori, disponibile in cinque lingue."
+ },
+ {
+  "page": "Portale clienti",
+  "title": "Come i clienti ottengono l'accesso",
+  "url": "./client-portal.html#access",
+  "text": "Invito dallo studio — invii un invito cliente (Impostazioni → Team o dalla pagina del cliente). L'email di invito rimanda a una pagina di registrazione in cui il cliente imposta nome e password. Registrazione autonoma tramite i pacchetti — i visitatori che si abbonano a un pacchetto sul Suo sito web ottengono automaticamente un account del portale. I clienti accedono all'URL di accesso del Suo studio con email + password e possono attivare la 2FA come qualsiasi utente."
+ },
+ {
+  "page": "Portale clienti",
+  "title": "Cosa vedono i clienti",
+  "url": "./client-portal.html#what-they-see",
+  "text": "Cruscotto — pratiche attive, fatture aperte e attività recenti a colpo d'occhio. Pratiche — solo le pratiche a cui sono collegati, con le note condivise, lo stato e la cronologia della pratica. Documenti — i file delle loro pratiche; possono caricare documenti autonomamente (ad es. in risposta a una richiesta di documenti ). Messaggi — la conversazione sicura per ogni pratica, al posto degli scambi di email. Fatture — le fatture emesse con importi, date di scadenza, stato e download del PDF (con la sezione QR svizzera ove applicabile). Abbonamento — il loro pacchetto, i diritti utilizzati nel "
+ },
+ {
+  "page": "Portale clienti",
+  "title": "Cosa i clienti non possono mai vedere",
+  "url": "./client-portal.html#isolation",
+  "text": "Le pratiche, le fatture o i documenti di altri clienti — l'accesso è rigorosamente limitato ai propri dati. Le note interne delle pratiche (sono visibili solo le note contrassegnate come condivise ). Le registrazioni delle ore, le tariffe o le attività interne del Suo team."
+ },
+ {
+  "page": "Portale clienti",
+  "title": "Su mobile",
+  "url": "./client-portal.html#mobile-portal",
+  "text": "L'app mobile Cliavo dispone di una modalità cliente con lo stesso perimetro: pratiche, fatture, documenti (inclusa la scansione con la fotocamera) e messaggi. Suggerimento: il portale risiede all'URL del Suo studio — your-slug.cliavo.com oppure il Suo dominio personalizzato — così i clienti vedono sempre il Suo marchio, non il nostro."
+ },
+ {
+  "page": "Clienti e CRM",
+  "title": "Clienti e CRM",
+  "url": "./clients-crm.html",
+  "text": "Clienti e CRM L'area Clienti è la rubrica del Suo studio e un CRM essenziale: ogni persona o azienda per cui lavora, i relativi recapiti, le loro pratiche, fatture, attività e l'accesso al portale."
+ },
+ {
+  "page": "Clienti e CRM",
+  "title": "Clienti privati e aziendali",
+  "url": "./clients-crm.html#client-types",
+  "text": "Privati — nome/cognome, data di nascita e recapiti. Il nome o il cognome è obbligatorio. Aziende — ragione sociale (obbligatoria), numero di registrazione e una persona di contatto. Entrambi i tipi condividono email, telefono, indirizzo completo (via, città, codice postale, Paese) e note a testo libero. I clienti hanno uno stato : invitato (creato ma ancora senza account del portale), attivo o inattivo . Amministratori, sub-amministratori e avvocati possono creare clienti; l'elenco dei clienti è consultabile tramite ricerca e ogni cliente dispone di una pagina di dettaglio con un modulo di mod"
+ },
+ {
+  "page": "Clienti e CRM",
+  "title": "Creare i clienti dove Le servono",
+  "url": "./clients-crm.html#create-anywhere",
+  "text": "Oltre che dalla pagina Clienti, può creare un cliente al volo dalla finestra Assegna cliente all'interno di una pratica — sposti il selettore da Cliente esistente a Crea cliente , compili il breve modulo e il nuovo cliente viene creato e assegnato alla pratica in un unico passaggio."
+ },
+ {
+  "page": "Clienti e CRM",
+  "title": "Attività, note e promemoria",
+  "url": "./clients-crm.html#activities",
+  "text": "Ogni cliente dispone di una cronologia delle attività per la gestione quotidiana della relazione: Note — resoconti di riunioni o qualsiasi cosa valga la pena ricordare. Riunioni — con una data, così compaiono nella Sua agenda. Cose da fare e prossime azioni — assegnabili a un membro del team con una data di scadenza. Promemoria — scelga un orario di promemoria per essere avvisato dei follow-up. Può menzionare con @ i colleghi e contrassegnare gli elementi come completati una volta conclusi."
+ },
+ {
+  "page": "Clienti e CRM",
+  "title": "Pipeline dei lead",
+  "url": "./clients-crm.html#leads",
+  "text": "La sezione CRM include una pipeline dei lead per i potenziali clienti che non sono (ancora) clienti. Ogni lead ha un nome di contatto, email, telefono, azienda, fonte, note e un membro del team assegnato, e avanza attraverso le fasi: Fase Significato Nuovo Appena arrivato (ad es. dal modulo di contatto del Suo sito web). Contattato Lo ha ricontattato. Qualificato Potenziale reale — vale la pena proseguire. Consulenza Una prima consulenza è fissata o già avvenuta. Proposta Ha inviato una proposta di mandato o un preventivo. Vinto / Perso Esito della trattativa. Quando un lead viene vinto, utili"
+ },
+ {
+  "page": "Clienti e CRM",
+  "title": "Dare ai clienti l'accesso al portale",
+  "url": "./clients-crm.html#portal-access",
+  "text": "I clienti possono ricevere le proprie credenziali per il portale clienti . Da Impostazioni → Team (o dalla pagina del cliente), invii un invito cliente collegato alla scheda del cliente; il cliente imposta la propria password e vede solo le proprie pratiche, fatture e i propri documenti. Consulti Inviti . Suggerimento: i clienti in abbonamento (consulti Pacchetti ) possono registrarsi autonomamente dal Suo sito web pubblico — la scheda cliente e l'account del portale vengono creati automaticamente."
+ },
+ {
+  "page": "Documenti e messaggi",
+  "title": "Documenti e messaggi",
+  "url": "./documents-messages.html",
+  "text": "Documenti e messaggi Conservi ogni atto, contratto ed elemento di prova nella pratica a cui appartiene, richieda documenti ai clienti con una scadenza e comunichi tramite la messaggistica sicura delle pratiche invece che con catene di email."
+ },
+ {
+  "page": "Documenti e messaggi",
+  "title": "Caricare documenti",
+  "url": "./documents-messages.html#uploading",
+  "text": "Carichi i file dalla pagina della pratica (oppure lasci che i clienti li carichino tramite il portale / la scansione con la fotocamera nell'app mobile). Ogni documento memorizza il nome del file, il tipo, la dimensione, una descrizione facoltativa e chi lo ha caricato. I documenti possono essere organizzati in cartelle per ciascuna pratica. I download avvengono tramite link autenticati — nessun URL pubblico."
+ },
+ {
+  "page": "Documenti e messaggi",
+  "title": "Regole di caricamento e quote",
+  "url": "./documents-messages.html#policy",
+  "text": "Gli studi hanno un limite di dimensione per file e un elenco di tipi di file consentiti (ad es. PDF, Word, immagini) — consulti Impostazioni → Regole di caricamento . Ogni studio dispone inoltre di una quota di archiviazione totale; i caricamenti oltre la quota vengono rifiutati con un messaggio chiaro. Le quote sono definite per piano e possono essere adeguate da Cliavo. Gli allegati dei ticket di supporto hanno un proprio limite ridotto (1&nbsp;MB per file) e non vengono conteggiati nell'archiviazione dello studio."
+ },
+ {
+  "page": "Documenti e messaggi",
+  "title": "Richieste di documenti",
+  "url": "./documents-messages.html#requests",
+  "text": "Smetta di rincorrere i clienti via email — richieda esattamente ciò che Le serve: Crei una richiesta su una pratica con un titolo, una descrizione e una data di scadenza (ad es. «Procura firmata»). Il cliente vede la richiesta nel proprio portale e carica il file direttamente in risposta. La richiesta viene contrassegnata come evasa con un link al documento caricato, oppure può essere annullata se non è più necessaria."
+ },
+ {
+  "page": "Documenti e messaggi",
+  "title": "Messaggistica delle pratiche",
+  "url": "./documents-messages.html#messaging",
+  "text": "Ogni pratica dispone di una conversazione privata tra lo studio e il cliente o i clienti di quella pratica. I clienti scrivono dal loro portale; gli avvocati rispondono dalla pagina della pratica. Le risposte supportano i thread. I contatori dei non letti nella barra laterale mostrano dove qualcosa è in attesa, e i messaggi possono essere contrassegnati come letti. I messaggi restano collegati al mandato per sempre — un registro pulito e verificabile della comunicazione con il cliente."
+ },
+ {
+  "page": "Documenti e messaggi",
+  "title": "Analisi intelligente dei documenti",
+  "url": "./documents-messages.html#analysis",
+  "text": "Dove le funzionalità di IA sono attivate, i documenti caricati possono essere analizzati per estrarre riepiloghi e fatti chiave e accelerare la revisione. Contatti l'assistenza Cliavo se desidera attivare questa funzione per il Suo studio."
+ },
+ {
+  "page": "Primi passi",
+  "title": "Primi passi",
+  "url": "./getting-started.html",
+  "text": "Primi passi Cliavo è una piattaforma completa di gestione dell'attività per studi legali. Ogni studio dispone di uno spazio di lavoro isolato con la propria identità visiva, il proprio team, i propri clienti, le proprie pratiche, la propria fatturazione e il proprio sito web pubblico. Questa guida La accompagna dalla creazione di un account fino a uno studio pienamente operativo."
+ },
+ {
+  "page": "Primi passi",
+  "title": "Creare il Suo spazio di lavoro",
+  "url": "./getting-started.html#create-workspace",
+  "text": "Lo spazio di lavoro di uno studio può essere creato in due modi: Prova gratuita in autonomia — clicchi su Inizia la prova gratuita su cliavo.com, inserisca il nome del Suo studio, il Suo nome, la Sua email e una password. Il Suo spazio di lavoro viene creato immediatamente con una prova di 15 giorni sul piano iniziale e viene reindirizzato direttamente alla configurazione guidata. Attivato da Cliavo — il nostro team crea lo studio per Lei e invia al titolare un'email con le credenziali e una password temporanea . Al primo accesso Le viene chiesto di impostare la Sua password personale prima di"
+ },
+ {
+  "page": "Primi passi",
+  "title": "La procedura guidata di configurazione",
+  "url": "./getting-started.html#onboarding",
+  "text": "Dopo la registrazione completa una breve procedura guidata. Tutto può essere modificato in seguito nelle Impostazioni. 1 · Profilo dello studio — ragione sociale, indirizzo, email di contatto, telefono e numero IVA/IDI. Questi dati compaiono sulle Sue fatture. 2 · Identità visiva — carichi il Suo logo e scelga i colori primario e secondario del Suo marchio. Definiscono lo stile del Suo spazio di lavoro, del portale clienti e del sito web pubblico. 3 · Valuta e imposte — la valuta di fatturazione predefinita per le nuove fatture e i pacchetti (CHF, EUR, USD, GBP, AED, SAR e altre) e la Sua aliq"
+ },
+ {
+  "page": "Primi passi",
+  "title": "Accedere",
+  "url": "./getting-started.html#sign-in",
+  "text": "I membri dello studio e i clienti accedono con email + password all'indirizzo /login (o sul sottodominio del Suo studio). Se l' autenticazione a due fattori è attivata, dopo la password deve inserire un codice a 6 cifre generato dall'app di autenticazione. Se il Suo account è stato creato con una password temporanea, Le viene chiesto di impostarne una nuova prima di poter continuare. Non è necessario reinserire la password temporanea. Gli operatori della piattaforma (personale Cliavo) utilizzano un accesso separato all'indirizzo /platform/login ; gli account superadmin non possono mai entrare "
+ },
+ {
+  "page": "Primi passi",
+  "title": "Primi passi consigliati",
+  "url": "./getting-started.html#first-steps",
+  "text": "Inviti il Suo team da Impostazioni → Team: sub-amministratori, avvocati e assistenti ricevono ciascuno un invito via email. Consulti Team e ruoli . Aggiunga le coordinate bancarie (IBAN o QR-IBAN più indirizzo del creditore) nelle Impostazioni, affinché le QR-fatture svizzere possano essere generate sulle fatture. Imposti la Sua tariffa oraria nei Rapporti ore, in modo che il tempo registrato venga valorizzato correttamente. Crei il Suo primo cliente e la Sua prima pratica — consulti Clienti e CRM e Pratiche e mandati . Pubblichi il Suo sito web — scelga un modello nel CMS e vada online in poc"
+ },
+ {
+  "page": "Primi passi",
+  "title": "Lingue",
+  "url": "./getting-started.html#languages",
+  "text": "L'interfaccia è disponibile in inglese, francese, tedesco, italiano e arabo (con layout completo da destra a sinistra per l'arabo). Ogni utente sceglie la propria lingua dal selettore di lingua; anche le email di invito possono essere inviate nella lingua del destinatario. Gli amministratori della piattaforma stabiliscono quali lingue sono attivate."
+ },
+ {
+  "page": "Primi passi",
+  "title": "Prova, piani e account",
+  "url": "./getting-started.html#trial-plans",
+  "text": "Il banner della prova mostra i giorni rimanenti. Al termine della prova, lo spazio di lavoro viene bloccato (accesso in sola lettura ad account e assistenza) finché non viene attivato un piano. Alla voce Account può consultare il piano attuale, il prezzo e il ciclo di fatturazione, ed effettuare l'upgrade in qualsiasi momento. Se il Suo studio è sospeso o il pagamento è in ritardo, gli amministratori mantengono l'accesso ad Account, Assistenza e all'acquisto del piano, in modo da poter ripristinare il servizio."
+ },
+ {
+  "page": "Primi passi",
+  "title": "App mobile",
+  "url": "./getting-started.html#mobile",
+  "text": "Cliavo dispone di un'app mobile complementare (iOS e Android) per avvocati e clienti: cruscotti, pratiche, fatture e scansione di documenti con la fotocamera. L'accesso avviene tramite https://cliavo.com con la stessa email e la stessa password."
+ },
+ {
+  "page": "Tutto sul Suo spazio di lavoro Cliavo",
+  "title": "Tutto sul Suo spazio di lavoro Cliavo",
+  "url": "./index.html",
+  "text": "Centro assistenza Cliavo Cliavo Centro assistenza support@cliavo.com EN FR DE IT AR Tutto sul Suo spazio di lavoro Cliavo Guide dettagliate per ogni funzionalità — dal primo accesso alla gestione delle pratiche, al monitoraggio delle ore, alla fatturazione con QR-fatture svizzere, alla pubblicazione del sito web del Suo studio e alla vendita di pacchetti e servizi on-demand. Utilizzi la barra di r"
+ },
+ {
+  "page": "Pacchetti e servizi (Upselling)",
+  "title": "Pacchetti e servizi (Upselling)",
+  "url": "./packages-services.html",
+  "text": "Pacchetti e servizi (Upselling) Sotto Upselling trova due strumenti per ricavi ricorrenti: i pacchetti in abbonamento (piani di protezione giuridica fatturati mensilmente/annualmente) e un catalogo di servizi on-demand (prodotti legali a prezzo fisso con un flusso di lavoro completo degli ordini)."
+ },
+ {
+  "page": "Pacchetti e servizi (Upselling)",
+  "title": "Pacchetti in abbonamento",
+  "url": "./packages-services.html#packages",
+  "text": "Ogni pacchetto ha un nome, una descrizione, un elenco di caratteristiche e un' etichetta in evidenza (ad es. «Il più richiesto»). Prezzi per intervallo : prezzi mensili, semestrali e annuali, più un impegno minimo (ad es. 12 mesi). Diritti inclusi : pratiche per periodo, ore di consulenza per periodo e ore di lavoro forfettario incluse. Limiti i tipi di pratica coperti da un pacchetto (ad es. solo diritto del lavoro e delle locazioni). Attivi separatamente gli interruttori attivo (vendibile) e pubblico (visibile sul Suo sito web), e li ordini con le maniglie di trascinamento."
+ },
+ {
+  "page": "Pacchetti e servizi (Upselling)",
+  "title": "Abbonati",
+  "url": "./packages-services.html#subscribers",
+  "text": "I clienti si abbonano dal Suo sito web pubblico (il blocco dei pacchetti rimanda alla registrazione) — la scheda cliente, l'account del portale e l'abbonamento vengono creati insieme. Gli abbonamenti tracciano lo stato ( attivo, pagamento in ritardo, annullato, scaduto ), il periodo di fatturazione corrente e la data di fine dell'impegno. I clienti abbonati possono cambiare piano dal loro portale; l'utilizzo dei diritti (pratiche, ore) è visibile per periodo. Quando un abbonato apre una pratica, compila un modulo di acquisizione , così l'avvocato inizia con il contesto."
+ },
+ {
+  "page": "Pacchetti e servizi (Upselling)",
+  "title": "Catalogo dei servizi on-demand",
+  "url": "./packages-services.html#services",
+  "text": "Ogni servizio ha un nome, una descrizione, una categoria (consulenza, contratto, documenti, lavoro, societario, altro) e un prezzo fisso. Tipo di erogazione : documento (consegna file) o consulenza (fornisce un incontro). Imposti le ore di impegno stimate, le note di consegna e il tipo di pratica predefinito da utilizzare se l'ordine diventa una pratica. Come per i pacchetti: interruttori attivo/pubblico e ordinamento manuale; i servizi pubblici compaiono automaticamente nel blocco Servizi del sito web."
+ },
+ {
+  "page": "Pacchetti e servizi (Upselling)",
+  "title": "Il ciclo di vita degli ordini",
+  "url": "./packages-services.html#orders",
+  "text": "I clienti acquistano i servizi dal loro portale (o dal Suo sito web dopo la registrazione): Carrello e pagamento — il cliente sceglie i servizi, aggiunge una descrizione per ogni voce ed effettua il pagamento. Con Stripe/Adyen collegati paga online; altrimenti lo studio può contrassegnare l'ordine come pagato manualmente. Acquisizione — dopo il pagamento il cliente invia la descrizione di acquisizione, così il Suo team sa esattamente cosa serve. Accettazione — lo studio esamina e accetta (eventualmente assegnando un avvocato e creando una pratica collegata) oppure rifiuta con una motivazione. "
+ },
+ {
+  "page": "Pacchetti e servizi (Upselling)",
+  "title": "Valute",
+  "url": "./packages-services.html#currency",
+  "text": "I pacchetti e i servizi hanno prezzi nella valuta del Suo studio; gli ordini mantengono la propria valuta dall'inizio alla fine. Consulti la fatturazione multivaluta ."
+ },
+ {
+  "page": "Sicurezza",
+  "title": "Sicurezza",
+  "url": "./security.html",
+  "text": "Sicurezza Gli studi legali trattano informazioni riservate, perciò la sicurezza è integrata in ogni livello: autenticazione robusta, rigoroso isolamento dei tenant, trasporto crittografato e operazioni di piattaforma sottoposte a audit."
+ },
+ {
+  "page": "Sicurezza",
+  "title": "Password e accesso",
+  "url": "./security.html#passwords",
+  "text": "Le password sono memorizzate come hash scrypt con salt — mai in chiaro. Lunghezza minima di 8 caratteri; per cambiare la password è necessaria quella attuale. Gli account creati con una password temporanea devono impostarne una nuova al primo accesso. Le sessioni sono cookie firmati e HTTP-only; Esci invalida immediatamente il cookie di sessione. Gli accessi superadmin (piattaforma) sono separati da quelli degli studi — un superadmin non può entrare nell'interfaccia dello studio tramite l'accesso normale e viceversa."
+ },
+ {
+  "page": "Sicurezza",
+  "title": "Autenticazione a due fattori (2FA)",
+  "url": "./security.html#two-factor",
+  "text": "Qualsiasi utente può attivare la 2FA TOTP in Impostazioni → Sicurezza : scansioni il codice QR con Google Authenticator, 1Password o qualsiasi app TOTP e confermi con un codice. Dopo ogni accesso con password è richiesto un codice a 6 cifre. Lo stato 2FA viene verificato di nuovo a ogni nuovo accesso — i codici non vengono mai «ricordati» tra un accesso e l'altro. Per disattivare la 2FA è necessario un codice attuale valido."
+ },
+ {
+  "page": "Sicurezza",
+  "title": "Isolamento dei tenant",
+  "url": "./security.html#isolation",
+  "text": "Ogni record (cliente, pratica, fattura, documento, messaggio…) è vincolato al Suo studio. Tutte le query filtrano in base all'appartenenza allo studio — un altro studio non può né leggere né scrivere i Suoi dati. I clienti accedono solo ai propri dati tramite il portale; le note interne restano interne. I controlli dei ruoli si applicano a ogni operazione lato server, non solo a pulsanti nascosti nell'interfaccia."
+ },
+ {
+  "page": "Sicurezza",
+  "title": "Crittografia e infrastruttura",
+  "url": "./security.html#encryption",
+  "text": "Tutto il traffico è in HTTPS (TLS tramite Let's Encrypt); le richieste HTTP vengono reindirizzate. I token OAuth dei calendari sono memorizzati crittografati a riposo . L'hosting è su infrastruttura svizzera (residenza dei dati in CH) con il database su una rete privata, irraggiungibile da internet. I download dei file avvengono tramite percorsi autenticati e con verifica del percorso."
+ },
+ {
+  "page": "Sicurezza",
+  "title": "Audit e operazioni di piattaforma",
+  "url": "./security.html#auditing",
+  "text": "Le cronologie delle pratiche registrano ogni azione rilevante per ciascun mandato. Le azioni amministrative a livello di piattaforma (creazione di studi, cambi di piano, impersonificazione, annunci) vengono scritte in un registro di audit superadmin . L'impersonificazione da parte dell'assistenza è esplicita, temporanea, sottoposta a audit e chiaramente segnalata nell'interfaccia mentre è attiva."
+ },
+ {
+  "page": "Sicurezza",
+  "title": "Backup e disponibilità",
+  "url": "./security.html#backups",
+  "text": "Il database di produzione utilizza volumi persistenti e dump pianificati; contatti l'assistenza per conoscere la politica attuale di backup e conservazione per la Sua installazione. Per gli studi con requisiti di hosting rigorosi è disponibile un'installazione on-premise/single-tenant con licenza offline — contatti Cliavo."
+ },
+ {
+  "page": "Sicurezza",
+  "title": "Segnalare un problema di sicurezza",
+  "url": "./security.html#reporting",
+  "text": "Ha trovato qualcosa? Scriva a support@cliavo.com indicando «SECURITY» nell'oggetto. La preghiamo di non effettuare test sui dati di altri studi."
+ },
+ {
+  "page": "Impostazioni",
+  "title": "Impostazioni",
+  "url": "./settings.html",
+  "text": "Impostazioni Tutta la configurazione del Suo studio si trova nelle Impostazioni. La maggior parte delle schede è riservata agli amministratori; ogni utente dispone delle proprie preferenze personali di sicurezza e lingua."
+ },
+ {
+  "page": "Impostazioni",
+  "title": "Profilo dello studio",
+  "url": "./settings.html#profile",
+  "text": "Ragione sociale, indirizzo, email di contatto, telefono, sito web e numero IVA/IDI — stampati sulle Sue fatture e mostrati nella sezione contatti del Suo sito pubblico."
+ },
+ {
+  "page": "Impostazioni",
+  "title": "Identità visiva",
+  "url": "./settings.html#branding",
+  "text": "Carichi il Suo logo (PNG/JPEG/WebP, fino a 5&nbsp;MB). Scelga i colori primario e secondario — definiscono lo stile dello spazio di lavoro, del portale clienti, delle email e del sito web pubblico."
+ },
+ {
+  "page": "Impostazioni",
+  "title": "Valuta e IVA predefinite",
+  "url": "./settings.html#billing-defaults",
+  "text": "La valuta predefinita dello studio è utilizzata per le nuove fatture, i pacchetti, i servizi e la visualizzazione delle tariffe. Le valute disponibili (CHF, EUR, USD, GBP, AED, SAR, QAR, KWD, BHD, OMR, JOD) sono attivate a livello di piattaforma. L' aliquota IVA predefinita precompila le nuove fatture (standard svizzero 8,1%). Coordinate bancarie per la QR-fattura svizzera: IBAN / QR-IBAN e indirizzo del creditore. Consulti QR-fatture ."
+ },
+ {
+  "page": "Impostazioni",
+  "title": "Domini dello spazio di lavoro",
+  "url": "./settings.html#domains",
+  "text": "Sottodominio — il Suo spazio di lavoro e il Suo sito pubblico all'indirizzo your-slug.cliavo.com . Cambiare lo slug modifica i Suoi link, quindi scelga con attenzione. Dominio personalizzato — inserisca il Suo dominio (ad es. portal.yourfirm.ch ) e crei un record CNAME presso il Suo provider DNS che lo punti al Suo sottodominio Cliavo: Tipo Nome (il Suo dominio) Valore (punta a) CNAME portal.yourfirm.ch your-slug.cliavo.com I domini radice senza sottodominio (ad es. yourfirm.ch ) utilizzano invece un record A verso l'IP di Cliavo. Le modifiche DNS possono richiedere fino a 24–48 ore."
+ },
+ {
+  "page": "Impostazioni",
+  "title": "Gateway di pagamento",
+  "url": "./settings.html#payments",
+  "text": "Adyen — colleghi il Suo account commerciante (chiave API, account commerciante, chiave HMAC, ambiente di test/produzione). I webhook aggiornano automaticamente lo stato di pagamento degli ordini. Stripe — pagamento degli ordini di servizi ove configurato. Nessun gateway? Gli ordini possono essere contrassegnati come pagati manualmente — nulla blocca il Suo flusso di lavoro."
+ },
+ {
+  "page": "Impostazioni",
+  "title": "Regole di caricamento e archiviazione",
+  "url": "./settings.html#uploads",
+  "text": "Limite di dimensione per file e tipi di file consentiti per i documenti delle pratiche. Una quota di archiviazione a livello di studio; l'utilizzo conteggia i documenti di tutte le pratiche. I limiti sono legati al Suo piano e possono essere aumentati — contatti l'assistenza."
+ },
+ {
+  "page": "Impostazioni",
+  "title": "Team e ruoli",
+  "url": "./settings.html#roles-settings",
+  "text": "Inviti membri, assegni ruoli e personalizzi la matrice delle autorizzazioni dei ruoli. Trattato in dettaglio in Team e ruoli ."
+ },
+ {
+  "page": "Impostazioni",
+  "title": "Preferenze personali",
+  "url": "./settings.html#personal",
+  "text": "Lingua — ogni utente sceglie tra EN/FR/DE/IT/AR; l'arabo passa il layout in modalità RTL. Sicurezza — cambio della password, attivazione/disattivazione della 2FA . Connessioni ai calendari — consulti Agenda e calendario ."
+ },
+ {
+  "page": "Impostazioni",
+  "title": "Account e piano",
+  "url": "./settings.html#account",
+  "text": "La pagina Account mostra il Suo piano di abbonamento, il prezzo, il ciclo di fatturazione, i giorni di prova rimanenti e Le permette di effettuare l'upgrade. Se lo spazio di lavoro è bloccato (prova terminata, sospensione, pagamento in ritardo), gli amministratori possono comunque accedere ad Account e Assistenza per ripristinare il servizio."
+ },
+ {
+  "page": "Assistenza e archiviazione",
+  "title": "Assistenza e archiviazione",
+  "url": "./storage-support.html",
+  "text": "Assistenza e archiviazione Come contattare Cliavo quando qualcosa non è chiaro, come funzionano i ticket di supporto, cosa sono gli annunci della piattaforma e come si comportano i limiti di archiviazione dei documenti."
+ },
+ {
+  "page": "Assistenza e archiviazione",
+  "title": "Ticket di supporto",
+  "url": "./storage-support.html#tickets",
+  "text": "Gli amministratori dello studio aprono i ticket alla voce Assistenza con un oggetto, una descrizione e un livello di sensibilità (da basso a critico). Alleghi fino a 5 file per ticket (documenti o schermate, max 1&nbsp;MB ciascuno) per mostrare esattamente cosa vede. I ticket ricevono un numero come TKT-2026-00042 e uno stato: aperto → in elaborazione → in esame → risposto → risolto → chiuso . Le risposte di Cliavo compaiono nella conversazione del ticket e vengono segnalate come non lette nella barra laterale finché non le visualizza; può rispondere a Sua volta con ulteriori dettagli o allega"
+ },
+ {
+  "page": "Assistenza e archiviazione",
+  "title": "Annunci della piattaforma",
+  "url": "./storage-support.html#announcements",
+  "text": "Cliavo pubblica occasionalmente annunci (manutenzione, nuove funzionalità) che compaiono come banner/popup nel Suo spazio di lavoro. Livelli di gravità: informativo, avviso, critico. Il pubblico è costituito solo dagli amministratori dello studio oppure da tutti i membri. Clicchi su Ho capito per chiuderlo — un annuncio non ricompare dopo essere stato chiuso, e gli annunci pubblicati prima che il Suo account esistesse non Le vengono mai mostrati."
+ },
+ {
+  "page": "Assistenza e archiviazione",
+  "title": "Quote di archiviazione",
+  "url": "./storage-support.html#storage",
+  "text": "L'archiviazione dei documenti delle pratiche viene conteggiata nella quota di archiviazione del Suo studio (definita dal Suo piano). Le regole sulla dimensione per file e sui tipi di file sono configurabili — consulti Impostazioni → Regole di caricamento . Quando la quota è raggiunta, i caricamenti falliscono con un messaggio chiaro; elimini i file vecchi o chieda all'assistenza una quota superiore. Gli allegati dei ticket di supporto non vengono conteggiati nell'archiviazione dello studio."
+ },
+ {
+  "page": "Assistenza e archiviazione",
+  "title": "Altri modi per contattarci",
+  "url": "./storage-support.html#contact",
+  "text": "Email: support@cliavo.com Questo centro assistenza: cliavo.com/help — utilizzi la barra di ricerca in cima a ogni pagina."
+ },
+ {
+  "page": "Team e ruoli",
+  "title": "Team e ruoli",
+  "url": "./team-roles.html",
+  "text": "Team e ruoli Riunisca tutto il Suo studio in un unico spazio di lavoro con accessi basati sui ruoli: gli amministratori dirigono lo studio, i sub-amministratori aiutano a gestirlo, gli avvocati lavorano alle loro pratiche e gli assistenti supportano il team."
+ },
+ {
+  "page": "Team e ruoli",
+  "title": "I quattro ruoli dello studio",
+  "url": "./team-roles.html#roles",
+  "text": "Ruolo Persona tipica Accesso predefinito Amministratore Titolare / socio dirigente Tutto: tutte le pratiche, fatturazione, impostazioni, team, ruoli, sito web, upselling. Sub-amministratore Responsabile di segreteria Pratiche e clienti di tutto lo studio, inviti, la maggior parte delle schermate di gestione; escluse le impostazioni critiche dello studio. Avvocato Collaboratore / socio Le pratiche a loro assegnate, il proprio monitoraggio delle ore, la fatturazione, i clienti. Assistente Paralegale / segretario Accesso di supporto alle pratiche assegnate; per impostazione predefinita né fattura"
+ },
+ {
+  "page": "Team e ruoli",
+  "title": "Personalizzare le autorizzazioni dei ruoli",
+  "url": "./team-roles.html#capabilities",
+  "text": "In Impostazioni → Ruoli , gli amministratori possono definire con precisione cosa può fare ogni ruolo per area — ad esempio se gli avvocati vedono tutte le pratiche dello studio o solo le proprie , chi può creare fatture, gestire il sito web o invitare persone. Le personalizzazioni si applicano solo al Suo studio e possono essere ripristinate ai valori predefiniti della piattaforma con un clic."
+ },
+ {
+  "page": "Team e ruoli",
+  "title": "Inviti",
+  "url": "./team-roles.html#invites",
+  "text": "Inviti i colleghi via email con un ruolo scelto; gli inviti dei clienti sono collegati a una scheda cliente. Scelga la lingua dell'email per ogni invito (EN/FR/DE/IT/AR). L'invitato apre il link, imposta nome e password e accede allo spazio di lavoro — gli inviti scadono dopo un certo periodo e possono essere reinviati. Se l'invitato ha già un account Cliavo (stessa email), può accettare l'invito mentre è connesso ed entrare nello studio con le sue credenziali esistenti."
+ },
+ {
+  "page": "Team e ruoli",
+  "title": "Gestire i membri",
+  "url": "./team-roles.html#managing",
+  "text": "La pagina Team elenca ogni membro con il rispettivo ruolo e la qualifica. Ogni avvocato gestisce la propria tariffa oraria ; gli amministratori possono consultare le tariffe ai fini della fatturazione. Gli avvocati possono essere assegnati a pratiche, attività, lead e ordini di servizi. Suggerimento: assegni al personale di accoglienza il ruolo di assistente e conceda solo ciò che serve in Impostazioni → Ruoli — la matrice delle autorizzazioni è sempre preferibile alla condivisione di un accesso amministratore."
+ },
+ {
+  "page": "Monitoraggio delle ore",
+  "title": "Monitoraggio delle ore",
+  "url": "./time-tracking.html",
+  "text": "Monitoraggio delle ore Registri le ore fatturabili e non fatturabili con un timer in tempo reale o con registrazioni manuali, riveda e modifichi tutto prima dell'invio e trasformi il tempo approvato in fatture con due clic."
+ },
+ {
+  "page": "Monitoraggio delle ore",
+  "title": "Il timer in tempo reale",
+  "url": "./time-tracking.html#timer",
+  "text": "Avvii un timer da una pratica (o dai Rapporti ore) con una descrizione di ciò che sta facendo. Il timer flottante rimane visibile su ogni pagina mentre è in esecuzione — è memorizzato lato server, quindi continua a contare anche se chiude la scheda o cambia dispositivo. Può mettere in pausa / riprendere , modificare la descrizione o la pratica mentre è in esecuzione, e arrestarlo per salvare il tempo accumulato come registrazione in bozza, oppure scartarlo."
+ },
+ {
+  "page": "Monitoraggio delle ore",
+  "title": "Registrazioni manuali",
+  "url": "./time-tracking.html#manual",
+  "text": "Aggiunga una registrazione con una pratica, una descrizione, una durata (in minuti) e una data — per il lavoro svolto lontano dallo schermo. Ogni registrazione salvata riceve una marca temporale e l'elenco mostra le registrazioni più recenti in alto. Le registrazioni possono essere contrassegnate come fatturabili o non fatturabili e possono avere una tariffa oraria personalizzata."
+ },
+ {
+  "page": "Monitoraggio delle ore",
+  "title": "Modifiche prima dell'invio",
+  "url": "./time-tracking.html#editing",
+  "text": "Le registrazioni in bozza e quelle inviate possono essere modificate — cambi la pratica, la descrizione, la durata o la data — oppure eliminate, fino al momento in cui vengono fatturate. Una volta che una registrazione è allegata a una fattura, viene bloccata per mantenere la coerenza della fatturazione."
+ },
+ {
+  "page": "Monitoraggio delle ore",
+  "title": "Flusso di lavoro delle registrazioni",
+  "url": "./time-tracking.html#workflow",
+  "text": "Stato Significato Bozza Appena registrata; completamente modificabile. Inviata Contrassegnata come pronta per la fatturazione (può inviarne molte in una volta). Fatturata Inclusa in una fattura; bloccata."
+ },
+ {
+  "page": "Monitoraggio delle ore",
+  "title": "Tariffe orarie",
+  "url": "./time-tracking.html#rates",
+  "text": "Ogni avvocato imposta la propria tariffa oraria (nella valuta dello studio) nei Rapporti ore. La tariffa viene memorizzata con ogni registrazione al momento della creazione, quindi le registrazioni storiche conservano la tariffa in vigore in quel momento. Le singole registrazioni possono sovrascrivere la tariffa."
+ },
+ {
+  "page": "Monitoraggio delle ore",
+  "title": "Creare una fattura dalle registrazioni delle ore",
+  "url": "./time-tracking.html#invoice-from-time",
+  "text": "Nei Rapporti ore , selezioni le registrazioni inviate che desidera fatturare (eventualmente filtrate per pratica o per cliente). Scelga il cliente, una data di scadenza e l'aliquota IVA. Cliavo crea una fattura con una riga per ogni registrazione (descrizione, ore × tariffa) nella valuta predefinita del Suo studio, e contrassegna le registrazioni come fatturate. Consulti Fatturazione e fatture per i passaggi successivi."
+ },
+ {
+  "page": "Monitoraggio delle ore",
+  "title": "Rapporti e riepiloghi",
+  "url": "./time-tracking.html#reports",
+  "text": "I Rapporti ore mostrano i totali per periodo, pratica e fatturante — ore tracciate rispetto a quelle fatturabili e il loro valore — così può verificare la produttività prima dei cicli di fatturazione e individuare il lavoro non fatturato."
+ },
+ {
+  "page": "Sito web (CMS) e lead",
+  "title": "Sito web (CMS) e lead",
+  "url": "./website-leads.html",
+  "text": "Sito web (CMS) e lead Ogni studio dispone di un sito web pubblico realizzato con l'editor di pagine del CMS — senza bisogno di un'agenzia web. Le pagine sono composte da blocchi pronti all'uso, modificate con un'anteprima in tempo reale, personalizzate con la Sua identità visiva e pubblicate sul Suo sottodominio o dominio personalizzato."
+ },
+ {
+  "page": "Sito web (CMS) e lead",
+  "title": "L'editor di pagine",
+  "url": "./website-leads.html#editor",
+  "text": "Crei una pagina dal CMS : si apre un editor a schermo intero con l'elenco dei blocchi da un lato e un' anteprima in tempo reale dall'altro. Riordini i blocchi con il trascinamento (maniglia di presa) — l'anteprima si aggiorna all'istante. Ogni pagina ha un titolo, uno slug URL, un interruttore pubblicata e un interruttore homepage (una sola pagina è la pagina principale del Suo sito). La scheda SEO imposta il meta titolo e la meta descrizione utilizzati dai motori di ricerca."
+ },
+ {
+  "page": "Sito web (CMS) e lead",
+  "title": "Tipi di blocchi",
+  "url": "./website-leads.html#blocks",
+  "text": "Blocco Cosa mostra Hero Grande titolo, sottotitolo e un pulsante di invito all'azione. Testo Sezione di testo formattato con intestazione per qualsiasi contenuto. Punti di forza Griglia di schede (icona, titolo, testo). Statistiche Numeri chiave — anni di esperienza, cause vinte, clienti assistiti. Testimonianze Citazioni dei clienti con i nomi. Team I Suoi avvocati con foto, ruoli e biografie. FAQ Fisarmonica di domande e risposte. Galleria Griglia di immagini. Fascia di loghi Barra di loghi di associazioni / clienti. Pacchetti Blocco dinamico — mostra automaticamente i Suoi pacchetti in abbo"
+ },
+ {
+  "page": "Sito web (CMS) e lead",
+  "title": "Modelli",
+  "url": "./website-leads.html#templates",
+  "text": "Parta da un modello anziché da una pagina vuota: Classico , Minimalista , Moderno , Servizi e pacchetti , Team oppure Contatto . I modelli precompilano una disposizione di blocchi sensata che può poi modificare."
+ },
+ {
+  "page": "Sito web (CMS) e lead",
+  "title": "Identità visiva",
+  "url": "./website-leads.html#branding",
+  "text": "Il sito pubblico utilizza il Suo logo e i colori del Suo marchio da Impostazioni → Identità visiva , così sito web, spazio di lavoro e portale clienti sono tutti coordinati."
+ },
+ {
+  "page": "Sito web (CMS) e lead",
+  "title": "Dove viene pubblicato il Suo sito",
+  "url": "./website-leads.html#urls",
+  "text": "Immediatamente (senza bisogno di DNS): https://cliavo.com/site/your-slug Il Suo sottodominio : https://your-slug.cliavo.com — anche il punto di accesso per il Suo team e i Suoi clienti. Dominio personalizzato : colleghi ad es. portal.yourfirm.ch in Impostazioni → Spazio di lavoro con un unico record CNAME. Consulti Domini ."
+ },
+ {
+  "page": "Sito web (CMS) e lead",
+  "title": "Acquisizione di lead",
+  "url": "./website-leads.html#leads",
+  "text": "Il blocco Contatto sulle Sue pagine pubbliche invia i moduli compilati direttamente nella Sua pipeline dei lead del CRM con fonte «sito web». I blocchi dei pacchetti e dei servizi indirizzano i visitatori alla registrazione dell'abbonamento e al pagamento dei servizi, trasformando il Suo sito web in una vetrina di vendita. Suggerimento: mantenga una homepage pubblicata più alcune pagine mirate (Chi siamo, Servizi, Contatti). I motori di ricerca leggono il titolo e la descrizione SEO di ogni pagina — li scriva come un annuncio pubblicitario per la pagina."
+ }
+]

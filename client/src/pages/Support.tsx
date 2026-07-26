@@ -26,7 +26,11 @@ import {
 } from "@shared/uploadPolicy";
 
 const DOCS_URL = "https://docs.cliavo.com";
-const LOCAL_HELP_URL = "/help";
+/** Help center is per-language: /help (en) or /help/{fr,de,it,ar}/ */
+function helpUrlFor(language: string | undefined): string {
+  const lang = (language || "en").slice(0, 2).toLowerCase();
+  return ["fr", "de", "it", "ar"].includes(lang) ? `/help/${lang}/` : "/help";
+}
 const TICKET_ACCEPT = acceptAttribute(TICKET_UPLOAD_POLICY.allowedExtensions);
 
 type Attachment = {
@@ -77,7 +81,7 @@ function statusVariant(status: string): "default" | "secondary" | "outline" | "d
 }
 
 export default function SupportPage() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { user } = useAuth();
   const { data: firmData } = trpc.firm.myFirm.useQuery(undefined, {
     enabled: Boolean(user) && user?.role !== "superadmin",
@@ -255,7 +259,7 @@ export default function SupportPage() {
                   </a>
                 </Button>
                 <Button asChild variant="outline">
-                  <a href={LOCAL_HELP_URL} target="_blank" rel="noreferrer">
+                  <a href={helpUrlFor(i18n.language)} target="_blank" rel="noreferrer">
                     {t("support.openLocalHelp")}
                   </a>
                 </Button>

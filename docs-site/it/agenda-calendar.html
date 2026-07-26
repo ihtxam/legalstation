@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Agenda e calendario · Assistenza Cliavo</title>
+  <link rel="stylesheet" href="../styles.css" />
+</head>
+<body>
+  <div class="shell">
+    <header class="top">
+      <div class="brand">Cliavo<span>Centro assistenza</span></div>
+      <div class="search">
+        <input type="search" id="searchInput" placeholder="Cerca nella documentazione…" autocomplete="off" />
+        <div class="search-results" id="searchResults" hidden></div>
+      </div>
+      <nav><a href="./index.html">Tutti gli argomenti</a></nav>
+      <div class="lang" aria-label="Lingua"><a href="../agenda-calendar.html" lang="en">EN</a><a href="../fr/agenda-calendar.html" lang="fr">FR</a><a href="../de/agenda-calendar.html" lang="de">DE</a><a class="active" href="./agenda-calendar.html">IT</a><a href="../ar/agenda-calendar.html" lang="ar">AR</a></div>
+    </header>
+
+    <article class="article">
+      <h1>Agenda e calendario</h1>
+      <p>
+        Un'unica agenda per tutto ciò che ha una data: scadenze delle pratiche, attività in scadenza,
+        riunioni con i clienti e promemoria, i Suoi eventi personali — e, se collega un calendario
+        esterno, anche i Suoi eventi Google / Outlook / iCloud.
+      </p>
+
+      <h2 id="agenda">Cosa compare nella Sua agenda</h2>
+      <ul>
+        <li><strong>Scadenze delle pratiche</strong> — dal campo scadenza delle pratiche.</li>
+        <li><strong>Date di scadenza delle attività</strong> — le attività delle pratiche assegnate a Lei.</li>
+        <li><strong>Attività dei clienti</strong> — riunioni, cose da fare e promemoria con date.</li>
+        <li><strong>Eventi personali</strong> — creati direttamente nel calendario con titolo, luogo, inizio/fine oppure giornata intera.</li>
+        <li><strong>Eventi importati</strong> — recuperati dai calendari esterni collegati.</li>
+      </ul>
+
+      <h2 id="providers">Collegare calendari esterni</h2>
+      <p>Ogni utente può collegare i propri calendari in Calendario → Connessioni:</p>
+      <table>
+        <tr><th>Provider</th><th>Come si collega</th></tr>
+        <tr><td>Google Calendar</td><td>OAuth — acceda con Google e conceda l'accesso al calendario.</td></tr>
+        <tr><td>Microsoft / Outlook</td><td>OAuth — account Microsoft 365 o Outlook.com.</td></tr>
+        <tr><td>Apple iCloud</td><td>CalDAV con il Suo ID Apple e una <em>password specifica per app</em> (da creare su appleid.apple.com).</td></tr>
+      </table>
+
+      <h2 id="sync">Sincronizzazione bidirezionale</h2>
+      <ul>
+        <li>Scelga la direzione di sincronizzazione per ogni connessione: <strong>bidirezionale</strong>, <strong>solo invio</strong> (Cliavo → esterno) o <strong>solo ricezione</strong> (esterno → Cliavo).</li>
+        <li>Cliavo invia scadenze, riunioni ed eventi personali al calendario esterno e importa gli eventi esterni, così la Sua agenda mostra la reale disponibilità.</li>
+        <li>La sincronizzazione avviene su base pianificata e può essere avviata manualmente con <strong>Sincronizza ora</strong>. La connessione mostra l'ora dell'ultima sincronizzazione ed eventuali errori.</li>
+        <li>I token di accesso sono memorizzati in forma crittografata; la disconnessione rimuove immediatamente il collegamento.</li>
+      </ul>
+
+      <div class="tip">
+        Suggerimento: gli avvocati che lavorano soprattutto in Outlook possono impostare «solo invio», così le
+        scadenze giudiziarie compaiono in Outlook senza che i loro appuntamenti privati vengano importati nello
+        spazio di lavoro.
+      </div>
+    </article>
+
+    <footer class="footer"><a href="./index.html">← Centro assistenza</a> · support@cliavo.com</footer>
+  </div>
+  <script src="../search.js" defer></script>
+</body>
+</html>

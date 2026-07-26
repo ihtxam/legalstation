@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Primi passi · Assistenza Cliavo</title>
+  <link rel="stylesheet" href="../styles.css" />
+</head>
+<body>
+  <div class="shell">
+    <header class="top">
+      <div class="brand">Cliavo<span>Centro assistenza</span></div>
+      <div class="search">
+        <input type="search" id="searchInput" placeholder="Cerca nella documentazione…" autocomplete="off" />
+        <div class="search-results" id="searchResults" hidden></div>
+      </div>
+      <nav><a href="./index.html">Tutti gli argomenti</a></nav>
+      <div class="lang" aria-label="Lingua"><a href="../getting-started.html" lang="en">EN</a><a href="../fr/getting-started.html" lang="fr">FR</a><a href="../de/getting-started.html" lang="de">DE</a><a class="active" href="./getting-started.html">IT</a><a href="../ar/getting-started.html" lang="ar">AR</a></div>
+    </header>
+
+    <article class="article">
+      <h1>Primi passi</h1>
+      <p>
+        Cliavo è una piattaforma completa di gestione dell'attività per studi legali. Ogni studio
+        dispone di uno spazio di lavoro isolato con la propria identità visiva, il proprio team, i propri
+        clienti, le proprie pratiche, la propria fatturazione e il proprio sito web pubblico.
+        Questa guida La accompagna dalla creazione di un account fino a uno studio pienamente operativo.
+      </p>
+
+      <h2 id="create-workspace">Creare il Suo spazio di lavoro</h2>
+      <p>Lo spazio di lavoro di uno studio può essere creato in due modi:</p>
+      <ul>
+        <li>
+          <strong>Prova gratuita in autonomia</strong> — clicchi su <em>Inizia la prova gratuita</em> su cliavo.com,
+          inserisca il nome del Suo studio, il Suo nome, la Sua email e una password. Il Suo spazio di lavoro viene
+          creato immediatamente con una <strong>prova di 15 giorni</strong> sul piano iniziale e viene reindirizzato
+          direttamente alla configurazione guidata.
+        </li>
+        <li>
+          <strong>Attivato da Cliavo</strong> — il nostro team crea lo studio per Lei e invia al titolare
+          un'email con le credenziali e una <strong>password temporanea</strong>. Al primo accesso Le viene
+          chiesto di impostare la Sua password personale prima di continuare.
+        </li>
+      </ul>
+
+      <h2 id="onboarding">La procedura guidata di configurazione</h2>
+      <p>Dopo la registrazione completa una breve procedura guidata. Tutto può essere modificato in seguito nelle Impostazioni.</p>
+      <ul>
+        <li><strong>1 · Profilo dello studio</strong> — ragione sociale, indirizzo, email di contatto, telefono e numero IVA/IDI. Questi dati compaiono sulle Sue fatture.</li>
+        <li><strong>2 · Identità visiva</strong> — carichi il Suo logo e scelga i colori primario e secondario del Suo marchio. Definiscono lo stile del Suo spazio di lavoro, del portale clienti e del sito web pubblico.</li>
+        <li><strong>3 · Valuta e imposte</strong> — la valuta di fatturazione predefinita per le nuove fatture e i pacchetti (CHF, EUR, USD, GBP, AED, SAR e altre) e la Sua aliquota IVA predefinita (lo standard svizzero è 8,1%).</li>
+        <li><strong>4 · Sottodominio</strong> — scelga l'indirizzo del Suo studio, ad es. <code>yourfirm.cliavo.com</code>. Avvocati e clienti accedono da lì, e il Suo sito pubblico è raggiungibile immediatamente anche all'indirizzo <code>cliavo.com/site/yourfirm</code>, senza bisogno di DNS. Un dominio personalizzato (ad es. <code>portal.yourfirm.ch</code>) può essere collegato in seguito in <a href="./settings.html#domains">Impostazioni → Spazio di lavoro</a>.</li>
+      </ul>
+
+      <h2 id="sign-in">Accedere</h2>
+      <ul>
+        <li>I membri dello studio e i clienti accedono con <strong>email + password</strong> all'indirizzo <code>/login</code> (o sul sottodominio del Suo studio).</li>
+        <li>Se l'<a href="./security.html#two-factor">autenticazione a due fattori</a> è attivata, dopo la password deve inserire un codice a 6 cifre generato dall'app di autenticazione.</li>
+        <li>Se il Suo account è stato creato con una password temporanea, Le viene chiesto di impostarne una nuova prima di poter continuare. Non è necessario reinserire la password temporanea.</li>
+        <li>Gli operatori della piattaforma (personale Cliavo) utilizzano un accesso separato all'indirizzo <code>/platform/login</code>; gli account superadmin non possono mai entrare nello spazio di lavoro di uno studio tramite l'accesso normale.</li>
+      </ul>
+
+      <h2 id="first-steps">Primi passi consigliati</h2>
+      <ul>
+        <li><strong>Inviti il Suo team</strong> da Impostazioni → Team: sub-amministratori, avvocati e assistenti ricevono ciascuno un invito via email. Consulti <a href="./team-roles.html">Team e ruoli</a>.</li>
+        <li><strong>Aggiunga le coordinate bancarie</strong> (IBAN o QR-IBAN più indirizzo del creditore) nelle Impostazioni, affinché le QR-fatture svizzere possano essere generate sulle fatture.</li>
+        <li><strong>Imposti la Sua tariffa oraria</strong> nei Rapporti ore, in modo che il tempo registrato venga valorizzato correttamente.</li>
+        <li><strong>Crei il Suo primo cliente e la Sua prima pratica</strong> — consulti <a href="./clients-crm.html">Clienti e CRM</a> e <a href="./cases-clients.html">Pratiche e mandati</a>.</li>
+        <li><strong>Pubblichi il Suo sito web</strong> — scelga un modello nel CMS e vada online in pochi minuti. Consulti <a href="./website-leads.html">Sito web (CMS)</a>.</li>
+      </ul>
+
+      <h2 id="languages">Lingue</h2>
+      <p>
+        L'interfaccia è disponibile in <strong>inglese, francese, tedesco, italiano e arabo</strong> (con
+        layout completo da destra a sinistra per l'arabo). Ogni utente sceglie la propria lingua dal
+        selettore di lingua; anche le email di invito possono essere inviate nella lingua del destinatario.
+        Gli amministratori della piattaforma stabiliscono quali lingue sono attivate.
+      </p>
+
+      <h2 id="trial-plans">Prova, piani e account</h2>
+      <ul>
+        <li>Il banner della prova mostra i giorni rimanenti. Al termine della prova, lo spazio di lavoro viene bloccato (accesso in sola lettura ad account e assistenza) finché non viene attivato un piano.</li>
+        <li>Alla voce <strong>Account</strong> può consultare il piano attuale, il prezzo e il ciclo di fatturazione, ed effettuare l'upgrade in qualsiasi momento.</li>
+        <li>Se il Suo studio è sospeso o il pagamento è in ritardo, gli amministratori mantengono l'accesso ad Account, Assistenza e all'acquisto del piano, in modo da poter ripristinare il servizio.</li>
+      </ul>
+
+      <h2 id="mobile">App mobile</h2>
+      <p>
+        Cliavo dispone di un'app mobile complementare (iOS e Android) per avvocati e clienti: cruscotti,
+        pratiche, fatture e scansione di documenti con la fotocamera. L'accesso avviene tramite
+        <code>https://cliavo.com</code> con la stessa email e la stessa password.
+      </p>
+    </article>
+
+    <footer class="footer"><a href="./index.html">← Centro assistenza</a> · support@cliavo.com</footer>
+  </div>
+  <script src="../search.js" defer></script>
+</body>
+</html>

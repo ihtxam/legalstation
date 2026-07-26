@@ -1,0 +1,578 @@
+[
+ {
+  "page": "Agenda & Kalender",
+  "title": "Agenda & Kalender",
+  "url": "./agenda-calendar.html",
+  "text": "Agenda & Kalender Eine Agenda für alles mit Datum: Mandatsfristen, fällige Aufgaben, Klientenbesprechungen und Erinnerungen, Ihre eigenen persönlichen Termine — und, wenn Sie einen externen Kalender verbinden, auch Ihre Termine aus Google / Outlook / iCloud."
+ },
+ {
+  "page": "Agenda & Kalender",
+  "title": "Was in Ihrer Agenda erscheint",
+  "url": "./agenda-calendar.html#agenda",
+  "text": "Mandatsfristen — aus dem Fristfeld der Mandate. Fälligkeitsdaten von Aufgaben — Ihnen zugewiesene Mandatsaufgaben. Klientenaktivitäten — Besprechungen, To-dos und Erinnerungen mit Datum. Persönliche Termine — direkt im Kalender erstellt, mit Titel, Ort, Beginn/Ende oder ganztägig. Importierte Termine — aus verbundenen externen Kalendern übernommen."
+ },
+ {
+  "page": "Agenda & Kalender",
+  "title": "Externe Kalender verbinden",
+  "url": "./agenda-calendar.html#providers",
+  "text": "Jeder Benutzer kann unter Kalender → Verbindungen seine eigenen Kalender verbinden: Anbieter So wird verbunden Google Calendar OAuth — mit Google anmelden und Kalenderzugriff gewähren. Microsoft / Outlook OAuth — Microsoft-365- oder Outlook.com-Konto. Apple iCloud CalDAV mit Ihrer Apple-ID und einem app-spezifischen Passwort (erstellen Sie eines auf appleid.apple.com)."
+ },
+ {
+  "page": "Agenda & Kalender",
+  "title": "Bidirektionale Synchronisierung",
+  "url": "./agenda-calendar.html#sync",
+  "text": "Wählen Sie die Synchronisierungsrichtung pro Verbindung: beide Richtungen , nur senden (Cliavo → extern) oder nur empfangen (extern → Cliavo). Cliavo überträgt Fristen, Besprechungen und persönliche Termine in den externen Kalender und importiert externe Termine, sodass Ihre Agenda die tatsächliche Verfügbarkeit zeigt. Die Synchronisierung läuft nach Zeitplan und kann mit Jetzt synchronisieren manuell angestossen werden. Die Verbindung zeigt den Zeitpunkt der letzten Synchronisierung und allfällige Fehler. Zugriffstoken werden verschlüsselt gespeichert; das Trennen der Verbindung entfernt sie "
+ },
+ {
+  "page": "Abrechnung & Rechnungen",
+  "title": "Abrechnung & Rechnungen",
+  "url": "./billing.html",
+  "text": "Abrechnung & Rechnungen Erstellen Sie Rechnungen manuell oder aus erfasster Zeit, rechnen Sie in der Währung Ihres Klienten ab, fügen Sie Schweizer QR-Zahlteile hinzu, teilen Sie grosse Beträge in Ratenpläne auf und verfolgen Sie jede Rechnung vom Entwurf bis zur Bezahlung."
+ },
+ {
+  "page": "Abrechnung & Rechnungen",
+  "title": "Eine Rechnung erstellen",
+  "url": "./billing.html#creating",
+  "text": "Wählen Sie den Klienten (und optional das Mandat), ein Fälligkeitsdatum und den MwSt.-Satz (Ihr Kanzlei-Standard ist vorausgefüllt). Fügen Sie Positionen hinzu — jeweils mit Beschreibung, Abrechnungsart Stundensatz oder Pauschale , Menge und Einzelpreis. Summen und MwSt. werden automatisch berechnet. Rechnungen aus Zeiteinträgen kommen mit einer Zeile pro Eintrag an und lassen sich direkt anpassen. Rechnungen erhalten eine fortlaufende Nummer und können im Entwurfsstatus bearbeitet werden."
+ },
+ {
+  "page": "Abrechnung & Rechnungen",
+  "title": "Rechnungsstatus",
+  "url": "./billing.html#statuses",
+  "text": "Status Bedeutung Entwurf In Vorbereitung; bearbeitbar. Versendet An den Klienten ausgestellt (in dessen Portal sichtbar). Bezahlt Zahlung vollständig eingegangen. Überfällig Fälligkeitsdatum ohne Zahlung überschritten. Storniert Annulliert."
+ },
+ {
+  "page": "Abrechnung & Rechnungen",
+  "title": "Abrechnung in mehreren Währungen",
+  "url": "./billing.html#currencies",
+  "text": "Ihre Kanzlei hat eine Standardwährung (gewählt bei der Einrichtung oder in den Einstellungen), und jede Rechnung trägt ihre eigene Währung. Die Plattform unterstützt CHF, EUR, USD, GBP, AED, SAR, QAR, KWD, BHD, OMR und JOD (die Verfügbarkeit wird plattformweit gesteuert). Beträge werden stets mit dem richtigen Symbol und den korrekten Dezimalregeln der jeweiligen Währung formatiert."
+ },
+ {
+  "page": "Abrechnung & Rechnungen",
+  "title": "Schweizer QR-Rechnungen",
+  "url": "./billing.html#qr-bill",
+  "text": "Hinterlegen Sie Ihre IBAN oder QR-IBAN und die Gläubigeradresse (Strasse, Nummer, Postleitzahl, Ort, Land) in den Einstellungen. Rechnungs-PDFs enthalten dann einen konformen Schweizer QR-Zahlteil , den Klienten in ihrem E-Banking scannen können. QR-Rechnungen werden nur für CHF- und EUR -Rechnungen erzeugt (der Schweizer Standard lässt keine anderen Währungen zu); bei anderen Währungen entfällt der QR-Teil einfach. Ratenrechnungen enthalten einen QR-Teil pro Ratenbetrag."
+ },
+ {
+  "page": "Abrechnung & Rechnungen",
+  "title": "Zahlungspläne (Raten)",
+  "url": "./billing.html#payment-plans",
+  "text": "Teilen Sie eine grosse Rechnung in einen Zahlungsplan auf, den sich der Klient leisten kann: Wählen Sie die Anzahl der Raten (bis zu 12), das Intervall und den Betrag pro Rate. Cliavo kann automatisch eine Rechnung pro Rate erzeugen , sobald sie fällig wird, und sie optional automatisch per E-Mail an den Klienten senden (ein täglich geplanter Auftrag übernimmt das). Markieren Sie Raten als bezahlt, sobald das Geld eingeht; der Plan zeigt eine Zeitleiste dessen, was bezahlt, fällig und bevorstehend ist."
+ },
+ {
+  "page": "Abrechnung & Rechnungen",
+  "title": "Rechnungs-PDFs & Versand",
+  "url": "./billing.html#pdf",
+  "text": "Jede Rechnung hat ein druckfertiges PDF (Kanzlei-Logo, Adresse, Positionen, MwSt.-Aufstellung und gegebenenfalls der QR-Teil). Rechnungen können per E-Mail an Klienten gesendet werden, und Klienten sehen sie ausserdem in ihrem Portal ."
+ },
+ {
+  "page": "Abrechnung & Rechnungen",
+  "title": "Online-Zahlungen",
+  "url": "./billing.html#online-payments",
+  "text": "Verbinden Sie Stripe oder Adyen (Einstellungen → Zahlungen), damit Klienten Dienstleistungsbestellungen und Rechnungen online bezahlen können. Kanzleien können ihr eigenes Adyen-Händlerkonto mitbringen — inklusive HMAC-verifizierter Webhooks — oder Zugangsdaten auf Plattformebene nutzen. Ohne Zahlungsanbieter können Bestellungen jederzeit manuell als bezahlt markiert werden. Siehe Einstellungen → Zahlungen ."
+ },
+ {
+  "page": "Abrechnung & Rechnungen",
+  "title": "Umsatzübersicht",
+  "url": "./billing.html#dashboard",
+  "text": "Das Dashboard zeigt offene, überfällige und eingezogene Beträge in Ihrer Kanzleiwährung, und die Admin-Analysen schlüsseln den Umsatz über die Zeit auf, damit Sie Trends erkennen."
+ },
+ {
+  "page": "Mandate & Fälle",
+  "title": "Mandate & Fälle",
+  "url": "./cases-clients.html",
+  "text": "Mandate & Fälle Mandate sind das Herzstück von Cliavo: Jedes Mandat bündelt seine Klienten, zugewiesenen Anwälte, Dokumente, Notizen, Aufgaben, Zeiteinträge, Nachrichten und Fristen an einem Ort."
+ },
+ {
+  "page": "Mandate & Fälle",
+  "title": "Ein Mandat anlegen",
+  "url": "./cases-clients.html#creating",
+  "text": "Titel und eine optionale interne Referenznummer . Typ — Zivilrecht, Strafrecht, Gesellschaftsrecht, Familienrecht, Immobilienrecht, Arbeitsrecht, Steuerrecht, Migrationsrecht, Immaterialgüterrecht oder Sonstiges. Status — offen, pendent, abgeschlossen oder archiviert. Optional: Beschreibung , Gerichtsname , Gerichtsaktenzeichen und eine Frist (Fristen erscheinen in Ihrer Agenda ). Fügen Sie sofort einen oder mehrere Klienten hinzu und weisen Sie Anwälte zu — oder später von der Mandatsseite aus."
+ },
+ {
+  "page": "Mandate & Fälle",
+  "title": "Klienten und Anwälte auf einem Mandat",
+  "url": "./cases-clients.html#assignments",
+  "text": "Ein Mandat kann mehrere Klienten und mehrere Anwälte haben. Nutzen Sie auf der Mandats-Detailseite Klient zuweisen (bestehenden Klienten wählen oder direkt einen neuen anlegen) und Anwalt zuweisen . Anwälte sehen die ihnen zugewiesenen Mandate; Admins und Sub-Admins sehen alle Mandate der Kanzlei. Jede Zuweisung wird in der Mandats-Zeitleiste festgehalten."
+ },
+ {
+  "page": "Mandate & Fälle",
+  "title": "Mandatsphasen (Workflow-Board)",
+  "url": "./cases-clients.html#stages",
+  "text": "Kanzleien können eigene Mandatsphasen definieren — z. B. Aufnahme → Recherche → Entwurf → Gericht → Abgeschlossen — jeweils mit Name, Farbe und Reihenfolge. Mandate durchlaufen die Phasen, sodass Sie auf einen Blick sehen, wo jedes Mandat steht. Als Abschlussphasen markierte Phasen zeigen an, dass das Mandat beendet ist. Verwalten Sie die Phasen über das Mandats-Board; per Ziehen ändern Sie die Reihenfolge."
+ },
+ {
+  "page": "Mandate & Fälle",
+  "title": "Aufgaben & Teilaufgaben",
+  "url": "./cases-clients.html#tasks",
+  "text": "Erstellen Sie Aufgaben auf einem Mandat mit Titel, Beschreibung, zuständiger Person und Fälligkeitsdatum . Aufgaben unterstützen Teilaufgaben (übergeordnet/untergeordnet), @Erwähnungen und manuelle Sortierung. Status: zu erledigen → in Bearbeitung → erledigt (oder abgebrochen ). Abgeschlossene Aufgaben behalten ihren Abschlusszeitpunkt. Aufgaben können mit einer Mandatsphase verknüpft werden, damit die Phasen-Boards offene Arbeiten anzeigen."
+ },
+ {
+  "page": "Mandate & Fälle",
+  "title": "Notizen & Mandats-Zeitleiste",
+  "url": "./cases-clients.html#notes",
+  "text": "Mandatsnotizen haben einen Titel, einen formatierten Textkörper und eine Sichtbarkeits -Einstellung: intern (nur Team) oder geteilt (für den Klienten im Portal sichtbar). Die Mandats-Zeitleiste (Ereignisse) hält alles fest, was passiert: Erstellung, Zuweisungen, Uploads, Notizen, Statusänderungen — ein vollständiger Prüfpfad pro Mandat."
+ },
+ {
+  "page": "Mandate & Fälle",
+  "title": "Aufnahmeformulare für Klienten",
+  "url": "./cases-clients.html#intake",
+  "text": "Bei Mandaten, die aus Abonnement-Paketen oder On-Demand-Dienstleistungen entstehen, füllen die Klienten ein strukturiertes Aufnahmeformular aus: was passiert ist, wann, wie, ihre Beteiligung, das gewünschte Ergebnis und eine Vertraulichkeitsstufe (Standard, sensibel, privat). Die Eingabe wird dem Mandat beigefügt, sodass der zugewiesene Anwalt mit vollem Kontext startet."
+ },
+ {
+  "page": "Mandate & Fälle",
+  "title": "Mandate aus Bestellungen und Streitfällen",
+  "url": "./cases-clients.html#litige",
+  "text": "Bestellungen von On-Demand-Dienstleistungen können bei Annahme automatisch in Mandate umgewandelt werden — dabei werden der Klient, der Standard-Mandatstyp der Dienstleistungsart und die Angaben des Klienten übernommen. Siehe der Bestellablauf . Tipp: Nutzen Sie den globalen Timer , während Sie an einem Mandat arbeiten — er begleitet Sie über alle Seiten hinweg und bucht die erfasste Zeit direkt auf das Mandat. Siehe Zeiterfassung ."
+ },
+ {
+  "page": "Klientenportal",
+  "title": "Klientenportal",
+  "url": "./client-portal.html",
+  "text": "Klientenportal Das Klientenportal ist die eigene, sichere Sicht Ihrer Klienten auf die Kanzlei: ihre Mandate, Rechnungen, Dokumente, Nachrichten, ihr Abonnement und ihre Dienstleistungsbestellungen — gebrandet mit Ihrem Logo und Ihren Farben, verfügbar in fünf Sprachen."
+ },
+ {
+  "page": "Klientenportal",
+  "title": "Wie Klienten Zugang erhalten",
+  "url": "./client-portal.html#access",
+  "text": "Einladung durch die Kanzlei — senden Sie eine Klienteneinladung (Einstellungen → Team oder Klientenseite). Die Einladungs-E-Mail verlinkt auf eine Registrierungsseite, auf der der Klient Namen und Passwort festlegt. Selbstregistrierung über Pakete — Besucher, die auf Ihrer Website ein Paket abonnieren, erhalten automatisch ein Portalkonto. Klienten melden sich unter Ihrer Kanzlei-Login-URL mit E-Mail + Passwort an und können wie jeder Benutzer 2FA aktivieren."
+ },
+ {
+  "page": "Klientenportal",
+  "title": "Was Klienten sehen",
+  "url": "./client-portal.html#what-they-see",
+  "text": "Dashboard — aktive Mandate, offene Rechnungen und aktuelle Aktivitäten auf einen Blick. Mandate — nur die Mandate, denen sie zugeordnet sind, mit geteilten Notizen, Status und der Mandats-Zeitleiste. Dokumente — Dateien auf ihren Mandaten; sie können selbst Dokumente hochladen (z. B. als Antwort auf eine Dokumentenanforderung ). Nachrichten — der sichere Nachrichtenverlauf pro Mandat, statt E-Mail-Hin-und-her. Rechnungen — ausgestellte Rechnungen mit Beträgen, Fälligkeitsdaten, Status und PDF-Download (gegebenenfalls mit Schweizer QR-Teil). Abonnement — ihr Paket, die in dieser Periode genutzt"
+ },
+ {
+  "page": "Klientenportal",
+  "title": "Was Klienten niemals sehen können",
+  "url": "./client-portal.html#isolation",
+  "text": "Mandate, Rechnungen oder Dokumente anderer Klienten — der Zugriff ist strikt auf die eigenen Datensätze beschränkt. Interne Mandatsnotizen (nur als geteilt markierte Notizen sind sichtbar). Die Zeiteinträge, Stundensätze oder internen Aufgaben Ihres Teams."
+ },
+ {
+  "page": "Klientenportal",
+  "title": "Auf dem Smartphone",
+  "url": "./client-portal.html#mobile-portal",
+  "text": "Die mobile Cliavo-App hat einen Klientenmodus mit demselben Umfang: Mandate, Rechnungen, Dokumente (inklusive Kamera-Scan) und Nachrichten. Tipp: Das Portal läuft unter Ihrer Kanzlei-URL — your-slug.cliavo.com oder Ihre eigene Domain — Ihre Klienten sehen also immer Ihre Marke, nicht unsere."
+ },
+ {
+  "page": "Klienten & CRM",
+  "title": "Klienten & CRM",
+  "url": "./clients-crm.html",
+  "text": "Klienten & CRM Der Bereich Klienten ist das Adressbuch und leichtgewichtige CRM Ihrer Kanzlei: jede Person oder Firma, für die Sie arbeiten, ihre Kontaktdaten, ihre Mandate, Rechnungen, Aktivitäten und der Portalzugang."
+ },
+ {
+  "page": "Klienten & CRM",
+  "title": "Privat- und Firmenklienten",
+  "url": "./clients-crm.html#client-types",
+  "text": "Privatpersonen — Vor-/Nachname, Geburtsdatum und Kontaktdaten. Ein Vor- oder Nachname ist erforderlich. Firmen — Firmenname (erforderlich), Handelsregisternummer und eine Kontaktperson. Beide Typen teilen sich E-Mail, Telefon, vollständige Adresse (Strasse, Ort, Postleitzahl, Land) und Freitextnotizen. Klienten haben einen Status : eingeladen (angelegt, aber noch ohne Portalkonto), aktiv oder inaktiv . Admins, Sub-Admins und Anwälte können Klienten anlegen; die Klientenliste ist durchsuchbar, und jeder Klient hat eine Detailseite mit einem integrierten Bearbeiten -Formular."
+ },
+ {
+  "page": "Klienten & CRM",
+  "title": "Klienten dort anlegen, wo Sie sie brauchen",
+  "url": "./clients-crm.html#create-anywhere",
+  "text": "Neben der Klienten-Seite können Sie einen Klienten auch direkt über den Dialog Klient zuweisen innerhalb eines Mandats anlegen — stellen Sie den Umschalter von Bestehender Klient auf Klient anlegen , füllen Sie das kurze Formular aus, und der neue Klient wird in einem Schritt erstellt und dem Mandat zugewiesen."
+ },
+ {
+  "page": "Klienten & CRM",
+  "title": "Aktivitäten, Notizen & Erinnerungen",
+  "url": "./clients-crm.html#activities",
+  "text": "Jeder Klient hat eine Aktivitäten-Zeitleiste für die tägliche Beziehungspflege: Notizen — Besprechungszusammenfassungen oder alles, was festgehalten werden sollte. Besprechungen — mit Datum, damit sie in Ihrer Agenda erscheinen. To-dos und nächste Schritte — einem Teammitglied zuweisbar, mit Fälligkeitsdatum. Erinnerungen — wählen Sie einen Erinnerungszeitpunkt, um an Follow-ups erinnert zu werden. Sie können Teamkollegen per @Erwähnung einbinden und Einträge nach Erledigung als abgeschlossen markieren."
+ },
+ {
+  "page": "Klienten & CRM",
+  "title": "Leads-Pipeline",
+  "url": "./clients-crm.html#leads",
+  "text": "Der CRM-Bereich umfasst eine Leads-Pipeline für potenzielle Klienten, die (noch) keine Klienten sind. Jeder Lead hat einen Kontaktnamen, E-Mail, Telefon, Firma, Quelle, Notizen und ein zugewiesenes Teammitglied und durchläuft folgende Phasen: Phase Bedeutung Neu Gerade eingegangen (z. B. über das Kontaktformular Ihrer Website). Kontaktiert Sie haben Kontakt aufgenommen. Qualifiziert Echtes Potenzial — es lohnt sich, dranzubleiben. Beratung Ein Erstgespräch ist gebucht oder hat stattgefunden. Offerte Sie haben einen Mandatsvorschlag oder eine Offerte gesendet. Gewonnen / Verloren Ergebnis der B"
+ },
+ {
+  "page": "Klienten & CRM",
+  "title": "Klienten Portalzugang gewähren",
+  "url": "./clients-crm.html#portal-access",
+  "text": "Klienten können ihren eigenen Login für das Klientenportal erhalten. Senden Sie über Einstellungen → Team (oder die Klientenseite) eine Klienteneinladung , die mit dem Klientendatensatz verknüpft ist; die Klienten legen ihr eigenes Passwort fest und sehen nur ihre eigenen Mandate, Rechnungen und Dokumente. Siehe Einladungen . Tipp: Abonnement-Klienten (siehe Pakete ) können sich selbst über Ihre öffentliche Website registrieren — der Klientendatensatz und das Portalkonto werden automatisch erstellt."
+ },
+ {
+  "page": "Dokumente & Nachrichten",
+  "title": "Dokumente & Nachrichten",
+  "url": "./documents-messages.html",
+  "text": "Dokumente & Nachrichten Bewahren Sie jede Rechtsschrift, jeden Vertrag und jedes Beweisstück beim zugehörigen Mandat auf, fordern Sie Dokumente mit Frist von Klienten an und kommunizieren Sie über sichere Mandatsnachrichten statt über E-Mail-Verläufe."
+ },
+ {
+  "page": "Dokumente & Nachrichten",
+  "title": "Dokumente hochladen",
+  "url": "./documents-messages.html#uploading",
+  "text": "Laden Sie Dateien auf der Mandatsseite hoch (oder lassen Sie Klienten über das Portal / den Kamera-Scan der mobilen App hochladen). Jedes Dokument speichert Dateiname, Typ, Grösse, eine optionale Beschreibung und wer es hochgeladen hat. Dokumente können pro Mandat in Ordnern organisiert werden. Downloads werden über authentifizierte Links ausgeliefert — keine öffentlichen URLs."
+ },
+ {
+  "page": "Dokumente & Nachrichten",
+  "title": "Upload-Regeln & Kontingente",
+  "url": "./documents-messages.html#policy",
+  "text": "Kanzleien haben ein Upload-Grössenlimit pro Datei und eine Liste zugelassener Dateitypen (z. B. PDF, Word, Bilder) — siehe Einstellungen → Upload-Richtlinie . Jede Kanzlei hat zudem ein Gesamt- Speicherkontingent ; Uploads über das Kontingent hinaus werden mit einer klaren Meldung abgelehnt. Kontingente werden pro Plan festgelegt und können von Cliavo angepasst werden. Anhänge in Support-Tickets haben ihr eigenes kompaktes Limit (1&nbsp;MB pro Datei) und zählen nicht zum Kanzleispeicher."
+ },
+ {
+  "page": "Dokumente & Nachrichten",
+  "title": "Dokumentenanforderungen",
+  "url": "./documents-messages.html#requests",
+  "text": "Schluss mit dem Nachfassen per E-Mail — fordern Sie genau an, was Sie brauchen: Erstellen Sie eine Anforderung auf einem Mandat mit Titel, Beschreibung und Fälligkeitsdatum (z. B. «Unterzeichnete Vollmacht»). Der Klient sieht die Anforderung in seinem Portal und lädt die Datei direkt dazu hoch. Die Anforderung wird als erfüllt markiert, mit einem Link zum hochgeladenen Dokument, oder kann storniert werden, wenn sie nicht mehr benötigt wird."
+ },
+ {
+  "page": "Dokumente & Nachrichten",
+  "title": "Mandatsnachrichten",
+  "url": "./documents-messages.html#messaging",
+  "text": "Jedes Mandat hat einen privaten Nachrichtenverlauf zwischen der Kanzlei und dem/den Klienten dieses Mandats. Klienten schreiben aus ihrem Portal; Anwälte antworten von der Mandatsseite aus. Antworten unterstützen Threads. Ungelesen-Zähler in der Seitenleiste zeigen, wo etwas auf Sie wartet, und Nachrichten können als gelesen markiert werden. Nachrichten bleiben dauerhaft mit dem Mandat verknüpft — eine saubere, nachvollziehbare Aufzeichnung der Klientenkommunikation."
+ },
+ {
+  "page": "Dokumente & Nachrichten",
+  "title": "Dokumenten-Intelligenz",
+  "url": "./documents-messages.html#analysis",
+  "text": "Wo KI-Funktionen aktiviert sind, können hochgeladene Dokumente analysiert werden, um Zusammenfassungen und Kernfakten zu extrahieren und die Durchsicht zu beschleunigen. Wenden Sie sich an den Cliavo-Support, wenn Sie dies für Ihre Kanzlei aktivieren möchten."
+ },
+ {
+  "page": "Erste Schritte",
+  "title": "Erste Schritte",
+  "url": "./getting-started.html",
+  "text": "Erste Schritte Cliavo ist eine vollständige Praxisverwaltungs-Plattform für Kanzleien. Jede Kanzlei erhält ihren eigenen, isolierten Arbeitsbereich mit eigenem Branding, Team, Klienten, Mandaten, Rechnungsstellung und öffentlicher Website. Diese Anleitung begleitet Sie von der Kontoerstellung bis zur voll funktionsfähigen Kanzlei."
+ },
+ {
+  "page": "Erste Schritte",
+  "title": "Ihren Arbeitsbereich erstellen",
+  "url": "./getting-started.html#create-workspace",
+  "text": "Ein Kanzlei-Arbeitsbereich kann auf zwei Arten erstellt werden: Selbstständige Testphase — klicken Sie auf Kostenlos testen auf cliavo.com und geben Sie den Namen Ihrer Kanzlei, Ihren Namen, Ihre E-Mail-Adresse und ein Passwort ein. Ihr Arbeitsbereich wird sofort mit einer 15-tägigen Testphase im Starter-Plan erstellt, und Sie gelangen direkt zur Einrichtung. Bereitstellung durch Cliavo — unser Team erstellt die Kanzlei für Sie und sendet dem Inhaber eine E-Mail mit den Zugangsdaten und einem temporären Passwort . Bei der ersten Anmeldung werden Sie aufgefordert, ein eigenes Passwort festzuleg"
+ },
+ {
+  "page": "Erste Schritte",
+  "title": "Der Einrichtungsassistent",
+  "url": "./getting-started.html#onboarding",
+  "text": "Nach der Registrierung durchlaufen Sie einen kurzen Assistenten. Alles kann später in den Einstellungen geändert werden. 1 · Kanzleiprofil — juristischer Name, Adresse, Kontakt-E-Mail, Telefon und MwSt.-/UID-Nummer. Diese Angaben erscheinen auf Ihren Rechnungen. 2 · Branding — laden Sie Ihr Logo hoch und wählen Sie Ihre primäre und sekundäre Markenfarbe. Sie gestalten Ihren Arbeitsbereich, das Klientenportal und die öffentliche Website. 3 · Währung & Steuer — die Standard-Abrechnungswährung für neue Rechnungen und Pakete (CHF, EUR, USD, GBP, AED, SAR und weitere) sowie Ihr Standard-MwSt.-Satz "
+ },
+ {
+  "page": "Erste Schritte",
+  "title": "Anmeldung",
+  "url": "./getting-started.html#sign-in",
+  "text": "Kanzleimitglieder und Klienten melden sich mit E-Mail + Passwort unter /login (oder Ihrer Kanzlei-Subdomain) an. Wenn die Zwei-Faktor-Authentifizierung aktiviert ist, geben Sie nach dem Passwort einen 6-stelligen Authenticator-Code ein. Wurde Ihr Konto mit einem temporären Passwort erstellt, werden Sie aufgefordert, ein neues festzulegen, bevor Sie fortfahren können. Das temporäre Passwort müssen Sie nicht erneut eingeben. Plattform-Betreiber (Cliavo-Mitarbeitende) nutzen einen separaten Login unter /platform/login ; Superadmin-Konten können niemals über den normalen Login in einen Kanzlei-Arb"
+ },
+ {
+  "page": "Erste Schritte",
+  "title": "Empfohlene erste Schritte",
+  "url": "./getting-started.html#first-steps",
+  "text": "Laden Sie Ihr Team ein unter Einstellungen → Team: Sub-Admins, Anwälte und Assistenten erhalten jeweils eine E-Mail-Einladung. Siehe Team & Rollen . Hinterlegen Sie Ihre Bankverbindung (IBAN oder QR-IBAN plus Gläubigeradresse) in den Einstellungen, damit auf Rechnungen Schweizer QR-Rechnungen erzeugt werden können. Legen Sie Ihren Stundensatz fest in der Zeiterfassung, damit erfasste Zeit korrekt bewertet wird. Erstellen Sie Ihren ersten Klienten und Ihr erstes Mandat — siehe Klienten & CRM und Mandate & Fälle . Veröffentlichen Sie Ihre Website — wählen Sie eine Vorlage im CMS und gehen Sie in"
+ },
+ {
+  "page": "Erste Schritte",
+  "title": "Sprachen",
+  "url": "./getting-started.html#languages",
+  "text": "Die Oberfläche ist in Englisch, Französisch, Deutsch, Italienisch und Arabisch verfügbar (mit vollständigem Rechts-nach-links-Layout für Arabisch). Jeder Benutzer wählt seine eigene Sprache über den Sprachumschalter; Einladungs-E-Mails können ebenfalls in der Sprache des Empfängers versendet werden. Plattform-Administratoren steuern, welche Sprachen aktiviert sind."
+ },
+ {
+  "page": "Erste Schritte",
+  "title": "Testphase, Pläne & Konto",
+  "url": "./getting-started.html#trial-plans",
+  "text": "Das Testphasen-Banner zeigt die verbleibenden Tage an. Nach Ablauf der Testphase wird der Arbeitsbereich gesperrt (nur Lesezugriff auf Konto und Support), bis ein Plan aktiviert wird. Unter Konto sehen Sie Ihren aktuellen Plan, den Preis und den Abrechnungszyklus und können jederzeit upgraden. Ist Ihre Kanzlei gesperrt oder eine Zahlung überfällig, behalten Admins Zugriff auf Konto, Support und den Plan-Checkout, um den Dienst wiederherzustellen."
+ },
+ {
+  "page": "Erste Schritte",
+  "title": "Mobile App",
+  "url": "./getting-started.html#mobile",
+  "text": "Cliavo bietet eine begleitende mobile App (iOS und Android) für Anwälte und Klienten: Dashboards, Mandate, Rechnungen und das Scannen von Dokumenten mit der Kamera. Die Anmeldung erfolgt gegen https://cliavo.com mit derselben E-Mail-Adresse und demselben Passwort."
+ },
+ {
+  "page": "Alles rund um Ihren Cliavo-Arbeitsbereich",
+  "title": "Alles rund um Ihren Cliavo-Arbeitsbereich",
+  "url": "./index.html",
+  "text": "Cliavo Hilfe-Center Cliavo Hilfe-Center support@cliavo.com EN FR DE IT AR Alles rund um Ihren Cliavo-Arbeitsbereich Ausführliche Anleitungen zu jeder Funktion — von der ersten Anmeldung über die Führung von Mandaten, die Zeiterfassung, die Rechnungsstellung mit Schweizer QR-Rechnungen und die Veröffentlichung Ihrer Kanzlei-Website bis zum Verkauf von Paketen und On-Demand-Dienstleistungen. Nutzen "
+ },
+ {
+  "page": "Pakete & Dienstleistungen (Upselling)",
+  "title": "Pakete & Dienstleistungen (Upselling)",
+  "url": "./packages-services.html",
+  "text": "Pakete & Dienstleistungen (Upselling) Unter Upselling finden sich zwei Werkzeuge für wiederkehrende Umsätze: Abonnement- Pakete (Rechtsschutz-Pläne mit monatlicher/jährlicher Abrechnung) und ein Katalog von On-Demand-Dienstleistungen (juristische Produkte zum Festpreis mit vollständigem Bestell-Workflow)."
+ },
+ {
+  "page": "Pakete & Dienstleistungen (Upselling)",
+  "title": "Abonnement-Pakete",
+  "url": "./packages-services.html#packages",
+  "text": "Jedes Paket hat einen Namen, eine Beschreibung, eine Funktionsliste und ein Hervorhebungs-Label (z. B. «Am beliebtesten»). Preise pro Intervall : Monats-, 6-Monats- und Jahrespreise, plus eine Mindestlaufzeit (z. B. 12 Monate). Leistungsansprüche : Mandate pro Periode, Beratungsstunden pro Periode und inbegriffene Stunden für Festarbeiten. Schränken Sie ein, welche Mandatstypen ein Paket abdeckt (z. B. nur Arbeits- und Mietrecht). Schalten Sie aktiv (verkäuflich) und öffentlich (auf Ihrer Website sichtbar) getrennt um und ordnen Sie die Pakete per Ziehgriff."
+ },
+ {
+  "page": "Pakete & Dienstleistungen (Upselling)",
+  "title": "Abonnenten",
+  "url": "./packages-services.html#subscribers",
+  "text": "Klienten abonnieren über Ihre öffentliche Website (der Paket-Block verlinkt zur Registrierung) — Klientendatensatz, Portalkonto und Abonnement werden zusammen erstellt. Abonnements verfolgen den Status ( aktiv, zahlungsverzögert, gekündigt, abgelaufen ), die aktuelle Abrechnungsperiode und das Ende der Mindestlaufzeit. Abonnierte Klienten können in ihrem Portal den Plan wechseln ; die Nutzung der Leistungsansprüche (Mandate, Stunden) ist pro Periode sichtbar. Wenn ein Abonnent ein Mandat eröffnet, füllt er ein Aufnahmeformular aus, damit der Anwalt mit Kontext startet."
+ },
+ {
+  "page": "Pakete & Dienstleistungen (Upselling)",
+  "title": "Katalog der On-Demand-Dienstleistungen",
+  "url": "./packages-services.html#services",
+  "text": "Jede Dienstleistung hat einen Namen, eine Beschreibung, eine Kategorie (Beratung, Vertrag, Dokumente, Arbeitsrecht, Gesellschaftsrecht, Sonstiges) und einen festen Preis . Erfüllungsart : Dokument (Sie liefern Dateien) oder Beratung (Sie liefern eine Besprechung). Legen Sie geschätzte Aufwandsstunden, Lieferhinweise und den Standard-Mandatstyp fest, der verwendet wird, wenn aus der Bestellung ein Mandat wird. Wie bei Paketen: Schalter für aktiv/öffentlich und manuelle Sortierung; öffentliche Dienstleistungen erscheinen automatisch im Dienstleistungs-Block der Website."
+ },
+ {
+  "page": "Pakete & Dienstleistungen (Upselling)",
+  "title": "Der Bestellablauf",
+  "url": "./packages-services.html#orders",
+  "text": "Klienten kaufen Dienstleistungen über ihr Portal (oder nach der Registrierung über Ihre Website): Warenkorb & Checkout — der Klient wählt Dienstleistungen aus, fügt pro Position eine Kurzbeschreibung hinzu und schliesst den Kauf ab. Mit verbundenem Stripe/Adyen bezahlt er online; andernfalls kann die Kanzlei die Bestellung manuell als bezahlt markieren. Aufnahme — nach der Zahlung reicht der Klient die Aufnahmebeschreibung ein, damit Ihr Team genau weiss, was benötigt wird. Annahme — die Kanzlei prüft und akzeptiert (optional mit Zuweisung eines Anwalts und Erstellung eines verknüpften Mandats"
+ },
+ {
+  "page": "Pakete & Dienstleistungen (Upselling)",
+  "title": "Währungen",
+  "url": "./packages-services.html#currency",
+  "text": "Pakete und Dienstleistungen werden in der Währung Ihrer Kanzlei bepreist; Bestellungen behalten ihre Währung durchgängig bei. Siehe Abrechnung in mehreren Währungen ."
+ },
+ {
+  "page": "Sicherheit",
+  "title": "Sicherheit",
+  "url": "./security.html",
+  "text": "Sicherheit Kanzleien arbeiten mit vertraulichen Informationen — deshalb ist Sicherheit in jede Ebene eingebaut: starke Authentifizierung, strikte Mandantentrennung, verschlüsselte Übertragung und auditierte Plattform-Vorgänge."
+ },
+ {
+  "page": "Sicherheit",
+  "title": "Passwörter & Anmeldung",
+  "url": "./security.html#passwords",
+  "text": "Passwörter werden als gesalzene scrypt-Hashes gespeichert — niemals im Klartext. Mindestlänge 8 Zeichen; zum Ändern des Passworts ist das aktuelle erforderlich. Konten, die mit einem temporären Passwort bereitgestellt wurden, müssen bei der ersten Anmeldung ein neues Passwort festlegen. Sitzungen sind signierte, HTTP-only-Cookies; Abmelden macht das Sitzungs-Cookie sofort ungültig. Superadmin-Logins (Plattform) sind von Kanzlei-Logins getrennt — ein Superadmin kann die Kanzlei-Oberfläche nicht über den normalen Login betreten und umgekehrt."
+ },
+ {
+  "page": "Sicherheit",
+  "title": "Zwei-Faktor-Authentifizierung (2FA)",
+  "url": "./security.html#two-factor",
+  "text": "Jeder Benutzer kann TOTP-2FA unter Einstellungen → Sicherheit aktivieren: Scannen Sie den QR-Code mit Google Authenticator, 1Password oder einer beliebigen TOTP-App und bestätigen Sie mit einem Code. Nach jeder Passwort-Anmeldung wird ein 6-stelliger Code verlangt. Der 2FA-Status wird bei jeder neuen Anmeldung erneut abgefragt — Codes werden niemals über Anmeldungen hinweg «gemerkt». Zum Deaktivieren von 2FA ist ein gültiger aktueller Code erforderlich."
+ },
+ {
+  "page": "Sicherheit",
+  "title": "Mandantentrennung",
+  "url": "./security.html#isolation",
+  "text": "Jeder Datensatz (Klient, Mandat, Rechnung, Dokument, Nachricht …) ist an Ihre Kanzlei gebunden. Alle Abfragen filtern nach Kanzleizugehörigkeit — eine andere Kanzlei kann Ihre Daten weder lesen noch schreiben. Klienten erreichen über das Portal nur ihre eigenen Datensätze; interne Notizen bleiben intern. Rollenprüfungen gelten serverseitig bei jedem Vorgang — nicht nur als ausgeblendete Schaltflächen in der Oberfläche."
+ },
+ {
+  "page": "Sicherheit",
+  "title": "Verschlüsselung & Infrastruktur",
+  "url": "./security.html#encryption",
+  "text": "Der gesamte Datenverkehr läuft über HTTPS (TLS via Let's Encrypt); HTTP-Anfragen werden umgeleitet. Kalender-OAuth-Token werden verschlüsselt gespeichert (at rest). Das Hosting erfolgt auf Schweizer Infrastruktur (Datenstandort CH) mit der Datenbank in einem privaten Netzwerk, unerreichbar aus dem Internet. Datei-Downloads werden über authentifizierte, pfadgeprüfte Routen ausgeliefert."
+ },
+ {
+  "page": "Sicherheit",
+  "title": "Auditierung & Plattform-Vorgänge",
+  "url": "./security.html#auditing",
+  "text": "Mandats-Zeitleisten halten jede wesentliche Aktion pro Mandat fest. Administrative Aktionen auf Plattformebene (Kanzlei-Erstellung, Planänderungen, Impersonierung, Ankündigungen) werden in ein Superadmin-Audit-Log geschrieben. Support-Impersonierung ist explizit, zeitlich begrenzt, auditiert und während der Aktivität deutlich in der Oberfläche gekennzeichnet."
+ },
+ {
+  "page": "Sicherheit",
+  "title": "Backups & Verfügbarkeit",
+  "url": "./security.html#backups",
+  "text": "Die Produktionsdatenbank läuft mit persistenten Volumes und geplanten Dumps; fragen Sie den Support nach der aktuellen Backup- und Aufbewahrungsrichtlinie für Ihre Umgebung. Eine On-Premise-/Single-Tenant-Bereitstellung mit Offline-Lizenz ist für Kanzleien mit strengen Hosting-Anforderungen verfügbar — kontaktieren Sie Cliavo."
+ },
+ {
+  "page": "Sicherheit",
+  "title": "Ein Sicherheitsproblem melden",
+  "url": "./security.html#reporting",
+  "text": "Etwas gefunden? Schreiben Sie an support@cliavo.com mit «SECURITY» im Betreff. Bitte testen Sie nicht mit den Daten anderer Kanzleien."
+ },
+ {
+  "page": "Einstellungen",
+  "title": "Einstellungen",
+  "url": "./settings.html",
+  "text": "Einstellungen Alles zur Konfiguration Ihrer Kanzlei befindet sich in den Einstellungen. Die meisten Tabs sind nur für Admins; jeder Benutzer hat seine persönlichen Sicherheits- und Spracheinstellungen."
+ },
+ {
+  "page": "Einstellungen",
+  "title": "Kanzleiprofil",
+  "url": "./settings.html#profile",
+  "text": "Juristischer Name, Adresse, Kontakt-E-Mail, Telefon, Website und MwSt.-/UID-Nummer — gedruckt auf Ihren Rechnungen und angezeigt im Kontaktbereich Ihrer öffentlichen Website."
+ },
+ {
+  "page": "Einstellungen",
+  "title": "Branding",
+  "url": "./settings.html#branding",
+  "text": "Laden Sie Ihr Logo hoch (PNG/JPEG/WebP, bis 5&nbsp;MB). Wählen Sie Primär- und Sekundärfarbe — sie gestalten den Arbeitsbereich, das Klientenportal, E-Mails und die öffentliche Website."
+ },
+ {
+  "page": "Einstellungen",
+  "title": "Standardwerte für Währung & MwSt.",
+  "url": "./settings.html#billing-defaults",
+  "text": "Die Standardwährung der Kanzlei wird für neue Rechnungen, Pakete, Dienstleistungen und Satzanzeigen verwendet. Verfügbare Währungen (CHF, EUR, USD, GBP, AED, SAR, QAR, KWD, BHD, OMR, JOD) werden plattformweit aktiviert. Der Standard-MwSt.-Satz füllt neue Rechnungen vor (Schweizer Normalsatz 8,1 %). Bankverbindung für Schweizer QR-Rechnungen: IBAN / QR-IBAN und Gläubigeradresse. Siehe QR-Rechnungen ."
+ },
+ {
+  "page": "Einstellungen",
+  "title": "Arbeitsbereich-Domains",
+  "url": "./settings.html#domains",
+  "text": "Subdomain — Ihr Arbeitsbereich und Ihre öffentliche Website unter your-slug.cliavo.com . Eine Änderung des Slugs ändert Ihre Links — wählen Sie also sorgfältig. Eigene Domain — geben Sie Ihre Domain ein (z. B. portal.yourfirm.ch ) und erstellen Sie bei Ihrem DNS-Anbieter einen CNAME-Eintrag , der auf Ihre Cliavo-Subdomain zeigt: Typ Name (Ihre Domain) Wert (zeigt auf) CNAME portal.yourfirm.ch your-slug.cliavo.com Root-Domains ohne Subdomain (z. B. yourfirm.ch ) verwenden stattdessen einen A-Eintrag auf die Cliavo-IP. DNS-Änderungen können bis zu 24–48 Stunden dauern."
+ },
+ {
+  "page": "Einstellungen",
+  "title": "Zahlungsanbieter",
+  "url": "./settings.html#payments",
+  "text": "Adyen — verbinden Sie Ihr eigenes Händlerkonto (API-Schlüssel, Händlerkonto, HMAC-Schlüssel, Test-/Live-Umgebung). Webhooks aktualisieren den Zahlungsstatus von Bestellungen automatisch. Stripe — Checkout für Dienstleistungsbestellungen, wo konfiguriert. Kein Zahlungsanbieter? Bestellungen können manuell als bezahlt markiert werden — nichts blockiert Ihren Arbeitsablauf."
+ },
+ {
+  "page": "Einstellungen",
+  "title": "Upload-Richtlinie & Speicher",
+  "url": "./settings.html#uploads",
+  "text": "Grössenlimit pro Datei und zugelassene Dateitypen für Mandatsdokumente. Ein kanzleiweites Speicherkontingent ; die Nutzung zählt Dokumente über alle Mandate hinweg. Limits sind an Ihren Plan gebunden und können erhöht werden — kontaktieren Sie den Support."
+ },
+ {
+  "page": "Einstellungen",
+  "title": "Team & Rollen",
+  "url": "./settings.html#roles-settings",
+  "text": "Mitglieder einladen, Rollen festlegen und die Rollenberechtigungsmatrix anpassen. Ausführlich behandelt in Team & Rollen ."
+ },
+ {
+  "page": "Einstellungen",
+  "title": "Persönliche Einstellungen",
+  "url": "./settings.html#personal",
+  "text": "Sprache — jeder Benutzer wählt EN/FR/DE/IT/AR; Arabisch schaltet das Layout auf RTL um. Sicherheit — Passwort ändern, 2FA aktivieren/deaktivieren. Kalenderverbindungen — siehe Agenda & Kalender ."
+ },
+ {
+  "page": "Einstellungen",
+  "title": "Konto & Plan",
+  "url": "./settings.html#account",
+  "text": "Die Konto-Seite zeigt Ihren Abonnement-Plan, den Preis, den Abrechnungszyklus und die verbleibenden Testtage und ermöglicht ein Upgrade. Ist der Arbeitsbereich gesperrt (Testphase abgelaufen, gesperrt, Zahlung überfällig), erreichen Admins weiterhin Konto und Support, um den Dienst wiederherzustellen."
+ },
+ {
+  "page": "Support & Speicher",
+  "title": "Support & Speicher",
+  "url": "./storage-support.html",
+  "text": "Support & Speicher Wie Sie Cliavo erreichen, wenn etwas unklar ist, wie Support-Tickets funktionieren, was Plattform-Ankündigungen sind und wie sich die Speicherlimits für Dokumente verhalten."
+ },
+ {
+  "page": "Support & Speicher",
+  "title": "Support-Tickets",
+  "url": "./storage-support.html#tickets",
+  "text": "Kanzlei-Admins eröffnen Tickets unter Support mit Betreff, Beschreibung und einer Vertraulichkeits -Stufe (niedrig → kritisch). Fügen Sie bis zu 5 Dateien pro Ticket an (Dokumente oder Screenshots, max. 1&nbsp;MB pro Datei), um genau zu zeigen, was Sie sehen. Tickets erhalten eine Nummer wie TKT-2026-00042 und einen Status: offen → in Bearbeitung → in Prüfung → beantwortet → gelöst → geschlossen . Antworten von Cliavo erscheinen im Ticket-Verlauf und werden in Ihrer Seitenleiste als ungelesen markiert, bis Sie sie ansehen; Sie können mit weiteren Details oder Anhängen antworten. Gelöste Ticket"
+ },
+ {
+  "page": "Support & Speicher",
+  "title": "Plattform-Ankündigungen",
+  "url": "./storage-support.html#announcements",
+  "text": "Cliavo veröffentlicht gelegentlich Ankündigungen (Wartung, neue Funktionen), die als Banner/Pop-up in Ihrem Arbeitsbereich erscheinen. Schweregrade: Info, Warnung, Kritisch. Die Zielgruppe sind entweder nur Kanzlei-Admins oder alle Mitglieder. Klicken Sie auf Verstanden , um sie auszublenden — eine ausgeblendete Ankündigung erscheint nicht erneut, und Ankündigungen, die vor der Erstellung Ihres Kontos veröffentlicht wurden, werden Ihnen nie angezeigt."
+ },
+ {
+  "page": "Support & Speicher",
+  "title": "Speicherkontingente",
+  "url": "./storage-support.html#storage",
+  "text": "Der Speicher für Mandatsdokumente zählt zum Speicherkontingent Ihrer Kanzlei (festgelegt durch Ihren Plan). Regeln zu Dateigrösse und Dateityp sind konfigurierbar — siehe Einstellungen → Upload-Richtlinie . Ist das Kontingent erreicht, schlagen Uploads mit einer klaren Meldung fehl; löschen Sie alte Dateien oder bitten Sie den Support um ein höheres Kontingent. Anhänge in Support-Tickets zählen nicht zum Kanzleispeicher."
+ },
+ {
+  "page": "Support & Speicher",
+  "title": "Weitere Kontaktmöglichkeiten",
+  "url": "./storage-support.html#contact",
+  "text": "E-Mail: support@cliavo.com Dieses Hilfe-Center: cliavo.com/help — nutzen Sie die Suchleiste oben auf jeder Seite."
+ },
+ {
+  "page": "Team & Rollen",
+  "title": "Team & Rollen",
+  "url": "./team-roles.html",
+  "text": "Team & Rollen Bringen Sie Ihre ganze Kanzlei in einen Arbeitsbereich mit rollenbasiertem Zugriff: Admins führen die Kanzlei, Sub-Admins helfen bei der Verwaltung, Anwälte bearbeiten ihre Mandate, und Assistenten unterstützen das Team."
+ },
+ {
+  "page": "Team & Rollen",
+  "title": "Die vier Kanzleirollen",
+  "url": "./team-roles.html#roles",
+  "text": "Rolle Typische Person Standardzugriff Admin Inhaber / geschäftsführender Partner Alles: alle Mandate, Abrechnung, Einstellungen, Team, Rollen, Website, Upselling. Sub-Admin Büroleitung Kanzleiweite Mandate und Klienten, Einladungen, die meisten Verwaltungsbereiche; keine kanzleikritischen Einstellungen. Anwalt Associate / Partner Zugewiesene Mandate, eigene Zeiterfassung, Rechnungsstellung, Klienten. Assistent Paralegal / Sekretariat Unterstützender Zugriff auf zugewiesene Mandate; standardmässig keine Abrechnung oder Einstellungen. Klienten sind keine Kanzleimitglieder — sie erhalten stattdes"
+ },
+ {
+  "page": "Team & Rollen",
+  "title": "Rollenberechtigungen anpassen",
+  "url": "./team-roles.html#capabilities",
+  "text": "Unter Einstellungen → Rollen können Admins pro Bereich fein abstimmen, was jede Rolle darf — zum Beispiel, ob Anwälte alle Mandate der Kanzlei sehen oder nur ihre eigenen , wer Rechnungen erstellen, die Website verwalten oder Personen einladen darf. Anpassungen gelten nur für Ihre Kanzlei und können mit einem Klick auf die Plattform-Standards zurückgesetzt werden."
+ },
+ {
+  "page": "Team & Rollen",
+  "title": "Einladungen",
+  "url": "./team-roles.html#invites",
+  "text": "Laden Sie Teamkollegen per E-Mail mit einer gewählten Rolle ein; Klienteneinladungen sind mit einem Klientendatensatz verknüpft. Wählen Sie die E-Mail-Sprache pro Einladung (EN/FR/DE/IT/AR). Die eingeladene Person öffnet den Link, legt Namen und Passwort fest und landet im Arbeitsbereich — Einladungen laufen nach einiger Zeit ab und können erneut versendet werden. Hat die eingeladene Person bereits ein Cliavo-Konto (dieselbe E-Mail), kann sie die Einladung im angemeldeten Zustand annehmen und mit ihrem bestehenden Login der Kanzlei beitreten."
+ },
+ {
+  "page": "Team & Rollen",
+  "title": "Mitglieder verwalten",
+  "url": "./team-roles.html#managing",
+  "text": "Die Team-Seite listet jedes Mitglied mit Rolle und Funktion auf. Jeder Anwalt verwaltet seinen eigenen Stundensatz ; Admins können die Sätze für Abrechnungszwecke einsehen. Anwälte können Mandaten, Aufgaben, Leads und Dienstleistungsbestellungen zugewiesen werden. Tipp: Geben Sie dem Empfang die Rolle Assistent und gewähren Sie unter Einstellungen → Rollen nur das Nötige — die Berechtigungsmatrix ist dem Teilen eines Admin-Logins immer überlegen."
+ },
+ {
+  "page": "Zeiterfassung",
+  "title": "Zeiterfassung",
+  "url": "./time-tracking.html",
+  "text": "Zeiterfassung Erfassen Sie verrechenbare und nicht verrechenbare Zeit mit einem Live-Timer oder manuellen Einträgen, prüfen und bearbeiten Sie alles vor der Einreichung und verwandeln Sie freigegebene Zeit mit zwei Klicks in Rechnungen."
+ },
+ {
+  "page": "Zeiterfassung",
+  "title": "Der Live-Timer",
+  "url": "./time-tracking.html#timer",
+  "text": "Starten Sie einen Timer aus einem Mandat (oder aus der Zeiterfassung) mit einer Beschreibung Ihrer Tätigkeit. Der schwebende Timer bleibt auf jeder Seite sichtbar, während er läuft — er wird serverseitig gespeichert und zählt daher weiter, selbst wenn Sie den Tab schliessen oder das Gerät wechseln. Sie können pausieren / fortsetzen , Beschreibung oder Mandat während des Laufens bearbeiten und mit Stopp die aufgelaufene Zeit als Entwurfseintrag speichern oder verwerfen."
+ },
+ {
+  "page": "Zeiterfassung",
+  "title": "Manuelle Einträge",
+  "url": "./time-tracking.html#manual",
+  "text": "Fügen Sie einen Eintrag mit Mandat, Beschreibung, Dauer (Minuten) und Datum hinzu — für Arbeit abseits des Bildschirms. Jeder gespeicherte Eintrag erhält einen Zeitstempel , und die Liste zeigt die neuesten Einträge zuoberst. Einträge können als verrechenbar oder nicht verrechenbar markiert werden und einen individuellen Stundensatz tragen."
+ },
+ {
+  "page": "Zeiterfassung",
+  "title": "Bearbeitung vor der Einreichung",
+  "url": "./time-tracking.html#editing",
+  "text": "Entwurfs- und eingereichte Einträge können bearbeitet werden — Mandat, Beschreibung, Dauer oder Datum ändern — oder gelöscht werden, bis sie in Rechnung gestellt sind. Sobald ein Eintrag einer Rechnung zugeordnet ist, wird er gesperrt, um die Abrechnung konsistent zu halten."
+ },
+ {
+  "page": "Zeiterfassung",
+  "title": "Ablauf eines Eintrags",
+  "url": "./time-tracking.html#workflow",
+  "text": "Status Bedeutung Entwurf Gerade erfasst; vollständig bearbeitbar. Eingereicht Zur Abrechnung freigegeben (Sie können viele auf einmal einreichen). Verrechnet Auf einer Rechnung enthalten; gesperrt."
+ },
+ {
+  "page": "Zeiterfassung",
+  "title": "Stundensätze",
+  "url": "./time-tracking.html#rates",
+  "text": "Jeder Anwalt legt seinen Stundensatz (in der Kanzleiwährung) in der Zeiterfassung fest. Der Satz wird bei der Erstellung mit jedem Eintrag gespeichert, sodass historische Einträge den damals gültigen Satz behalten. Einzelne Einträge können den Satz übersteuern."
+ },
+ {
+  "page": "Zeiterfassung",
+  "title": "Eine Rechnung aus Zeiteinträgen erstellen",
+  "url": "./time-tracking.html#invoice-from-time",
+  "text": "Wählen Sie in der Zeiterfassung die eingereichten Einträge aus, die Sie abrechnen möchten (optional gefiltert nach Mandat oder Klient). Wählen Sie den Klienten, ein Fälligkeitsdatum und den MwSt.-Satz. Cliavo erstellt eine Rechnung mit einer Zeile pro Eintrag (Beschreibung, Stunden × Satz) in der Standardwährung Ihrer Kanzlei und markiert die Einträge als verrechnet. Siehe Abrechnung & Rechnungen für die nächsten Schritte."
+ },
+ {
+  "page": "Zeiterfassung",
+  "title": "Berichte & Zusammenfassungen",
+  "url": "./time-tracking.html#reports",
+  "text": "Die Zeiterfassung zeigt Summen nach Zeitraum, Mandat und Erfasser — erfasste vs. verrechenbare Stunden und deren Wert — damit Sie die Produktivität vor den Abrechnungsläufen prüfen und nicht abgerechnete Arbeit erkennen."
+ },
+ {
+  "page": "Website (CMS) & Leads",
+  "title": "Website (CMS) & Leads",
+  "url": "./website-leads.html",
+  "text": "Website (CMS) & Leads Jede Kanzlei erhält eine öffentliche Website, gebaut mit dem CMS-Seiten-Editor — ganz ohne Webagentur. Seiten werden aus vorgefertigten Blöcken zusammengesetzt, mit Live-Vorschau bearbeitet, mit Ihrem Branding gestaltet und unter Ihrer Subdomain oder eigenen Domain veröffentlicht."
+ },
+ {
+  "page": "Website (CMS) & Leads",
+  "title": "Der Seiten-Editor",
+  "url": "./website-leads.html#editor",
+  "text": "Erstellen Sie eine Seite im CMS : Es öffnet sich ein Vollbild-Editor mit der Blockliste auf der einen und einer Live-Vorschau auf der anderen Seite. Ordnen Sie Blöcke per Drag-and-drop neu an (Anfasser) — die Vorschau aktualisiert sich sofort. Jede Seite hat einen Titel, einen URL-Slug, einen Veröffentlicht -Schalter und einen Startseiten -Schalter (eine Seite ist die Startseite Ihrer Website). Der SEO-Tab legt Meta-Titel und -Beschreibung fest, die von Suchmaschinen verwendet werden."
+ },
+ {
+  "page": "Website (CMS) & Leads",
+  "title": "Blocktypen",
+  "url": "./website-leads.html#blocks",
+  "text": "Block Was er zeigt Hero Grosse Überschrift, Untertitel und ein Call-to-Action-Button. Text Rich-Text-Abschnitt mit Überschrift für beliebige Inhalte. Funktionen Raster aus Funktionskarten (Icon, Titel, Text). Kennzahlen Zentrale Zahlen — Jahre Erfahrung, gewonnene Mandate, betreute Klienten. Referenzen Klientenzitate mit Namen. Team Ihre Anwälte mit Fotos, Funktionen und Kurzprofilen. FAQ Frage-Antwort-Akkordeon. Galerie Bilderraster. Logo-Leiste Leiste mit Verbands-/Klientenlogos. Pakete Live-Block — zeigt automatisch Ihre veröffentlichten Abonnement-Pakete an. Dienstleistungen Live-Block — z"
+ },
+ {
+  "page": "Website (CMS) & Leads",
+  "title": "Vorlagen",
+  "url": "./website-leads.html#templates",
+  "text": "Starten Sie mit einer Vorlage statt mit einer leeren Seite: Klassisch , Minimal , Modern , Dienstleistungen & Pakete , Team oder Kontakt . Vorlagen füllen ein sinnvolles Block-Layout vor, das Sie anschliessend bearbeiten."
+ },
+ {
+  "page": "Website (CMS) & Leads",
+  "title": "Branding",
+  "url": "./website-leads.html#branding",
+  "text": "Die öffentliche Website verwendet Ihr Logo und Ihre Markenfarben aus Einstellungen → Branding , sodass Website, Arbeitsbereich und Klientenportal einheitlich aussehen."
+ },
+ {
+  "page": "Website (CMS) & Leads",
+  "title": "Wo Ihre Website veröffentlicht wird",
+  "url": "./website-leads.html#urls",
+  "text": "Sofort (kein DNS nötig): https://cliavo.com/site/your-slug Ihre Subdomain : https://your-slug.cliavo.com — dort melden sich auch Ihr Team und Ihre Klienten an. Eigene Domain : verbinden Sie z. B. portal.yourfirm.ch unter Einstellungen → Arbeitsbereich mit einem einzigen CNAME-Eintrag. Siehe Domains ."
+ },
+ {
+  "page": "Website (CMS) & Leads",
+  "title": "Lead-Erfassung",
+  "url": "./website-leads.html#leads",
+  "text": "Der Kontakt-Block auf Ihren öffentlichen Seiten leitet Eingaben direkt in Ihre CRM-Leads-Pipeline mit der Quelle «website». Paket- und Dienstleistungs-Blöcke führen Besucher zur Abonnement-Registrierung und zum Dienstleistungs-Checkout und machen Ihre Website so zum Schaufenster. Tipp: Halten Sie eine veröffentlichte Startseite plus wenige fokussierte Seiten (Über uns, Dienstleistungen, Kontakt). Suchmaschinen lesen Ihren SEO-Titel und die Beschreibung pro Seite — formulieren Sie sie wie eine Anzeige für die Seite."
+ }
+]

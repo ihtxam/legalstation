@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Klienten &amp; CRM · Cliavo Hilfe</title>
+  <link rel="stylesheet" href="../styles.css" />
+</head>
+<body>
+  <div class="shell">
+    <header class="top">
+      <div class="brand">Cliavo<span>Hilfe-Center</span></div>
+      <div class="search">
+        <input type="search" id="searchInput" placeholder="Dokumentation durchsuchen…" autocomplete="off" />
+        <div class="search-results" id="searchResults" hidden></div>
+      </div>
+      <nav><a href="./index.html">Alle Themen</a></nav>
+      <div class="lang" aria-label="Sprache"><a href="../clients-crm.html" lang="en">EN</a><a href="../fr/clients-crm.html" lang="fr">FR</a><a class="active" href="./clients-crm.html">DE</a><a href="../it/clients-crm.html" lang="it">IT</a><a href="../ar/clients-crm.html" lang="ar">AR</a></div>
+    </header>
+
+    <article class="article">
+      <h1>Klienten &amp; CRM</h1>
+      <p>
+        Der Bereich Klienten ist das Adressbuch und leichtgewichtige CRM Ihrer Kanzlei: jede Person oder
+        Firma, für die Sie arbeiten, ihre Kontaktdaten, ihre Mandate, Rechnungen, Aktivitäten und der Portalzugang.
+      </p>
+
+      <h2 id="client-types">Privat- und Firmenklienten</h2>
+      <ul>
+        <li><strong>Privatpersonen</strong> — Vor-/Nachname, Geburtsdatum und Kontaktdaten. Ein Vor- oder Nachname ist erforderlich.</li>
+        <li><strong>Firmen</strong> — Firmenname (erforderlich), Handelsregisternummer und eine Kontaktperson.</li>
+        <li>Beide Typen teilen sich E-Mail, Telefon, vollständige Adresse (Strasse, Ort, Postleitzahl, Land) und Freitextnotizen.</li>
+      </ul>
+      <p>
+        Klienten haben einen <strong>Status</strong>: <em>eingeladen</em> (angelegt, aber noch ohne Portalkonto),
+        <em>aktiv</em> oder <em>inaktiv</em>. Admins, Sub-Admins und Anwälte können Klienten anlegen;
+        die Klientenliste ist durchsuchbar, und jeder Klient hat eine Detailseite mit einem integrierten
+        <strong>Bearbeiten</strong>-Formular.
+      </p>
+
+      <h2 id="create-anywhere">Klienten dort anlegen, wo Sie sie brauchen</h2>
+      <p>
+        Neben der Klienten-Seite können Sie einen Klienten auch direkt über den Dialog
+        <strong>Klient zuweisen</strong> innerhalb eines Mandats anlegen — stellen Sie den Umschalter von
+        <em>Bestehender Klient</em> auf <em>Klient anlegen</em>, füllen Sie das kurze Formular aus, und der neue Klient wird
+        in einem Schritt erstellt und dem Mandat zugewiesen.
+      </p>
+
+      <h2 id="activities">Aktivitäten, Notizen &amp; Erinnerungen</h2>
+      <p>Jeder Klient hat eine Aktivitäten-Zeitleiste für die tägliche Beziehungspflege:</p>
+      <ul>
+        <li><strong>Notizen</strong> — Besprechungszusammenfassungen oder alles, was festgehalten werden sollte.</li>
+        <li><strong>Besprechungen</strong> — mit Datum, damit sie in Ihrer Agenda erscheinen.</li>
+        <li><strong>To-dos und nächste Schritte</strong> — einem Teammitglied zuweisbar, mit Fälligkeitsdatum.</li>
+        <li><strong>Erinnerungen</strong> — wählen Sie einen Erinnerungszeitpunkt, um an Follow-ups erinnert zu werden.</li>
+        <li>Sie können Teamkollegen per <strong>@Erwähnung</strong> einbinden und Einträge nach Erledigung als abgeschlossen markieren.</li>
+      </ul>
+
+      <h2 id="leads">Leads-Pipeline</h2>
+      <p>
+        Der CRM-Bereich umfasst eine Leads-Pipeline für potenzielle Klienten, die (noch) keine Klienten sind.
+        Jeder Lead hat einen Kontaktnamen, E-Mail, Telefon, Firma, Quelle, Notizen und ein zugewiesenes
+        Teammitglied und durchläuft folgende Phasen:
+      </p>
+      <table>
+        <tr><th>Phase</th><th>Bedeutung</th></tr>
+        <tr><td>Neu</td><td>Gerade eingegangen (z. B. über das Kontaktformular Ihrer Website).</td></tr>
+        <tr><td>Kontaktiert</td><td>Sie haben Kontakt aufgenommen.</td></tr>
+        <tr><td>Qualifiziert</td><td>Echtes Potenzial — es lohnt sich, dranzubleiben.</td></tr>
+        <tr><td>Beratung</td><td>Ein Erstgespräch ist gebucht oder hat stattgefunden.</td></tr>
+        <tr><td>Offerte</td><td>Sie haben einen Mandatsvorschlag oder eine Offerte gesendet.</td></tr>
+        <tr><td>Gewonnen / Verloren</td><td>Ergebnis der Bemühungen.</td></tr>
+      </table>
+      <p>
+        Wenn ein Lead gewonnen ist, nutzen Sie <strong>Konvertieren</strong>, um ihn in einen echten Klienten (und optional
+        ein erstes Mandat) umzuwandeln, ohne etwas neu einzutippen. Leads, die über das Kontaktformular Ihrer öffentlichen
+        Website eingehen, landen automatisch in dieser Pipeline — siehe
+        <a href="./website-leads.html#leads">Website &amp; Leads</a>.
+      </p>
+
+      <h2 id="portal-access">Klienten Portalzugang gewähren</h2>
+      <p>
+        Klienten können ihren eigenen Login für das <a href="./client-portal.html">Klientenportal</a> erhalten.
+        Senden Sie über Einstellungen → Team (oder die Klientenseite) eine <strong>Klienteneinladung</strong>, die mit dem
+        Klientendatensatz verknüpft ist; die Klienten legen ihr eigenes Passwort fest und sehen nur ihre eigenen Mandate,
+        Rechnungen und Dokumente. Siehe <a href="./team-roles.html#invites">Einladungen</a>.
+      </p>
+
+      <div class="tip">
+        Tipp: Abonnement-Klienten (siehe <a href="./packages-services.html">Pakete</a>) können sich
+        selbst über Ihre öffentliche Website registrieren — der Klientendatensatz und das Portalkonto werden
+        automatisch erstellt.
+      </div>
+    </article>
+
+    <footer class="footer"><a href="./index.html">← Hilfe-Center</a> · support@cliavo.com</footer>
+  </div>
+  <script src="../search.js" defer></script>
+</body>
+</html>
