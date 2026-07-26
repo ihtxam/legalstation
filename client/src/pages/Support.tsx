@@ -25,7 +25,6 @@ import {
   validateUploadFile,
 } from "@shared/uploadPolicy";
 
-const DOCS_URL = "https://docs.cliavo.com";
 /** Help center is per-language: /help (en) or /help/{fr,de,it,ar}/ */
 function helpUrlFor(language: string | undefined): string {
   const lang = (language || "en").slice(0, 2).toLowerCase();
@@ -253,14 +252,9 @@ export default function SupportPage() {
               <p className="text-sm text-muted-foreground">{t("support.docsHint")}</p>
               <div className="flex flex-wrap gap-2">
                 <Button asChild className="bg-[var(--color-navy)] hover:bg-[var(--color-navy)]/90">
-                  <a href={DOCS_URL} target="_blank" rel="noreferrer">
-                    {t("support.openDocs")}
-                    <ExternalLink className="w-4 h-4 ml-1.5" />
-                  </a>
-                </Button>
-                <Button asChild variant="outline">
                   <a href={helpUrlFor(i18n.language)} target="_blank" rel="noreferrer">
                     {t("support.openLocalHelp")}
+                    <ExternalLink className="w-4 h-4 ml-1.5" />
                   </a>
                 </Button>
               </div>
