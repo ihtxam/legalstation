@@ -141,21 +141,21 @@ export default function SupportPage() {
 
   return (
     <AppLayout title={t("support.title")} breadcrumb={[{ label: t("support.title") }]}>
-      <div className="p-6 max-w-4xl mx-auto space-y-8">
+      <div className="page-shell max-w-4xl !space-y-6 sm:!space-y-8">
         <div className="space-y-2">
           <div className="flex items-center gap-2 text-[var(--color-navy)]">
-            <LifeBuoy className="w-6 h-6" />
-            <h2 className="text-2xl font-serif font-semibold tracking-tight">{t("support.heading")}</h2>
+            <LifeBuoy className="w-6 h-6 shrink-0" />
+            <h2 className="text-xl sm:text-2xl font-serif font-semibold tracking-tight">{t("support.heading")}</h2>
           </div>
           <p className="text-muted-foreground text-sm leading-relaxed">{t("support.intro")}</p>
         </div>
 
         {isFirmAdmin && (
-          <section className="border border-border rounded-xl p-6 space-y-4 bg-card">
-            <div className="flex flex-wrap items-start justify-between gap-3">
-              <div>
+          <section className="border border-border rounded-xl p-4 sm:p-6 space-y-4 bg-card">
+            <div className="page-header">
+              <div className="min-w-0">
                 <h3 className="font-semibold text-foreground flex items-center gap-2">
-                  <MessageSquare className="w-4 h-4" />
+                  <MessageSquare className="w-4 h-4 shrink-0" />
                   {t("support.ticketsTitle")}
                 </h3>
                 <p className="text-sm text-muted-foreground mt-1">{t("support.ticketsHint")}</p>
@@ -166,7 +166,7 @@ export default function SupportPage() {
                 )}
               </div>
               <Button
-                className="bg-[var(--color-navy)] hover:bg-[var(--color-navy)]/90"
+                className="bg-[var(--color-navy)] hover:bg-[var(--color-navy)]/90 w-full sm:w-auto"
                 disabled={!canCreate}
                 onClick={() => setShowCreate(true)}
               >
@@ -206,9 +206,9 @@ export default function SupportPage() {
           </section>
         )}
 
-        <section className="border border-border rounded-xl p-6 space-y-4 bg-card">
+        <section className="border border-border rounded-xl p-4 sm:p-6 space-y-4 bg-card">
           <div className="flex items-start gap-3">
-            <div className="mt-0.5 rounded-lg bg-[var(--color-navy)]/8 p-2">
+            <div className="mt-0.5 rounded-lg bg-[var(--color-navy)]/8 p-2 shrink-0">
               <Mail className="w-5 h-5 text-[var(--color-navy)]" />
             </div>
             <div className="min-w-0 space-y-2">
@@ -224,9 +224,9 @@ export default function SupportPage() {
           </div>
         </section>
 
-        <section className="border border-border rounded-xl p-6 space-y-4 bg-card">
+        <section className="border border-border rounded-xl p-4 sm:p-6 space-y-4 bg-card">
           <div className="flex items-start gap-3">
-            <div className="mt-0.5 rounded-lg bg-[var(--color-navy)]/8 p-2">
+            <div className="mt-0.5 rounded-lg bg-[var(--color-navy)]/8 p-2 shrink-0">
               <BookOpen className="w-5 h-5 text-[var(--color-navy)]" />
             </div>
             <div className="min-w-0 space-y-3 flex-1">

@@ -134,6 +134,26 @@
   .status-cancelled { @apply bg-slate-100 text-slate-500 border border-slate-200; }
   /* Ease tokens */
   .ease-snappy { transition-timing-function: cubic-bezier(0.23, 1, 0.32, 1); }
+
+  /* Responsive page helpers */
+  .page-shell {
+    @apply p-4 sm:p-5 md:p-6 space-y-4 sm:space-y-5 mx-auto w-full;
+  }
+  .page-header {
+    @apply flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between;
+  }
+  .page-actions {
+    @apply flex flex-wrap items-center gap-2 w-full sm:w-auto;
+  }
+  .table-scroll {
+    @apply w-full overflow-x-auto -mx-0;
+  }
+}
+
+/* Prevent accidental horizontal page scroll on small devices */
+html, body, #root {
+  max-width: 100%;
+  overflow-x: clip;
 }
 
 /* RTL polish */

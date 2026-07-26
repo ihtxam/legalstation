@@ -577,7 +577,7 @@ export default function SuperadminDashboard() {
           <div>
             <div className="flex items-center gap-2">
               <Shield className="h-5 w-5 text-amber-400" />
-              <h1 className="text-2xl font-semibold tracking-tight">{t("superadmin.title")}</h1>
+              <h1 className="text-xl sm:text-2xl font-semibold tracking-tight">{t("superadmin.title")}</h1>
             </div>
             <p className="text-slate-400 text-sm mt-1">
               {t("superadmin.subtitle", { who: user.email || user.name })}
@@ -640,7 +640,7 @@ export default function SuperadminDashboard() {
         )}
 
         <Tabs value={tab} onValueChange={(v) => setTab(v as TabId)} className="space-y-6">
-          <TabsList className="bg-white border flex-wrap h-auto">
+          <TabsList className="bg-white border flex-wrap h-auto w-full justify-start overflow-x-auto">
             <TabsTrigger value="overview">{t("superadmin.tabOverview")}</TabsTrigger>
             <TabsTrigger value="firms">{t("superadmin.tabFirms")}</TabsTrigger>
             <TabsTrigger value="plans">{t("superadmin.tabPlans")}</TabsTrigger>

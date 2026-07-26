@@ -27,27 +27,27 @@ export default function TrialBanner() {
     <div
       className={
         expired
-          ? "bg-red-600 text-white px-4 py-2.5 text-sm flex items-center justify-between gap-3 flex-wrap z-40"
-          : "bg-[var(--color-navy)] text-white px-4 py-2.5 text-sm flex items-center justify-between gap-3 flex-wrap z-40"
+          ? "bg-red-600 text-white px-3 sm:px-4 py-2.5 text-sm flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 z-40 shrink-0"
+          : "bg-[var(--color-navy)] text-white px-3 sm:px-4 py-2.5 text-sm flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 z-40 shrink-0"
       }
     >
-      <div className="flex items-center gap-2 min-w-0">
+      <div className="flex items-start sm:items-center gap-2 min-w-0">
         {expired ? (
-          <AlertTriangle className="h-4 w-4 shrink-0" />
+          <AlertTriangle className="h-4 w-4 shrink-0 mt-0.5 sm:mt-0" />
         ) : (
-          <Clock className="h-4 w-4 shrink-0" />
+          <Clock className="h-4 w-4 shrink-0 mt-0.5 sm:mt-0" />
         )}
-        <p className="truncate">
+        <p className="text-xs sm:text-sm leading-snug">
           {expired
             ? t("trial.expired")
             : t("trial.active", { days, count: days })}
         </p>
       </div>
-      <div className="flex items-center gap-2 flex-wrap shrink-0">
+      <div className="flex items-center gap-2 flex-wrap">
         <Button
           size="sm"
           variant="secondary"
-          className="bg-white text-[var(--color-navy)] hover:bg-white/90 h-8"
+          className="bg-white text-[var(--color-navy)] hover:bg-white/90 h-8 flex-1 sm:flex-none"
           onClick={() => navigate("/settings")}
         >
           {t("trial.whitelabel")}
@@ -55,7 +55,7 @@ export default function TrialBanner() {
         <Button
           size="sm"
           variant="outline"
-          className="border-white/50 bg-transparent text-white hover:bg-white/10 h-8"
+          className="border-white/50 bg-transparent text-white hover:bg-white/10 h-8 flex-1 sm:flex-none"
           asChild
         >
           <a href={CONTINUE_MAIL}>{t("trial.continueSaas")}</a>
@@ -63,7 +63,7 @@ export default function TrialBanner() {
         <Button
           size="sm"
           variant="outline"
-          className="border-white/50 bg-transparent text-white hover:bg-white/10 h-8"
+          className="border-white/50 bg-transparent text-white hover:bg-white/10 h-8 flex-1 sm:flex-none"
           asChild
         >
           <a href={ONPREM_MAIL}>{t("trial.onPremise")}</a>

@@ -28,7 +28,7 @@ function LawyerDashboard() {
   ];
 
   return (
-    <div className="p-6 space-y-6 max-w-6xl mx-auto">
+    <div className="page-shell max-w-6xl !space-y-6">
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {statCards.map(({ label, value, icon: Icon, color, bg }) => (
           <Card key={label} className="border-border shadow-none">
@@ -71,8 +71,8 @@ function ClientDashboard() {
   );
 
   return (
-    <div className="p-6 space-y-6 max-w-4xl mx-auto">
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+    <div className="page-shell max-w-4xl !space-y-6">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         {[
           { label: t("dashboard.myCases"), value: stats?.totalCases ?? 0, icon: Briefcase, color: "text-blue-600", bg: "bg-blue-50", href: "/client-portal" },
           { label: t("dashboard.openCases"), value: stats?.openCases ?? 0, icon: Clock, color: "text-amber-600", bg: "bg-amber-50", href: "/client-portal" },

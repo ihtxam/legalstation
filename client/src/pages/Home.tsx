@@ -183,21 +183,21 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-background">
-      <nav className="flex items-center justify-between px-8 py-5 border-b border-border bg-card">
-        <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-lg bg-[var(--color-navy)] flex items-center justify-center">
+      <nav className="flex items-center justify-between gap-2 px-4 sm:px-8 py-4 sm:py-5 border-b border-border bg-card">
+        <div className="flex items-center gap-2.5 min-w-0">
+          <div className="w-8 h-8 rounded-lg bg-[var(--color-navy)] flex items-center justify-center shrink-0">
             <Scale className="w-4 h-4 text-white" />
           </div>
-          <span className="font-serif font-semibold text-xl text-foreground tracking-tight">Cliavo</span>
+          <span className="font-serif font-semibold text-lg sm:text-xl text-foreground tracking-tight truncate">Cliavo</span>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
           <LanguageSwitcher />
-          <Button variant="ghost" onClick={() => navigate("/platform/login")} className="text-muted-foreground">
+          <Button variant="ghost" size="sm" onClick={() => navigate("/platform/login")} className="text-muted-foreground hidden sm:inline-flex">
             Platform
           </Button>
-          <Button onClick={() => startLogin()} className="bg-[var(--color-navy)] hover:bg-[var(--color-navy-light)] text-white">
+          <Button size="sm" onClick={() => startLogin()} className="bg-[var(--color-navy)] hover:bg-[var(--color-navy-light)] text-white">
             {t("home.signIn")}
-            <ArrowRight className="w-4 h-4 ml-1.5" />
+            <ArrowRight className="w-4 h-4 ml-1.5 hidden sm:inline" />
           </Button>
         </div>
       </nav>
@@ -212,13 +212,13 @@ export default function Home() {
             backgroundSize: "32px 32px",
           }}
         />
-        <div className="relative max-w-5xl mx-auto px-8 py-24 md:py-28 text-center">
-          <p className="font-serif text-white/90 text-2xl md:text-3xl tracking-tight mb-6">Cliavo</p>
-          <h1 className="font-serif text-4xl md:text-5xl font-semibold text-white leading-tight mb-5">
+        <div className="relative max-w-5xl mx-auto px-4 sm:px-8 py-16 sm:py-24 md:py-28 text-center">
+          <p className="font-serif text-white/90 text-xl sm:text-2xl md:text-3xl tracking-tight mb-4 sm:mb-6">Cliavo</p>
+          <h1 className="font-serif text-3xl sm:text-4xl md:text-5xl font-semibold text-white leading-tight mb-4 sm:mb-5">
             {t("home.title")}{" "}
             <span className="text-[var(--color-gold-light)]">{t("home.titleAccent")}</span>
           </h1>
-          <p className="text-white/70 text-lg md:text-xl max-w-2xl mx-auto mb-8 leading-relaxed">
+          <p className="text-white/70 text-base sm:text-lg md:text-xl max-w-2xl mx-auto mb-6 sm:mb-8 leading-relaxed px-1">
             {t("home.subtitleTrial", { days: trialDays })}
           </p>
           <div className="flex items-center justify-center gap-4 flex-wrap">

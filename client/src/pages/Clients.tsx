@@ -50,26 +50,26 @@ export default function ClientsPage() {
 
   return (
     <AppLayout title={t("clients.title")} breadcrumb={[{ label: t("clients.title") }]}>
-      <div className="p-6 space-y-5 max-w-6xl mx-auto">
+      <div className="page-shell max-w-6xl">
         {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h2 className="text-xl font-semibold text-foreground">{t("clients.title")}</h2>
+        <div className="page-header">
+          <div className="min-w-0">
+            <h2 className="text-lg sm:text-xl font-semibold text-foreground">{t("clients.title")}</h2>
             <p className="text-muted-foreground text-sm mt-0.5">{t("clients.count", { count: clients?.length ?? 0 })}</p>
           </div>
-          <Button className="bg-[var(--color-navy)] hover:bg-[var(--color-navy-light)] text-white" onClick={() => setShowCreate(true)}>
+          <Button className="bg-[var(--color-navy)] hover:bg-[var(--color-navy-light)] text-white w-full sm:w-auto" onClick={() => setShowCreate(true)}>
             <Plus className="w-4 h-4 mr-1.5" /> {t("clients.new")}
           </Button>
         </div>
 
         {/* Filters */}
         <div className="flex items-center gap-3 flex-wrap">
-          <div className="relative flex-1 min-w-48">
+          <div className="relative flex-1 min-w-[12rem] w-full sm:w-auto">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <Input className="pl-9" placeholder={t("clients.search")} value={search} onChange={e => setSearch(e.target.value)} />
           </div>
           <Select value={typeFilter} onValueChange={(v: any) => setTypeFilter(v)}>
-            <SelectTrigger className="w-40"><SelectValue /></SelectTrigger>
+            <SelectTrigger className="w-full sm:w-40"><SelectValue /></SelectTrigger>
             <SelectContent>
               <SelectItem value="all">{t("common.allTypes")}</SelectItem>
               <SelectItem value="individual">{t("common.individual")}</SelectItem>
@@ -100,7 +100,8 @@ export default function ClientsPage() {
               <p className="text-muted-foreground text-sm mt-1">{t("clients.emptyHint")}</p>
             </div>
           ) : (
-            <table className="w-full">
+            <div className="table-scroll">
+            <table className="w-full min-w-[680px]">
               <thead>
                 <tr className="border-b border-border bg-muted/40">
                   <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wide">{t("common.client")}</th>
@@ -146,6 +147,7 @@ export default function ClientsPage() {
                 ))}
               </tbody>
             </table>
+            </div>
           )}
         </div>
       </div>

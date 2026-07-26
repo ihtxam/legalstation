@@ -64,13 +64,13 @@ export default function CasesPage() {
 
   return (
     <AppLayout title={t("cases.title")} breadcrumb={[{ label: t("cases.title") }]}>
-      <div className="p-6 space-y-5 max-w-6xl mx-auto">
-        <div className="flex items-center justify-between">
-          <div>
-            <h2 className="text-xl font-semibold text-foreground">{t("cases.title")}</h2>
+      <div className="page-shell max-w-6xl">
+        <div className="page-header">
+          <div className="min-w-0">
+            <h2 className="text-lg sm:text-xl font-semibold text-foreground">{t("cases.title")}</h2>
             <p className="text-muted-foreground text-sm mt-0.5">{t("cases.count", { count: filteredCases.length, tab: activeTabLabel })}</p>
           </div>
-          <Button className="bg-[var(--color-navy)] hover:bg-[var(--color-navy-light)] text-white" onClick={() => setShowCreate(true)}>
+          <Button className="bg-[var(--color-navy)] hover:bg-[var(--color-navy-light)] text-white w-full sm:w-auto" onClick={() => setShowCreate(true)}>
             <Plus className="w-4 h-4 mr-1.5" /> {t("cases.new")}
           </Button>
         </div>
@@ -104,7 +104,8 @@ export default function CasesPage() {
               <p className="text-muted-foreground font-medium">{t("cases.empty", { tab: activeTabLabel })}</p>
             </div>
           ) : (
-            <table className="w-full">
+            <div className="table-scroll">
+            <table className="w-full min-w-[640px]">
               <thead>
                 <tr className="border-b border-border bg-muted/40">
                   <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wide">{t("cases.colCase")}</th>
@@ -133,6 +134,7 @@ export default function CasesPage() {
                 ))}
               </tbody>
             </table>
+            </div>
           )}
         </div>
       </div>

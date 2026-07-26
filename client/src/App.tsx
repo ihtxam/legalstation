@@ -128,47 +128,74 @@ function Router() {
     );
   }
 
+  const isAppShell =
+    location.startsWith("/dashboard") ||
+    location.startsWith("/clients") ||
+    location.startsWith("/cases") ||
+    location.startsWith("/invoices") ||
+    location.startsWith("/messages") ||
+    location.startsWith("/settings") ||
+    location.startsWith("/support") ||
+    location.startsWith("/agenda") ||
+    location.startsWith("/packages") ||
+    location.startsWith("/services") ||
+    location.startsWith("/client-portal") ||
+    location.startsWith("/time-reports") ||
+    location.startsWith("/leads") ||
+    location.startsWith("/cms") ||
+    location.startsWith("/audit") ||
+    location.startsWith("/analytics") ||
+    location.startsWith("/admin");
+
   return (
-    <>
+    <div
+      className={
+        isAppShell
+          ? "flex flex-col h-[100dvh] max-h-[100dvh] overflow-hidden"
+          : "min-h-[100dvh]"
+      }
+    >
       <ImpersonationBanner />
       <TrialBanner />
       <AnnouncementPopup />
-      <Switch>
-        <Route path="/" component={Home} />
-        <Route path="/login" component={LoginPage} />
-        <Route path="/platform/login" component={PlatformLoginPage} />
-        <Route path="/onboarding" component={OnboardingPage} />
-        <Route path="/firm-onboarding" component={FirmOnboardingPage} />
-        <Route path="/invite/:token" component={InvitePage} />
-        <Route path="/dashboard" component={Dashboard} />
-        <Route path="/clients" component={ClientsPage} />
-        <Route path="/clients/:id" component={ClientDetailPage} />
-        <Route path="/cases" component={CasesPage} />
-        <Route path="/cases/:id" component={CaseDetailPage} />
-        <Route path="/invoices" component={InvoicesPage} />
-        <Route path="/invoices/new" component={InvoiceDetailPage} />
-        <Route path="/invoices/:id" component={InvoiceDetailPage} />
-        <Route path="/messages" component={MessagesPage} />
-        <Route path="/settings" component={SettingsPage} />
-        <Route path="/support" component={SupportPage} />
-        <Route path="/agenda" component={AgendaPage} />
-        <Route path="/packages" component={FirmPackagesPage} />
-        <Route path="/services" component={FirmServicesPage} />
-        <Route path="/subscribe/:firmSlug" component={SubscribePage} />
-        <Route path="/superadmin" component={SuperadminDashboard} />
-        <Route path="/superadmin/" component={SuperadminDashboard} />
-        <Route path="/admin/settings" component={AdminSettings} />
-        <Route path="/client-portal" component={ClientPortalPage} />
-        <Route path="/time-reports" component={TimeReportsPage} />
-        <Route path="/leads" component={FirmLeadsPage} />
-        <Route path="/cms" component={FirmCmsPage} />
-        <Route path="/audit" component={AuditLogPage} />
-        <Route path="/analytics" component={AdminAnalyticsPage} />
-        <Route path="/404" component={NotFound} />
-        <Route component={NotFound} />
-      </Switch>
+      <div className={isAppShell ? "flex-1 min-h-0 overflow-hidden" : undefined}>
+        <Switch>
+          <Route path="/" component={Home} />
+          <Route path="/login" component={LoginPage} />
+          <Route path="/platform/login" component={PlatformLoginPage} />
+          <Route path="/onboarding" component={OnboardingPage} />
+          <Route path="/firm-onboarding" component={FirmOnboardingPage} />
+          <Route path="/invite/:token" component={InvitePage} />
+          <Route path="/dashboard" component={Dashboard} />
+          <Route path="/clients" component={ClientsPage} />
+          <Route path="/clients/:id" component={ClientDetailPage} />
+          <Route path="/cases" component={CasesPage} />
+          <Route path="/cases/:id" component={CaseDetailPage} />
+          <Route path="/invoices" component={InvoicesPage} />
+          <Route path="/invoices/new" component={InvoiceDetailPage} />
+          <Route path="/invoices/:id" component={InvoiceDetailPage} />
+          <Route path="/messages" component={MessagesPage} />
+          <Route path="/settings" component={SettingsPage} />
+          <Route path="/support" component={SupportPage} />
+          <Route path="/agenda" component={AgendaPage} />
+          <Route path="/packages" component={FirmPackagesPage} />
+          <Route path="/services" component={FirmServicesPage} />
+          <Route path="/subscribe/:firmSlug" component={SubscribePage} />
+          <Route path="/superadmin" component={SuperadminDashboard} />
+          <Route path="/superadmin/" component={SuperadminDashboard} />
+          <Route path="/admin/settings" component={AdminSettings} />
+          <Route path="/client-portal" component={ClientPortalPage} />
+          <Route path="/time-reports" component={TimeReportsPage} />
+          <Route path="/leads" component={FirmLeadsPage} />
+          <Route path="/cms" component={FirmCmsPage} />
+          <Route path="/audit" component={AuditLogPage} />
+          <Route path="/analytics" component={AdminAnalyticsPage} />
+          <Route path="/404" component={NotFound} />
+          <Route component={NotFound} />
+        </Switch>
+      </div>
       <FloatingTimer />
-    </>
+    </div>
   );
 }
 

@@ -12,7 +12,8 @@ import {
   Settings,
   LogOut,
   Scale,
-  ChevronRight,
+  Menu,
+  X,
   BarChart3,
   Shield,
   Bell,
@@ -22,12 +23,14 @@ import {
   Package,
   BriefcaseBusiness,
   LifeBuoy,
+  PanelLeftClose,
+  PanelLeft,
 } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 interface AppLayoutProps {
@@ -56,7 +59,10 @@ export default function AppLayout({ children, title, breadcrumb }: AppLayoutProp
     enabled: Boolean(user) && isFirmAdminRole,
     refetchInterval: 60_000,
   });
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+
+  /** Desktop (≥lg): expanded vs icon rail. Mobile (<lg): drawer open/closed. */
+  const [desktopExpanded, setDesktopExpanded] = useState(true);
+  const [mobileOpen, setMobileOpen] = useState(false);
 
   const isClient = !firmData;
   const isAdmin = Boolean(firmData?.capabilities?.canAccessAdminConsole);
@@ -106,162 +112,230 @@ export default function AppLayout({ children, title, breadcrumb }: AppLayoutProp
     ? user.name.split(" ").map((n: string) => n[0]).join("").toUpperCase().slice(0, 2)
     : "?";
 
-  return (
-    <div className="flex h-screen bg-background overflow-hidden">
-      {/* Sidebar */}
-      <aside className={cn(
-        "flex flex-col bg-[var(--color-navy)] text-white transition-all duration-300 ease-snappy shrink-0",
-        sidebarOpen ? "w-64" : "w-16"
-      )}>
-        {/* Logo */}
-        <div className="flex items-center gap-3 px-4 py-5 border-b border-white/10">
-          <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-white/15 shrink-0">
-            <Scale className="w-4 h-4 text-white" />
-          </div>
-          {sidebarOpen && (
-            <div className="min-w-0">
-              <span className="font-serif font-semibold text-white text-lg leading-none tracking-tight">Cliavo</span>
-              {firmData?.firm && (
-                <p className="text-white/50 text-xs mt-0.5 truncate">{firmData.firm.name}</p>
-              )}
-            </div>
+  // Close mobile drawer on route change
+  useEffect(() => {
+    setMobileOpen(false);
+  }, [location]);
+
+  // Lock body scroll when mobile drawer open
+  useEffect(() => {
+    if (!mobileOpen) return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = prev;
+    };
+  }, [mobileOpen]);
+
+  const showLabels = desktopExpanded;
+
+  const navLink = (
+    href: string,
+    label: string,
+    Icon: React.ComponentType<{ className?: string }>,
+    badge?: number
+  ) => {
+    const isActive = location === href || location.startsWith(href + "/");
+    return (
+      <Link key={href} href={href} onClick={() => setMobileOpen(false)}>
+        <div
+          className={cn(
+            "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium cursor-pointer transition-all duration-150",
+            isActive
+              ? "bg-white/15 text-white"
+              : "text-white/65 hover:bg-white/10 hover:text-white"
+          )}
+        >
+          <Icon className="w-5 h-5 shrink-0" />
+          <span className={cn("flex-1 truncate", !showLabels && "lg:hidden")}>{label}</span>
+          {badge != null && badge > 0 && (
+            <Badge className={cn(
+              "bg-[var(--color-gold)] text-white text-xs px-1.5 py-0 h-5 min-w-5 flex items-center justify-center",
+              !showLabels && "lg:hidden"
+            )}>
+              {badge > 99 ? "99+" : badge}
+            </Badge>
           )}
         </div>
+      </Link>
+    );
+  };
 
-        {/* Navigation */}
-        <ScrollArea className="flex-1 py-4">
-          <nav className="px-2 space-y-0.5">
-            {items.map(({ href, label, icon: Icon }) => {
-              const isActive = location === href || location.startsWith(href + "/");
-              const showBadge = href === "/messages" && unreadCount && unreadCount > 0;
-              return (
-                <Link key={href} href={href}>
-                  <div className={cn(
-                    "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium cursor-pointer transition-all duration-150",
-                    isActive
-                      ? "bg-white/15 text-white"
-                      : "text-white/65 hover:bg-white/10 hover:text-white"
-                  )}>
-                    <Icon className="w-4 h-4 shrink-0" />
-                    {sidebarOpen && (
-                      <>
-                        <span className="flex-1">{label}</span>
-                        {showBadge && (
-                          <Badge className="bg-[var(--color-gold)] text-white text-xs px-1.5 py-0 h-5 min-w-5 flex items-center justify-center">
-                            {unreadCount > 99 ? "99+" : unreadCount}
-                          </Badge>
-                        )}
-                      </>
-                    )}
-                  </div>
-                </Link>
-              );
-            })}
-          </nav>
-        </ScrollArea>
+  const sidebarInner = (
+    <>
+      <div className="flex items-center gap-3 px-4 py-4 border-b border-white/10">
+        <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-[var(--color-gold)]/20 shrink-0">
+          <Scale className="w-4 h-4 text-[var(--color-gold-light)]" />
+        </div>
+        <div className={cn("min-w-0 flex-1", !showLabels && "lg:hidden")}>
+          <span className="font-serif font-semibold text-white text-lg leading-none tracking-tight">
+            Cliavo
+          </span>
+          {firmData?.firm && (
+            <p className="text-white/50 text-xs mt-0.5 truncate">{firmData.firm.name}</p>
+          )}
+        </div>
+        <button
+          type="button"
+          className="lg:hidden p-2 rounded-lg text-white/70 hover:bg-white/10 hover:text-white"
+          onClick={() => setMobileOpen(false)}
+          aria-label="Close menu"
+        >
+          <X className="w-5 h-5" />
+        </button>
+      </div>
 
-        {/* Bottom section */}
-        <div className="border-t border-white/10 p-2 space-y-0.5">
-          <Link href="/support">
-            <div className={cn(
-              "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium cursor-pointer transition-all duration-150",
-              location === "/support" ? "bg-white/15 text-white" : "text-white/65 hover:bg-white/10 hover:text-white"
-            )}>
-              <LifeBuoy className="w-4 h-4 shrink-0" />
-              {sidebarOpen && (
-                <>
-                  <span className="flex-1">{t("nav.support")}</span>
-                  {ticketUnread > 0 && (
-                    <Badge className="bg-[var(--color-gold)] text-white text-xs px-1.5 py-0 h-5 min-w-5 flex items-center justify-center">
-                      {ticketUnread > 99 ? "99+" : ticketUnread}
-                    </Badge>
-                  )}
-                </>
-              )}
-            </div>
-          </Link>
-          <Link href="/settings">
-            <div className={cn(
-              "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium cursor-pointer transition-all duration-150",
-              location === "/settings" ? "bg-white/15 text-white" : "text-white/65 hover:bg-white/10 hover:text-white"
-            )}>
-              <Settings className="w-4 h-4 shrink-0" />
-              {sidebarOpen && <span>{t("nav.settings")}</span>}
-            </div>
-          </Link>
-          <div className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-white/65 hover:bg-white/10 hover:text-white cursor-pointer transition-all duration-150"
-            onClick={logout}>
-            <LogOut className="w-4 h-4 shrink-0" />
-            {sidebarOpen && <span className="text-sm font-medium">{t("nav.signOut")}</span>}
-          </div>
-          <Separator className="bg-white/10 my-2" />
-          <div className="flex items-center gap-3 px-3 py-2">
-            <Avatar className="w-7 h-7 shrink-0">
-              <AvatarFallback className="bg-white/20 text-white text-xs font-semibold">{initials}</AvatarFallback>
-            </Avatar>
-            {sidebarOpen && (
-              <div className="min-w-0">
-                <p className="text-white text-sm font-medium truncate">{user?.name ?? "User"}</p>
-                <p className="text-white/50 text-xs truncate">
-                  {roleLabel(t, firmData?.member.firmRole)}
-                </p>
-              </div>
-            )}
+      <ScrollArea className="flex-1 py-3">
+        <nav className="px-2 space-y-0.5">
+          {items.map(({ href, label, icon: Icon }) =>
+            navLink(
+              href,
+              label,
+              Icon,
+              href === "/messages" && unreadCount ? unreadCount : undefined
+            )
+          )}
+        </nav>
+      </ScrollArea>
+
+      <div className="border-t border-white/10 p-2 space-y-0.5 pb-[max(0.5rem,env(safe-area-inset-bottom))]">
+        {navLink(
+          "/support",
+          t("nav.support"),
+          LifeBuoy,
+          ticketUnread > 0 ? ticketUnread : undefined
+        )}
+        {navLink("/settings", t("nav.settings"), Settings)}
+        <button
+          type="button"
+          className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-white/65 hover:bg-white/10 hover:text-white cursor-pointer transition-all duration-150 text-sm font-medium"
+          onClick={logout}
+        >
+          <LogOut className="w-5 h-5 shrink-0" />
+          <span className={cn(!showLabels && "lg:hidden")}>{t("nav.signOut")}</span>
+        </button>
+        <Separator className="bg-white/10 my-2" />
+        <div className="flex items-center gap-3 px-3 py-2">
+          <Avatar className="w-8 h-8 shrink-0">
+            <AvatarFallback className="bg-white/20 text-white text-xs font-semibold">
+              {initials}
+            </AvatarFallback>
+          </Avatar>
+          <div className={cn("min-w-0", !showLabels && "lg:hidden")}>
+            <p className="text-white text-sm font-medium truncate">{user?.name ?? "User"}</p>
+            <p className="text-white/50 text-xs truncate">
+              {roleLabel(t, firmData?.member.firmRole)}
+            </p>
           </div>
         </div>
+      </div>
+    </>
+  );
+
+  return (
+    <div className="flex h-full min-h-0 w-full bg-background overflow-hidden">
+      {/* Desktop / large tablet persistent sidebar */}
+      <aside
+        className={cn(
+          "hidden lg:flex flex-col bg-[var(--color-navy)] text-white transition-[width] duration-300 ease-snappy shrink-0 h-full",
+          desktopExpanded ? "w-64" : "w-[4.5rem]"
+        )}
+      >
+        {sidebarInner}
       </aside>
 
-      {/* Main content */}
-      <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
-        {/* Top bar */}
-        <header className="flex items-center gap-4 px-6 py-4 bg-card border-b border-border shrink-0">
+      {/* Mobile / small tablet overlay drawer */}
+      <div
+        className={cn(
+          "fixed inset-0 z-50 lg:hidden transition-opacity duration-200",
+          mobileOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
+        )}
+        aria-hidden={!mobileOpen}
+      >
+        <button
+          type="button"
+          className="absolute inset-0 bg-black/50"
+          onClick={() => setMobileOpen(false)}
+          aria-label="Close menu overlay"
+        />
+        <aside
+          className={cn(
+            "absolute inset-y-0 start-0 w-[min(18rem,86vw)] max-w-full flex flex-col bg-[var(--color-navy)] text-white shadow-xl transition-transform duration-300 ease-snappy pt-[env(safe-area-inset-top)]",
+            mobileOpen ? "translate-x-0" : "-translate-x-full"
+          )}
+        >
+          {sidebarInner}
+        </aside>
+      </div>
+
+      {/* Main column */}
+      <div className="flex-1 flex flex-col min-w-0 min-h-0 overflow-hidden">
+        <header className="flex items-center gap-2 sm:gap-3 px-3 sm:px-5 py-3 bg-card border-b border-border shrink-0 pt-[max(0.75rem,env(safe-area-inset-top))]">
           <button
-            onClick={() => setSidebarOpen(!sidebarOpen)}
-            className="text-muted-foreground hover:text-foreground transition-colors p-1 rounded"
+            type="button"
+            className="lg:hidden p-2 -ms-1 rounded-lg text-muted-foreground hover:text-foreground hover:bg-accent"
+            onClick={() => setMobileOpen(true)}
+            aria-label="Open menu"
           >
-            <ChevronRight className={cn("w-4 h-4 transition-transform duration-200", sidebarOpen && "rotate-180")} />
+            <Menu className="w-5 h-5" />
           </button>
+          <button
+            type="button"
+            className="hidden lg:inline-flex p-2 -ms-1 rounded-lg text-muted-foreground hover:text-foreground hover:bg-accent"
+            onClick={() => setDesktopExpanded((v) => !v)}
+            aria-label={desktopExpanded ? "Collapse sidebar" : "Expand sidebar"}
+          >
+            {desktopExpanded ? (
+              <PanelLeftClose className="w-5 h-5" />
+            ) : (
+              <PanelLeft className="w-5 h-5" />
+            )}
+          </button>
+
           <div className="flex-1 min-w-0">
             {breadcrumb && breadcrumb.length > 0 ? (
-              <nav className="flex items-center gap-1.5 text-sm">
+              <nav className="flex items-center gap-1.5 text-sm truncate">
                 {breadcrumb.map((item, i) => (
-                  <span key={i} className="flex items-center gap-1.5">
-                    {i > 0 && <span className="text-muted-foreground">/</span>}
+                  <span key={i} className="flex items-center gap-1.5 min-w-0">
+                    {i > 0 && <span className="text-muted-foreground shrink-0">/</span>}
                     {item.href ? (
-                      <Link href={item.href} className="text-muted-foreground hover:text-foreground transition-colors">{item.label}</Link>
+                      <Link
+                        href={item.href}
+                        className="text-muted-foreground hover:text-foreground transition-colors truncate"
+                      >
+                        {item.label}
+                      </Link>
                     ) : (
-                      <span className="text-foreground font-medium">{item.label}</span>
+                      <span className="text-foreground font-medium truncate">{item.label}</span>
                     )}
                   </span>
                 ))}
               </nav>
             ) : title ? (
-              <h1 className="text-lg font-semibold text-foreground">{title}</h1>
+              <h1 className="text-base sm:text-lg font-semibold text-foreground truncate">{title}</h1>
             ) : null}
           </div>
-          <div className="flex items-center gap-2">
-            <Link
-              href={ticketUnread > 0 ? "/support" : "/messages"}
-              className="relative p-2 text-muted-foreground hover:text-foreground rounded-lg hover:bg-accent transition-colors"
-              title={
-                ticketUnread > 0
-                  ? t("support.bellTickets", { count: ticketUnread })
-                  : t("nav.messages")
-              }
-            >
-              <Bell className="w-4 h-4" />
-              {bellCount > 0 && (
-                <span className="absolute top-1 end-1 min-w-[1rem] h-4 px-1 rounded-full bg-[var(--color-gold)] text-[10px] leading-4 text-white text-center font-semibold">
-                  {bellCount > 99 ? "99+" : bellCount}
-                </span>
-              )}
-            </Link>
-          </div>
+
+          <Link
+            href={ticketUnread > 0 ? "/support" : "/messages"}
+            className="relative p-2 text-muted-foreground hover:text-foreground rounded-lg hover:bg-accent transition-colors shrink-0"
+            title={
+              ticketUnread > 0
+                ? t("support.bellTickets", { count: ticketUnread })
+                : t("nav.messages")
+            }
+          >
+            <Bell className="w-5 h-5" />
+            {bellCount > 0 && (
+              <span className="absolute top-0.5 end-0.5 min-w-[1rem] h-4 px-1 rounded-full bg-[var(--color-gold)] text-[10px] leading-4 text-white text-center font-semibold">
+                {bellCount > 99 ? "99+" : bellCount}
+              </span>
+            )}
+          </Link>
         </header>
 
-        {/* Page content */}
-        <main className="flex-1 overflow-auto">
-          {children}
+        <main className="flex-1 min-h-0 overflow-auto overscroll-contain">
+          <div className="min-h-full w-full max-w-[100vw]">{children}</div>
         </main>
       </div>
     </div>

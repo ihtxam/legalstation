@@ -37,22 +37,22 @@ export default function InvoicesPage() {
 
   return (
     <AppLayout title={t("invoices.billing")} breadcrumb={[{ label: t("invoices.billing") }]}>
-      <div className="p-6 space-y-5 max-w-6xl mx-auto">
-        <div className="flex items-center justify-between">
-          <div>
-            <h2 className="text-xl font-semibold text-foreground">{t("invoices.title")}</h2>
+      <div className="page-shell max-w-6xl">
+        <div className="page-header">
+          <div className="min-w-0">
+            <h2 className="text-lg sm:text-xl font-semibold text-foreground">{t("invoices.title")}</h2>
             <p className="text-muted-foreground text-sm mt-0.5">{t("invoices.count", { count: allInvoices.length })}</p>
           </div>
           {showNewInvoice && (
-            <Button className="bg-[var(--color-navy)] hover:bg-[var(--color-navy-light)] text-white" onClick={() => navigate("/invoices/new")}>
+            <Button className="bg-[var(--color-navy)] hover:bg-[var(--color-navy-light)] text-white w-full sm:w-auto" onClick={() => navigate("/invoices/new")}>
               <Plus className="w-4 h-4 mr-1.5" /> {t("invoices.new")}
             </Button>
           )}
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 flex-wrap">
           <Select value={statusFilter} onValueChange={setStatusFilter}>
-            <SelectTrigger className="w-44"><SelectValue /></SelectTrigger>
+            <SelectTrigger className="w-full sm:w-44"><SelectValue /></SelectTrigger>
             <SelectContent>
               <SelectItem value="all">{t("common.allStatuses")}</SelectItem>
               <SelectItem value="draft">{t("common.draft")}</SelectItem>
@@ -73,7 +73,8 @@ export default function InvoicesPage() {
               <p className="text-muted-foreground font-medium">{t("invoices.empty")}</p>
             </div>
           ) : (
-            <table className="w-full">
+            <div className="table-scroll">
+            <table className="w-full min-w-[640px]">
               <thead>
                 <tr className="border-b border-border bg-muted/40">
                   <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wide">{t("invoices.colInvoice")}</th>
@@ -105,6 +106,7 @@ export default function InvoicesPage() {
                 ))}
               </tbody>
             </table>
+            </div>
           )}
         </div>
       </div>

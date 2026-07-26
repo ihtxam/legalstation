@@ -73,28 +73,30 @@ export default function AgendaPage() {
       title={t("calendar.agendaTitle")}
       breadcrumb={[{ label: t("calendar.agendaTitle") }]}
     >
-      <div className="p-6 max-w-3xl mx-auto space-y-4">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <div>
-            <h2 className="text-xl font-semibold text-foreground">{t("calendar.agendaTitle")}</h2>
+      <div className="page-shell max-w-3xl">
+        <div className="page-header">
+          <div className="min-w-0">
+            <h2 className="text-lg sm:text-xl font-semibold text-foreground">{t("calendar.agendaTitle")}</h2>
             <p className="text-sm text-muted-foreground">{t("calendar.agendaHint")}</p>
           </div>
-          <div className="flex gap-2">
+          <div className="page-actions">
             <Link href="/settings">
-              <Button variant="outline">
+              <Button variant="outline" size="sm" className="flex-1 sm:flex-none">
                 <Settings className="w-4 h-4 me-1.5" />
-                {t("calendar.manageConnections")}
+                <span className="truncate">{t("calendar.manageConnections")}</span>
               </Button>
             </Link>
             <Button
               variant="outline"
+              size="sm"
+              className="flex-1 sm:flex-none"
               disabled={syncNow.isPending}
               onClick={() => syncNow.mutate(undefined)}
             >
               <RefreshCw className="w-4 h-4 me-1.5" />
               {t("calendar.syncNow")}
             </Button>
-            <Button onClick={() => setShowCreate(true)}>
+            <Button size="sm" className="flex-1 sm:flex-none bg-[var(--color-navy)] hover:bg-[var(--color-navy-light)] text-white" onClick={() => setShowCreate(true)}>
               <CalendarPlus className="w-4 h-4 me-1.5" />
               {t("calendar.addEvent")}
             </Button>

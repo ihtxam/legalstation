@@ -25,10 +25,10 @@ export default function ImpersonationBanner() {
   if (!info?.active) return null;
 
   return (
-    <div className="bg-amber-500 text-amber-950 px-4 py-2 text-sm flex items-center justify-between gap-3 flex-wrap z-50">
-      <div className="flex items-center gap-2 min-w-0">
-        <Shield className="h-4 w-4 shrink-0" />
-        <p className="truncate">
+    <div className="bg-amber-500 text-amber-950 px-3 sm:px-4 py-2 text-sm flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 z-50 shrink-0">
+      <div className="flex items-start sm:items-center gap-2 min-w-0">
+        <Shield className="h-4 w-4 shrink-0 mt-0.5 sm:mt-0" />
+        <p className="text-xs sm:text-sm leading-snug break-words">
           {t("impersonation.viewingAs", { firm: info.firmName })}
           {info.adminEmail ? ` (${info.adminEmail})` : ""}
         </p>
@@ -36,7 +36,7 @@ export default function ImpersonationBanner() {
       <Button
         size="sm"
         variant="secondary"
-        className="bg-white text-amber-950 hover:bg-amber-50 shrink-0"
+        className="bg-white text-amber-950 hover:bg-amber-50 shrink-0 w-full sm:w-auto"
         disabled={stop.isPending}
         onClick={() => stop.mutate()}
       >

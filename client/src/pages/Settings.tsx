@@ -264,9 +264,9 @@ export default function SettingsPage() {
 
   return (
     <AppLayout title={t("settings.title")} breadcrumb={[{ label: t("settings.title") }]}>
-      <div className="p-6 max-w-5xl mx-auto">
+      <div className="page-shell max-w-5xl">
         <Tabs defaultValue={canManageFirm ? "firm" : "language"}>
-          <TabsList className="bg-muted mb-6 flex flex-wrap h-auto">
+          <TabsList className="bg-muted mb-6 flex flex-wrap h-auto w-full justify-start gap-1">
             {canManageFirm && (
               <>
                 <TabsTrigger value="firm"><Building2 className="w-4 h-4 mr-1.5" />{t("settings.tabFirm")}</TabsTrigger>
@@ -285,7 +285,7 @@ export default function SettingsPage() {
               <h3 className="font-semibold text-foreground">{t("settings.firmSettings")}</h3>
               <div><Label>{t("settings.firmName")}</Label><Input className={`mt-1.5 ${getFieldHighlight('name')}`} value={firmForm.name} onChange={e => setFirmForm(f => ({ ...f, name: e.target.value }))} /></div>
               <div><Label>{t("settings.address")}</Label><Input className={`mt-1.5 ${getFieldHighlight('address')}`} value={firmForm.address} onChange={e => setFirmForm(f => ({ ...f, address: e.target.value }))} /></div>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div><Label>{t("settings.email")}</Label><Input type="email" className={`mt-1.5 ${getFieldHighlight('email')}`} value={firmForm.email} onChange={e => setFirmForm(f => ({ ...f, email: e.target.value }))} /></div>
                 <div><Label>{t("settings.phone")}</Label><Input className={`mt-1.5 ${getFieldHighlight('phone')}`} value={firmForm.phone} onChange={e => setFirmForm(f => ({ ...f, phone: e.target.value }))} /></div>
               </div>
