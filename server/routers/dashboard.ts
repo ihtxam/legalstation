@@ -197,8 +197,12 @@ export const dashboardRouter = router({
               inArray(serviceOrders.status, [
                 "paid",
                 "awaiting_acceptance",
+                "awaiting_intake",
+                "ready_for_firm",
                 "accepted",
                 "in_progress",
+                "delivered",
+                "revision_requested",
                 "completed",
               ])
             )

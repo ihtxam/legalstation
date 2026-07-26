@@ -276,6 +276,10 @@ export const firmOndemandServices = mysqlTable("firm_ondemand_services", {
   ])
     .notNull()
     .default("advice"),
+  /** document = upload/review workflow; consultation = call + remarks */
+  fulfillmentType: mysqlEnum("fulfillmentType", ["document", "consultation"])
+    .notNull()
+    .default("document"),
   price: decimal("price", { precision: 10, scale: 2 }).notNull().default("0.00"),
   currency: varchar("currency", { length: 3 }).notNull().default("CHF"),
   /** Expected lawyer time for delivery */
@@ -319,8 +323,12 @@ export const serviceOrders = mysqlTable("service_orders", {
     "pending_payment",
     "paid",
     "awaiting_acceptance",
+    "awaiting_intake",
+    "ready_for_firm",
     "accepted",
     "in_progress",
+    "delivered",
+    "revision_requested",
     "completed",
     "cancelled",
     "rejected",
@@ -329,7 +337,17 @@ export const serviceOrders = mysqlTable("service_orders", {
     .default("cart"),
   subtotal: decimal("subtotal", { precision: 10, scale: 2 }).notNull().default("0.00"),
   currency: varchar("currency", { length: 3 }).notNull().default("CHF"),
+  fulfillmentType: mysqlEnum("fulfillmentType", ["document", "consultation"])
+    .notNull()
+    .default("document"),
   clientNotes: text("clientNotes"),
+  /** Immutable client brief after intake submit */
+  intakeDescription: text("intakeDescription"),
+  intakeSubmittedAt: timestamp("intakeSubmittedAt"),
+  maxRevisions: int("maxRevisions").notNull().default(2),
+  revisionsUsed: int("revisionsUsed").notNull().default(0),
+  lawyerRemarks: text("lawyerRemarks"),
+  lastDeliveredAt: timestamp("lastDeliveredAt"),
   stripeCheckoutSessionId: varchar("stripeCheckoutSessionId", { length: 255 }),
   stripePaymentUrl: text("stripePaymentUrl"),
   adyenPaymentLinkId: varchar("adyenPaymentLinkId", { length: 255 }),
@@ -338,6 +356,8 @@ export const serviceOrders = mysqlTable("service_orders", {
   acceptedAt: timestamp("acceptedAt"),
   rejectedAt: timestamp("rejectedAt"),
   completedAt: timestamp("completedAt"),
+  /** Set when order is permanently closed (also auto after completedAt + 7 days) */
+  lockedAt: timestamp("lockedAt"),
   acceptedByUserId: int("acceptedByUserId"),
   assignedLawyerUserId: int("assignedLawyerUserId"),
   caseId: int("caseId"),
@@ -348,6 +368,47 @@ export const serviceOrders = mysqlTable("service_orders", {
 
 export type ServiceOrder = typeof serviceOrders.$inferSelect;
 export type InsertServiceOrder = typeof serviceOrders.$inferInsert;
+
+export const serviceOrderAttachments = mysqlTable("service_order_attachments", {
+  id: int("id").autoincrement().primaryKey(),
+  orderId: int("orderId").notNull(),
+  firmId: int("firmId").notNull(),
+  kind: mysqlEnum("kind", ["client_source", "firm_deliverable"]).notNull(),
+  round: int("round").notNull().default(1),
+  fileName: varchar("fileName", { length: 255 }).notNull(),
+  fileKey: varchar("fileKey", { length: 512 }).notNull(),
+  fileUrl: text("fileUrl").notNull(),
+  mimeType: varchar("mimeType", { length: 128 }),
+  size: int("size").notNull().default(0),
+  description: text("description"),
+  uploadedByUserId: int("uploadedByUserId").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type ServiceOrderAttachment = typeof serviceOrderAttachments.$inferSelect;
+export type InsertServiceOrderAttachment = typeof serviceOrderAttachments.$inferInsert;
+
+export const serviceOrderEvents = mysqlTable("service_order_events", {
+  id: int("id").autoincrement().primaryKey(),
+  orderId: int("orderId").notNull(),
+  firmId: int("firmId").notNull(),
+  type: mysqlEnum("type", [
+    "intake_submitted",
+    "assigned",
+    "delivered",
+    "revision_requested",
+    "completed",
+    "remark",
+    "locked",
+    "system",
+  ]).notNull(),
+  body: text("body"),
+  authorUserId: int("authorUserId"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type ServiceOrderEvent = typeof serviceOrderEvents.$inferSelect;
+export type InsertServiceOrderEvent = typeof serviceOrderEvents.$inferInsert;
 
 export const serviceOrderItems = mysqlTable("service_order_items", {
   id: int("id").autoincrement().primaryKey(),

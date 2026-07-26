@@ -17,11 +17,13 @@ import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 import { BriefcaseBusiness, Plus, Check, X, UserPlus, Pencil } from "lucide-react";
 import { useLocation } from "wouter";
+import { ServiceOrderDetail } from "@/components/ServiceOrderDetail";
 
 type ServiceForm = {
   name: string;
   description: string;
   category: "advice" | "contract" | "documents" | "employment" | "corporate" | "other";
+  fulfillmentType: "document" | "consultation";
   price: string;
   estimatedHours: string;
   deliveryNotes: string;
@@ -31,7 +33,8 @@ type ServiceForm = {
 const emptyService: ServiceForm = {
   name: "",
   description: "",
-  category: "advice",
+  category: "contract",
+  fulfillmentType: "document",
   price: "150",
   estimatedHours: "1",
   deliveryNotes: "",
@@ -43,6 +46,7 @@ type ServiceRow = {
   name: string;
   description: string | null;
   category: ServiceForm["category"];
+  fulfillmentType?: "document" | "consultation";
   price: string;
   estimatedHours: string;
   deliveryNotes: string | null;
@@ -122,6 +126,7 @@ export default function FirmServicesPage() {
   const [form, setForm] = useState<ServiceForm>(emptyService);
   const [acceptFor, setAcceptFor] = useState<number | null>(null);
   const [lawyerId, setLawyerId] = useState<string>("");
+  const [selectedOrderId, setSelectedOrderId] = useState<number | null>(null);
 
   useEffect(() => {
     if (!loading && !isAuthenticated) startLogin();
@@ -151,6 +156,9 @@ export default function FirmServicesPage() {
       name: svc.name,
       description: svc.description || "",
       category: svc.category,
+      fulfillmentType:
+        svc.fulfillmentType ||
+        (svc.category === "advice" ? "consultation" : "document"),
       price: String(Number(svc.price) || 0),
       estimatedHours: String(Number(svc.estimatedHours) || 0),
       deliveryNotes: svc.deliveryNotes || "",
@@ -164,6 +172,7 @@ export default function FirmServicesPage() {
       name: form.name.trim(),
       description: form.description.trim() || undefined,
       category: form.category,
+      fulfillmentType: form.fulfillmentType,
       price: parseFloat(form.price) || 0,
       estimatedHours: parseFloat(form.estimatedHours) || 1,
       deliveryNotes: form.deliveryNotes.trim() || undefined,
@@ -237,6 +246,16 @@ export default function FirmServicesPage() {
                         <Badge variant="outline" className="ms-1 capitalize">
                           {order.status.replace(/_/g, " ")}
                         </Badge>
+                        <Badge variant="secondary" className="ms-1">
+                          {order.fulfillmentType === "consultation"
+                            ? t("services.fulfillmentConsultation")
+                            : t("services.fulfillmentDocument")}
+                        </Badge>
+                        {order.isLocked ? (
+                          <Badge variant="destructive" className="ms-1">
+                            {t("services.locked")}
+                          </Badge>
+                        ) : null}
                       </p>
                       <p className="text-sm text-muted-foreground">
                         {client.companyName ||
@@ -244,16 +263,29 @@ export default function FirmServicesPage() {
                           client.email}{" "}
                         · {Number(order.subtotal).toFixed(2)} {order.currency}
                       </p>
+                      {order.status === "awaiting_intake" ? (
+                        <p className="text-xs text-muted-foreground mt-0.5">
+                          {t("services.waitingClientIntake")}
+                        </p>
+                      ) : null}
+                      {order.status === "revision_requested" ? (
+                        <p className="text-xs text-amber-700 dark:text-amber-400 mt-0.5">
+                          {t("services.revisionPending")}
+                        </p>
+                      ) : null}
                     </div>
                     <div className="flex flex-wrap gap-2">
+                      <Button size="sm" onClick={() => setSelectedOrderId(order.id)}>
+                        {t("services.openOrder")}
+                      </Button>
                       {order.status === "pending_payment" && (
                         <Button size="sm" variant="outline" onClick={() => markPaid.mutate({ orderId: order.id })}>
                           {t("services.markPaid")}
                         </Button>
                       )}
-                      {["paid", "awaiting_acceptance"].includes(order.status) && (
+                      {["ready_for_firm", "awaiting_acceptance"].includes(order.status) && (
                         <>
-                          <Button size="sm" onClick={() => setAcceptFor(order.id)}>
+                          <Button size="sm" variant="outline" onClick={() => setAcceptFor(order.id)}>
                             <Check className="w-3.5 h-3.5 me-1" />
                             {t("services.accept")}
                           </Button>
@@ -267,7 +299,11 @@ export default function FirmServicesPage() {
                           </Button>
                         </>
                       )}
-                      {order.caseId && ["accepted", "in_progress"].includes(order.status) && !order.assignedLawyerUserId && (
+                      {order.caseId &&
+                        ["accepted", "in_progress", "revision_requested", "delivered"].includes(
+                          order.status
+                        ) &&
+                        !order.assignedLawyerUserId && (
                         <Button size="sm" variant="outline" onClick={() => setAcceptFor(order.id)}>
                           <UserPlus className="w-3.5 h-3.5 me-1" />
                           {t("services.assignLawyer")}
@@ -278,7 +314,10 @@ export default function FirmServicesPage() {
                           {t("services.openCase")}
                         </Button>
                       )}
-                      {["accepted", "in_progress"].includes(order.status) && (
+                      {["accepted", "in_progress", "delivered", "revision_requested"].includes(
+                        order.status
+                      ) &&
+                        !order.isLocked && (
                         <Button size="sm" variant="outline" onClick={() => completeOrder.mutate({ orderId: order.id })}>
                           {t("services.complete")}
                         </Button>
@@ -295,7 +334,11 @@ export default function FirmServicesPage() {
                       </li>
                     ))}
                   </ul>
-                  {order.clientNotes ? (
+                  {order.intakeDescription ? (
+                    <p className="text-xs text-muted-foreground line-clamp-2">
+                      {t("services.clientIntake")}: {order.intakeDescription}
+                    </p>
+                  ) : order.clientNotes ? (
                     <p className="text-xs text-muted-foreground">{t("services.clientNotes")}: {order.clientNotes}</p>
                   ) : null}
                 </div>
@@ -405,25 +448,55 @@ export default function FirmServicesPage() {
                 />
               </div>
             </div>
-            <div>
-              <Label>{t("services.category")}</Label>
-              <Select
-                value={form.category}
-                onValueChange={(v) => setForm((f) => ({ ...f, category: v as ServiceForm["category"] }))}
-              >
-                <SelectTrigger className="mt-1.5">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {(["advice", "contract", "documents", "employment", "corporate", "other"] as const).map(
-                    (c) => (
-                      <SelectItem key={c} value={c}>
-                        {t(`services.cat.${c}`)}
-                      </SelectItem>
-                    )
-                  )}
-                </SelectContent>
-              </Select>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <Label>{t("services.category")}</Label>
+                <Select
+                  value={form.category}
+                  onValueChange={(v) => {
+                    const category = v as ServiceForm["category"];
+                    setForm((f) => ({
+                      ...f,
+                      category,
+                      fulfillmentType:
+                        category === "advice" ? "consultation" : f.fulfillmentType,
+                    }));
+                  }}
+                >
+                  <SelectTrigger className="mt-1.5">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {(["advice", "contract", "documents", "employment", "corporate", "other"] as const).map(
+                      (c) => (
+                        <SelectItem key={c} value={c}>
+                          {t(`services.cat.${c}`)}
+                        </SelectItem>
+                      )
+                    )}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label>{t("services.fulfillmentType")}</Label>
+                <Select
+                  value={form.fulfillmentType}
+                  onValueChange={(v) =>
+                    setForm((f) => ({
+                      ...f,
+                      fulfillmentType: v as ServiceForm["fulfillmentType"],
+                    }))
+                  }
+                >
+                  <SelectTrigger className="mt-1.5">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="document">{t("services.fulfillmentDocument")}</SelectItem>
+                    <SelectItem value="consultation">{t("services.fulfillmentConsultation")}</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
             <div>
               <Label>{t("services.deliveryNotes")}</Label>
@@ -509,6 +582,22 @@ export default function FirmServicesPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <ServiceOrderDetail
+        orderId={selectedOrderId}
+        open={selectedOrderId != null}
+        onOpenChange={(v) => {
+          if (!v) setSelectedOrderId(null);
+        }}
+        mode="firm"
+        lawyers={lawyers.map((m) => ({
+          id: m.user.id,
+          label: m.user.name || m.user.email || `#${m.user.id}`,
+        }))}
+        onChanged={() => {
+          void orders.refetch();
+        }}
+      />
     </AppLayout>
   );
 }

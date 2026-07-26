@@ -42,6 +42,7 @@ import { format } from "date-fns";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
+import { ServiceOrderDetail } from "@/components/ServiceOrderDetail";
 import { CASE_TYPE_LABELS } from "@shared/types";
 
 export default function ClientPortalPage() {
@@ -84,6 +85,7 @@ export default function ClientPortalPage() {
     },
     onError: (e) => toast.error(e.message),
   });
+  const [selectedOrderId, setSelectedOrderId] = useState<number | null>(null);
   const isSubscriber = mySub?.accessType === "subscriber";
   const shopServices = trpc.ondemandServices.listPublicForClient.useQuery(undefined, {
     enabled: isAuthenticated,
@@ -105,11 +107,17 @@ export default function ClientPortalPage() {
   });
   const checkout = trpc.ondemandServices.checkout.useMutation({
     onSuccess: async (res) => {
-      toast.success(t("services.checkoutSuccess"));
+      toast.success(
+        res.paymentUrl ? t("services.checkoutSuccess") : t("services.checkoutSuccessIntake")
+      );
       setShowCart(false);
       setOrderNotes("");
       await Promise.all([cart.refetch(), myOrders.refetch()]);
-      if (res.paymentUrl) window.location.href = res.paymentUrl;
+      if (res.paymentUrl) {
+        window.location.href = res.paymentUrl;
+      } else if (res.orderId) {
+        setSelectedOrderId(res.orderId);
+      }
     },
     onError: (e) => toast.error(e.message),
   });
@@ -378,11 +386,16 @@ export default function ClientPortalPage() {
 
         {(myOrders.data || []).length > 0 && (
           <div className="space-y-2">
-            <h3 className="font-semibold text-sm">{t("services.myOrders")}</h3>
-            {(myOrders.data || []).slice(0, 5).map(({ order, items }) => (
-              <div
+            <div>
+              <h3 className="font-semibold text-sm">{t("services.myOrders")}</h3>
+              <p className="text-xs text-muted-foreground">{t("services.myOrdersHint")}</p>
+            </div>
+            {(myOrders.data || []).map(({ order, items }) => (
+              <button
                 key={order.id}
-                className="border border-border rounded-xl px-4 py-3 text-sm flex flex-wrap justify-between gap-2 bg-card"
+                type="button"
+                onClick={() => setSelectedOrderId(order.id)}
+                className="w-full text-start border border-border rounded-xl px-4 py-3 text-sm flex flex-wrap justify-between gap-2 bg-card hover:border-[var(--color-navy)]/40 transition"
               >
                 <div>
                   <p className="font-medium">
@@ -390,15 +403,30 @@ export default function ClientPortalPage() {
                     <Badge variant="outline" className="capitalize ms-1">
                       {order.status.replace(/_/g, " ")}
                     </Badge>
+                    {order.isLocked ? (
+                      <Badge variant="secondary" className="ms-1">
+                        {t("services.locked")}
+                      </Badge>
+                    ) : null}
                   </p>
                   <p className="text-xs text-muted-foreground">
                     {items.map((i) => i.serviceName).join(", ")}
                   </p>
+                  {order.canSubmitIntake ? (
+                    <p className="text-xs text-[var(--color-navy)] mt-0.5">
+                      {t("services.actionNeededIntake")}
+                    </p>
+                  ) : null}
+                  {order.canRequestRevision ? (
+                    <p className="text-xs text-[var(--color-navy)] mt-0.5">
+                      {t("services.actionNeededReview")}
+                    </p>
+                  ) : null}
                 </div>
                 <p className="text-sm font-medium">
                   {Number(order.subtotal).toFixed(2)} {order.currency}
                 </p>
-              </div>
+              </button>
             ))}
           </div>
         )}
@@ -1028,6 +1056,18 @@ export default function ClientPortalPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <ServiceOrderDetail
+        orderId={selectedOrderId}
+        open={selectedOrderId != null}
+        onOpenChange={(v) => {
+          if (!v) setSelectedOrderId(null);
+        }}
+        mode="client"
+        onChanged={() => {
+          void myOrders.refetch();
+        }}
+      />
     </AppLayout>
   );
 }

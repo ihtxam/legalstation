@@ -4,6 +4,7 @@ import { and, asc, desc, eq, ne } from "drizzle-orm";
 import {
   clients,
   firmOndemandServices,
+  serviceOrderAttachments,
   serviceOrderItems,
   serviceOrders,
   users,
@@ -26,11 +27,18 @@ import { getStripe } from "../stripe";
 import { createAdyenPaymentLink } from "../adyen";
 import { resolveAdyenConfig } from "./adyen";
 import {
+  addOrderEvent,
   getOrCreateCart,
+  getOrderAttachments,
+  getOrderEvents,
   getOrderWithItems,
+  isOrderLocked,
   markServiceOrderPaid,
+  maybeLockOrder,
+  orderPublicView,
   publicService,
   recomputeOrderSubtotal,
+  revisionsRemaining,
 } from "../ondemandServices";
 
 const categoryEnum = z.enum([
@@ -41,6 +49,17 @@ const categoryEnum = z.enum([
   "corporate",
   "other",
 ]);
+
+const fulfillmentTypeEnum = z.enum(["document", "consultation"]);
+
+const attachmentInput = z.object({
+  fileName: z.string().min(1).max(255),
+  fileKey: z.string().min(1).max(512),
+  fileUrl: z.string().min(1).max(2048),
+  mimeType: z.string().max(128).optional().nullable(),
+  size: z.number().int().min(0).max(25 * 1024 * 1024).default(0),
+  description: z.string().max(2000).optional(),
+});
 
 const caseTypeEnum = z.enum([
   "civil",
@@ -93,6 +112,7 @@ export const ondemandServicesRouter = router({
         name: z.string().min(1).max(255),
         description: z.string().optional(),
         category: categoryEnum.default("advice"),
+        fulfillmentType: fulfillmentTypeEnum.optional(),
         price: z.number().min(0),
         currency: z.string().length(3).default("CHF"),
         estimatedHours: z.number().min(0).max(1000).default(1),
@@ -107,11 +127,15 @@ export const ondemandServicesRouter = router({
       const member = await requireFirmAdmin(ctx.user.id);
       const db = await getDb();
       if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+      const fulfillmentType =
+        input.fulfillmentType ||
+        (input.category === "advice" ? "consultation" : "document");
       const result = await db.insert(firmOndemandServices).values({
         firmId: member.firmId,
         name: input.name,
         description: input.description || null,
         category: input.category,
+        fulfillmentType,
         price: input.price.toFixed(2),
         currency: input.currency.toUpperCase(),
         estimatedHours: input.estimatedHours.toFixed(2),
@@ -131,6 +155,7 @@ export const ondemandServicesRouter = router({
         name: z.string().min(1).max(255).optional(),
         description: z.string().optional().nullable(),
         category: categoryEnum.optional(),
+        fulfillmentType: fulfillmentTypeEnum.optional(),
         price: z.number().min(0).optional(),
         currency: z.string().length(3).optional(),
         estimatedHours: z.number().min(0).max(1000).optional(),
@@ -160,6 +185,7 @@ export const ondemandServicesRouter = router({
           ...("name" in rest ? { name: rest.name } : {}),
           ...("description" in rest ? { description: rest.description ?? null } : {}),
           ...("category" in rest ? { category: rest.category } : {}),
+          ...("fulfillmentType" in rest ? { fulfillmentType: rest.fulfillmentType } : {}),
           ...("price" in rest && rest.price != null ? { price: rest.price.toFixed(2) } : {}),
           ...("currency" in rest && rest.currency ? { currency: rest.currency.toUpperCase() } : {}),
           ...("estimatedHours" in rest && rest.estimatedHours != null
@@ -414,15 +440,16 @@ export const ondemandServicesRouter = router({
         }
       }
 
-      // Offline / no gateway: place order as paid and waiting for firm acceptance
+      // Offline / no gateway: place order as paid — client submits intake next
       await markServiceOrderPaid(cart.id, client.firmId);
       await notifyFirmNewOrder(client.firmId, cart.id, ctx.req);
       return {
         orderId: cart.id,
         orderNumber: cart.orderNumber,
-        status: "awaiting_acceptance" as const,
+        status: "awaiting_intake" as const,
         paymentUrl: null as string | null,
         gateway: "offline" as const,
+        nextStep: "submit_intake" as const,
       };
     }),
 
@@ -442,15 +469,191 @@ export const ondemandServicesRouter = router({
       )
       .orderBy(desc(serviceOrders.createdAt));
     const result = [];
-    for (const order of orders) {
+    for (const raw of orders) {
+      const order = await maybeLockOrder(raw);
       const items = await db
         .select()
         .from(serviceOrderItems)
         .where(eq(serviceOrderItems.orderId, order.id));
-      result.push({ order, items });
+      result.push({ order: orderPublicView(order), items });
     }
     return result;
   }),
+
+  getOrderDetail: protectedProcedure
+    .input(z.object({ orderId: z.number() }))
+    .query(async ({ ctx, input }) => {
+      const db = await getDb();
+      if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+      const full = await getOrderWithItems(input.orderId);
+      if (!full) throw new TRPCError({ code: "NOT_FOUND" });
+
+      const member = await getFirmMemberByUserId(ctx.user.id);
+      const client = await getClientByUserId(ctx.user.id);
+      const isFirm = !!member && member.firmId === full.order.firmId;
+      const isOwner = !!client && client.id === full.order.clientId;
+      if (!isFirm && !isOwner) throw new TRPCError({ code: "FORBIDDEN" });
+
+      const order = await maybeLockOrder(full.order);
+      const attachments = await getOrderAttachments(order.id);
+      const events = await getOrderEvents(order.id);
+      let assigneeName: string | null = null;
+      if (order.assignedLawyerUserId) {
+        const [u] = await db
+          .select()
+          .from(users)
+          .where(eq(users.id, order.assignedLawyerUserId))
+          .limit(1);
+        assigneeName = u?.name || u?.email || null;
+      }
+      return {
+        order: orderPublicView(order),
+        items: full.items,
+        attachments,
+        events,
+        assigneeName,
+        viewer: isFirm ? ("firm" as const) : ("client" as const),
+      };
+    }),
+
+  /** Client submits immutable intake (docs + description, or consultation details). */
+  submitClientIntake: protectedProcedure
+    .input(
+      z.object({
+        orderId: z.number(),
+        description: z.string().min(10).max(10000),
+        attachments: z.array(attachmentInput).max(10).default([]),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const client = await getClientByUserId(ctx.user.id);
+      if (!client) throw new TRPCError({ code: "FORBIDDEN" });
+      const db = await getDb();
+      if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+      const full = await getOrderWithItems(input.orderId);
+      if (!full || full.order.clientId !== client.id) {
+        throw new TRPCError({ code: "NOT_FOUND" });
+      }
+      let order = await maybeLockOrder(full.order);
+      if (isOrderLocked(order)) {
+        throw new TRPCError({ code: "BAD_REQUEST", message: "Order is locked" });
+      }
+      if (order.intakeSubmittedAt) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Intake already submitted and cannot be changed",
+        });
+      }
+      if (!["awaiting_intake", "awaiting_acceptance", "paid"].includes(order.status)) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Order is not waiting for client intake",
+        });
+      }
+      if (order.fulfillmentType === "document" && input.attachments.length === 0) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Upload at least one document for this service",
+        });
+      }
+
+      for (const file of input.attachments) {
+        await db.insert(serviceOrderAttachments).values({
+          orderId: order.id,
+          firmId: order.firmId,
+          kind: "client_source",
+          round: 1,
+          fileName: file.fileName,
+          fileKey: file.fileKey,
+          fileUrl: file.fileUrl,
+          mimeType: file.mimeType || null,
+          size: file.size,
+          description: file.description || null,
+          uploadedByUserId: ctx.user.id,
+        });
+      }
+
+      await db
+        .update(serviceOrders)
+        .set({
+          intakeDescription: input.description.trim(),
+          intakeSubmittedAt: new Date(),
+          status: "ready_for_firm",
+        })
+        .where(eq(serviceOrders.id, order.id));
+
+      await addOrderEvent({
+        orderId: order.id,
+        firmId: order.firmId,
+        type: "intake_submitted",
+        body: input.description.trim(),
+        authorUserId: ctx.user.id,
+      });
+
+      await notifyFirmIntakeReady(order.firmId, order.id, ctx.req);
+      return { success: true as const };
+    }),
+
+  /** Client requests a revision (max 2) after firm delivery. */
+  requestRevision: protectedProcedure
+    .input(
+      z.object({
+        orderId: z.number(),
+        message: z.string().min(5).max(5000),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const client = await getClientByUserId(ctx.user.id);
+      if (!client) throw new TRPCError({ code: "FORBIDDEN" });
+      const db = await getDb();
+      if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+      const full = await getOrderWithItems(input.orderId);
+      if (!full || full.order.clientId !== client.id) {
+        throw new TRPCError({ code: "NOT_FOUND" });
+      }
+      let order = await maybeLockOrder(full.order);
+      if (isOrderLocked(order)) {
+        throw new TRPCError({ code: "BAD_REQUEST", message: "Order is locked" });
+      }
+      if (order.fulfillmentType !== "document") {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Revisions are only available for document services",
+        });
+      }
+      if (order.status !== "delivered") {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "You can request a revision after the firm delivers work",
+        });
+      }
+      if (revisionsRemaining(order) <= 0) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "No revisions remaining on this order",
+        });
+      }
+
+      const used = (order.revisionsUsed || 0) + 1;
+      await db
+        .update(serviceOrders)
+        .set({
+          status: "revision_requested",
+          revisionsUsed: used,
+        })
+        .where(eq(serviceOrders.id, order.id));
+
+      await addOrderEvent({
+        orderId: order.id,
+        firmId: order.firmId,
+        type: "revision_requested",
+        body: input.message.trim(),
+        authorUserId: ctx.user.id,
+      });
+
+      await notifyFirmRevision(order.firmId, order.id, input.message.trim(), ctx.req);
+      return { success: true as const, revisionsUsed: used };
+    }),
 
   // ── Firm order desk ──────────────────────────────────────────────────────
   listOrdersForFirm: protectedProcedure
@@ -462,8 +665,12 @@ export const ondemandServicesRouter = router({
               "pending_payment",
               "paid",
               "awaiting_acceptance",
+              "awaiting_intake",
+              "ready_for_firm",
               "accepted",
               "in_progress",
+              "delivered",
+              "revision_requested",
               "completed",
               "cancelled",
               "rejected",
@@ -494,11 +701,12 @@ export const ondemandServicesRouter = router({
 
       const out = [];
       for (const row of rows) {
+        const order = await maybeLockOrder(row.order);
         const items = await db
           .select()
           .from(serviceOrderItems)
-          .where(eq(serviceOrderItems.orderId, row.order.id));
-        out.push({ ...row, items });
+          .where(eq(serviceOrderItems.orderId, order.id));
+        out.push({ order: orderPublicView(order), client: row.client, items });
       }
       return out;
     }),
@@ -534,11 +742,25 @@ export const ondemandServicesRouter = router({
         throw new TRPCError({ code: "NOT_FOUND" });
       }
       const { order, items } = full;
-      if (!["paid", "awaiting_acceptance"].includes(order.status)) {
+      if (isOrderLocked(order)) {
+        throw new TRPCError({ code: "BAD_REQUEST", message: "Order is locked" });
+      }
+      if (
+        !["paid", "awaiting_acceptance", "awaiting_intake", "ready_for_firm"].includes(order.status)
+      ) {
         throw new TRPCError({
           code: "BAD_REQUEST",
-          message: `Order must be paid before acceptance (current: ${order.status})`,
+          message: `Order cannot be accepted yet (current: ${order.status})`,
         });
+      }
+      if (!order.intakeSubmittedAt && order.status !== "awaiting_acceptance") {
+        // Prefer waiting for client intake, but allow legacy awaiting_acceptance
+        if (order.status === "awaiting_intake") {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "Wait for the client to submit documents or consultation details first",
+          });
+        }
       }
       if (order.caseId) {
         throw new TRPCError({ code: "BAD_REQUEST", message: "Order already has a case" });
@@ -561,7 +783,9 @@ export const ondemandServicesRouter = router({
 
       const description = [
         `On-demand order ${order.orderNumber}`,
+        `Fulfillment: ${order.fulfillmentType}`,
         order.clientNotes ? `Client notes: ${order.clientNotes}` : "",
+        order.intakeDescription ? `Client intake:\n${order.intakeDescription}` : "",
         "",
         "Services:",
         ...items.map(
@@ -640,10 +864,20 @@ export const ondemandServicesRouter = router({
             clientRow.firstName || clientRow.companyName || clientRow.email,
           caseTitle: newCase.title,
           updateTitle: "Your service order was accepted",
-          updateBody: `Order ${order.orderNumber} was accepted. A matter was opened: ${newCase.title}.`,
+          updateBody: `Order ${order.orderNumber} was accepted and assigned. Track progress under Ordered services in your portal.`,
           caseUrl,
         }).catch((err) => console.error("[Email] accept order:", err.message));
       }
+
+      await addOrderEvent({
+        orderId: order.id,
+        firmId: order.firmId,
+        type: "assigned",
+        body: input.lawyerUserId
+          ? `Accepted and assigned to lawyer #${input.lawyerUserId}`
+          : "Order accepted — awaiting assignment",
+        authorUserId: ctx.user.id,
+      });
 
       return { caseId: newCase.id, orderId: order.id };
     }),
@@ -660,7 +894,15 @@ export const ondemandServicesRouter = router({
         .where(and(eq(serviceOrders.id, input.orderId), eq(serviceOrders.firmId, member.firmId)))
         .limit(1);
       if (!order) throw new TRPCError({ code: "NOT_FOUND" });
-      if (!["paid", "awaiting_acceptance", "pending_payment"].includes(order.status)) {
+      if (
+        ![
+          "paid",
+          "awaiting_acceptance",
+          "awaiting_intake",
+          "ready_for_firm",
+          "pending_payment",
+        ].includes(order.status)
+      ) {
         throw new TRPCError({ code: "BAD_REQUEST", message: "Order cannot be rejected" });
       }
       await db
@@ -674,25 +916,160 @@ export const ondemandServicesRouter = router({
       return { success: true as const };
     }),
 
+  /** Firm uploads corrected/approved document (or delivery note) for the client. */
+  deliverWork: protectedProcedure
+    .input(
+      z.object({
+        orderId: z.number(),
+        note: z.string().max(5000).optional(),
+        attachments: z.array(attachmentInput).max(10).default([]),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const member = await requireFirmStaff(ctx.user.id);
+      const db = await getDb();
+      if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+      const full = await getOrderWithItems(input.orderId);
+      if (!full || full.order.firmId !== member.firmId) {
+        throw new TRPCError({ code: "NOT_FOUND" });
+      }
+      let order = await maybeLockOrder(full.order);
+      if (isOrderLocked(order)) {
+        throw new TRPCError({ code: "BAD_REQUEST", message: "Order is locked" });
+      }
+      if (
+        !["accepted", "in_progress", "revision_requested", "delivered"].includes(order.status)
+      ) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Accept and assign the order before delivering work",
+        });
+      }
+      if (order.fulfillmentType === "document" && input.attachments.length === 0) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Upload the corrected / approved document",
+        });
+      }
+
+      const priorDeliveries = (await getOrderAttachments(order.id)).filter(
+        (a) => a.kind === "firm_deliverable"
+      );
+      const round = priorDeliveries.length + 1;
+      for (const file of input.attachments) {
+        await db.insert(serviceOrderAttachments).values({
+          orderId: order.id,
+          firmId: order.firmId,
+          kind: "firm_deliverable",
+          round,
+          fileName: file.fileName,
+          fileKey: file.fileKey,
+          fileUrl: file.fileUrl,
+          mimeType: file.mimeType || null,
+          size: file.size,
+          description: file.description || input.note || null,
+          uploadedByUserId: ctx.user.id,
+        });
+      }
+
+      await db
+        .update(serviceOrders)
+        .set({
+          status: "delivered",
+          lastDeliveredAt: new Date(),
+        })
+        .where(eq(serviceOrders.id, order.id));
+
+      await addOrderEvent({
+        orderId: order.id,
+        firmId: order.firmId,
+        type: "delivered",
+        body: input.note?.trim() || `Deliverable uploaded (round ${round})`,
+        authorUserId: ctx.user.id,
+      });
+
+      await notifyClientDelivery(order.clientId, order.id, ctx.req);
+      return { success: true as const, round };
+    }),
+
+  /** Consultation: lawyer adds call remarks (can also complete in same step). */
+  addLawyerRemarks: protectedProcedure
+    .input(
+      z.object({
+        orderId: z.number(),
+        remarks: z.string().min(3).max(10000),
+        complete: z.boolean().optional().default(false),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const member = await requireFirmStaff(ctx.user.id);
+      const db = await getDb();
+      if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+      const full = await getOrderWithItems(input.orderId);
+      if (!full || full.order.firmId !== member.firmId) {
+        throw new TRPCError({ code: "NOT_FOUND" });
+      }
+      let order = await maybeLockOrder(full.order);
+      if (isOrderLocked(order)) {
+        throw new TRPCError({ code: "BAD_REQUEST", message: "Order is locked" });
+      }
+      if (!["accepted", "in_progress", "delivered"].includes(order.status)) {
+        throw new TRPCError({ code: "BAD_REQUEST", message: "Order is not in progress" });
+      }
+
+      await db
+        .update(serviceOrders)
+        .set({
+          lawyerRemarks: input.remarks.trim(),
+          ...(input.complete
+            ? { status: "completed" as const, completedAt: new Date() }
+            : order.status !== "delivered"
+              ? { status: "in_progress" as const }
+              : {}),
+        })
+        .where(eq(serviceOrders.id, order.id));
+      await addOrderEvent({
+        orderId: order.id,
+        firmId: order.firmId,
+        type: input.complete ? "completed" : "remark",
+        body: input.remarks.trim(),
+        authorUserId: ctx.user.id,
+      });
+      return { success: true as const };
+    }),
+
   completeOrder: protectedProcedure
     .input(z.object({ orderId: z.number() }))
     .mutation(async ({ ctx, input }) => {
       const member = await requireFirmStaff(ctx.user.id);
       const db = await getDb();
       if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
-      const [order] = await db
+      const [raw] = await db
         .select()
         .from(serviceOrders)
         .where(and(eq(serviceOrders.id, input.orderId), eq(serviceOrders.firmId, member.firmId)))
         .limit(1);
-      if (!order) throw new TRPCError({ code: "NOT_FOUND" });
-      if (!["accepted", "in_progress"].includes(order.status)) {
+      if (!raw) throw new TRPCError({ code: "NOT_FOUND" });
+      const order = await maybeLockOrder(raw);
+      if (isOrderLocked(order)) {
+        throw new TRPCError({ code: "BAD_REQUEST", message: "Order is locked" });
+      }
+      if (
+        !["accepted", "in_progress", "delivered", "revision_requested"].includes(order.status)
+      ) {
         throw new TRPCError({ code: "BAD_REQUEST" });
       }
       await db
         .update(serviceOrders)
         .set({ status: "completed", completedAt: new Date() })
         .where(eq(serviceOrders.id, order.id));
+      await addOrderEvent({
+        orderId: order.id,
+        firmId: order.firmId,
+        type: "completed",
+        body: "Order marked completed. Client can request changes for 7 days, then it locks permanently.",
+        authorUserId: ctx.user.id,
+      });
       return { success: true as const };
     }),
 
@@ -707,8 +1084,15 @@ export const ondemandServicesRouter = router({
         .from(serviceOrders)
         .where(and(eq(serviceOrders.id, input.orderId), eq(serviceOrders.firmId, member.firmId)))
         .limit(1);
-      if (!order?.caseId) {
-        throw new TRPCError({ code: "BAD_REQUEST", message: "Accept the order first to create a case" });
+      if (!order) throw new TRPCError({ code: "NOT_FOUND" });
+      if (isOrderLocked(order)) {
+        throw new TRPCError({ code: "BAD_REQUEST", message: "Order is locked" });
+      }
+      if (!order.caseId) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Accept the order first to create a case",
+        });
       }
       await addCaseAssignment({
         caseId: order.caseId,
@@ -732,17 +1116,25 @@ export const ondemandServicesRouter = router({
         title: "Lawyer assigned from service order",
         content: "A lawyer was assigned to fulfill this on-demand service order.",
       });
+      await addOrderEvent({
+        orderId: order.id,
+        firmId: order.firmId,
+        type: "assigned",
+        body: `Assigned to lawyer #${input.lawyerUserId}`,
+        authorUserId: ctx.user.id,
+      });
       return { success: true as const, caseId: order.caseId };
     }),
 });
 
-async function notifyFirmNewOrder(firmId: number, orderId: number, req: any) {
+async function notifyFirmStaff(
+  firmId: number,
+  opts: { title: string; body: string; orderNumber: string; req: any }
+) {
   const db = await getDb();
   if (!db) return;
-  const full = await getOrderWithItems(orderId);
-  if (!full) return;
   const members = await getFirmMembers(firmId);
-  const orderUrl = `${getAppBaseUrl(req)}/services`;
+  const orderUrl = `${getAppBaseUrl(opts.req)}/services`;
   for (const m of members.filter((x) =>
     ["admin", "subadmin", "lawyer"].includes(x.member.firmRole)
   )) {
@@ -751,10 +1143,65 @@ async function notifyFirmNewOrder(firmId: number, orderId: number, req: any) {
     await sendCaseUpdateEmail({
       recipientEmail: u.email,
       recipientName: u.name || u.email,
-      caseTitle: `Order ${full.order.orderNumber}`,
-      updateTitle: "New on-demand service order",
-      updateBody: `A customer placed order ${full.order.orderNumber} (${Number(full.order.subtotal).toFixed(2)} ${full.order.currency}). Review and accept it in On-demand Services.`,
+      caseTitle: `Order ${opts.orderNumber}`,
+      updateTitle: opts.title,
+      updateBody: opts.body,
       caseUrl: orderUrl,
-    }).catch((err) => console.error("[Email] new order:", err.message));
+    }).catch((err) => console.error("[Email] order notify:", err.message));
   }
+}
+
+async function notifyFirmNewOrder(firmId: number, orderId: number, req: any) {
+  const full = await getOrderWithItems(orderId);
+  if (!full) return;
+  await notifyFirmStaff(firmId, {
+    req,
+    orderNumber: full.order.orderNumber,
+    title: "New on-demand service order",
+    body: `A customer placed order ${full.order.orderNumber} (${Number(full.order.subtotal).toFixed(2)} ${full.order.currency}). They will submit documents or consultation details next, then you can assign the work.`,
+  });
+}
+
+async function notifyFirmIntakeReady(firmId: number, orderId: number, req: any) {
+  const full = await getOrderWithItems(orderId);
+  if (!full) return;
+  await notifyFirmStaff(firmId, {
+    req,
+    orderNumber: full.order.orderNumber,
+    title: "Client submitted order materials",
+    body: `Order ${full.order.orderNumber} is ready. Open it in On-demand Services to assign a team member and deliver the work.`,
+  });
+}
+
+async function notifyFirmRevision(
+  firmId: number,
+  orderId: number,
+  message: string,
+  req: any
+) {
+  const full = await getOrderWithItems(orderId);
+  if (!full) return;
+  await notifyFirmStaff(firmId, {
+    req,
+    orderNumber: full.order.orderNumber,
+    title: "Client requested a revision",
+    body: `Order ${full.order.orderNumber}: ${message}`,
+  });
+}
+
+async function notifyClientDelivery(clientId: number, orderId: number, req: any) {
+  const db = await getDb();
+  if (!db) return;
+  const full = await getOrderWithItems(orderId);
+  if (!full) return;
+  const [clientRow] = await db.select().from(clients).where(eq(clients.id, clientId)).limit(1);
+  if (!clientRow?.email) return;
+  await sendCaseUpdateEmail({
+    recipientEmail: clientRow.email,
+    recipientName: clientRow.firstName || clientRow.companyName || clientRow.email,
+    caseTitle: `Order ${full.order.orderNumber}`,
+    updateTitle: "Your order has a delivery",
+    updateBody: `The firm uploaded work for order ${full.order.orderNumber}. Open Ordered services to review. You may request up to ${full.order.maxRevisions} revision(s).`,
+    caseUrl: `${getAppBaseUrl(req)}/client-portal`,
+  }).catch((err) => console.error("[Email] delivery:", err.message));
 }

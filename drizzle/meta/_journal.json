@@ -169,6 +169,13 @@
       "when": 1785563600000,
       "tag": "0023_client_package_multi_price",
       "breakpoints": true
+    },
+    {
+      "idx": 24,
+      "version": "5",
+      "when": 1785570800000,
+      "tag": "0024_service_order_fulfillment",
+      "breakpoints": true
     }
   ]
 }

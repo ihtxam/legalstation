@@ -1,6 +1,8 @@
-import { and, eq } from "drizzle-orm";
+import { and, asc, eq } from "drizzle-orm";
 import {
   firmOndemandServices,
+  serviceOrderAttachments,
+  serviceOrderEvents,
   serviceOrderItems,
   serviceOrders,
   type FirmOndemandService,
@@ -8,12 +10,15 @@ import {
 } from "../drizzle/schema";
 import { getDb } from "./db";
 
+const LOCK_AFTER_MS = 7 * 24 * 60 * 60 * 1000;
+
 export function publicService(svc: FirmOndemandService) {
   return {
     id: svc.id,
     name: svc.name,
     description: svc.description,
     category: svc.category,
+    fulfillmentType: svc.fulfillmentType,
     price: svc.price,
     currency: svc.currency,
     estimatedHours: Number(svc.estimatedHours || 0),
@@ -25,6 +30,37 @@ export function publicService(svc: FirmOndemandService) {
 
 export function makeOrderNumber() {
   return `ORD-${Date.now().toString(36).toUpperCase()}`;
+}
+
+export function isOrderLocked(order: ServiceOrder, now = new Date()) {
+  if (order.lockedAt) return true;
+  if (order.status === "completed" && order.completedAt) {
+    return now.getTime() - new Date(order.completedAt).getTime() >= LOCK_AFTER_MS;
+  }
+  return false;
+}
+
+export function revisionsRemaining(order: ServiceOrder) {
+  return Math.max(0, (order.maxRevisions ?? 2) - (order.revisionsUsed ?? 0));
+}
+
+export function orderPublicView(order: ServiceOrder, now = new Date()) {
+  const locked = isOrderLocked(order, now);
+  return {
+    ...order,
+    isLocked: locked,
+    revisionsRemaining: revisionsRemaining(order),
+    canSubmitIntake:
+      !locked &&
+      !order.intakeSubmittedAt &&
+      ["awaiting_intake", "awaiting_acceptance", "paid"].includes(order.status),
+    canRequestRevision:
+      !locked &&
+      order.status === "delivered" &&
+      order.fulfillmentType === "document" &&
+      revisionsRemaining(order) > 0,
+    canCompleteAsClient: !locked && ["delivered", "in_progress"].includes(order.status),
+  };
 }
 
 export async function getOrCreateCart(opts: { firmId: number; clientId: number }) {
@@ -87,24 +123,121 @@ export async function getOrderWithItems(orderId: number) {
   return { order, items };
 }
 
+export async function getOrderAttachments(orderId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  return db
+    .select()
+    .from(serviceOrderAttachments)
+    .where(eq(serviceOrderAttachments.orderId, orderId))
+    .orderBy(asc(serviceOrderAttachments.createdAt));
+}
+
+export async function getOrderEvents(orderId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  return db
+    .select()
+    .from(serviceOrderEvents)
+    .where(eq(serviceOrderEvents.orderId, orderId))
+    .orderBy(asc(serviceOrderEvents.createdAt));
+}
+
+export async function addOrderEvent(opts: {
+  orderId: number;
+  firmId: number;
+  type: (typeof serviceOrderEvents.$inferInsert)["type"];
+  body?: string | null;
+  authorUserId?: number | null;
+}) {
+  const db = await getDb();
+  if (!db) return;
+  await db.insert(serviceOrderEvents).values({
+    orderId: opts.orderId,
+    firmId: opts.firmId,
+    type: opts.type,
+    body: opts.body || null,
+    authorUserId: opts.authorUserId ?? null,
+  });
+}
+
+/** Infer fulfillment type from line items (consultation if any advice/consultation service). */
+export async function resolveOrderFulfillmentType(orderId: number) {
+  const db = await getDb();
+  if (!db) return "document" as const;
+  const items = await db
+    .select()
+    .from(serviceOrderItems)
+    .where(eq(serviceOrderItems.orderId, orderId));
+  for (const item of items) {
+    const [svc] = await db
+      .select()
+      .from(firmOndemandServices)
+      .where(eq(firmOndemandServices.id, item.serviceId))
+      .limit(1);
+    if (svc?.fulfillmentType === "consultation" || svc?.category === "advice") {
+      return "consultation" as const;
+    }
+  }
+  return "document" as const;
+}
+
 export async function markServiceOrderPaid(orderId: number, firmId?: number) {
   const db = await getDb();
   if (!db) return false;
   const [order] = await db.select().from(serviceOrders).where(eq(serviceOrders.id, orderId)).limit(1);
   if (!order) return false;
   if (firmId && order.firmId !== firmId) return false;
-  if (!["pending_payment", "cart", "paid", "awaiting_acceptance"].includes(order.status)) {
+  if (
+    ![
+      "pending_payment",
+      "cart",
+      "paid",
+      "awaiting_acceptance",
+      "awaiting_intake",
+    ].includes(order.status)
+  ) {
     return false;
   }
-  if (order.status === "paid" || order.status === "awaiting_acceptance") return true;
+  if (["awaiting_intake", "awaiting_acceptance", "paid"].includes(order.status) && order.paidAt) {
+    return true;
+  }
+  const fulfillmentType = await resolveOrderFulfillmentType(orderId);
   await db
     .update(serviceOrders)
     .set({
-      status: "awaiting_acceptance",
+      status: "awaiting_intake",
       paidAt: new Date(),
+      fulfillmentType,
     })
     .where(eq(serviceOrders.id, orderId));
+  await addOrderEvent({
+    orderId,
+    firmId: order.firmId,
+    type: "system",
+    body: "Payment received. Client can now submit documents or consultation details.",
+  });
   return true;
+}
+
+/** Auto-lock completed orders older than 7 days (idempotent). */
+export async function maybeLockOrder(order: ServiceOrder) {
+  if (order.lockedAt) return order;
+  if (!isOrderLocked(order)) return order;
+  const db = await getDb();
+  if (!db) return order;
+  const lockedAt = new Date();
+  await db
+    .update(serviceOrders)
+    .set({ lockedAt })
+    .where(eq(serviceOrders.id, order.id));
+  await addOrderEvent({
+    orderId: order.id,
+    firmId: order.firmId,
+    type: "locked",
+    body: "Order locked 7 days after completion. No further changes or revisions.",
+  });
+  return { ...order, lockedAt };
 }
 
 export type { FirmOndemandService, ServiceOrder };
