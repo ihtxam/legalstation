@@ -319,7 +319,7 @@
     "saving": "Saving…",
     "saveUnsavedChanges": "Save unsaved changes",
     "noChanges": "No changes",
-    "securityHint": "Optional authenticator-app 2FA after Manus login.",
+    "securityHint": "Optional authenticator-app 2FA after you sign in with email and password.",
     "authenticatorCode": "Authenticator code",
     "inviteHint": "Enter their email address and role. They'll receive a link to join your firm.",
     "sending": "Sending…",

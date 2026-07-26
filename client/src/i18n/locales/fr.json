@@ -319,7 +319,7 @@
     "saving": "Enregistrement…",
     "saveUnsavedChanges": "Enregistrer les modifications",
     "noChanges": "Aucune modification",
-    "securityHint": "2FA facultative via application d'authentification après la connexion Manus.",
+    "securityHint": "2FA facultative via application d’authentification après la connexion par e-mail et mot de passe.",
     "authenticatorCode": "Code d'authentification",
     "inviteHint": "Saisissez son adresse e-mail et son rôle. Il recevra un lien pour rejoindre votre cabinet.",
     "sending": "Envoi…",

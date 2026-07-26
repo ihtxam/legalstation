@@ -319,7 +319,7 @@
     "saving": "Wird gespeichert…",
     "saveUnsavedChanges": "Ungespeicherte Änderungen speichern",
     "noChanges": "Keine Änderungen",
-    "securityHint": "Optionale 2FA per Authenticator-App nach der Manus-Anmeldung.",
+    "securityHint": "Optionale 2FA per Authenticator-App nach der Anmeldung mit E-Mail und Passwort.",
     "authenticatorCode": "Authenticator-Code",
     "inviteHint": "Geben Sie E-Mail-Adresse und Rolle ein. Das Mitglied erhält einen Link zum Beitritt zu Ihrer Kanzlei.",
     "sending": "Wird gesendet…",

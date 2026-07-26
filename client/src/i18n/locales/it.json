@@ -319,7 +319,7 @@
     "saving": "Salvataggio…",
     "saveUnsavedChanges": "Salva modifiche",
     "noChanges": "Nessuna modifica",
-    "securityHint": "2FA opzionale con app authenticator dopo l’accesso.",
+    "securityHint": "2FA opzionale con app authenticator dopo l’accesso con e-mail e password.",
     "authenticatorCode": "Codice authenticator",
     "inviteHint": "Inserisci l’indirizzo email e il ruolo. Riceverà un link per unirsi allo studio.",
     "sending": "Invio…",
