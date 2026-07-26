@@ -45,9 +45,12 @@ async function startServer() {
   app.use(express.urlencoded({ limit: "50mb", extended: true }));
 
   // File upload endpoint (enforces firm upload policy when session is present)
-  const { UPLOAD_HARD_MAX_BYTES, validateUploadFile, formatBytes } = await import(
-    "../../shared/uploadPolicy"
-  );
+  const {
+    UPLOAD_HARD_MAX_BYTES,
+    TICKET_UPLOAD_POLICY,
+    validateUploadFile,
+    formatBytes,
+  } = await import("../../shared/uploadPolicy");
   const { resolveUploadPolicyFromRequest } = await import("../uploadPolicyResolve");
   const upload = multer({
     storage: multer.memoryStorage(),
@@ -71,8 +74,8 @@ async function startServer() {
     try {
       if (!req.file) return res.status(400).json({ error: "No file provided" });
       const purpose = String(req.body?.purpose || "document");
-      // Firm logos / ticket screenshots: allow common image types up to 5MB
-      if (purpose === "logo" || purpose === "ticket_screenshot") {
+      // Firm logos: images up to 5MB
+      if (purpose === "logo") {
         const mime = String(req.file.mimetype || "").toLowerCase();
         if (!mime.startsWith("image/")) {
           return res.status(400).json({
@@ -85,6 +88,22 @@ async function startServer() {
             error: "Image is too large. Maximum size is 5 MB.",
             code: "FILE_TOO_LARGE",
             maxBytes: 5 * 1024 * 1024,
+          });
+        }
+      } else if (purpose === "ticket_screenshot" || purpose === "ticket_attachment") {
+        // Support tickets: docs/images, hard 1 MB cap (no firm storage quota)
+        const check = validateUploadFile({
+          fileName: req.file.originalname || "file",
+          mimeType: req.file.mimetype,
+          size: req.file.size,
+          policy: TICKET_UPLOAD_POLICY,
+        });
+        if (!check.ok) {
+          return res.status(400).json({
+            error: check.message,
+            code: check.code,
+            maxBytes: TICKET_UPLOAD_POLICY.maxUploadBytes,
+            allowedExtensions: TICKET_UPLOAD_POLICY.allowedExtensions,
           });
         }
       } else {

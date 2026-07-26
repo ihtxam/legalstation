@@ -1074,7 +1074,9 @@
     "resetDefaults": "Ripristina predefiniti",
     "resetConfirm": "Ripristinare tutte le autorizzazioni ai valori Cliavo?",
     "resetDone": "Autorizzazioni ripristinate",
-    "adminLocked": "L’accesso admin alle impostazioni dello studio non può essere rimosso"
+    "adminLocked": "L’accesso admin alle impostazioni dello studio non può essere rimosso",
+    "scrollHint": "Scorri in orizzontale per vedere tutti i ruoli, oppure scegli un ruolo qui sotto su mobile.",
+    "mobileRoleLabel": "Mostra ruolo"
   },
   "calendar": {
     "title": "Calendar integrations",
@@ -1319,7 +1321,11 @@
       "medium": "Medium",
       "high": "High",
       "critical": "Critical"
-    }
+    },
+    "attachments": "Allegati",
+    "attachmentsHint": "Immagini o documenti fino a 1 MB ciascuno (PDF, DOC, DOCX, TXT, PNG, JPG, GIF, WEBP).",
+    "fileTooLarge": "File troppo grande. Dimensione massima: {{max}}.",
+    "fileTypeNotAllowed": "Tipo di file non consentito per i ticket. Usa PDF, DOC, DOCX, TXT o un’immagine comune."
   },
   "announcements": {
     "dismiss": "Ho capito"

@@ -4,6 +4,22 @@ export const UPLOAD_HARD_MAX_BYTES = 50 * 1024 * 1024;
 /** Default firm policy when not configured. */
 export const DEFAULT_MAX_UPLOAD_BYTES = 10 * 1024 * 1024;
 
+/** Support ticket attachments (create / reply) — hard 1 MB cap. */
+export const TICKET_ATTACHMENT_MAX_BYTES = 1 * 1024 * 1024;
+
+/** Allowed extensions for support ticket attachments. */
+export const TICKET_ALLOWED_EXTENSIONS = [
+  "pdf",
+  "doc",
+  "docx",
+  "txt",
+  "png",
+  "jpg",
+  "jpeg",
+  "gif",
+  "webp",
+] as const;
+
 /** Default allowed extensions (lowercase, no dot). */
 export const DEFAULT_ALLOWED_UPLOAD_EXTENSIONS = [
   "pdf",
@@ -38,6 +54,11 @@ const EXT_TO_MIME: Record<string, string[]> = {
 export type UploadPolicy = {
   maxUploadBytes: number;
   allowedExtensions: string[];
+};
+
+export const TICKET_UPLOAD_POLICY: UploadPolicy = {
+  maxUploadBytes: TICKET_ATTACHMENT_MAX_BYTES,
+  allowedExtensions: [...TICKET_ALLOWED_EXTENSIONS],
 };
 
 export function parseAllowedExtensions(raw: string | null | undefined): string[] {

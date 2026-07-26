@@ -23,13 +23,14 @@ import {
   resolvedAutoCloseAt,
   ticketHasUnreadForFirm,
 } from "../supportTickets";
+import { TICKET_ATTACHMENT_MAX_BYTES } from "../../shared/uploadPolicy";
 
 const attachmentInput = z.object({
   fileName: z.string().min(1).max(255),
   fileKey: z.string().min(1).max(512),
   fileUrl: z.string().min(1).max(1024),
   mimeType: z.string().max(128).optional().nullable(),
-  size: z.number().int().min(0).max(20 * 1024 * 1024).default(0),
+  size: z.number().int().min(0).max(TICKET_ATTACHMENT_MAX_BYTES).default(0),
 });
 
 async function requireFirmAdmin(userId: number) {

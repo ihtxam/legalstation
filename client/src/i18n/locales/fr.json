@@ -1074,7 +1074,9 @@
     "resetDefaults": "Rétablir les valeurs par défaut",
     "resetConfirm": "Réinitialiser toutes les autorisations aux valeurs Cliavo ?",
     "resetDone": "Autorisations réinitialisées",
-    "adminLocked": "L’accès admin aux paramètres du cabinet ne peut pas être retiré"
+    "adminLocked": "L’accès admin aux paramètres du cabinet ne peut pas être retiré",
+    "scrollHint": "Faites défiler horizontalement pour voir tous les rôles, ou choisissez un rôle ci-dessous sur mobile.",
+    "mobileRoleLabel": "Afficher le rôle"
   },
   "calendar": {
     "title": "Calendar integrations",
@@ -1319,7 +1321,11 @@
       "medium": "Medium",
       "high": "High",
       "critical": "Critical"
-    }
+    },
+    "attachments": "Pièces jointes",
+    "attachmentsHint": "Images ou documents jusqu’à 1 Mo chacun (PDF, DOC, DOCX, TXT, PNG, JPG, GIF, WEBP).",
+    "fileTooLarge": "Fichier trop volumineux. Taille maximale : {{max}}.",
+    "fileTypeNotAllowed": "Type de fichier non autorisé pour les tickets. Utilisez PDF, DOC, DOCX, TXT ou une image courante."
   },
   "announcements": {
     "dismiss": "Compris"

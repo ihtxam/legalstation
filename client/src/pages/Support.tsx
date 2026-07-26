@@ -17,10 +17,18 @@ import {
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
 import { useAuth } from "@/_core/hooks/useAuth";
+import {
+  TICKET_ATTACHMENT_MAX_BYTES,
+  TICKET_UPLOAD_POLICY,
+  acceptAttribute,
+  formatBytes,
+  validateUploadFile,
+} from "@shared/uploadPolicy";
 
 const SUPPORT_EMAIL = "support@cliavo.com";
 const DOCS_URL = "https://docs.cliavo.com";
 const LOCAL_HELP_URL = "/help";
+const TICKET_ACCEPT = acceptAttribute(TICKET_UPLOAD_POLICY.allowedExtensions);
 
 type Attachment = {
   fileName: string;
@@ -30,17 +38,33 @@ type Attachment = {
   size: number;
 };
 
-async function uploadScreenshot(file: File): Promise<Attachment> {
+async function uploadTicketAttachment(file: File): Promise<Attachment> {
+  const check = validateUploadFile({
+    fileName: file.name,
+    mimeType: file.type,
+    size: file.size,
+    policy: TICKET_UPLOAD_POLICY,
+  });
+  if (!check.ok) throw new Error(check.message);
+
   const fd = new FormData();
   fd.append("file", file);
-  fd.append("purpose", "ticket_screenshot");
+  fd.append("purpose", "ticket_attachment");
   const res = await fetch("/api/upload", { method: "POST", body: fd, credentials: "include" });
-  const data = await res.json();
-  if (!res.ok) throw new Error(data.error || "Upload failed");
+  let data: any = null;
+  try {
+    data = await res.json();
+  } catch {
+    throw new Error(res.ok ? "Upload failed" : `Upload failed (${res.status})`);
+  }
+  if (!res.ok) throw new Error(data?.error || "Upload failed");
+  const fileKey = data.key || data.fileKey;
+  const fileUrl = data.url || data.fileUrl;
+  if (!fileKey || !fileUrl) throw new Error("Upload failed: missing file reference");
   return {
     fileName: file.name,
-    fileKey: data.key || data.fileKey,
-    fileUrl: data.url || data.fileUrl,
+    fileKey,
+    fileUrl,
     mimeType: file.type,
     size: file.size,
   };
@@ -125,11 +149,21 @@ export default function SupportPage() {
     try {
       const next: Attachment[] = [];
       for (const file of Array.from(files).slice(0, 5)) {
-        if (!file.type.startsWith("image/")) {
-          toast.error(t("support.screenshotsOnly"));
+        const check = validateUploadFile({
+          fileName: file.name,
+          mimeType: file.type,
+          size: file.size,
+          policy: TICKET_UPLOAD_POLICY,
+        });
+        if (!check.ok) {
+          toast.error(
+            check.code === "FILE_TOO_LARGE"
+              ? t("support.fileTooLarge", { max: formatBytes(TICKET_ATTACHMENT_MAX_BYTES) })
+              : t("support.fileTypeNotAllowed")
+          );
           continue;
         }
-        next.push(await uploadScreenshot(file));
+        next.push(await uploadTicketAttachment(file));
       }
       if (next.length) setter((prev) => [...prev, ...next].slice(0, 5));
     } catch (e: any) {
@@ -282,7 +316,8 @@ export default function SupportPage() {
               <Textarea className="mt-1" rows={5} value={body} onChange={(e) => setBody(e.target.value)} />
             </div>
             <div>
-              <Label>{t("support.screenshots")}</Label>
+              <Label>{t("support.attachments")}</Label>
+              <p className="text-xs text-muted-foreground mt-0.5">{t("support.attachmentsHint")}</p>
               <div className="mt-1 flex flex-wrap gap-2 items-center">
                 <Button type="button" variant="outline" size="sm" disabled={uploading} asChild>
                   <label className="cursor-pointer">
@@ -290,10 +325,13 @@ export default function SupportPage() {
                     {uploading ? t("support.uploading") : t("support.attach")}
                     <input
                       type="file"
-                      accept="image/*"
+                      accept={TICKET_ACCEPT}
                       multiple
                       className="hidden"
-                      onChange={(e) => onPickFiles(e.target.files, setAttachments)}
+                      onChange={(e) => {
+                        void onPickFiles(e.target.files, setAttachments);
+                        e.target.value = "";
+                      }}
                     />
                   </label>
                 </Button>
@@ -389,10 +427,13 @@ export default function SupportPage() {
                         {t("support.attach")}
                         <input
                           type="file"
-                          accept="image/*"
+                          accept={TICKET_ACCEPT}
                           multiple
                           className="hidden"
-                          onChange={(e) => onPickFiles(e.target.files, setReplyAttachments)}
+                          onChange={(e) => {
+                            void onPickFiles(e.target.files, setReplyAttachments);
+                            e.target.value = "";
+                          }}
                         />
                       </label>
                     </Button>

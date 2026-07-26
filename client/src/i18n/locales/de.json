@@ -1074,7 +1074,9 @@
     "resetDefaults": "Auf Standard zurücksetzen",
     "resetConfirm": "Alle Rollenrechte auf Cliavo-Standards zurücksetzen?",
     "resetDone": "Rollenrechte zurückgesetzt",
-    "adminLocked": "Admin-Zugriff auf Kanzlei-Einstellungen kann nicht entfernt werden"
+    "adminLocked": "Admin-Zugriff auf Kanzlei-Einstellungen kann nicht entfernt werden",
+    "scrollHint": "Horizontal wischen, um alle Rollen zu sehen — oder auf kleinen Bildschirmen unten eine Rolle wählen.",
+    "mobileRoleLabel": "Rolle anzeigen"
   },
   "calendar": {
     "title": "Calendar integrations",
@@ -1319,7 +1321,11 @@
       "medium": "Medium",
       "high": "High",
       "critical": "Critical"
-    }
+    },
+    "attachments": "Anhänge",
+    "attachmentsHint": "Bilder oder Dokumente bis maximal 1 MB (PDF, DOC, DOCX, TXT, PNG, JPG, GIF, WEBP).",
+    "fileTooLarge": "Datei ist zu groß. Maximale Größe: {{max}}.",
+    "fileTypeNotAllowed": "Dateityp für Tickets nicht erlaubt. Nutzen Sie PDF, DOC, DOCX, TXT oder ein gängiges Bildformat."
   },
   "announcements": {
     "dismiss": "Verstanden"

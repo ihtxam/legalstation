@@ -1074,7 +1074,9 @@
     "resetDefaults": "إعادة الافتراضي",
     "resetConfirm": "إعادة كل صلاحيات الأدوار إلى إعدادات Cliavo الافتراضية؟",
     "resetDone": "تمت إعادة الصلاحيات للافتراضي",
-    "adminLocked": "لا يمكن إزالة صلاحية المسؤول لإعدادات المكتب"
+    "adminLocked": "لا يمكن إزالة صلاحية المسؤول لإعدادات المكتب",
+    "scrollHint": "مرّر أفقيًا لعرض كل الأدوار، أو اختر دورًا أدناه على الشاشات الصغيرة.",
+    "mobileRoleLabel": "عرض الدور"
   },
   "calendar": {
     "title": "Calendar integrations",
@@ -1319,7 +1321,11 @@
       "medium": "Medium",
       "high": "High",
       "critical": "Critical"
-    }
+    },
+    "attachments": "المرفقات",
+    "attachmentsHint": "صور أو مستندات بحد أقصى 1 ميجابايت لكل ملف (PDF, DOC, DOCX, TXT, PNG, JPG, GIF, WEBP).",
+    "fileTooLarge": "الملف كبير جدًا. الحد الأقصى {{max}}.",
+    "fileTypeNotAllowed": "نوع الملف غير مسموح للتذاكر. استخدم PDF أو DOC أو DOCX أو TXT أو صورة شائعة."
   },
   "announcements": {
     "dismiss": "حسنًا"

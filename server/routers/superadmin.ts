@@ -1180,7 +1180,7 @@ export const superadminRouter = router({
               fileKey: z.string().min(1).max(512),
               fileUrl: z.string().min(1).max(1024),
               mimeType: z.string().max(128).optional().nullable(),
-              size: z.number().int().min(0).max(20 * 1024 * 1024).default(0),
+              size: z.number().int().min(0).max(1 * 1024 * 1024).default(0),
             })
           )
           .max(5)

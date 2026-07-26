@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
 import {
   DEFAULT_MAX_UPLOAD_BYTES,
+  TICKET_ATTACHMENT_MAX_BYTES,
+  TICKET_UPLOAD_POLICY,
   formatBytes,
   validateUploadFile,
   resolveUploadPolicy,
@@ -53,5 +55,27 @@ describe("uploadPolicy", () => {
   it("defaults max size to 10 MB", () => {
     expect(DEFAULT_MAX_UPLOAD_BYTES).toBe(10 * 1024 * 1024);
     expect(formatBytes(DEFAULT_MAX_UPLOAD_BYTES)).toBe("10 MB");
+  });
+
+  it("enforces 1 MB max for support ticket attachments", () => {
+    expect(TICKET_ATTACHMENT_MAX_BYTES).toBe(1 * 1024 * 1024);
+    const ok = validateUploadFile({
+      fileName: "note.pdf",
+      mimeType: "application/pdf",
+      size: 900_000,
+      policy: TICKET_UPLOAD_POLICY,
+    });
+    expect(ok.ok).toBe(true);
+    const tooBig = validateUploadFile({
+      fileName: "note.pdf",
+      mimeType: "application/pdf",
+      size: 1_200_000,
+      policy: TICKET_UPLOAD_POLICY,
+    });
+    expect(tooBig.ok).toBe(false);
+    if (!tooBig.ok) {
+      expect(tooBig.code).toBe("FILE_TOO_LARGE");
+      expect(tooBig.message).toContain("1 MB");
+    }
   });
 });

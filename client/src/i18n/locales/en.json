@@ -1074,7 +1074,9 @@
     "resetDefaults": "Reset to defaults",
     "resetConfirm": "Reset all role permissions to Cliavo defaults?",
     "resetDone": "Role permissions reset to defaults",
-    "adminLocked": "Admin firm-settings access cannot be removed"
+    "adminLocked": "Admin firm-settings access cannot be removed",
+    "scrollHint": "Swipe horizontally to see every role, or pick a role below on small screens.",
+    "mobileRoleLabel": "Show role"
   },
   "calendar": {
     "title": "Calendar integrations",
@@ -1319,7 +1321,11 @@
       "medium": "Medium",
       "high": "High",
       "critical": "Critical"
-    }
+    },
+    "attachments": "Attachments",
+    "attachmentsHint": "Images or documents up to 1 MB each (PDF, DOC, DOCX, TXT, PNG, JPG, GIF, WEBP).",
+    "fileTooLarge": "File is too large. Maximum size is {{max}}.",
+    "fileTypeNotAllowed": "File type not allowed for tickets. Use PDF, DOC, DOCX, TXT, or a common image format."
   },
   "announcements": {
     "dismiss": "Got it"
