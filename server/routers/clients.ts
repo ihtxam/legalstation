@@ -68,11 +68,25 @@ export const clientsRouter = router({
     }))
     .mutation(async ({ ctx, input }) => {
       const member = await requireFirmMember(ctx.user.id);
-      if (!["admin", "lawyer"].includes(member.firmRole)) {
+      if (!["admin", "subadmin", "lawyer"].includes(member.firmRole)) {
         throw new TRPCError({ code: "FORBIDDEN" });
       }
-      await createClient({ ...input, firmId: member.firmId, status: "invited" });
-      return { success: true };
+      if (input.type === "individual" && !input.firstName?.trim() && !input.lastName?.trim()) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "First or last name is required for an individual client",
+        });
+      }
+      if (input.type === "company" && !input.companyName?.trim()) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Company name is required",
+        });
+      }
+      const result = await createClient({ ...input, firmId: member.firmId, status: "invited" });
+      const id = Number((result as { insertId?: number }).insertId ?? 0);
+      if (!id) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Failed to create client" });
+      return { success: true as const, id };
     }),
 
   update: protectedProcedure

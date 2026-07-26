@@ -659,7 +659,15 @@
     "deadline": "Deadline",
     "reference": "Reference",
     "description": "Description",
-    "saveChanges": "Save changes"
+    "saveChanges": "Save changes",
+    "assignClient": "Assign Client",
+    "existingClient": "Existing client",
+    "createClient": "Create client",
+    "createAndAssign": "Create & assign",
+    "noClientsAvailable": "No clients available",
+    "noClientsHint": "No unassigned clients yet.",
+    "clientNameRequired": "Enter a first or last name",
+    "companyNameRequired": "Enter a company name"
   },
   "invoiceDetail": {
     "title": "Invoice",

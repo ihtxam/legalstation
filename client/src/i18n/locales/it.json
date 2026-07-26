@@ -659,7 +659,15 @@
     "deadline": "Scadenza",
     "reference": "Riferimento",
     "description": "Descrizione",
-    "saveChanges": "Salva"
+    "saveChanges": "Salva",
+    "assignClient": "Assegna cliente",
+    "existingClient": "Cliente esistente",
+    "createClient": "Crea cliente",
+    "createAndAssign": "Crea e assegna",
+    "noClientsAvailable": "Nessun cliente disponibile",
+    "noClientsHint": "Nessun cliente non assegnato al momento.",
+    "clientNameRequired": "Inserisci nome o cognome",
+    "companyNameRequired": "Inserisci il nome dell’azienda"
   },
   "invoiceDetail": {
     "title": "Fattura",

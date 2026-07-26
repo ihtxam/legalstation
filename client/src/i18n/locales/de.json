@@ -659,7 +659,15 @@
     "deadline": "Frist",
     "reference": "Referenz",
     "description": "Beschreibung",
-    "saveChanges": "Speichern"
+    "saveChanges": "Speichern",
+    "assignClient": "Klient zuweisen",
+    "existingClient": "Bestehender Klient",
+    "createClient": "Klient erstellen",
+    "createAndAssign": "Erstellen & zuweisen",
+    "noClientsAvailable": "Keine Klienten verfügbar",
+    "noClientsHint": "Noch keine nicht zugewiesenen Klienten.",
+    "clientNameRequired": "Vor- oder Nachnamen eingeben",
+    "companyNameRequired": "Firmennamen eingeben"
   },
   "invoiceDetail": {
     "title": "Rechnung",

@@ -659,7 +659,15 @@
     "deadline": "الموعد النهائي",
     "reference": "المرجع",
     "description": "الوصف",
-    "saveChanges": "حفظ"
+    "saveChanges": "حفظ",
+    "assignClient": "تعيين عميل",
+    "existingClient": "عميل موجود",
+    "createClient": "إنشاء عميل",
+    "createAndAssign": "إنشاء وتعيين",
+    "noClientsAvailable": "لا يوجد عملاء متاحون",
+    "noClientsHint": "لا يوجد عملاء غير معيّنين بعد.",
+    "clientNameRequired": "أدخل الاسم الأول أو الأخير",
+    "companyNameRequired": "أدخل اسم الشركة"
   },
   "invoiceDetail": {
     "title": "الفاتورة",

@@ -506,20 +506,53 @@ function CaseMessages({ caseId }: { caseId: number }) {
   );
 }
 
+function emptyNewClientForm() {
+  return {
+    type: "individual" as "individual" | "company",
+    firstName: "",
+    lastName: "",
+    companyName: "",
+    email: "",
+    phone: "",
+  };
+}
+
 function CaseAssignments({ caseId }: { caseId: number }) {
   const { t } = useTranslation();
+  const { data: firmData } = trpc.firm.myFirm.useQuery();
   const { data: options, refetch } = trpc.cases.getAssignmentOptions.useQuery({ caseId });
+  const utils = trpc.useUtils();
   const [showAddLawyer, setShowAddLawyer] = useState(false);
   const [showAddClient, setShowAddClient] = useState(false);
+  const [clientMode, setClientMode] = useState<"select" | "create">("select");
   const [selectedLawyer, setSelectedLawyer] = useState("");
   const [selectedClient, setSelectedClient] = useState("");
+  const [newClient, setNewClient] = useState(emptyNewClientForm);
+  const canCreateClient = ["admin", "subadmin", "lawyer"].includes(
+    firmData?.member?.firmRole || ""
+  );
+
+  const resetClientDialog = () => {
+    setSelectedClient("");
+    setClientMode("select");
+    setNewClient(emptyNewClientForm());
+  };
   
   const assignLawyer = trpc.cases.assignLawyer.useMutation({
     onSuccess: () => { setSelectedLawyer(""); setShowAddLawyer(false); refetch(); toast.success(t("caseDetail.lawyerAssigned")); },
     onError: (e) => toast.error(e.message),
   });
   const assignClient = trpc.cases.assignClient.useMutation({
-    onSuccess: () => { setSelectedClient(""); setShowAddClient(false); refetch(); toast.success(t("caseDetail.clientAssigned")); },
+    onSuccess: () => {
+      resetClientDialog();
+      setShowAddClient(false);
+      refetch();
+      void utils.clients.list.invalidate();
+      toast.success(t("caseDetail.clientAssigned"));
+    },
+    onError: (e) => toast.error(e.message),
+  });
+  const createClient = trpc.clients.create.useMutation({
     onError: (e) => toast.error(e.message),
   });
   const removeLawyer = trpc.cases.removeLawyer.useMutation({
@@ -530,6 +563,31 @@ function CaseAssignments({ caseId }: { caseId: number }) {
     onSuccess: () => { refetch(); toast.success(t("caseDetail.clientRemoved")); },
     onError: (e) => toast.error(e.message),
   });
+
+  const createAndAssignClient = async () => {
+    if (newClient.type === "individual") {
+      if (!newClient.firstName.trim() && !newClient.lastName.trim()) {
+        toast.error(t("caseDetail.clientNameRequired"));
+        return;
+      }
+    } else if (!newClient.companyName.trim()) {
+      toast.error(t("caseDetail.companyNameRequired"));
+      return;
+    }
+    try {
+      const created = await createClient.mutateAsync({
+        type: newClient.type,
+        firstName: newClient.firstName.trim() || undefined,
+        lastName: newClient.lastName.trim() || undefined,
+        companyName: newClient.companyName.trim() || undefined,
+        email: newClient.email.trim() || undefined,
+        phone: newClient.phone.trim() || undefined,
+      });
+      await assignClient.mutateAsync({ caseId, clientId: created.id });
+    } catch {
+      /* toast handled by mutations */
+    }
+  };
 
   if (!options) return <div className="space-y-2">{[1,2,3].map(i => <Skeleton key={i} className="h-12 w-full" />)}</div>;
 
@@ -612,27 +670,174 @@ function CaseAssignments({ caseId }: { caseId: number }) {
             ))}
           </div>
         )}
-        <Dialog open={showAddClient} onOpenChange={setShowAddClient}>
-          <DialogContent>
-            <DialogHeader><DialogTitle>Assign Client</DialogTitle></DialogHeader>
+        <Dialog
+          open={showAddClient}
+          onOpenChange={(open) => {
+            setShowAddClient(open);
+            if (!open) resetClientDialog();
+          }}
+        >
+          <DialogContent className="max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>{t("caseDetail.assignClient")}</DialogTitle>
+            </DialogHeader>
             <div className="space-y-4 py-2">
-              <Select value={selectedClient} onValueChange={setSelectedClient}>
-                <SelectTrigger><SelectValue placeholder={t("caseDetail.selectClient")} /></SelectTrigger>
-                <SelectContent>
-                  {options.availableClients.map(c => (
-                    <SelectItem key={c.id} value={c.id.toString()}>
-                      {c.companyName || `${c.firstName} ${c.lastName}`}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              {canCreateClient && (
+                <div className="grid grid-cols-2 gap-2 rounded-lg bg-muted p-1">
+                  <button
+                    type="button"
+                    className={`rounded-md px-3 py-2 text-sm font-medium transition-colors ${
+                      clientMode === "select"
+                        ? "bg-background text-foreground shadow-sm"
+                        : "text-muted-foreground hover:text-foreground"
+                    }`}
+                    onClick={() => setClientMode("select")}
+                  >
+                    {t("caseDetail.existingClient")}
+                  </button>
+                  <button
+                    type="button"
+                    className={`rounded-md px-3 py-2 text-sm font-medium transition-colors ${
+                      clientMode === "create"
+                        ? "bg-background text-foreground shadow-sm"
+                        : "text-muted-foreground hover:text-foreground"
+                    }`}
+                    onClick={() => setClientMode("create")}
+                  >
+                    {t("caseDetail.createClient")}
+                  </button>
+                </div>
+              )}
+
+              {clientMode === "select" ? (
+                <div className="space-y-2">
+                  <Label>{t("caseDetail.selectClient")}</Label>
+                  <Select value={selectedClient} onValueChange={setSelectedClient}>
+                    <SelectTrigger>
+                      <SelectValue placeholder={t("caseDetail.selectClient")} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {options.availableClients.map((c) => (
+                        <SelectItem key={c.id} value={c.id.toString()}>
+                          {c.companyName || `${c.firstName ?? ""} ${c.lastName ?? ""}`.trim()}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  {canCreateClient && options.availableClients.length === 0 && (
+                    <p className="text-xs text-muted-foreground">
+                      {t("caseDetail.noClientsHint")}{" "}
+                      <button
+                        type="button"
+                        className="underline hover:text-foreground"
+                        onClick={() => setClientMode("create")}
+                      >
+                        {t("caseDetail.createClient")}
+                      </button>
+                    </p>
+                  )}
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  <div>
+                    <Label>{t("clients.colType")}</Label>
+                    <Select
+                      value={newClient.type}
+                      onValueChange={(v: "individual" | "company") =>
+                        setNewClient((f) => ({ ...f, type: v }))
+                      }
+                    >
+                      <SelectTrigger className="mt-1.5">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="individual">{t("common.individual")}</SelectItem>
+                        <SelectItem value="company">{t("common.company")}</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  {newClient.type === "individual" ? (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div>
+                        <Label>{t("clients.firstName")}</Label>
+                        <Input
+                          className="mt-1.5"
+                          value={newClient.firstName}
+                          onChange={(e) => setNewClient((f) => ({ ...f, firstName: e.target.value }))}
+                        />
+                      </div>
+                      <div>
+                        <Label>{t("clients.lastName")}</Label>
+                        <Input
+                          className="mt-1.5"
+                          value={newClient.lastName}
+                          onChange={(e) => setNewClient((f) => ({ ...f, lastName: e.target.value }))}
+                        />
+                      </div>
+                    </div>
+                  ) : (
+                    <div>
+                      <Label>{t("clients.companyName")}</Label>
+                      <Input
+                        className="mt-1.5"
+                        value={newClient.companyName}
+                        onChange={(e) => setNewClient((f) => ({ ...f, companyName: e.target.value }))}
+                      />
+                    </div>
+                  )}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                      <Label>{t("clients.email")}</Label>
+                      <Input
+                        className="mt-1.5"
+                        type="email"
+                        value={newClient.email}
+                        onChange={(e) => setNewClient((f) => ({ ...f, email: e.target.value }))}
+                      />
+                    </div>
+                    <div>
+                      <Label>{t("clients.phone")}</Label>
+                      <Input
+                        className="mt-1.5"
+                        value={newClient.phone}
+                        onChange={(e) => setNewClient((f) => ({ ...f, phone: e.target.value }))}
+                      />
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
             <DialogFooter>
-              <Button variant="outline" onClick={() => setShowAddClient(false)}>Cancel</Button>
-              <Button className="bg-[var(--color-navy)] hover:bg-[var(--color-navy-light)] text-white" disabled={!selectedClient || assignClient.isPending}
-                onClick={() => assignClient.mutate({ caseId, clientId: parseInt(selectedClient) })}>
-                Assign
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setShowAddClient(false);
+                  resetClientDialog();
+                }}
+              >
+                {t("common.cancel")}
               </Button>
+              {clientMode === "select" ? (
+                <Button
+                  className="bg-[var(--color-navy)] hover:bg-[var(--color-navy-light)] text-white"
+                  disabled={!selectedClient || assignClient.isPending}
+                  onClick={() =>
+                    assignClient.mutate({ caseId, clientId: parseInt(selectedClient, 10) })
+                  }
+                >
+                  {t("caseDetail.assign")}
+                </Button>
+              ) : (
+                <Button
+                  className="bg-[var(--color-navy)] hover:bg-[var(--color-navy-light)] text-white"
+                  disabled={createClient.isPending || assignClient.isPending}
+                  onClick={() => void createAndAssignClient()}
+                >
+                  {createClient.isPending || assignClient.isPending
+                    ? t("common.creating")
+                    : t("caseDetail.createAndAssign")}
+                </Button>
+              )}
             </DialogFooter>
           </DialogContent>
         </Dialog>
