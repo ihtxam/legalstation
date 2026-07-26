@@ -25,6 +25,7 @@ import {
   LifeBuoy,
   PanelLeftClose,
   PanelLeft,
+  CreditCard,
 } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -200,6 +201,8 @@ export default function AppLayout({ children, title, breadcrumb }: AppLayoutProp
       </ScrollArea>
 
       <div className="border-t border-white/10 p-2 space-y-0.5 pb-[max(0.5rem,env(safe-area-inset-bottom))]">
+        {isFirmAdminRole &&
+          navLink("/account", t("nav.account"), CreditCard)}
         {navLink(
           "/support",
           t("nav.support"),

@@ -17,7 +17,8 @@
     "cms": "Sito",
     "packages": "Pacchetti",
     "services": "Servizi",
-    "support": "Supporto"
+    "support": "Supporto",
+    "account": "Account"
   },
   "common": {
     "loading": "Caricamento…",
@@ -145,12 +146,11 @@
     "footerTagline": "— Gestione dello studio legale svizzero"
   },
   "trial": {
-    "active": "Prova: {{days}} giorno rimasto — continua in cloud, aggiungi un dominio o chiedi l’on-premise.",
-    "active_plural": "Prova: {{days}} giorni rimasti — continua in cloud, aggiungi un dominio o chiedi l’on-premise.",
-    "expired": "La prova è terminata. Continua su Cliavo Cloud, imposta un dominio o chiedi l’on-premise.",
-    "whitelabel": "Dominio custom",
-    "continueSaas": "Continua SaaS",
-    "onPremise": "On-premise"
+    "active": "Trial: {{days}} day left. Upgrade your package anytime from Account.",
+    "active_plural": "Trial: {{days}} days left. Upgrade your package anytime from Account.",
+    "expired": "Your 15-day trial has ended. Choose a package to continue using Cliavo.",
+    "choosePackage": "Choose package",
+    "viewAccount": "View account"
   },
   "dashboard": {
     "title": "Cruscotto",
@@ -1346,5 +1346,38 @@
       "md": "Predefinito",
       "lg": "Grande"
     }
+  },
+  "account": {
+    "title": "Account",
+    "heading": "Il tuo account Cliavo",
+    "intro": "See your trial, current package, and upgrade to keep using the platform.",
+    "statusLocked": "Accesso bloccato",
+    "statusTrial": "Prova",
+    "statusActive": "Attivo",
+    "currentPlan": "Piano attuale",
+    "noPlan": "No package",
+    "trialRemaining": "Prova rimanente",
+    "daysLeft": "{{days}} day left",
+    "daysLeft_plural": "{{days}} days left",
+    "trialEnded": "Ended",
+    "access": "Platform access",
+    "lockedHint": "Locked",
+    "openHint": "Open",
+    "lockoutMessage": "La prova è terminata. Scegli un piano per sbloccare Cliavo.",
+    "packagesTitle": "Piani",
+    "packagesHint": "Upgrade anytime. Higher packages unlock more seats and capacity.",
+    "monthly": "Monthly",
+    "yearly": "Yearly",
+    "current": "Current",
+    "upgrade": "Passa a questo piano",
+    "activateFree": "Activate",
+    "maxUsers": "Up to {{count}} users",
+    "mo": "mo",
+    "yr": "yr",
+    "noPlans": "No packages are published yet. Contact Cliavo via a support ticket.",
+    "stripeHint": "Card checkout uses Stripe when configured. Free packages activate immediately.",
+    "upgradeSuccess": "Piano attivato.",
+    "upgradeCancelled": "Checkout cancelled — you can try again anytime.",
+    "checkoutFailed": "Could not start checkout"
   }
 }

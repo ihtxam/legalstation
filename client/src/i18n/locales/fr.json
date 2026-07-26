@@ -17,7 +17,8 @@
     "cms": "Site web",
     "packages": "Forfaits",
     "services": "Services",
-    "support": "Assistance"
+    "support": "Assistance",
+    "account": "Compte"
   },
   "common": {
     "loading": "Chargement…",
@@ -145,12 +146,11 @@
     "footerTagline": "— Gestion de cabinet juridique suisse"
   },
   "trial": {
-    "active": "Essai : {{days}} jour restant — continuez en cloud, ajoutez un domaine, ou demandez l’on-premise.",
-    "active_plural": "Essai : {{days}} jours restants — continuez en cloud, ajoutez un domaine, ou demandez l’on-premise.",
-    "expired": "Votre essai est terminé. Continuez sur Cliavo Cloud, définissez un domaine, ou demandez l’on-premise.",
-    "whitelabel": "Domaine custom",
-    "continueSaas": "Continuer SaaS",
-    "onPremise": "On-premise"
+    "active": "Essai : {{days}} jour restant. Passez à un forfait depuis Compte.",
+    "active_plural": "Essai : {{days}} jours restants. Passez à un forfait depuis Compte.",
+    "expired": "Votre essai de 15 jours est terminé. Choisissez un forfait pour continuer.",
+    "choosePackage": "Choisir un forfait",
+    "viewAccount": "Voir le compte"
   },
   "dashboard": {
     "title": "Tableau de bord",
@@ -1277,10 +1277,10 @@
   "support": {
     "title": "Assistance",
     "heading": "Aide et assistance",
-    "intro": "Contactez Cliavo ou consultez la documentation en libre-service.",
+    "intro": "Ouvrez un ticket support ou consultez la documentation d’aide pour votre espace cabinet.",
     "emailTitle": "E-mail d'assistance",
     "emailHint": "Écrivez-nous pour la facturation, l'accès au compte ou les problèmes techniques.",
-    "docsTitle": "Documentation en libre-service",
+    "docsTitle": "Documentation d’aide",
     "docsHint": "Guides pour les dossiers, clients, facturation, calendrier, forfaits et paiements.",
     "openDocs": "Ouvrir docs.cliavo.com",
     "openLocalHelp": "Aide dans l'application",
@@ -1346,5 +1346,38 @@
       "md": "Par défaut",
       "lg": "Grand"
     }
+  },
+  "account": {
+    "title": "Compte",
+    "heading": "Votre compte Cliavo",
+    "intro": "Consultez votre essai, votre forfait actuel et passez à un forfait supérieur pour continuer.",
+    "statusLocked": "Accès verrouillé",
+    "statusTrial": "Essai",
+    "statusActive": "Actif",
+    "currentPlan": "Forfait actuel",
+    "noPlan": "Aucun forfait",
+    "trialRemaining": "Essai restant",
+    "daysLeft": "{{days}} jour restant",
+    "daysLeft_plural": "{{days}} jours restants",
+    "trialEnded": "Terminé",
+    "access": "Accès plateforme",
+    "lockedHint": "Verrouillé",
+    "openHint": "Ouvert",
+    "lockoutMessage": "Votre essai est terminé. Choisissez un forfait ci-dessous pour débloquer Cliavo.",
+    "packagesTitle": "Forfaits",
+    "packagesHint": "Passez à un forfait supérieur à tout moment.",
+    "monthly": "Mensuel",
+    "yearly": "Annuel",
+    "current": "Actuel",
+    "upgrade": "Passer à ce forfait",
+    "activateFree": "Activer",
+    "maxUsers": "Jusqu’à {{count}} utilisateurs",
+    "mo": "mois",
+    "yr": "an",
+    "noPlans": "Aucun forfait publié. Ouvrez un ticket support.",
+    "stripeHint": "Le paiement par carte utilise Stripe lorsqu’il est configuré. Les forfaits gratuits s’activent immédiatement.",
+    "upgradeSuccess": "Forfait activé. Bon retour !",
+    "upgradeCancelled": "Paiement annulé — vous pouvez réessayer.",
+    "checkoutFailed": "Impossible de démarrer le paiement"
   }
 }

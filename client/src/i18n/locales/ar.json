@@ -17,7 +17,8 @@
     "cms": "الموقع",
     "packages": "الباقات",
     "services": "الخدمات",
-    "support": "الدعم"
+    "support": "الدعم",
+    "account": "الحساب"
   },
   "common": {
     "loading": "جارٍ التحميل…",
@@ -145,12 +146,11 @@
     "footerTagline": "— إدارة الممارسة القانونية السويسرية"
   },
   "trial": {
-    "active": "التجربة: تبقّى {{days}} يوم — واصل على السحابة أو أضف نطاقًا أو اسأل عن التركيب المحلي.",
-    "active_plural": "التجربة: تبقّى {{days}} يومًا — واصل على السحابة أو أضف نطاقًا أو اسأل عن التركيب المحلي.",
-    "expired": "انتهت تجربتك. واصل على Cliavo Cloud أو اضبط نطاقًا أو اسأل عن التركيب المحلي.",
-    "whitelabel": "نطاق مخصص",
-    "continueSaas": "متابعة SaaS",
-    "onPremise": "تركيب محلي"
+    "active": "Trial: {{days}} day left. Upgrade your package anytime from Account.",
+    "active_plural": "Trial: {{days}} days left. Upgrade your package anytime from Account.",
+    "expired": "Your 15-day trial has ended. Choose a package to continue using Cliavo.",
+    "choosePackage": "Choose package",
+    "viewAccount": "View account"
   },
   "dashboard": {
     "title": "لوحة التحكم",
@@ -1346,5 +1346,38 @@
       "md": "افتراضي",
       "lg": "كبير"
     }
+  },
+  "account": {
+    "title": "الحساب",
+    "heading": "حساب Cliavo",
+    "intro": "See your trial, current package, and upgrade to keep using the platform.",
+    "statusLocked": "الوصول مقفل",
+    "statusTrial": "تجريبي",
+    "statusActive": "نشط",
+    "currentPlan": "الباقة الحالية",
+    "noPlan": "No package",
+    "trialRemaining": "المتبقي من التجربة",
+    "daysLeft": "{{days}} day left",
+    "daysLeft_plural": "{{days}} days left",
+    "trialEnded": "Ended",
+    "access": "Platform access",
+    "lockedHint": "Locked",
+    "openHint": "Open",
+    "lockoutMessage": "انتهت الفترة التجريبية. اختر باقة لفتح المنصة.",
+    "packagesTitle": "الباقات",
+    "packagesHint": "Upgrade anytime. Higher packages unlock more seats and capacity.",
+    "monthly": "Monthly",
+    "yearly": "Yearly",
+    "current": "Current",
+    "upgrade": "ترقية",
+    "activateFree": "Activate",
+    "maxUsers": "Up to {{count}} users",
+    "mo": "mo",
+    "yr": "yr",
+    "noPlans": "No packages are published yet. Contact Cliavo via a support ticket.",
+    "stripeHint": "Card checkout uses Stripe when configured. Free packages activate immediately.",
+    "upgradeSuccess": "تم تفعيل الباقة.",
+    "upgradeCancelled": "Checkout cancelled — you can try again anytime.",
+    "checkoutFailed": "Could not start checkout"
   }
 }

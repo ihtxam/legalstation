@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import AppLayout from "@/components/AppLayout";
 import { useTranslation } from "react-i18next";
-import { Mail, BookOpen, ExternalLink, LifeBuoy, Plus, Paperclip, MessageSquare } from "lucide-react";
+import { BookOpen, ExternalLink, LifeBuoy, Plus, Paperclip, MessageSquare } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -25,7 +25,6 @@ import {
   validateUploadFile,
 } from "@shared/uploadPolicy";
 
-const SUPPORT_EMAIL = "support@cliavo.com";
 const DOCS_URL = "https://docs.cliavo.com";
 const LOCAL_HELP_URL = "/help";
 const TICKET_ACCEPT = acceptAttribute(TICKET_UPLOAD_POLICY.allowedExtensions);
@@ -239,24 +238,6 @@ export default function SupportPage() {
             </div>
           </section>
         )}
-
-        <section className="border border-border rounded-xl p-4 sm:p-6 space-y-4 bg-card">
-          <div className="flex items-start gap-3">
-            <div className="mt-0.5 rounded-lg bg-[var(--color-navy)]/8 p-2 shrink-0">
-              <Mail className="w-5 h-5 text-[var(--color-navy)]" />
-            </div>
-            <div className="min-w-0 space-y-2">
-              <h3 className="font-semibold text-foreground">{t("support.emailTitle")}</h3>
-              <p className="text-sm text-muted-foreground">{t("support.emailHint")}</p>
-              <a
-                href={`mailto:${SUPPORT_EMAIL}`}
-                className="inline-flex items-center gap-2 text-[var(--color-navy)] font-medium hover:underline"
-              >
-                {SUPPORT_EMAIL}
-              </a>
-            </div>
-          </div>
-        </section>
 
         <section className="border border-border rounded-xl p-4 sm:p-6 space-y-4 bg-card">
           <div className="flex items-start gap-3">

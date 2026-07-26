@@ -43,6 +43,7 @@ import ImpersonationBanner from "./components/ImpersonationBanner";
 import TrialBanner from "./components/TrialBanner";
 import AnnouncementPopup from "./components/AnnouncementPopup";
 import SupportPage from "./pages/Support";
+import AccountPage from "./pages/Account";
 
 function Router() {
   const { user, refresh, loading } = useAuth();
@@ -51,6 +52,9 @@ function Router() {
   const { data: firmData } = trpc.firm.myFirm.useQuery(undefined, {
     enabled: Boolean(user) && user?.role !== "superadmin",
   });
+  const firmLocked = Boolean(firmData?.subscription?.locked);
+  const isFirmAdminRole =
+    firmData?.member?.firmRole === "admin" || firmData?.member?.firmRole === "subadmin";
 
   useEffect(() => {
     if (isAppLocale(user?.preferredLocale)) {
@@ -102,8 +106,21 @@ function Router() {
       location !== "/login"
     ) {
       navigate("/firm-onboarding");
+      return;
     }
-  }, [user, loading, location, navigate, firmData]);
+
+    // Trial / subscription lockout — only account + support remain usable
+    if (firmLocked && !(user as { impersonation?: unknown }).impersonation) {
+      const allowedWhileLocked =
+        location.startsWith("/account") ||
+        location.startsWith("/support") ||
+        location === "/login" ||
+        location.startsWith("/firm-onboarding");
+      if (!allowedWhileLocked) {
+        navigate(isFirmAdminRole ? "/account" : "/support");
+      }
+    }
+  }, [user, loading, location, navigate, firmData, firmLocked, isFirmAdminRole]);
 
   if (user?.requires2fa) {
     return (
@@ -135,6 +152,7 @@ function Router() {
     location.startsWith("/invoices") ||
     location.startsWith("/messages") ||
     location.startsWith("/settings") ||
+    location.startsWith("/account") ||
     location.startsWith("/support") ||
     location.startsWith("/agenda") ||
     location.startsWith("/packages") ||
@@ -176,6 +194,7 @@ function Router() {
           <Route path="/invoices/:id" component={InvoiceDetailPage} />
           <Route path="/messages" component={MessagesPage} />
           <Route path="/settings" component={SettingsPage} />
+          <Route path="/account" component={AccountPage} />
           <Route path="/support" component={SupportPage} />
           <Route path="/agenda" component={AgendaPage} />
           <Route path="/packages" component={FirmPackagesPage} />
@@ -194,7 +213,7 @@ function Router() {
           <Route component={NotFound} />
         </Switch>
       </div>
-      <FloatingTimer />
+      {!firmLocked && <FloatingTimer />}
     </div>
   );
 }

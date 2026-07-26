@@ -17,7 +17,8 @@
     "auditLog": "Audit log",
     "signOut": "Sign out",
     "services": "Services",
-    "support": "Support"
+    "support": "Support",
+    "account": "Account"
   },
   "common": {
     "loading": "Loading…",
@@ -145,12 +146,11 @@
     "footerTagline": "— Swiss Legal Practice Management"
   },
   "trial": {
-    "active": "Trial: {{days}} day left — continue on cloud, add a custom domain, or ask about on-premise.",
-    "active_plural": "Trial: {{days}} days left — continue on cloud, add a custom domain, or ask about on-premise.",
-    "expired": "Your trial has ended. Continue on Cliavo Cloud, set a custom domain, or ask about on-premise.",
-    "whitelabel": "Custom domain",
-    "continueSaas": "Continue SaaS",
-    "onPremise": "On-premise"
+    "active": "Trial: {{days}} day left. Upgrade your package anytime from Account.",
+    "active_plural": "Trial: {{days}} days left. Upgrade your package anytime from Account.",
+    "expired": "Your 15-day trial has ended. Choose a package to continue using Cliavo.",
+    "choosePackage": "Choose package",
+    "viewAccount": "View account"
   },
   "dashboard": {
     "title": "Dashboard",
@@ -1277,10 +1277,10 @@
   "support": {
     "title": "Support",
     "heading": "Help & support",
-    "intro": "Get help from Cliavo or browse self-service guides for everything available in your firm workspace.",
+    "intro": "Open a support ticket or browse self-help docs for everything in your firm workspace.",
     "emailTitle": "Email support",
     "emailHint": "Write to our team for billing, account access, or issues that need hands-on help.",
-    "docsTitle": "Self-support documentation",
+    "docsTitle": "Self-help documentation",
     "docsHint": "Guides for cases, clients, billing, calendar sync, packages, payments, and more.",
     "openDocs": "Open docs.cliavo.com",
     "openLocalHelp": "Open in-app help",
@@ -1346,5 +1346,38 @@
       "md": "Default",
       "lg": "Large"
     }
+  },
+  "account": {
+    "title": "Account",
+    "heading": "Your Cliavo account",
+    "intro": "See your trial, current package, and upgrade to keep using the platform.",
+    "statusLocked": "Access locked",
+    "statusTrial": "Trial",
+    "statusActive": "Active",
+    "currentPlan": "Current package",
+    "noPlan": "No package",
+    "trialRemaining": "Trial remaining",
+    "daysLeft": "{{days}} day left",
+    "daysLeft_plural": "{{days}} days left",
+    "trialEnded": "Ended",
+    "access": "Platform access",
+    "lockedHint": "Locked",
+    "openHint": "Open",
+    "lockoutMessage": "Your trial has ended. Choose a package below to unlock Cliavo for your firm.",
+    "packagesTitle": "Packages",
+    "packagesHint": "Upgrade anytime. Higher packages unlock more seats and capacity.",
+    "monthly": "Monthly",
+    "yearly": "Yearly",
+    "current": "Current",
+    "upgrade": "Upgrade",
+    "activateFree": "Activate",
+    "maxUsers": "Up to {{count}} users",
+    "mo": "mo",
+    "yr": "yr",
+    "noPlans": "No packages are published yet. Contact Cliavo via a support ticket.",
+    "stripeHint": "Card checkout uses Stripe when configured. Free packages activate immediately.",
+    "upgradeSuccess": "Package activated. Welcome back!",
+    "upgradeCancelled": "Checkout cancelled — you can try again anytime.",
+    "checkoutFailed": "Could not start checkout"
   }
 }

@@ -4,11 +4,6 @@ import { Clock, AlertTriangle } from "lucide-react";
 import { useLocation } from "wouter";
 import { useTranslation } from "react-i18next";
 
-const CONTINUE_MAIL =
-  "mailto:corporateshift@gmail.com?subject=Cliavo%20trial%20%E2%80%94%20continue%20SaaS";
-const ONPREM_MAIL =
-  "mailto:corporateshift@gmail.com?subject=Cliavo%20trial%20%E2%80%94%20on-premise%20setup";
-
 export default function TrialBanner() {
   const { t } = useTranslation();
   const [, navigate] = useLocation();
@@ -22,6 +17,8 @@ export default function TrialBanner() {
 
   const expired = Boolean(sub.trialExpired);
   const days = sub.trialDaysLeft;
+  const isAdmin =
+    firmData?.member?.firmRole === "admin" || firmData?.member?.firmRole === "subadmin";
 
   return (
     <div
@@ -43,32 +40,18 @@ export default function TrialBanner() {
             : t("trial.active", { days, count: days })}
         </p>
       </div>
-      <div className="flex items-center gap-2 flex-wrap">
-        <Button
-          size="sm"
-          variant="secondary"
-          className="bg-white text-[var(--color-navy)] hover:bg-white/90 h-8 flex-1 sm:flex-none"
-          onClick={() => navigate("/settings")}
-        >
-          {t("trial.whitelabel")}
-        </Button>
-        <Button
-          size="sm"
-          variant="outline"
-          className="border-white/50 bg-transparent text-white hover:bg-white/10 h-8 flex-1 sm:flex-none"
-          asChild
-        >
-          <a href={CONTINUE_MAIL}>{t("trial.continueSaas")}</a>
-        </Button>
-        <Button
-          size="sm"
-          variant="outline"
-          className="border-white/50 bg-transparent text-white hover:bg-white/10 h-8 flex-1 sm:flex-none"
-          asChild
-        >
-          <a href={ONPREM_MAIL}>{t("trial.onPremise")}</a>
-        </Button>
-      </div>
+      {isAdmin && (
+        <div className="flex items-center gap-2 flex-wrap">
+          <Button
+            size="sm"
+            variant="secondary"
+            className="bg-white text-[var(--color-navy)] hover:bg-white/90 h-8 flex-1 sm:flex-none"
+            onClick={() => navigate("/account")}
+          >
+            {expired ? t("trial.choosePackage") : t("trial.viewAccount")}
+          </Button>
+        </div>
+      )}
     </div>
   );
 }

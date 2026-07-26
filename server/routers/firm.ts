@@ -1,6 +1,5 @@
 import { TRPCError } from "@trpc/server";
 import { nanoid } from "nanoid";
-import { eq } from "drizzle-orm";
 import { z } from "zod";
 import { COOKIE_NAME, ONE_YEAR_MS } from "@shared/const";
 import { sendFirmInviteEmail, sendClientInviteEmail } from "../email";
@@ -20,6 +19,7 @@ import {
   getUserByEmail,
   updateFirm,
 } from "../db";
+import { and, asc, eq } from "drizzle-orm";
 import { clients, firmSubscriptions, subscriptionPlans, users } from "../../drizzle/schema";
 import { resolveFirmContext } from "../access";
 import { getSessionCookieOptions } from "../_core/cookies";
@@ -29,6 +29,8 @@ import { hashPassword } from "../auth/password";
 import { isSingleTenant } from "../deployment";
 import { evaluateLicense } from "../license";
 import { getAppBaseUrl } from "../tenant";
+import { activateFirmPlan, getFirmPlatformAccess } from "../firmAccess";
+import { getStripe } from "../stripe";
 
 const inviteEmailSchema = z
   .string()
@@ -107,10 +109,16 @@ export const firmRouter = router({
       status: string;
       trialEndsAt: Date | null;
       currentPeriodEnd: Date | null;
+      planId: number | null;
       planName: string | null;
+      monthlyPrice: string | null;
+      yearlyPrice: string | null;
+      billingCycle: string | null;
       trialActive: boolean;
       trialExpired: boolean;
       trialDaysLeft: number;
+      locked: boolean;
+      lockReason: string | null;
     } | null = null;
 
     if (db) {
@@ -119,7 +127,11 @@ export const firmRouter = router({
           status: firmSubscriptions.status,
           trialEndsAt: firmSubscriptions.trialEndsAt,
           currentPeriodEnd: firmSubscriptions.currentPeriodEnd,
+          billingCycle: firmSubscriptions.billingCycle,
+          planId: firmSubscriptions.planId,
           planName: subscriptionPlans.name,
+          monthlyPrice: subscriptionPlans.monthlyPrice,
+          yearlyPrice: subscriptionPlans.yearlyPrice,
         })
         .from(firmSubscriptions)
         .leftJoin(subscriptionPlans, eq(firmSubscriptions.planId, subscriptionPlans.id))
@@ -127,24 +139,21 @@ export const firmRouter = router({
         .limit(1);
 
       if (row) {
-        const now = Date.now();
-        const trialEndsAt = row.trialEndsAt ?? null;
-        const trialActive =
-          row.status === "trialing" && !!trialEndsAt && trialEndsAt.getTime() > now;
-        const trialExpired =
-          row.status === "trialing" && !!trialEndsAt && trialEndsAt.getTime() <= now;
-        const trialDaysLeft =
-          trialEndsAt && trialEndsAt.getTime() > now
-            ? Math.max(0, Math.ceil((trialEndsAt.getTime() - now) / (24 * 60 * 60 * 1000)))
-            : 0;
+        const access = await getFirmPlatformAccess(ctx.user.id);
         subscription = {
           status: row.status,
-          trialEndsAt,
+          trialEndsAt: row.trialEndsAt ?? null,
           currentPeriodEnd: row.currentPeriodEnd,
+          planId: row.planId,
           planName: row.planName,
-          trialActive,
-          trialExpired,
-          trialDaysLeft,
+          monthlyPrice: row.monthlyPrice != null ? String(row.monthlyPrice) : null,
+          yearlyPrice: row.yearlyPrice != null ? String(row.yearlyPrice) : null,
+          billingCycle: row.billingCycle,
+          trialActive: Boolean(access?.trialActive),
+          trialExpired: Boolean(access?.trialExpired),
+          trialDaysLeft: access?.trialDaysLeft ?? 0,
+          locked: Boolean(access?.locked),
+          lockReason: access?.reason ?? null,
         };
       }
     }
@@ -175,6 +184,183 @@ export const firmRouter = router({
       },
     };
   }),
+
+  /** Firm admin account: subscription + available Cliavo packages. */
+  account: protectedProcedure.query(async ({ ctx }) => {
+    const member = await getFirmMemberByUserId(ctx.user.id);
+    if (!member) throw new TRPCError({ code: "FORBIDDEN" });
+    if (!["admin", "subadmin"].includes(member.firmRole)) {
+      throw new TRPCError({ code: "FORBIDDEN", message: "Only firm admins can manage the account" });
+    }
+    const firm = await getFirmById(member.firmId);
+    if (!firm) throw new TRPCError({ code: "NOT_FOUND" });
+    const access = await getFirmPlatformAccess(ctx.user.id);
+    const db = await getDb();
+    const plans = db
+      ? await db
+          .select()
+          .from(subscriptionPlans)
+          .where(eq(subscriptionPlans.isActive, true))
+          .orderBy(asc(subscriptionPlans.sortOrder))
+      : [];
+    return {
+      firm: { id: firm.id, name: firm.name, email: firm.email, slug: firm.slug },
+      memberRole: member.firmRole,
+      subscription: access,
+      plans: plans.map((p) => ({
+        id: p.id,
+        name: p.name,
+        description: p.description,
+        maxUsers: p.maxUsers,
+        monthlyPrice: String(p.monthlyPrice),
+        yearlyPrice: String(p.yearlyPrice),
+        features: (() => {
+          try {
+            return p.features ? (JSON.parse(p.features) as string[]) : [];
+          } catch {
+            return [];
+          }
+        })(),
+        sortOrder: p.sortOrder,
+      })),
+      stripeConfigured: Boolean(process.env.STRIPE_SECRET_KEY),
+    };
+  }),
+
+  listPlans: protectedProcedure.query(async ({ ctx }) => {
+    const member = await getFirmMemberByUserId(ctx.user.id);
+    if (!member || !["admin", "subadmin"].includes(member.firmRole)) {
+      throw new TRPCError({ code: "FORBIDDEN" });
+    }
+    const db = await getDb();
+    if (!db) return [];
+    return db
+      .select()
+      .from(subscriptionPlans)
+      .where(eq(subscriptionPlans.isActive, true))
+      .orderBy(asc(subscriptionPlans.sortOrder));
+  }),
+
+  /**
+   * Start Stripe Checkout for a Cliavo SaaS package, or activate immediately when price is 0.
+   */
+  createPlanCheckout: protectedProcedure
+    .input(
+      z.object({
+        planId: z.number().int().positive(),
+        billingCycle: z.enum(["monthly", "yearly"]).default("monthly"),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const member = await getFirmMemberByUserId(ctx.user.id);
+      if (!member || !["admin", "subadmin"].includes(member.firmRole)) {
+        throw new TRPCError({ code: "FORBIDDEN", message: "Only firm admins can upgrade" });
+      }
+      const db = await getDb();
+      if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+
+      const [plan] = await db
+        .select()
+        .from(subscriptionPlans)
+        .where(and(eq(subscriptionPlans.id, input.planId), eq(subscriptionPlans.isActive, true)))
+        .limit(1);
+      if (!plan) throw new TRPCError({ code: "NOT_FOUND", message: "Plan not found" });
+
+      const amount =
+        input.billingCycle === "yearly" ? Number(plan.yearlyPrice) : Number(plan.monthlyPrice);
+
+      if (!Number.isFinite(amount) || amount < 0) {
+        throw new TRPCError({ code: "BAD_REQUEST", message: "Invalid plan price" });
+      }
+
+      // Free / zero-price plans activate immediately
+      if (amount === 0) {
+        await activateFirmPlan({
+          firmId: member.firmId,
+          planId: plan.id,
+          billingCycle: input.billingCycle,
+        });
+        return { activated: true as const, url: null };
+      }
+
+      if (!process.env.STRIPE_SECRET_KEY) {
+        throw new TRPCError({
+          code: "PRECONDITION_FAILED",
+          message: "Online checkout is not configured. Contact Cliavo support via a ticket.",
+        });
+      }
+
+      const stripe = getStripe();
+      const origin = String(ctx.req.headers.origin || getAppBaseUrl(ctx.req));
+      const unitAmount = Math.round(amount * 100);
+      const session = await stripe.checkout.sessions.create({
+        payment_method_types: ["card"],
+        mode: "payment",
+        customer_email: ctx.user.email ?? undefined,
+        line_items: [
+          {
+            price_data: {
+              currency: "chf",
+              product_data: {
+                name: `Cliavo ${plan.name} (${input.billingCycle})`,
+                description: plan.description || undefined,
+              },
+              unit_amount: unitAmount,
+            },
+            quantity: 1,
+          },
+        ],
+        metadata: {
+          kind: "firm_subscription",
+          firmId: String(member.firmId),
+          planId: String(plan.id),
+          billingCycle: input.billingCycle,
+          userId: String(ctx.user.id),
+        },
+        success_url: `${origin}/account?upgraded=1`,
+        cancel_url: `${origin}/account?cancelled=1`,
+        allow_promotion_codes: true,
+      });
+
+      return { activated: false as const, url: session.url };
+    }),
+
+  /** Activate a zero-price plan without Stripe (also used after successful checkout via webhook). */
+  activatePlan: protectedProcedure
+    .input(
+      z.object({
+        planId: z.number().int().positive(),
+        billingCycle: z.enum(["monthly", "yearly"]).default("monthly"),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const member = await getFirmMemberByUserId(ctx.user.id);
+      if (!member || !["admin", "subadmin"].includes(member.firmRole)) {
+        throw new TRPCError({ code: "FORBIDDEN" });
+      }
+      const db = await getDb();
+      if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+      const [plan] = await db
+        .select()
+        .from(subscriptionPlans)
+        .where(and(eq(subscriptionPlans.id, input.planId), eq(subscriptionPlans.isActive, true)))
+        .limit(1);
+      if (!plan) throw new TRPCError({ code: "NOT_FOUND" });
+      const amount =
+        input.billingCycle === "yearly" ? Number(plan.yearlyPrice) : Number(plan.monthlyPrice);
+      if (amount > 0) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "This plan requires checkout. Use Upgrade to pay.",
+        });
+      }
+      await activateFirmPlan({
+        firmId: member.firmId,
+        planId: plan.id,
+        billingCycle: input.billingCycle,
+      });
+      return { ok: true };
+    }),
 
   /** Effective role × function matrix for this firm (defaults + overrides). */
   getRoleCapabilities: protectedProcedure.query(async ({ ctx }) => {

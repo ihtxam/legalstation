@@ -246,6 +246,16 @@ async function startServer() {
             firmId ? parseInt(firmId, 10) : undefined
           );
         }
+        if (kind === "firm_subscription" && firmId && session.metadata?.planId) {
+          const { activateFirmPlan } = await import("../firmAccess");
+          const billingCycle =
+            session.metadata.billingCycle === "yearly" ? "yearly" : "monthly";
+          await activateFirmPlan({
+            firmId: parseInt(String(firmId), 10),
+            planId: parseInt(String(session.metadata.planId), 10),
+            billingCycle,
+          });
+        }
       }
       res.json({ received: true });
     } catch (err: any) {

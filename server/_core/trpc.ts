@@ -72,7 +72,40 @@ const requireUser = t.middleware(async opts => {
   });
 });
 
-export const protectedProcedure = t.procedure.use(requireUser);
+/** Block firm members whose trial expired / subscription lapsed (except allowlisted paths). */
+const enforceFirmSubscription = t.middleware(async opts => {
+  const { ctx, next, path } = opts;
+  if (!ctx.user || ctx.user.role === "superadmin") {
+    return next();
+  }
+
+  // Superadmin impersonation must not be blocked by firm trial state
+  const { getImpersonatorSessionToken } = await import("../impersonation");
+  if (getImpersonatorSessionToken(ctx.req)) {
+    return next();
+  }
+
+  const { LOCKED_FIRM_ALLOWED_PATHS, getFirmPlatformAccess } = await import("../firmAccess");
+  if (LOCKED_FIRM_ALLOWED_PATHS.has(path) || path === "auth.stopImpersonation") {
+    return next();
+  }
+
+  const access = await getFirmPlatformAccess(ctx.user.id);
+  if (access?.locked) {
+    throw new TRPCError({
+      code: "FORBIDDEN",
+      message:
+        access.reason === "trial_expired"
+          ? "Your trial has ended. Choose a package to continue using Cliavo."
+          : "Your firm subscription is inactive. Choose a package to continue using Cliavo.",
+      cause: { code: "FIRM_ACCESS_LOCKED", reason: access.reason },
+    });
+  }
+
+  return next();
+});
+
+export const protectedProcedure = t.procedure.use(requireUser).use(enforceFirmSubscription);
 
 export const adminProcedure = t.procedure.use(
   t.middleware(async opts => {
