@@ -1,8 +1,22 @@
-// Preconfigured storage helpers for Manus WebDev templates
-// Uploads via Forge Server presigned URL to S3 (PUT direct).
-// Downloads return /manus-storage/{key} paths served via 307 redirect.
+// Storage helpers with two backends:
+//  1. Forge presigned-URL S3 storage (when BUILT_IN_FORGE_API_URL/KEY are set)
+//  2. Local-disk fallback (LOCAL_STORAGE_DIR, default ./data/storage) so
+//     document/logo/attachment uploads work on self-hosted deployments
+//     without any external storage service.
+// Both backends expose files under /manus-storage/{key} (see storageProxy).
 
+import crypto from "crypto";
+import { promises as fs } from "fs";
+import path from "path";
 import { ENV } from "./_core/env";
+
+export function isForgeStorageConfigured(): boolean {
+  return Boolean(ENV.forgeApiUrl && ENV.forgeApiKey);
+}
+
+export function getLocalStorageDir(): string {
+  return path.resolve(process.env.LOCAL_STORAGE_DIR || path.join(process.cwd(), "data", "storage"));
+}
 
 function getForgeConfig() {
   const forgeUrl = ENV.forgeApiUrl;
@@ -28,13 +42,42 @@ function appendHashSuffix(relKey: string): string {
   return `${relKey.slice(0, lastDot)}_${hash}${relKey.slice(lastDot)}`;
 }
 
+/** Resolve a storage key to an absolute local path, refusing traversal outside the storage dir. */
+export function resolveLocalStoragePath(relKey: string): string | null {
+  const base = getLocalStorageDir();
+  const abs = path.resolve(base, normalizeKey(relKey));
+  if (abs !== base && !abs.startsWith(base + path.sep)) return null;
+  return abs;
+}
+
+async function localPut(
+  key: string,
+  data: Buffer | Uint8Array | string,
+  contentType: string,
+): Promise<{ key: string; url: string }> {
+  const abs = resolveLocalStoragePath(key);
+  if (!abs) throw new Error("Invalid storage key");
+  await fs.mkdir(path.dirname(abs), { recursive: true });
+  const buf =
+    typeof data === "string" ? Buffer.from(data, "utf8") : Buffer.from(data as Uint8Array);
+  await fs.writeFile(abs, buf);
+  // Content type is re-derived from the extension when serving; nothing else to persist.
+  void contentType;
+  return { key, url: `/manus-storage/${key}` };
+}
+
 export async function storagePut(
   relKey: string,
   data: Buffer | Uint8Array | string,
   contentType = "application/octet-stream",
 ): Promise<{ key: string; url: string }> {
-  const { forgeUrl, forgeKey } = getForgeConfig();
   const key = appendHashSuffix(normalizeKey(relKey));
+
+  if (!isForgeStorageConfigured()) {
+    return localPut(key, data, contentType);
+  }
+
+  const { forgeUrl, forgeKey } = getForgeConfig();
 
   // 1. Get presigned PUT URL from Forge
   const presignUrl = new URL("v1/storage/presign/put", forgeUrl + "/");
@@ -77,8 +120,13 @@ export async function storageGet(relKey: string): Promise<{ key: string; url: st
 }
 
 export async function storageGetSignedUrl(relKey: string): Promise<string> {
-  const { forgeUrl, forgeKey } = getForgeConfig();
   const key = normalizeKey(relKey);
+
+  if (!isForgeStorageConfigured()) {
+    return `/manus-storage/${key}`;
+  }
+
+  const { forgeUrl, forgeKey } = getForgeConfig();
 
   const getUrl = new URL("v1/storage/presign/get", forgeUrl + "/");
   getUrl.searchParams.set("path", key);

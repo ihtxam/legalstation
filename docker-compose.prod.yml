@@ -54,6 +54,10 @@ services:
       SCHEDULED_JOB_SECRET: ${SCHEDULED_JOB_SECRET:-}
       SCHEDULED_JOB_USER_ID: ${SCHEDULED_JOB_USER_ID:-1}
       RUN_DB_MIGRATE: "false"
+      # Local-disk document storage (used when BUILT_IN_FORGE_* is not set)
+      LOCAL_STORAGE_DIR: /app/data/storage
+    volumes:
+      - cliavo_prod_uploads:/app/data
     depends_on:
       mysql:
         condition: service_healthy
@@ -62,3 +66,5 @@ volumes:
   # Prefer MYSQL_VOLUME_NAME=legacy MySQL volume name on hosts that already have data.
   cliavo_prod_mysql:
     name: ${MYSQL_VOLUME_NAME:-cliavo_prod_mysql}
+  cliavo_prod_uploads:
+    name: cliavo_prod_uploads
