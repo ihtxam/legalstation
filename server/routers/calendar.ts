@@ -31,9 +31,9 @@ function publicConnection(row: typeof calendarConnections.$inferSelect) {
 }
 
 export const calendarRouter = router({
-  providersStatus: protectedProcedure.query(() => ({
-    google: googleCalendarConfigured(),
-    microsoft: microsoftCalendarConfigured(),
+  providersStatus: protectedProcedure.query(async () => ({
+    google: await googleCalendarConfigured(),
+    microsoft: await microsoftCalendarConfigured(),
     icloud: true,
   })),
 

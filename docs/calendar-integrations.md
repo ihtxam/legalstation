@@ -22,7 +22,11 @@ Per-user two-way sync between Cliavo agenda items and external calendars.
 3. Choose sync direction: two-way, push-only, or pull-only  
 4. Use **Sync now**, or schedule `POST /api/scheduled/calendar-sync`
 
-## Server env
+## Platform credentials (recommended)
+
+Superadmin → **Settings → Calendar OAuth (global)** stores Google/Microsoft client IDs and secrets once for all merchants. Secrets are encrypted in `agency_settings`. Firm users then connect their own calendars under **Settings → Calendar**.
+
+ENV vars remain a fallback when agency settings are empty:
 
 ```bash
 GOOGLE_CALENDAR_CLIENT_ID=

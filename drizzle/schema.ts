@@ -1,4 +1,5 @@
 import {
+  bigint,
   boolean,
   decimal,
   int,
@@ -59,6 +60,11 @@ export const firms = mysqlTable("firms", {
   credentialsSentAt: timestamp("credentialsSentAt"),
   /** Max document upload size in bytes (firm admin setting; capped by server hard limit). */
   maxUploadBytes: int("maxUploadBytes").notNull().default(10_485_760),
+  /**
+   * Total document storage quota for the firm (bytes).
+   * Default 10 GB. Superadmin can set 2 / 10 / 50 GB (or custom).
+   */
+  storageQuotaBytes: bigint("storageQuotaBytes", { mode: "number" }).notNull().default(10_737_418_240),
   /** JSON array of allowed file extensions, e.g. ["pdf","jpg","png"]. */
   allowedUploadTypes: text("allowedUploadTypes"),
   /** Standard Swiss IBAN (used for QR-bill when qrIban is empty). */
@@ -992,3 +998,31 @@ export const calendarEventLinks = mysqlTable("calendar_event_links", {
 
 export type CalendarEventLink = typeof calendarEventLinks.$inferSelect;
 export type InsertCalendarEventLink = typeof calendarEventLinks.$inferInsert;
+
+/** Platform-wide announcements shown to merchant (firm) users. */
+export const platformAnnouncements = mysqlTable("platform_announcements", {
+  id: int("id").autoincrement().primaryKey(),
+  title: varchar("title", { length: 255 }).notNull(),
+  body: text("body").notNull(),
+  severity: mysqlEnum("severity", ["info", "warning", "critical"]).notNull().default("info"),
+  audience: mysqlEnum("audience", ["firm_admins", "all_members"]).notNull().default("firm_admins"),
+  isActive: boolean("isActive").notNull().default(true),
+  startsAt: timestamp("startsAt").defaultNow().notNull(),
+  endsAt: timestamp("endsAt"),
+  createdByUserId: int("createdByUserId"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type PlatformAnnouncement = typeof platformAnnouncements.$inferSelect;
+export type InsertPlatformAnnouncement = typeof platformAnnouncements.$inferInsert;
+
+export const announcementDismissals = mysqlTable("announcement_dismissals", {
+  id: int("id").autoincrement().primaryKey(),
+  announcementId: int("announcementId").notNull(),
+  userId: int("userId").notNull(),
+  dismissedAt: timestamp("dismissedAt").defaultNow().notNull(),
+});
+
+export type AnnouncementDismissal = typeof announcementDismissals.$inferSelect;
+export type InsertAnnouncementDismissal = typeof announcementDismissals.$inferInsert;

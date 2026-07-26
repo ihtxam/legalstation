@@ -39,6 +39,7 @@ import { calendarRouter } from "./routers/calendar";
 import { clientPackagesRouter } from "./routers/clientPackages";
 import { ondemandServicesRouter } from "./routers/ondemandServices";
 import { signupRouter } from "./routers/signup";
+import { announcementsRouter } from "./routers/announcements";
 import { updateUserById } from "./db";
 import {
   TWO_FACTOR_COOKIE,
@@ -222,6 +223,7 @@ export const appRouter = router({
   calendar: calendarRouter,
   clientPackages: clientPackagesRouter,
   ondemandServices: ondemandServicesRouter,
+  announcements: announcementsRouter,
 });
 
 export type AppRouter = typeof appRouter;

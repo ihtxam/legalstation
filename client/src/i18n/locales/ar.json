@@ -16,7 +16,8 @@
     "leads": "العملاء المحتملون",
     "cms": "الموقع",
     "packages": "الباقات",
-    "services": "الخدمات"
+    "services": "الخدمات",
+    "support": "الدعم"
   },
   "common": {
     "loading": "جارٍ التحميل…",
@@ -351,7 +352,9 @@
     "creditorCity": "المدينة",
     "creditorCountry": "الدولة (ISO)",
     "tabRoles": "الأدوار",
-    "tabPayments": "المدفوعات"
+    "tabPayments": "المدفوعات",
+    "storageTitle": "تخزين المستندات",
+    "storageHint": "حصة تخزين مستندات المكتب. تواصل مع Cliavo للترقية."
   },
   "notFound": {
     "title": "الصفحة غير موجودة",
@@ -517,7 +520,31 @@
     "impersonateHint": "افتح مساحة المكتب كمسؤول",
     "noFirms": "لا مكاتب",
     "usersTitle": "مستخدمو المنصة",
-    "auditTitle": "سجل التدقيق"
+    "auditTitle": "سجل التدقيق",
+    "tabAnnouncements": "الإعلانات",
+    "storageQuota": "حصة التخزين",
+    "storageDefault": "افتراضي",
+    "storageQuotaHint": "الافتراضي للمكاتب الجديدة: 10 جيجابايت.",
+    "calendarOAuthTitle": "OAuth التقويم (عام)",
+    "calendarOAuthDesc": "اضبط Google وMicrosoft مرة واحدة لجميع المكاتب.",
+    "secretOnFile": "السر محفوظ",
+    "secretMissing": "لا يوجد سر محفوظ",
+    "announcementsTitle": "لوحة رسائل التجار",
+    "announcementsSubtitle": "انشر إعلانات منبثقة على منصات المكاتب.",
+    "newAnnouncement": "إعلان جديد",
+    "announcementTitle": "العنوان",
+    "announcementBody": "الرسالة",
+    "announcementSeverity": "الأهمية",
+    "announcementAudience": "الجمهور",
+    "audienceFirmAdmins": "مسؤولو المكتب فقط",
+    "audienceAllMembers": "جميع الأعضاء",
+    "publishAnnouncement": "نشر",
+    "announcementCreated": "تم نشر الإعلان",
+    "announcementUpdated": "تم تحديث الإعلان",
+    "announcementDeleted": "تم حذف الإعلان",
+    "noAnnouncements": "لا توجد إعلانات",
+    "activate": "تفعيل",
+    "deactivate": "إلغاء التفعيل"
   },
   "login": {
     "email": "البريد",
@@ -1230,5 +1257,19 @@
     "storedLeaveBlank": "stored — leave blank to keep",
     "save": "Save Adyen settings",
     "saved": "Adyen settings saved"
+  },
+  "support": {
+    "title": "الدعم",
+    "heading": "المساعدة والدعم",
+    "intro": "تواصل مع Cliavo أو تصفح وثائق المساعدة الذاتية.",
+    "emailTitle": "بريد الدعم",
+    "emailHint": "راسلنا بخصوص الفوترة أو الوصول أو المشاكل التقنية.",
+    "docsTitle": "وثائق المساعدة الذاتية",
+    "docsHint": "أدلة حول القضايا والعملاء والفوترة والتقويم والباقات والمدفوعات.",
+    "openDocs": "فتح docs.cliavo.com",
+    "openLocalHelp": "فتح المساعدة داخل التطبيق"
+  },
+  "announcements": {
+    "dismiss": "حسنًا"
   }
 }

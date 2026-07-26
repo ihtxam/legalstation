@@ -16,7 +16,8 @@
     "leads": "Leads",
     "cms": "Website",
     "packages": "Pakete",
-    "services": "Services"
+    "services": "Services",
+    "support": "Support"
   },
   "common": {
     "loading": "Laden…",
@@ -351,7 +352,9 @@
     "creditorCity": "Ort",
     "creditorCountry": "Land (ISO)",
     "tabRoles": "Rollen",
-    "tabPayments": "Zahlungen"
+    "tabPayments": "Zahlungen",
+    "storageTitle": "Dokumentenspeicher",
+    "storageHint": "Speicherquota für Kanzleidokumente. Kontaktieren Sie Cliavo für ein Upgrade."
   },
   "notFound": {
     "title": "Seite nicht gefunden",
@@ -517,7 +520,31 @@
     "impersonateHint": "Kanzlei-Arbeitsbereich als Admin öffnen",
     "noFirms": "Keine Kanzleien",
     "usersTitle": "Plattformbenutzer",
-    "auditTitle": "Audit-Protokoll"
+    "auditTitle": "Audit-Protokoll",
+    "tabAnnouncements": "Ankündigungen",
+    "storageQuota": "Speicherquota",
+    "storageDefault": "Standard",
+    "storageQuotaHint": "Standard für neue Kanzleien: 10 GB.",
+    "calendarOAuthTitle": "Kalender-OAuth (global)",
+    "calendarOAuthDesc": "Google und Microsoft einmal konfigurieren – für alle Kanzleien.",
+    "secretOnFile": "Secret gespeichert",
+    "secretMissing": "Noch kein Secret",
+    "announcementsTitle": "Ankündigungsboard",
+    "announcementsSubtitle": "Popup-Meldungen für Händlerplattformen veröffentlichen.",
+    "newAnnouncement": "Neue Ankündigung",
+    "announcementTitle": "Titel",
+    "announcementBody": "Nachricht",
+    "announcementSeverity": "Schweregrad",
+    "announcementAudience": "Zielgruppe",
+    "audienceFirmAdmins": "Nur Kanzlei-Admins",
+    "audienceAllMembers": "Alle Mitglieder",
+    "publishAnnouncement": "Veröffentlichen",
+    "announcementCreated": "Ankündigung veröffentlicht",
+    "announcementUpdated": "Ankündigung aktualisiert",
+    "announcementDeleted": "Ankündigung gelöscht",
+    "noAnnouncements": "Keine Ankündigungen",
+    "activate": "Aktivieren",
+    "deactivate": "Deaktivieren"
   },
   "login": {
     "email": "E-Mail",
@@ -1230,5 +1257,19 @@
     "storedLeaveBlank": "stored — leave blank to keep",
     "save": "Save Adyen settings",
     "saved": "Adyen settings saved"
+  },
+  "support": {
+    "title": "Support",
+    "heading": "Hilfe & Support",
+    "intro": "Kontaktieren Sie Cliavo oder nutzen Sie die Self-Service-Dokumentation.",
+    "emailTitle": "E-Mail-Support",
+    "emailHint": "Schreiben Sie uns bei Abrechnung, Zugang oder technischen Fragen.",
+    "docsTitle": "Self-Service-Dokumentation",
+    "docsHint": "Anleitungen zu Fällen, Mandanten, Abrechnung, Kalender, Paketen und Zahlungen.",
+    "openDocs": "docs.cliavo.com öffnen",
+    "openLocalHelp": "In-App-Hilfe öffnen"
+  },
+  "announcements": {
+    "dismiss": "Verstanden"
   }
 }

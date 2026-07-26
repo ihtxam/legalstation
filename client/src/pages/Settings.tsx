@@ -425,6 +425,32 @@ export default function SettingsPage() {
                   </div>
                 </div>
               )}
+              {firmData?.storage && (
+                <div className="border-t border-border pt-4 space-y-2">
+                  <h4 className="font-semibold text-foreground">{t("settings.storageTitle")}</h4>
+                  <p className="text-sm text-muted-foreground">{t("settings.storageHint")}</p>
+                  <div className="flex items-center justify-between text-sm">
+                    <span>
+                      {firmData.storage.usedLabel} / {firmData.storage.quotaLabel}
+                    </span>
+                    <span className="text-muted-foreground">
+                      {Math.round(firmData.storage.percentUsed)}%
+                    </span>
+                  </div>
+                  <div className="h-2 rounded-full bg-muted overflow-hidden">
+                    <div
+                      className={`h-full transition-all ${
+                        firmData.storage.percentUsed >= 90
+                          ? "bg-red-500"
+                          : firmData.storage.percentUsed >= 70
+                            ? "bg-amber-500"
+                            : "bg-[var(--color-navy)]"
+                      }`}
+                      style={{ width: `${Math.min(100, firmData.storage.percentUsed)}%` }}
+                    />
+                  </div>
+                </div>
+              )}
               <Button
                 className={`${hasChanges ? "bg-blue-600 hover:bg-blue-700" : "bg-[var(--color-navy)] hover:bg-[var(--color-navy-light)]"} text-white`}
                 disabled={updateFirm.isPending || !hasChanges || (isFirmAdmin && allowedTypes.length === 0)}

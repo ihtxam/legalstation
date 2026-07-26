@@ -1,35 +1,39 @@
-import { ENV } from "../../_core/env";
+import { getCalendarOAuthConfig } from "../../platformCalendarConfig";
 import type { CalendarProviderClient, ExternalCalendarEvent, UpsertExternalEventInput } from "../types";
 
-const tenant = () => ENV.microsoftCalendarTenant || "common";
-const AUTH = () => `https://login.microsoftonline.com/${tenant()}/oauth2/v2.0/authorize`;
-const TOKEN = () => `https://login.microsoftonline.com/${tenant()}/oauth2/v2.0/token`;
+const AUTH = (tenant: string) =>
+  `https://login.microsoftonline.com/${tenant || "common"}/oauth2/v2.0/authorize`;
+const TOKEN = (tenant: string) =>
+  `https://login.microsoftonline.com/${tenant || "common"}/oauth2/v2.0/token`;
 const GRAPH = "https://graph.microsoft.com/v1.0";
 const SCOPES = ["Calendars.ReadWrite", "User.Read", "offline_access", "openid", "email"].join(" ");
 
-export function microsoftCalendarConfigured() {
-  return Boolean(ENV.microsoftCalendarClientId && ENV.microsoftCalendarClientSecret);
+export async function microsoftCalendarConfigured() {
+  const cfg = await getCalendarOAuthConfig();
+  return cfg.microsoftConfigured;
 }
 
-export function microsoftAuthorizeUrl(state: string, redirectUri: string) {
+export async function microsoftAuthorizeUrl(state: string, redirectUri: string) {
+  const cfg = await getCalendarOAuthConfig();
   const params = new URLSearchParams({
-    client_id: ENV.microsoftCalendarClientId,
+    client_id: cfg.microsoftClientId,
     response_type: "code",
     redirect_uri: redirectUri,
     response_mode: "query",
     scope: SCOPES,
     state,
   });
-  return `${AUTH()}?${params.toString()}`;
+  return `${AUTH(cfg.microsoftTenant)}?${params.toString()}`;
 }
 
 export async function exchangeMicrosoftCode(code: string, redirectUri: string) {
-  const res = await fetch(TOKEN(), {
+  const cfg = await getCalendarOAuthConfig();
+  const res = await fetch(TOKEN(cfg.microsoftTenant), {
     method: "POST",
     headers: { "Content-Type": "application/x-www-form-urlencoded" },
     body: new URLSearchParams({
-      client_id: ENV.microsoftCalendarClientId,
-      client_secret: ENV.microsoftCalendarClientSecret,
+      client_id: cfg.microsoftClientId,
+      client_secret: cfg.microsoftClientSecret,
       code,
       redirect_uri: redirectUri,
       grant_type: "authorization_code",
@@ -46,12 +50,13 @@ export async function exchangeMicrosoftCode(code: string, redirectUri: string) {
 }
 
 export async function refreshMicrosoftAccessToken(refreshToken: string) {
-  const res = await fetch(TOKEN(), {
+  const cfg = await getCalendarOAuthConfig();
+  const res = await fetch(TOKEN(cfg.microsoftTenant), {
     method: "POST",
     headers: { "Content-Type": "application/x-www-form-urlencoded" },
     body: new URLSearchParams({
-      client_id: ENV.microsoftCalendarClientId,
-      client_secret: ENV.microsoftCalendarClientSecret,
+      client_id: cfg.microsoftClientId,
+      client_secret: cfg.microsoftClientSecret,
       refresh_token: refreshToken,
       grant_type: "refresh_token",
       scope: SCOPES,

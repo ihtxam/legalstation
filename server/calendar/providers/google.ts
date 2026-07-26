@@ -1,4 +1,4 @@
-import { ENV } from "../../_core/env";
+import { getCalendarOAuthConfig } from "../../platformCalendarConfig";
 import type { CalendarProviderClient, ExternalCalendarEvent, UpsertExternalEventInput } from "../types";
 
 const GOOGLE_AUTH = "https://accounts.google.com/o/oauth2/v2/auth";
@@ -6,13 +6,15 @@ const GOOGLE_TOKEN = "https://oauth2.googleapis.com/token";
 const GOOGLE_API = "https://www.googleapis.com/calendar/v3";
 const SCOPES = ["https://www.googleapis.com/auth/calendar", "email", "profile"].join(" ");
 
-export function googleCalendarConfigured() {
-  return Boolean(ENV.googleCalendarClientId && ENV.googleCalendarClientSecret);
+export async function googleCalendarConfigured() {
+  const cfg = await getCalendarOAuthConfig();
+  return cfg.googleConfigured;
 }
 
-export function googleAuthorizeUrl(state: string, redirectUri: string) {
+export async function googleAuthorizeUrl(state: string, redirectUri: string) {
+  const cfg = await getCalendarOAuthConfig();
   const params = new URLSearchParams({
-    client_id: ENV.googleCalendarClientId,
+    client_id: cfg.googleClientId,
     redirect_uri: redirectUri,
     response_type: "code",
     scope: SCOPES,
@@ -24,13 +26,14 @@ export function googleAuthorizeUrl(state: string, redirectUri: string) {
 }
 
 export async function exchangeGoogleCode(code: string, redirectUri: string) {
+  const cfg = await getCalendarOAuthConfig();
   const res = await fetch(GOOGLE_TOKEN, {
     method: "POST",
     headers: { "Content-Type": "application/x-www-form-urlencoded" },
     body: new URLSearchParams({
       code,
-      client_id: ENV.googleCalendarClientId,
-      client_secret: ENV.googleCalendarClientSecret,
+      client_id: cfg.googleClientId,
+      client_secret: cfg.googleClientSecret,
       redirect_uri: redirectUri,
       grant_type: "authorization_code",
     }),
@@ -46,13 +49,14 @@ export async function exchangeGoogleCode(code: string, redirectUri: string) {
 }
 
 export async function refreshGoogleAccessToken(refreshToken: string) {
+  const cfg = await getCalendarOAuthConfig();
   const res = await fetch(GOOGLE_TOKEN, {
     method: "POST",
     headers: { "Content-Type": "application/x-www-form-urlencoded" },
     body: new URLSearchParams({
       refresh_token: refreshToken,
-      client_id: ENV.googleCalendarClientId,
-      client_secret: ENV.googleCalendarClientSecret,
+      client_id: cfg.googleClientId,
+      client_secret: cfg.googleClientSecret,
       grant_type: "refresh_token",
     }),
   });

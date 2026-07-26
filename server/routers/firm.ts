@@ -151,11 +151,18 @@ export const firmRouter = router({
 
     const { getMemberCapabilityFlags } = await import("../firmPermissions");
     const capabilities = await getMemberCapabilityFlags(firm.id, member.firmRole);
+    const { getFirmStorageUsage, bytesToGbLabel } = await import("../firmStorage");
+    const storage = await getFirmStorageUsage(firm.id);
 
     return {
       firm,
       member,
       subscription,
+      storage: {
+        ...storage,
+        usedLabel: bytesToGbLabel(storage.usedBytes),
+        quotaLabel: bytesToGbLabel(storage.quotaBytes),
+      },
       capabilities: {
         canManageFirmSettings: capabilities.canManageFirmSettings,
         canInviteStaff: capabilities.canInviteStaff,

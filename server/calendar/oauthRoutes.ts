@@ -64,20 +64,20 @@ export function registerCalendarOAuthRoutes(app: Express) {
       const base = appBase(req);
 
       if (provider === "google") {
-        if (!googleCalendarConfigured()) {
+        if (!(await googleCalendarConfigured())) {
           return res.status(400).json({ error: "Google Calendar is not configured on this server." });
         }
         const redirectUri = `${base}/api/oauth/calendar/google/callback`;
-        return res.redirect(googleAuthorizeUrl(state, redirectUri));
+        return res.redirect(await googleAuthorizeUrl(state, redirectUri));
       }
       if (provider === "microsoft") {
-        if (!microsoftCalendarConfigured()) {
+        if (!(await microsoftCalendarConfigured())) {
           return res
             .status(400)
             .json({ error: "Microsoft / Outlook Calendar is not configured on this server." });
         }
         const redirectUri = `${base}/api/oauth/calendar/microsoft/callback`;
-        return res.redirect(microsoftAuthorizeUrl(state, redirectUri));
+        return res.redirect(await microsoftAuthorizeUrl(state, redirectUri));
       }
       return res.status(400).json({ error: "Unknown provider" });
     } catch {

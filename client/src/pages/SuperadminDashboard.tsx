@@ -44,9 +44,12 @@ import {
   LogOut,
   LogIn,
   Pencil,
+  Megaphone,
+  CalendarDays,
+  HardDrive,
 } from "lucide-react";
 
-type TabId = "overview" | "firms" | "plans" | "users" | "leads" | "settings" | "audit";
+type TabId = "overview" | "firms" | "plans" | "users" | "leads" | "announcements" | "settings" | "audit";
 
 export default function SuperadminDashboard() {
   const { t } = useTranslation();
@@ -99,6 +102,15 @@ export default function SuperadminDashboard() {
   const [adyenApiKey, setAdyenApiKey] = useState("");
   const [adyenMerchant, setAdyenMerchant] = useState("");
   const [adyenClientKey, setAdyenClientKey] = useState("");
+  const [googleCalClientId, setGoogleCalClientId] = useState("");
+  const [googleCalSecret, setGoogleCalSecret] = useState("");
+  const [msCalClientId, setMsCalClientId] = useState("");
+  const [msCalSecret, setMsCalSecret] = useState("");
+  const [msCalTenant, setMsCalTenant] = useState("common");
+  const [annTitle, setAnnTitle] = useState("");
+  const [annBody, setAnnBody] = useState("");
+  const [annSeverity, setAnnSeverity] = useState<"info" | "warning" | "critical">("info");
+  const [annAudience, setAnnAudience] = useState<"firm_admins" | "all_members">("firm_admins");
 
   // Edit firm form
   const [editName, setEditName] = useState("");
@@ -111,6 +123,7 @@ export default function SuperadminDashboard() {
   const [editDomain, setEditDomain] = useState("");
   const [editPlanId, setEditPlanId] = useState("");
   const [editBilling, setEditBilling] = useState<"monthly" | "yearly">("monthly");
+  const [editStorageGb, setEditStorageGb] = useState("10");
 
   const isSuperadmin = user?.role === "superadmin";
 
@@ -190,6 +203,9 @@ export default function SuperadminDashboard() {
     setVatSpecial(String(platformSettings.vatRates.special));
     setVatZero(String(platformSettings.vatRates.zero));
     setAdyenMerchant(platformSettings.adyen.merchantAccount);
+    setGoogleCalClientId(platformSettings.calendar?.googleClientId || "");
+    setMsCalClientId(platformSettings.calendar?.microsoftClientId || "");
+    setMsCalTenant(platformSettings.calendar?.microsoftTenant || "common");
   }, [platformSettings]);
 
   const createFirmMutation = trpc.superadmin.createFirm.useMutation({
@@ -279,7 +295,38 @@ export default function SuperadminDashboard() {
   const updatePlatformMutation = trpc.superadmin.updatePlatformSettings.useMutation({
     onSuccess: () => {
       toast.success(t("superadmin.platformSaved"));
+      setGoogleCalSecret("");
+      setMsCalSecret("");
       refetchPlatform();
+    },
+    onError: (err) => toast.error(err.message),
+  });
+  const { data: announcements, refetch: refetchAnnouncements } = trpc.superadmin.listAnnouncements.useQuery(
+    undefined,
+    { enabled: isSuperadmin && tab === "announcements" }
+  );
+  const createAnnouncementMutation = trpc.superadmin.createAnnouncement.useMutation({
+    onSuccess: () => {
+      toast.success(t("superadmin.announcementCreated"));
+      setAnnTitle("");
+      setAnnBody("");
+      setAnnSeverity("info");
+      setAnnAudience("firm_admins");
+      void refetchAnnouncements();
+    },
+    onError: (err) => toast.error(err.message),
+  });
+  const updateAnnouncementMutation = trpc.superadmin.updateAnnouncement.useMutation({
+    onSuccess: () => {
+      toast.success(t("superadmin.announcementUpdated"));
+      void refetchAnnouncements();
+    },
+    onError: (err) => toast.error(err.message),
+  });
+  const deleteAnnouncementMutation = trpc.superadmin.deleteAnnouncement.useMutation({
+    onSuccess: () => {
+      toast.success(t("superadmin.announcementDeleted"));
+      void refetchAnnouncements();
     },
     onError: (err) => toast.error(err.message),
   });
@@ -337,6 +384,9 @@ export default function SuperadminDashboard() {
     setEditDomain(firm.customDomain || "");
     setEditPlanId(firm.subscription?.planId?.toString() || "");
     setEditBilling(firm.subscription?.billingCycle || "monthly");
+    const bytes = Number((firm as { storageQuotaBytes?: number }).storageQuotaBytes || 10_737_418_240);
+    const gb = Math.round(bytes / (1024 * 1024 * 1024));
+    setEditStorageGb(String([2, 10, 50].includes(gb) ? gb : gb || 10));
     setShowEditFirm(true);
   };
 
@@ -439,6 +489,11 @@ export default function SuperadminDashboard() {
       adyenApiKey: adyenApiKey || undefined,
       adyenMerchantAccount: adyenMerchant,
       adyenClientKey: adyenClientKey || undefined,
+      googleCalendarClientId: googleCalClientId,
+      googleCalendarClientSecret: googleCalSecret || undefined,
+      microsoftCalendarClientId: msCalClientId,
+      microsoftCalendarClientSecret: msCalSecret || undefined,
+      microsoftCalendarTenant: msCalTenant || "common",
     });
   };
 
@@ -544,6 +599,9 @@ export default function SuperadminDashboard() {
             <TabsTrigger value="users">{t("superadmin.tabUsers")}</TabsTrigger>
             <TabsTrigger value="leads">
               <Mail className="h-3.5 w-3.5 mr-1" /> {t("superadmin.tabLeads")}
+            </TabsTrigger>
+            <TabsTrigger value="announcements">
+              <Megaphone className="h-3.5 w-3.5 mr-1" /> {t("superadmin.tabAnnouncements")}
             </TabsTrigger>
             <TabsTrigger value="settings">
               <Settings className="h-3.5 w-3.5 mr-1" /> {t("superadmin.tabSettings")}
@@ -1015,6 +1073,23 @@ export default function SuperadminDashboard() {
                     <Label>VAT</Label>
                     <Input className="mt-1" value={editVat} onChange={(e) => setEditVat(e.target.value)} />
                   </div>
+                  <div>
+                    <Label className="flex items-center gap-1.5">
+                      <HardDrive className="h-3.5 w-3.5" />
+                      {t("superadmin.storageQuota")}
+                    </Label>
+                    <Select value={editStorageGb} onValueChange={setEditStorageGb}>
+                      <SelectTrigger className="mt-1">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="2">2 GB</SelectItem>
+                        <SelectItem value="10">10 GB ({t("superadmin.storageDefault")})</SelectItem>
+                        <SelectItem value="50">50 GB</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <p className="text-xs text-muted-foreground mt-1">{t("superadmin.storageQuotaHint")}</p>
+                  </div>
                   <div className="grid grid-cols-2 gap-3">
                     <div>
                       <Label>Plan</Label>
@@ -1064,6 +1139,7 @@ export default function SuperadminDashboard() {
                           vatNumber: editVat,
                           defaultCurrency: editCurrency,
                           customDomain: editDomain || null,
+                          storageQuotaGb: parseInt(editStorageGb, 10) || 10,
                         })
                       }
                     >
@@ -1547,6 +1623,79 @@ export default function SuperadminDashboard() {
                   </div>
                 </CardContent>
               </Card>
+
+              <Card className="shadow-none lg:col-span-2">
+                <CardHeader>
+                  <CardTitle className="text-base flex items-center gap-2">
+                    <CalendarDays className="h-4 w-4" />
+                    {t("superadmin.calendarOAuthTitle")}
+                  </CardTitle>
+                  <CardDescription>{t("superadmin.calendarOAuthDesc")}</CardDescription>
+                </CardHeader>
+                <CardContent className="grid md:grid-cols-2 gap-4">
+                  <div className="space-y-3">
+                    <p className="text-sm font-medium">Google Calendar</p>
+                    <p className="text-xs text-muted-foreground">
+                      {platformSettings?.calendar?.googleSecretSet
+                        ? t("superadmin.secretOnFile")
+                        : t("superadmin.secretMissing")}
+                    </p>
+                    <div>
+                      <Label>Client ID</Label>
+                      <Input
+                        className="mt-1"
+                        value={googleCalClientId}
+                        onChange={(e) => setGoogleCalClientId(e.target.value)}
+                      />
+                    </div>
+                    <div>
+                      <Label>Client secret</Label>
+                      <Input
+                        type="password"
+                        className="mt-1"
+                        value={googleCalSecret}
+                        onChange={(e) => setGoogleCalSecret(e.target.value)}
+                        placeholder={t("superadmin.leaveBlank")}
+                      />
+                    </div>
+                  </div>
+                  <div className="space-y-3">
+                    <p className="text-sm font-medium">Microsoft Outlook</p>
+                    <p className="text-xs text-muted-foreground">
+                      {platformSettings?.calendar?.microsoftSecretSet
+                        ? t("superadmin.secretOnFile")
+                        : t("superadmin.secretMissing")}
+                    </p>
+                    <div>
+                      <Label>Client ID</Label>
+                      <Input
+                        className="mt-1"
+                        value={msCalClientId}
+                        onChange={(e) => setMsCalClientId(e.target.value)}
+                      />
+                    </div>
+                    <div>
+                      <Label>Client secret</Label>
+                      <Input
+                        type="password"
+                        className="mt-1"
+                        value={msCalSecret}
+                        onChange={(e) => setMsCalSecret(e.target.value)}
+                        placeholder={t("superadmin.leaveBlank")}
+                      />
+                    </div>
+                    <div>
+                      <Label>Tenant</Label>
+                      <Input
+                        className="mt-1"
+                        value={msCalTenant}
+                        onChange={(e) => setMsCalTenant(e.target.value)}
+                        placeholder="common"
+                      />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
             </div>
 
             <Card className="shadow-none border-amber-200 bg-amber-50/50">
@@ -1569,6 +1718,120 @@ export default function SuperadminDashboard() {
               <Save className="h-4 w-4 mr-1.5" />
               {updatePlatformMutation.isPending ? t("superadmin.saving") : t("superadmin.savePlatform")}
             </Button>
+          </TabsContent>
+
+          {/* ─── Announcements ────────────────────────────────────── */}
+          <TabsContent value="announcements" className="space-y-4">
+            <div>
+              <h2 className="text-xl font-semibold">{t("superadmin.announcementsTitle")}</h2>
+              <p className="text-sm text-muted-foreground">{t("superadmin.announcementsSubtitle")}</p>
+            </div>
+            <Card className="shadow-none">
+              <CardHeader>
+                <CardTitle className="text-base">{t("superadmin.newAnnouncement")}</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <div>
+                  <Label>{t("superadmin.announcementTitle")}</Label>
+                  <Input className="mt-1" value={annTitle} onChange={(e) => setAnnTitle(e.target.value)} />
+                </div>
+                <div>
+                  <Label>{t("superadmin.announcementBody")}</Label>
+                  <Textarea className="mt-1" rows={4} value={annBody} onChange={(e) => setAnnBody(e.target.value)} />
+                </div>
+                <div className="grid sm:grid-cols-2 gap-3">
+                  <div>
+                    <Label>{t("superadmin.announcementSeverity")}</Label>
+                    <Select
+                      value={annSeverity}
+                      onValueChange={(v) => setAnnSeverity(v as "info" | "warning" | "critical")}
+                    >
+                      <SelectTrigger className="mt-1">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="info">Info</SelectItem>
+                        <SelectItem value="warning">Warning</SelectItem>
+                        <SelectItem value="critical">Critical</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <Label>{t("superadmin.announcementAudience")}</Label>
+                    <Select
+                      value={annAudience}
+                      onValueChange={(v) => setAnnAudience(v as "firm_admins" | "all_members")}
+                    >
+                      <SelectTrigger className="mt-1">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="firm_admins">{t("superadmin.audienceFirmAdmins")}</SelectItem>
+                        <SelectItem value="all_members">{t("superadmin.audienceAllMembers")}</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+                <Button
+                  disabled={!annTitle.trim() || !annBody.trim() || createAnnouncementMutation.isPending}
+                  onClick={() =>
+                    createAnnouncementMutation.mutate({
+                      title: annTitle,
+                      body: annBody,
+                      severity: annSeverity,
+                      audience: annAudience,
+                      isActive: true,
+                    })
+                  }
+                >
+                  <Plus className="h-4 w-4 mr-1.5" />
+                  {t("superadmin.publishAnnouncement")}
+                </Button>
+              </CardContent>
+            </Card>
+            <div className="border rounded-lg bg-white divide-y">
+              {(announcements || []).map((a) => (
+                <div key={a.id} className="px-4 py-3 flex flex-col md:flex-row md:items-start md:justify-between gap-3">
+                  <div className="space-y-1 min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <Badge variant={a.isActive ? "default" : "secondary"}>
+                        {a.isActive ? t("common.active") : t("common.inactive")}
+                      </Badge>
+                      <Badge variant="outline">{a.severity}</Badge>
+                      <Badge variant="outline">{a.audience}</Badge>
+                      <p className="font-medium truncate">{a.title}</p>
+                    </div>
+                    <p className="text-sm text-muted-foreground whitespace-pre-wrap">{a.body}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {new Date(a.createdAt).toLocaleString()}
+                    </p>
+                  </div>
+                  <div className="flex gap-2 shrink-0">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() =>
+                        updateAnnouncementMutation.mutate({ id: a.id, isActive: !a.isActive })
+                      }
+                    >
+                      {a.isActive ? t("superadmin.deactivate") : t("superadmin.activate")}
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="destructive"
+                      onClick={() => deleteAnnouncementMutation.mutate({ id: a.id })}
+                    >
+                      {t("common.delete")}
+                    </Button>
+                  </div>
+                </div>
+              ))}
+              {!announcements?.length && (
+                <p className="p-6 text-center text-muted-foreground text-sm">
+                  {t("superadmin.noAnnouncements")}
+                </p>
+              )}
+            </div>
           </TabsContent>
 
           {/* ─── Leads ────────────────────────────────────────────── */}

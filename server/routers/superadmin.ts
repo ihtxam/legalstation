@@ -11,6 +11,8 @@ import {
   firmMembers,
   superadminAuditLog,
   agencySettings,
+  platformAnnouncements,
+  announcementDismissals,
 } from "../../drizzle/schema";
 import { eq, and, desc, asc, ne } from "drizzle-orm";
 import { ENV } from "../_core/env";
@@ -782,6 +784,8 @@ export const superadminRouter = router({
         defaultVatRate: z.number().min(0).max(100).optional(),
         customDomain: z.string().max(255).optional().nullable(),
         slug: z.string().max(50).optional(),
+        /** Storage quota in GB (e.g. 2, 10, 50). */
+        storageQuotaGb: z.number().min(1).max(1024).optional(),
       })
     )
     .mutation(async ({ ctx, input }) => {
@@ -809,6 +813,7 @@ export const superadminRouter = router({
         }
       }
 
+      const { gbToBytes } = await import("../firmStorage");
       await db
         .update(firms)
         .set({
@@ -822,6 +827,8 @@ export const superadminRouter = router({
             input.defaultVatRate != null ? input.defaultVatRate.toFixed(2) : undefined,
           customDomain: input.customDomain === undefined ? undefined : input.customDomain,
           slug: nextSlug,
+          storageQuotaBytes:
+            input.storageQuotaGb != null ? gbToBytes(input.storageQuotaGb) : undefined,
         })
         .where(eq(firms.id, input.firmId));
 
@@ -934,6 +941,13 @@ export const superadminRouter = router({
         merchantAccount: settings.adyen_merchant_account || "",
         clientKeySet: Boolean(settings.adyen_client_key),
       },
+      calendar: {
+        googleClientId: settings.google_calendar_client_id || "",
+        googleSecretSet: Boolean(settings.google_calendar_client_secret),
+        microsoftClientId: settings.microsoft_calendar_client_id || "",
+        microsoftSecretSet: Boolean(settings.microsoft_calendar_client_secret),
+        microsoftTenant: settings.microsoft_calendar_tenant || "common",
+      },
     };
   }),
 
@@ -956,6 +970,11 @@ export const superadminRouter = router({
         adyenApiKey: z.string().optional(),
         adyenMerchantAccount: z.string().optional(),
         adyenClientKey: z.string().optional(),
+        googleCalendarClientId: z.string().optional(),
+        googleCalendarClientSecret: z.string().optional(),
+        microsoftCalendarClientId: z.string().optional(),
+        microsoftCalendarClientSecret: z.string().optional(),
+        microsoftCalendarTenant: z.string().optional(),
       })
     )
     .mutation(async ({ ctx, input }) => {
@@ -975,10 +994,94 @@ export const superadminRouter = router({
       }
       if (input.adyenClientKey) await upsertAgencySetting("adyen_client_key", input.adyenClientKey);
 
+      const { upsertCalendarOAuthSettings } = await import("../platformCalendarConfig");
+      await upsertCalendarOAuthSettings({
+        googleClientId: input.googleCalendarClientId,
+        googleClientSecret: input.googleCalendarClientSecret,
+        microsoftClientId: input.microsoftCalendarClientId,
+        microsoftClientSecret: input.microsoftCalendarClientSecret,
+        microsoftTenant: input.microsoftCalendarTenant,
+      });
+
       await audit(ctx.user.id, "update_platform_settings", "settings", undefined, {
         keys: Object.keys(input),
       });
       return { success: true };
+    }),
+
+  listAnnouncements: superadminProcedure.query(async () => {
+    const db = await getDb();
+    if (!db) return [];
+    return db
+      .select()
+      .from(platformAnnouncements)
+      .orderBy(desc(platformAnnouncements.createdAt))
+      .limit(100);
+  }),
+
+  createAnnouncement: superadminProcedure
+    .input(
+      z.object({
+        title: z.string().min(1).max(255),
+        body: z.string().min(1).max(8000),
+        severity: z.enum(["info", "warning", "critical"]).default("info"),
+        audience: z.enum(["firm_admins", "all_members"]).default("firm_admins"),
+        startsAt: z.date().optional(),
+        endsAt: z.date().nullable().optional(),
+        isActive: z.boolean().default(true),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const db = await getDb();
+      if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+      const [row] = await db.insert(platformAnnouncements).values({
+        title: input.title.trim(),
+        body: input.body.trim(),
+        severity: input.severity,
+        audience: input.audience,
+        startsAt: input.startsAt ?? new Date(),
+        endsAt: input.endsAt ?? null,
+        isActive: input.isActive,
+        createdByUserId: ctx.user.id,
+      });
+      await audit(ctx.user.id, "create_announcement", "announcement", Number(row.insertId));
+      return { id: Number(row.insertId) };
+    }),
+
+  updateAnnouncement: superadminProcedure
+    .input(
+      z.object({
+        id: z.number(),
+        title: z.string().min(1).max(255).optional(),
+        body: z.string().min(1).max(8000).optional(),
+        severity: z.enum(["info", "warning", "critical"]).optional(),
+        audience: z.enum(["firm_admins", "all_members"]).optional(),
+        startsAt: z.date().optional(),
+        endsAt: z.date().nullable().optional(),
+        isActive: z.boolean().optional(),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const db = await getDb();
+      if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+      const { id, ...rest } = input;
+      await db
+        .update(platformAnnouncements)
+        .set({ ...rest, updatedAt: new Date() })
+        .where(eq(platformAnnouncements.id, id));
+      await audit(ctx.user.id, "update_announcement", "announcement", id, rest);
+      return { success: true as const };
+    }),
+
+  deleteAnnouncement: superadminProcedure
+    .input(z.object({ id: z.number() }))
+    .mutation(async ({ ctx, input }) => {
+      const db = await getDb();
+      if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+      await db.delete(announcementDismissals).where(eq(announcementDismissals.announcementId, input.id));
+      await db.delete(platformAnnouncements).where(eq(platformAnnouncements.id, input.id));
+      await audit(ctx.user.id, "delete_announcement", "announcement", input.id);
+      return { success: true as const };
     }),
 
   seedDefaultPlans: superadminProcedure.mutation(async ({ ctx }) => {

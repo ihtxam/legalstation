@@ -16,7 +16,8 @@
     "leads": "Prospects",
     "cms": "Site web",
     "packages": "Forfaits",
-    "services": "Services"
+    "services": "Services",
+    "support": "Assistance"
   },
   "common": {
     "loading": "Chargement…",
@@ -351,7 +352,9 @@
     "creditorCity": "Ville",
     "creditorCountry": "Pays (ISO)",
     "tabRoles": "Rôles",
-    "tabPayments": "Paiements"
+    "tabPayments": "Paiements",
+    "storageTitle": "Stockage des documents",
+    "storageHint": "Quota de stockage pour les documents du cabinet. Contactez Cliavo pour l'augmenter."
   },
   "notFound": {
     "title": "Page introuvable",
@@ -517,7 +520,31 @@
     "impersonateHint": "Ouvrir l'espace du cabinet en tant qu'admin",
     "noFirms": "Aucun cabinet",
     "usersTitle": "Utilisateurs de la plateforme",
-    "auditTitle": "Journal d'audit"
+    "auditTitle": "Journal d'audit",
+    "tabAnnouncements": "Annonces",
+    "storageQuota": "Quota de stockage",
+    "storageDefault": "par défaut",
+    "storageQuotaHint": "Par défaut 10 Go. Les cabinets peuvent ensuite acheter un forfait.",
+    "calendarOAuthTitle": "OAuth calendrier (global)",
+    "calendarOAuthDesc": "Configurez Google et Microsoft une fois pour tous les cabinets.",
+    "secretOnFile": "Secret enregistré",
+    "secretMissing": "Aucun secret enregistré",
+    "announcementsTitle": "Tableau d'annonces",
+    "announcementsSubtitle": "Publiez des messages popup sur les plateformes des cabinets.",
+    "newAnnouncement": "Nouvelle annonce",
+    "announcementTitle": "Titre",
+    "announcementBody": "Message",
+    "announcementSeverity": "Sévérité",
+    "announcementAudience": "Audience",
+    "audienceFirmAdmins": "Admins du cabinet uniquement",
+    "audienceAllMembers": "Tous les membres",
+    "publishAnnouncement": "Publier",
+    "announcementCreated": "Annonce publiée",
+    "announcementUpdated": "Annonce mise à jour",
+    "announcementDeleted": "Annonce supprimée",
+    "noAnnouncements": "Aucune annonce",
+    "activate": "Activer",
+    "deactivate": "Désactiver"
   },
   "login": {
     "email": "E-mail",
@@ -1230,5 +1257,19 @@
     "storedLeaveBlank": "stored — leave blank to keep",
     "save": "Save Adyen settings",
     "saved": "Adyen settings saved"
+  },
+  "support": {
+    "title": "Assistance",
+    "heading": "Aide et assistance",
+    "intro": "Contactez Cliavo ou consultez la documentation en libre-service.",
+    "emailTitle": "E-mail d'assistance",
+    "emailHint": "Écrivez-nous pour la facturation, l'accès au compte ou les problèmes techniques.",
+    "docsTitle": "Documentation en libre-service",
+    "docsHint": "Guides pour les dossiers, clients, facturation, calendrier, forfaits et paiements.",
+    "openDocs": "Ouvrir docs.cliavo.com",
+    "openLocalHelp": "Aide dans l'application"
+  },
+  "announcements": {
+    "dismiss": "Compris"
   }
 }

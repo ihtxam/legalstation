@@ -83,6 +83,12 @@ export const documentsRouter = router({
         throw new TRPCError({ code: "BAD_REQUEST", message: check.message });
       }
 
+      const { assertFirmStorageAllows } = await import("../firmStorage");
+      const quotaError = await assertFirmStorageAllows(firmCtx.firmId, input.size);
+      if (quotaError) {
+        throw new TRPCError({ code: "FORBIDDEN", message: quotaError });
+      }
+
       // Clients may only upload shared documents on their assigned cases
       const visibility = firmCtx.kind === "client" ? "shared" : input.visibility;
 

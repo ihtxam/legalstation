@@ -21,6 +21,7 @@ import {
   CalendarDays,
   Package,
   BriefcaseBusiness,
+  LifeBuoy,
 } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -154,6 +155,15 @@ export default function AppLayout({ children, title, breadcrumb }: AppLayoutProp
 
         {/* Bottom section */}
         <div className="border-t border-white/10 p-2 space-y-0.5">
+          <Link href="/support">
+            <div className={cn(
+              "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium cursor-pointer transition-all duration-150",
+              location === "/support" ? "bg-white/15 text-white" : "text-white/65 hover:bg-white/10 hover:text-white"
+            )}>
+              <LifeBuoy className="w-4 h-4 shrink-0" />
+              {sidebarOpen && <span>{t("nav.support")}</span>}
+            </div>
+          </Link>
           <Link href="/settings">
             <div className={cn(
               "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium cursor-pointer transition-all duration-150",

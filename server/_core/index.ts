@@ -103,6 +103,14 @@ async function startServer() {
             allowedExtensions: policy.allowedExtensions,
           });
         }
+        const { resolveFirmIdFromRequest, assertFirmStorageAllows } = await import("../firmStorage");
+        const firmId = await resolveFirmIdFromRequest(req);
+        if (firmId) {
+          const quotaError = await assertFirmStorageAllows(firmId, req.file.size);
+          if (quotaError) {
+            return res.status(403).json({ error: quotaError, code: "STORAGE_QUOTA_EXCEEDED" });
+          }
+        }
       }
       const key = `documents/${Date.now()}_${req.file.originalname.replace(/[^a-zA-Z0-9._-]/g, "_")}`;
       const result = await storagePut(key, req.file.buffer, req.file.mimetype);
@@ -307,6 +315,15 @@ async function startServer() {
       createContext,
     })
   );
+
+  // Self-support docs (also publishable at docs.cliavo.com)
+  const path = await import("path");
+  const fs = await import("fs");
+  const docsPath = path.resolve(process.cwd(), "docs-site");
+  if (fs.existsSync(docsPath)) {
+    app.use("/help", express.static(docsPath, { index: "index.html", extensions: ["html"] }));
+  }
+
   // development mode uses Vite, production mode uses static files
   if (process.env.NODE_ENV === "development") {
     const { setupVite } = await import("./viteDev");
