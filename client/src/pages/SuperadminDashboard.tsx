@@ -1967,11 +1967,46 @@ export default function SuperadminDashboard() {
                     {supportTicketDetail?.ticket.ticketNumber} — {supportTicketDetail?.ticket.subject}
                   </DialogTitle>
                   <DialogDescription>
-                    {supportTicketDetail?.firmName} · {supportTicketDetail?.ticket.sensitivity}
+                    {supportTicketDetail?.firmName || `Firm #${supportTicketDetail?.ticket.firmId}`} ·{" "}
+                    {supportTicketDetail?.ticket.sensitivity}
                   </DialogDescription>
                 </DialogHeader>
                 {supportTicketDetail && (
                   <div className="space-y-4">
+                    <div className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-border bg-muted/30 px-3 py-2">
+                      <div className="flex items-center gap-2 min-w-0">
+                        <Building2 className="w-4 h-4 text-muted-foreground shrink-0" />
+                        <span className="text-sm font-medium truncate">
+                          {supportTicketDetail.firmName || t("superadmin.unknownFirm")}
+                        </span>
+                        <span className="text-xs text-muted-foreground shrink-0">
+                          ID #{supportTicketDetail.ticket.firmId}
+                        </span>
+                      </div>
+                      <div className="flex gap-2 shrink-0">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => {
+                            setSelectedTicketId(null);
+                            setTab("firms");
+                            setSelectedFirmId(supportTicketDetail.ticket.firmId);
+                          }}
+                        >
+                          {t("superadmin.viewFirmAccount")}
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          disabled={impersonateMutation.isPending}
+                          onClick={() =>
+                            impersonateMutation.mutate({ firmId: supportTicketDetail.ticket.firmId })
+                          }
+                        >
+                          <LogIn className="w-3.5 h-3.5 mr-1" /> {t("superadmin.loginAsAdmin")}
+                        </Button>
+                      </div>
+                    </div>
                     <div className="flex flex-wrap gap-2 items-center">
                       <Label>{t("superadmin.ticketStatus")}</Label>
                       <Select

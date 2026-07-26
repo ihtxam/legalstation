@@ -1,5 +1,5 @@
 import { TRPCError } from "@trpc/server";
-import { desc, eq, and, inArray } from "drizzle-orm";
+import { desc, eq, and, inArray, sql } from "drizzle-orm";
 import {
   getCasesByFirm,
   getCasesByClientId,
@@ -15,6 +15,12 @@ import { getDb } from "../db";
 import {
   cases,
   caseEvents,
+  clients,
+  firms,
+  firmMembers,
+  firmPages,
+  invoices,
+  timeEntries,
   firmClientPackages,
   clientSubscriptions,
   firmOndemandServices,
@@ -89,6 +95,49 @@ export const dashboardRouter = router({
       unreadMessages,
       outstandingBalance,
       pendingInvoices: myInvoices.filter(inv => inv.status === "sent" || inv.status === "overdue").length,
+    };
+  }),
+
+  /** Setup checklist for the "Getting started" card on the firm dashboard. */
+  gettingStarted: protectedProcedure.query(async ({ ctx }) => {
+    const member = await getFirmMemberByUserId(ctx.user.id);
+    if (!member) throw new TRPCError({ code: "UNAUTHORIZED" });
+    const db = await getDb();
+    if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+    const firmId = member.firmId;
+
+    const count = async (table: any, where: any) => {
+      const [row] = await db.select({ n: sql<number>`count(*)` }).from(table).where(where);
+      return Number(row?.n ?? 0);
+    };
+
+    const [firm] = await db.select().from(firms).where(eq(firms.id, firmId)).limit(1);
+    const [
+      clientCount,
+      caseCount,
+      timeEntryCount,
+      invoiceCount,
+      memberCount,
+      publishedPageCount,
+    ] = await Promise.all([
+      count(clients, eq(clients.firmId, firmId)),
+      count(cases, eq(cases.firmId, firmId)),
+      count(timeEntries, eq(timeEntries.firmId, firmId)),
+      count(invoices, eq(invoices.firmId, firmId)),
+      count(firmMembers, eq(firmMembers.firmId, firmId)),
+      count(firmPages, and(eq(firmPages.firmId, firmId), eq(firmPages.published, true))),
+    ]);
+
+    return {
+      firmRole: member.firmRole,
+      profileCompleted: Boolean(firm?.onboardingCompletedAt),
+      brandingDone: Boolean(firm?.logoUrl),
+      hasClient: clientCount > 0,
+      hasCase: caseCount > 0,
+      hasTimeEntry: timeEntryCount > 0,
+      hasInvoice: invoiceCount > 0,
+      hasTeam: memberCount > 1,
+      hasPublishedPage: publishedPageCount > 0,
     };
   }),
 
