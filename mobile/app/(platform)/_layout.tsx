@@ -12,7 +12,7 @@ function TabIcon({ label, focused }: { label: string; focused: boolean }) {
   );
 }
 
-export default function ClientLayout() {
+export default function PlatformLayout() {
   const { mode } = useAuth();
   if (mode === "loading") {
     return (
@@ -22,8 +22,8 @@ export default function ClientLayout() {
     );
   }
   if (mode === "guest") return <Redirect href="/login" />;
-  if (mode === "platform") return <Redirect href="/(platform)" />;
   if (mode === "firm") return <Redirect href="/(firm)" />;
+  if (mode === "client") return <Redirect href="/(client)" />;
 
   return (
     <Tabs
@@ -37,26 +37,29 @@ export default function ClientLayout() {
       <Tabs.Screen
         name="index"
         options={{
-          title: "My cases",
-          tabBarIcon: ({ focused }) => <TabIcon label="Cases" focused={focused} />,
+          title: "Overview",
+          tabBarIcon: ({ focused }) => <TabIcon label="Home" focused={focused} />,
         }}
       />
       <Tabs.Screen
-        name="case/[id]"
-        options={{ href: null, title: "Case" }}
-      />
-      <Tabs.Screen
-        name="invoices"
+        name="firms"
         options={{
-          title: "Invoices",
-          tabBarIcon: ({ focused }) => <TabIcon label="Invoices" focused={focused} />,
+          title: "Firms",
+          tabBarIcon: ({ focused }) => <TabIcon label="Firms" focused={focused} />,
         }}
       />
       <Tabs.Screen
-        name="profile"
+        name="leads"
         options={{
-          title: "Profile",
-          tabBarIcon: ({ focused }) => <TabIcon label="Profile" focused={focused} />,
+          title: "Leads",
+          tabBarIcon: ({ focused }) => <TabIcon label="Leads" focused={focused} />,
+        }}
+      />
+      <Tabs.Screen
+        name="more"
+        options={{
+          title: "Account",
+          tabBarIcon: ({ focused }) => <TabIcon label="More" focused={focused} />,
         }}
       />
     </Tabs>

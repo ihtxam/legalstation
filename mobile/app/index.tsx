@@ -12,6 +12,7 @@ export default function Index() {
       </Screen>
     );
   }
+  if (mode === "platform") return <Redirect href="/(platform)" />;
   if (mode === "firm") return <Redirect href="/(firm)" />;
   if (mode === "client") return <Redirect href="/(client)" />;
   return <Redirect href="/login" />;

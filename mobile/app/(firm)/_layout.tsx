@@ -22,6 +22,7 @@ export default function FirmLayout() {
     );
   }
   if (mode === "guest") return <Redirect href="/login" />;
+  if (mode === "platform") return <Redirect href="/(platform)" />;
   if (mode === "client") return <Redirect href="/(client)" />;
 
   return (

@@ -31,6 +31,7 @@ export default function RootLayout() {
                 <Stack.Screen name="login" options={{ title: "Sign in", headerShown: false }} />
                 <Stack.Screen name="(firm)" options={{ headerShown: false }} />
                 <Stack.Screen name="(client)" options={{ headerShown: false }} />
+                <Stack.Screen name="(platform)" options={{ headerShown: false }} />
               </Stack>
             </AuthProvider>
           </QueryClientProvider>

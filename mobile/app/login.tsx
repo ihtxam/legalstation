@@ -20,6 +20,7 @@ export default function LoginScreen() {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
 
+  if (mode === "platform") return <Redirect href="/(platform)" />;
   if (mode === "firm") return <Redirect href="/(firm)" />;
   if (mode === "client") return <Redirect href="/(client)" />;
 
@@ -46,13 +47,13 @@ export default function LoginScreen() {
       >
         <View style={styles.brand}>
           <Text style={styles.brandName}>LexFlow</Text>
-          <Text style={styles.brandTag}>Law firm & client portal</Text>
+          <Text style={styles.brandTag}>Firm · Client · Platform</Text>
         </View>
 
         <View style={styles.card}>
           <Text style={styles.heading}>Sign in</Text>
           <Text style={styles.hint}>
-            Firm staff and clients use the same app. Access is role-based.
+            One app for firm staff, clients, and platform superadmins. Access is role-based.
           </Text>
           <Field
             label="Email"

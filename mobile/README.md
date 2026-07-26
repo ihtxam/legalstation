@@ -6,8 +6,9 @@ One Android & iOS app for **law firm staff** and **clients**, with role-based na
 |------|------|
 | Firm (`admin` / `subadmin` / `lawyer` / `assistant`) | Home · Cases · Clients · Invoices · More |
 | Client | My cases · Invoices · Profile |
+| Platform superadmin | Overview · Firms · Leads · Account |
 
-Clients can open a case, **scan documents with the camera**, pick photos/files, and message their lawyer. Staff see firm-wide (or assigned) cases according to LexFlow capabilities.
+Clients can open a case, **scan documents with the camera**, pick photos/files, and message their lawyer. Staff see firm-wide (or assigned) cases according to LexFlow capabilities. Superadmins sign in with the same screen — the app retries `portal=platform` automatically.
 
 ## Prerequisites
 
@@ -41,7 +42,7 @@ npm start
 
 1. `POST /api/auth/login` returns `sessionToken` (JWT).
 2. The app stores it in Secure Store and sends `Authorization: Bearer …` on tRPC + uploads.
-3. `firm.myFirm` decides firm vs client portal.
+3. Role routing: `auth.me.role === "superadmin"` → platform; else `firm.myFirm` → firm; else client.
 
 ## Document scan / upload
 

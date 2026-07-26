@@ -11,7 +11,7 @@ import { trpc } from "../api/trpc";
 import { loginWithPassword, logoutLocal, type LoginUser } from "../api/auth";
 import { clearSessionToken, getSessionToken } from "./session";
 
-export type PortalMode = "loading" | "guest" | "firm" | "client";
+export type PortalMode = "loading" | "guest" | "firm" | "client" | "platform";
 
 type AuthContextValue = {
   mode: PortalMode;
@@ -19,6 +19,7 @@ type AuthContextValue = {
   meName: string | null;
   firmName: string | null;
   firmRole: string | null;
+  isSuperadmin: boolean;
   capabilities: {
     canCreateInvoice: boolean;
     canInviteClients: boolean;
@@ -39,8 +40,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     enabled: hasToken,
     retry: false,
   });
+  const isSuperadmin = meQuery.data?.role === "superadmin";
   const firmQuery = trpc.firm.myFirm.useQuery(undefined, {
-    enabled: hasToken && Boolean(meQuery.data),
+    enabled: hasToken && Boolean(meQuery.data) && !isSuperadmin,
     retry: false,
   });
 
@@ -62,17 +64,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     ? "loading"
     : !hasToken
       ? "guest"
-      : meQuery.isLoading || (Boolean(meQuery.data) && firmQuery.isLoading)
+      : meQuery.isLoading || (Boolean(meQuery.data) && !isSuperadmin && firmQuery.isLoading)
         ? "loading"
-        : firmQuery.data
-          ? "firm"
-          : meQuery.data
-            ? "client"
-            : "guest";
+        : isSuperadmin
+          ? "platform"
+          : firmQuery.data
+            ? "firm"
+            : meQuery.data
+              ? "client"
+              : "guest";
 
   const login = useCallback(
     async (email: string, password: string) => {
-      await loginWithPassword(email, password);
+      await loginWithPassword(email, password, "auto");
       setHasToken(true);
       await utils.auth.me.invalidate();
       await utils.firm.myFirm.invalidate();
@@ -102,12 +106,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             name: meQuery.data.name,
             role: meQuery.data.role,
             firmRole: firmQuery.data?.member?.firmRole ?? null,
-            isClient: !firmQuery.data && Boolean(meQuery.data),
+            isClient: !isSuperadmin && !firmQuery.data && Boolean(meQuery.data),
           }
         : null,
       meName: meQuery.data?.name ?? null,
       firmName: firmQuery.data?.firm?.name ?? null,
       firmRole: firmQuery.data?.member?.firmRole ?? null,
+      isSuperadmin,
       capabilities: caps
         ? {
             canCreateInvoice: Boolean(caps.canCreateInvoice),
@@ -118,7 +123,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       login,
       logout,
     };
-  }, [firmQuery.data, login, logout, meQuery.data, mode]);
+  }, [firmQuery.data, isSuperadmin, login, logout, meQuery.data, mode]);
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
