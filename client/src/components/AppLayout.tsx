@@ -85,6 +85,7 @@ export default function AppLayout({ children, title, breadcrumb }: AppLayoutProp
   /** Desktop (≥lg): expanded vs icon rail. Mobile (<lg): drawer open/closed. */
   const [desktopExpanded, setDesktopExpanded] = useState(true);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [accountMenuOpen, setAccountMenuOpen] = useState(false);
   const upsellingActive =
     location.startsWith("/upselling") ||
     location.startsWith("/packages") ||
@@ -156,9 +157,10 @@ export default function AppLayout({ children, title, breadcrumb }: AppLayoutProp
     ? user.name.split(" ").map((n: string) => n[0]).join("").toUpperCase().slice(0, 2)
     : "?";
 
-  // Close mobile drawer on route change
+  // Close mobile drawer / account menu on route change
   useEffect(() => {
     setMobileOpen(false);
+    setAccountMenuOpen(false);
   }, [location]);
 
   // Lock body scroll when mobile drawer open
@@ -182,7 +184,14 @@ export default function AppLayout({ children, title, breadcrumb }: AppLayoutProp
   ) => {
     const isActive = location === href || location.startsWith(href + "/");
     return (
-      <Link key={opts?.key || href} href={href} onClick={() => setMobileOpen(false)}>
+      <Link
+        key={opts?.key || href}
+        href={href}
+        onClick={() => {
+          setMobileOpen(false);
+          setAccountMenuOpen(false);
+        }}
+      >
         <div
           className={cn(
             "flex items-center gap-3 rounded-lg text-sm font-medium cursor-pointer transition-all duration-150",
@@ -306,37 +315,61 @@ export default function AppLayout({ children, title, breadcrumb }: AppLayoutProp
       </ScrollArea>
 
       <div className="border-t border-white/10 p-2 space-y-0.5 pb-[max(0.5rem,env(safe-area-inset-bottom))]">
-        {isFirmAdminRole &&
-          navLink("/account", t("nav.account"), CreditCard)}
-        {navLink(
-          "/support",
-          t("nav.support"),
-          LifeBuoy,
-          ticketUnread > 0 ? ticketUnread : undefined
+        {accountMenuOpen && (
+          <div className="space-y-0.5 mb-1">
+            {isFirmAdminRole && navLink("/account", t("nav.account"), CreditCard)}
+            {navLink(
+              "/support",
+              t("nav.support"),
+              LifeBuoy,
+              ticketUnread > 0 ? ticketUnread : undefined
+            )}
+            {navLink("/settings", t("nav.settings"), Settings)}
+            <button
+              type="button"
+              className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-white/65 hover:bg-white/10 hover:text-white cursor-pointer transition-all duration-150 text-sm font-medium"
+              onClick={() => {
+                setAccountMenuOpen(false);
+                setMobileOpen(false);
+                logout();
+              }}
+            >
+              <LogOut className="w-5 h-5 shrink-0" />
+              <span className={cn(!showLabels && "lg:hidden")}>{t("nav.signOut")}</span>
+            </button>
+            <Separator className="bg-white/10 my-1" />
+          </div>
         )}
-        {navLink("/settings", t("nav.settings"), Settings)}
         <button
           type="button"
-          className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-white/65 hover:bg-white/10 hover:text-white cursor-pointer transition-all duration-150 text-sm font-medium"
-          onClick={logout}
+          className={cn(
+            "w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-150",
+            "hover:bg-white/10",
+            accountMenuOpen && "bg-white/10"
+          )}
+          onClick={() => setAccountMenuOpen((v) => !v)}
+          aria-expanded={accountMenuOpen}
+          aria-label={t("nav.accountMenu")}
         >
-          <LogOut className="w-5 h-5 shrink-0" />
-          <span className={cn(!showLabels && "lg:hidden")}>{t("nav.signOut")}</span>
-        </button>
-        <Separator className="bg-white/10 my-2" />
-        <div className="flex items-center gap-3 px-3 py-2">
           <Avatar className="w-8 h-8 shrink-0">
             <AvatarFallback className="bg-white/20 text-white text-xs font-semibold">
               {initials}
             </AvatarFallback>
           </Avatar>
-          <div className={cn("min-w-0", !showLabels && "lg:hidden")}>
+          <div className={cn("min-w-0 flex-1 text-start", !showLabels && "lg:hidden")}>
             <p className="text-white text-sm font-medium truncate">{user?.name ?? "User"}</p>
             <p className="text-white/50 text-xs truncate">
               {roleLabel(t, firmData?.member.firmRole)}
             </p>
           </div>
-        </div>
+          <ChevronDown
+            className={cn(
+              "w-4 h-4 text-white/50 shrink-0 transition-transform duration-150",
+              !showLabels && "lg:hidden",
+              accountMenuOpen && "rotate-180"
+            )}
+          />
+        </button>
       </div>
     </>
   );

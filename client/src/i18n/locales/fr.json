@@ -19,7 +19,8 @@
     "services": "Services",
     "support": "Assistance",
     "account": "Compte",
-    "upselling": "Ventes additionnelles"
+    "upselling": "Ventes additionnelles",
+    "accountMenu": "Menu du compte"
   },
   "common": {
     "loading": "Chargement…",

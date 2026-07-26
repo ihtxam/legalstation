@@ -19,7 +19,8 @@
     "services": "Servizi",
     "support": "Supporto",
     "account": "Account",
-    "upselling": "Upselling"
+    "upselling": "Upselling",
+    "accountMenu": "Menu account"
   },
   "common": {
     "loading": "Caricamento…",

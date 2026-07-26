@@ -19,7 +19,8 @@
     "services": "Services",
     "support": "Support",
     "account": "Account",
-    "upselling": "Upselling"
+    "upselling": "Upselling",
+    "accountMenu": "Account menu"
   },
   "common": {
     "loading": "Loading…",

@@ -19,7 +19,8 @@
     "services": "الخدمات",
     "support": "الدعم",
     "account": "الحساب",
-    "upselling": "البيع الإضافي"
+    "upselling": "البيع الإضافي",
+    "accountMenu": "قائمة الحساب"
   },
   "common": {
     "loading": "جارٍ التحميل…",
