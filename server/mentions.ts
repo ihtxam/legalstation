@@ -52,7 +52,7 @@ export async function notifyMentionedUsers(opts: {
           to: [{ email: u.email, name: u.name || undefined }],
           subject: opts.subject,
           htmlContent: `
-            <html><body style="font-family: Inter, sans-serif; color:#1a1a1a;">
+            <html><body style="font-family: Sora, Inter, sans-serif; color:#1a1a1a;">
               <div style="max-width:600px;margin:0 auto;padding:20px;">
                 <h2 style="color:#7C3AED;">You were mentioned</h2>
                 <p><strong>${opts.actorName}</strong> mentioned you:</p>

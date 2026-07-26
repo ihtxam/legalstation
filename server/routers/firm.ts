@@ -467,7 +467,7 @@ export const firmRouter = router({
           .optional(),
         secondaryColor: z
           .string()
-          .regex(/^#[0-9A-Fa-f]{6}$/, "Accent color must be a hex value like #c9a227")
+          .regex(/^#[0-9A-Fa-f]{6}$/, "Accent color must be a hex value like #00BFA6")
           .optional(),
         defaultCurrency: z.string().length(3).optional(),
         defaultVatRate: z.number().min(0).max(100).optional(),

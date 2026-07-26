@@ -73,7 +73,7 @@ export async function sendFirmInviteEmail(
   const s = getInviteEmailStrings(locale);
   const htmlContent = `
     <html>
-      <body style="font-family: Inter, sans-serif; color: #1a1a1a;">
+      <body style="font-family: Sora, Inter, sans-serif; color: #1a1a1a;">
         <div style="max-width: 600px; margin: 0 auto; padding: 20px;">
           <h2 style="color: #7C3AED; margin-bottom: 20px;">${s.firmHeading(firmName)}</h2>
           <p>${s.greeting}</p>
@@ -107,7 +107,7 @@ export async function sendClientInviteEmail(
   const s = getInviteEmailStrings(locale);
   const htmlContent = `
     <html>
-      <body style="font-family: Inter, sans-serif; color: #1a1a1a;">
+      <body style="font-family: Sora, Inter, sans-serif; color: #1a1a1a;">
         <div style="max-width: 600px; margin: 0 auto; padding: 20px;">
           <h2 style="color: #7C3AED; margin-bottom: 20px;">${s.clientHeading(firmName)}</h2>
           <p>${s.greeting}</p>
@@ -143,7 +143,7 @@ export async function sendFirmCredentialsEmail(opts: {
   const { email, firmName, ownerName, loginUrl, temporaryPassword } = opts;
   const htmlContent = `
     <html>
-      <body style="font-family: Inter, sans-serif; color: #1a1a1a;">
+      <body style="font-family: Sora, Inter, sans-serif; color: #1a1a1a;">
         <div style="max-width: 600px; margin: 0 auto; padding: 20px;">
           <h2 style="color: #7C3AED; margin-bottom: 20px;">Your Cliavo workspace is ready</h2>
           <p>Hi ${ownerName},</p>
@@ -183,7 +183,7 @@ export async function sendMessageNotificationEmail(
 ): Promise<void> {
   const htmlContent = `
     <html>
-      <body style="font-family: Inter, sans-serif; color: #1a1a1a;">
+      <body style="font-family: Sora, Inter, sans-serif; color: #1a1a1a;">
         <div style="max-width: 600px; margin: 0 auto; padding: 20px;">
           <h2 style="color: #7C3AED; margin-bottom: 20px;">New Message in ${caseTitle}</h2>
           <p>Hi,</p>
@@ -219,7 +219,7 @@ export async function sendDocumentUploadNotificationEmail(
 ): Promise<void> {
   const htmlContent = `
     <html>
-      <body style="font-family: Inter, sans-serif; color: #1a1a1a;">
+      <body style="font-family: Sora, Inter, sans-serif; color: #1a1a1a;">
         <div style="max-width: 600px; margin: 0 auto; padding: 20px;">
           <h2 style="color: #7C3AED; margin-bottom: 20px;">New Document in ${caseTitle}</h2>
           <p>Hi,</p>
@@ -257,7 +257,7 @@ export async function sendCaseUpdateEmail(opts: {
   const { recipientEmail, recipientName, caseTitle, updateTitle, updateBody, caseUrl } = opts;
   const htmlContent = `
     <html>
-      <body style="font-family: Inter, sans-serif; color: #1a1a1a;">
+      <body style="font-family: Sora, Inter, sans-serif; color: #1a1a1a;">
         <div style="max-width: 600px; margin: 0 auto; padding: 20px;">
           <h2 style="color: #7C3AED; margin-bottom: 20px;">Update on ${caseTitle}</h2>
           <p>Hi ${recipientName},</p>
@@ -294,7 +294,7 @@ export async function sendDocumentRequestEmail(opts: {
   const { recipientEmail, recipientName, caseTitle, requestTitle, description, caseUrl } = opts;
   const htmlContent = `
     <html>
-      <body style="font-family: Inter, sans-serif; color: #1a1a1a;">
+      <body style="font-family: Sora, Inter, sans-serif; color: #1a1a1a;">
         <div style="max-width: 600px; margin: 0 auto; padding: 20px;">
           <h2 style="color: #7C3AED; margin-bottom: 20px;">Document requested</h2>
           <p>Hi ${recipientName},</p>
@@ -332,7 +332,7 @@ export async function sendLeadNotificationEmail(opts: {
 }): Promise<void> {
   const htmlContent = `
     <html>
-      <body style="font-family: Inter, sans-serif; color: #1a1a1a;">
+      <body style="font-family: Sora, Inter, sans-serif; color: #1a1a1a;">
         <div style="max-width: 600px; margin: 0 auto; padding: 20px;">
           <h2 style="color: #7C3AED;">New ${opts.type} lead</h2>
           <p><strong>Firm:</strong> ${opts.firmName}</p>

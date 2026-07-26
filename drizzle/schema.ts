@@ -49,7 +49,7 @@ export const firms = mysqlTable("firms", {
   /** Default VAT / MWST rate percent (e.g. 8.10) */
   defaultVatRate: decimal("defaultVatRate", { precision: 5, scale: 2 }).notNull().default("8.10"),
   primaryColor: varchar("primaryColor", { length: 7 }).default("#7C3AED"),
-  secondaryColor: varchar("secondaryColor", { length: 7 }).default("#c9a227"),
+  secondaryColor: varchar("secondaryColor", { length: 7 }).default("#00BFA6"),
   /** Optional vanity host, e.g. portal.mueller-law.ch */
   customDomain: varchar("customDomain", { length: 255 }),
   subdomainStatus: mysqlEnum("subdomainStatus", ["none", "pending", "active", "rejected"])
@@ -806,7 +806,7 @@ export const matterStages = mysqlTable("matter_stages", {
   firmId: int("firmId").notNull(),
   name: varchar("name", { length: 100 }).notNull(),
   sortOrder: int("sortOrder").notNull().default(0),
-  color: varchar("color", { length: 7 }).default("#111827"),
+  color: varchar("color", { length: 7 }).default("#7C3AED"),
   isClosedStage: boolean("isClosedStage").notNull().default(false),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
