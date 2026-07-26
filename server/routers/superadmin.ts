@@ -13,6 +13,9 @@ import {
   agencySettings,
   platformAnnouncements,
   announcementDismissals,
+  supportTickets,
+  supportTicketMessages,
+  supportTicketAttachments,
 } from "../../drizzle/schema";
 import { eq, and, desc, asc, ne } from "drizzle-orm";
 import { ENV } from "../_core/env";
@@ -948,6 +951,10 @@ export const superadminRouter = router({
         microsoftSecretSet: Boolean(settings.microsoft_calendar_client_secret),
         microsoftTenant: settings.microsoft_calendar_tenant || "common",
       },
+      supportTicketsPerMonth: (() => {
+        const n = parseInt(settings.support_tickets_per_month || "10", 10);
+        return Number.isFinite(n) && n >= 0 ? Math.min(1000, n) : 10;
+      })(),
     };
   }),
 
@@ -975,6 +982,7 @@ export const superadminRouter = router({
         microsoftCalendarClientId: z.string().optional(),
         microsoftCalendarClientSecret: z.string().optional(),
         microsoftCalendarTenant: z.string().optional(),
+        supportTicketsPerMonth: z.number().int().min(0).max(1000).optional(),
       })
     )
     .mutation(async ({ ctx, input }) => {
@@ -993,6 +1001,12 @@ export const superadminRouter = router({
         await upsertAgencySetting("adyen_merchant_account", input.adyenMerchantAccount);
       }
       if (input.adyenClientKey) await upsertAgencySetting("adyen_client_key", input.adyenClientKey);
+      if (input.supportTicketsPerMonth !== undefined) {
+        await upsertAgencySetting(
+          "support_tickets_per_month",
+          String(input.supportTicketsPerMonth)
+        );
+      }
 
       const { upsertCalendarOAuthSettings } = await import("../platformCalendarConfig");
       await upsertCalendarOAuthSettings({
@@ -1007,6 +1021,256 @@ export const superadminRouter = router({
         keys: Object.keys(input),
       });
       return { success: true };
+    }),
+
+  listSupportTickets: superadminProcedure
+    .input(
+      z
+        .object({
+          status: z
+            .enum([
+              "open",
+              "processing",
+              "under_review",
+              "responded",
+              "resolved",
+              "closed",
+              "all",
+            ])
+            .default("all"),
+          limit: z.number().int().min(1).max(200).default(100),
+        })
+        .optional()
+    )
+    .query(async ({ input }) => {
+      const db = await getDb();
+      if (!db) return [];
+      const status = input?.status ?? "all";
+      const rows = await db
+        .select({
+          ticket: supportTickets,
+          firmName: firms.name,
+          creatorName: users.name,
+          creatorEmail: users.email,
+        })
+        .from(supportTickets)
+        .leftJoin(firms, eq(supportTickets.firmId, firms.id))
+        .leftJoin(users, eq(supportTickets.createdByUserId, users.id))
+        .orderBy(desc(supportTickets.updatedAt))
+        .limit(input?.limit ?? 100);
+      return rows
+        .filter((r) => status === "all" || r.ticket.status === status)
+        .map((r) => ({
+          ...r.ticket,
+          firmName: r.firmName,
+          creatorName: r.creatorName,
+          creatorEmail: r.creatorEmail,
+        }));
+    }),
+
+  getSupportTicket: superadminProcedure
+    .input(z.object({ id: z.number() }))
+    .query(async ({ input }) => {
+      const db = await getDb();
+      if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+      const [ticket] = await db
+        .select()
+        .from(supportTickets)
+        .where(eq(supportTickets.id, input.id))
+        .limit(1);
+      if (!ticket) throw new TRPCError({ code: "NOT_FOUND" });
+      const [firm] = await db.select().from(firms).where(eq(firms.id, ticket.firmId)).limit(1);
+      const messages = await db
+        .select({
+          id: supportTicketMessages.id,
+          ticketId: supportTicketMessages.ticketId,
+          authorUserId: supportTicketMessages.authorUserId,
+          authorKind: supportTicketMessages.authorKind,
+          body: supportTicketMessages.body,
+          createdAt: supportTicketMessages.createdAt,
+          authorName: users.name,
+          authorEmail: users.email,
+        })
+        .from(supportTicketMessages)
+        .leftJoin(users, eq(supportTicketMessages.authorUserId, users.id))
+        .where(eq(supportTicketMessages.ticketId, ticket.id))
+        .orderBy(supportTicketMessages.createdAt);
+      const attachments = await db
+        .select()
+        .from(supportTicketAttachments)
+        .where(eq(supportTicketAttachments.ticketId, ticket.id));
+      return {
+        ticket,
+        firmName: firm?.name || null,
+        messages,
+        attachments,
+      };
+    }),
+
+  updateSupportTicketStatus: superadminProcedure
+    .input(
+      z.object({
+        id: z.number(),
+        status: z.enum([
+          "open",
+          "processing",
+          "under_review",
+          "responded",
+          "resolved",
+          "closed",
+        ]),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const db = await getDb();
+      if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+      const [ticket] = await db
+        .select()
+        .from(supportTickets)
+        .where(eq(supportTickets.id, input.id))
+        .limit(1);
+      if (!ticket) throw new TRPCError({ code: "NOT_FOUND" });
+
+      const { resolvedAutoCloseAt, notifyTicketStatusChange, getFirmAdminEmails } = await import(
+        "../supportTickets"
+      );
+      const now = new Date();
+      const patch: Record<string, unknown> = {
+        status: input.status,
+        updatedAt: now,
+      };
+      if (input.status === "resolved") {
+        patch.resolvedAt = now;
+        patch.autoCloseAt = resolvedAutoCloseAt(now);
+        patch.closedAt = null;
+      } else if (input.status === "closed") {
+        patch.closedAt = now;
+        patch.autoCloseAt = null;
+      } else {
+        patch.resolvedAt = null;
+        patch.autoCloseAt = null;
+        patch.closedAt = null;
+      }
+
+      await db.update(supportTickets).set(patch).where(eq(supportTickets.id, ticket.id));
+      await audit(ctx.user.id, "update_support_ticket_status", "support_ticket", ticket.id, {
+        status: input.status,
+      });
+
+      const admins = await getFirmAdminEmails(ticket.firmId);
+      void notifyTicketStatusChange({
+        ticketNumber: ticket.ticketNumber,
+        subject: ticket.subject,
+        status: input.status,
+        toEmails: admins,
+      }).catch((e) => console.warn("[SupportTicket] status email", e));
+
+      return { success: true as const };
+    }),
+
+  replySupportTicket: superadminProcedure
+    .input(
+      z.object({
+        ticketId: z.number(),
+        body: z.string().min(1).max(8000),
+        attachments: z
+          .array(
+            z.object({
+              fileName: z.string().min(1).max(255),
+              fileKey: z.string().min(1).max(512),
+              fileUrl: z.string().min(1).max(1024),
+              mimeType: z.string().max(128).optional().nullable(),
+              size: z.number().int().min(0).max(20 * 1024 * 1024).default(0),
+            })
+          )
+          .max(5)
+          .default([]),
+        markStatus: z
+          .enum(["processing", "under_review", "responded", "resolved"])
+          .optional()
+          .default("responded"),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const db = await getDb();
+      if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+      const [ticket] = await db
+        .select()
+        .from(supportTickets)
+        .where(eq(supportTickets.id, input.ticketId))
+        .limit(1);
+      if (!ticket) throw new TRPCError({ code: "NOT_FOUND" });
+      if (ticket.status === "closed") {
+        throw new TRPCError({ code: "BAD_REQUEST", message: "Ticket is closed" });
+      }
+
+      const { resolvedAutoCloseAt, notifyTicketReply, getFirmAdminEmails } = await import(
+        "../supportTickets"
+      );
+      const now = new Date();
+      const [msgIns] = await db.insert(supportTicketMessages).values({
+        ticketId: ticket.id,
+        authorUserId: ctx.user.id,
+        authorKind: "superadmin",
+        body: input.body.trim(),
+      });
+      const messageId = Number(msgIns.insertId);
+      for (const a of input.attachments) {
+        await db.insert(supportTicketAttachments).values({
+          ticketId: ticket.id,
+          messageId,
+          fileName: a.fileName,
+          fileKey: a.fileKey,
+          fileUrl: a.fileUrl,
+          mimeType: a.mimeType || null,
+          size: a.size,
+        });
+      }
+
+      const status = input.markStatus;
+      const patch: Record<string, unknown> = {
+        status,
+        lastSuperadminReplyAt: now,
+        updatedAt: now,
+      };
+      if (status === "resolved") {
+        patch.resolvedAt = now;
+        patch.autoCloseAt = resolvedAutoCloseAt(now);
+        patch.closedAt = null;
+      } else {
+        patch.resolvedAt = null;
+        patch.autoCloseAt = null;
+        patch.closedAt = null;
+      }
+      await db.update(supportTickets).set(patch).where(eq(supportTickets.id, ticket.id));
+
+      const admins = await getFirmAdminEmails(ticket.firmId);
+      // Prefer creator + firm admins
+      const [creator] = await db
+        .select({ email: users.email, name: users.name })
+        .from(users)
+        .where(eq(users.id, ticket.createdByUserId))
+        .limit(1);
+      const toMap = new Map<string, { email: string; name?: string | null }>();
+      if (creator?.email) {
+        toMap.set(creator.email.toLowerCase(), {
+          email: creator.email,
+          name: creator.name,
+        });
+      }
+      for (const a of admins) toMap.set(a.email.toLowerCase(), a);
+
+      void notifyTicketReply({
+        ticketNumber: ticket.ticketNumber,
+        subject: ticket.subject,
+        replyBody: input.body.trim(),
+        toEmails: Array.from(toMap.values()),
+        fromLabel: "Cliavo Support",
+        linkPath: "/support",
+      }).catch((e) => console.warn("[SupportTicket] superadmin reply email", e));
+
+      await audit(ctx.user.id, "reply_support_ticket", "support_ticket", ticket.id);
+      return { success: true as const };
     }),
 
   listAnnouncements: superadminProcedure.query(async () => {

@@ -47,9 +47,19 @@ import {
   Megaphone,
   CalendarDays,
   HardDrive,
+  Ticket,
 } from "lucide-react";
 
-type TabId = "overview" | "firms" | "plans" | "users" | "leads" | "announcements" | "settings" | "audit";
+type TabId =
+  | "overview"
+  | "firms"
+  | "plans"
+  | "users"
+  | "leads"
+  | "tickets"
+  | "announcements"
+  | "settings"
+  | "audit";
 
 export default function SuperadminDashboard() {
   const { t } = useTranslation();
@@ -111,6 +121,15 @@ export default function SuperadminDashboard() {
   const [annBody, setAnnBody] = useState("");
   const [annSeverity, setAnnSeverity] = useState<"info" | "warning" | "critical">("info");
   const [annAudience, setAnnAudience] = useState<"firm_admins" | "all_members">("firm_admins");
+  const [ticketsPerMonth, setTicketsPerMonth] = useState("10");
+  const [ticketFilter, setTicketFilter] = useState<
+    "all" | "open" | "processing" | "under_review" | "responded" | "resolved" | "closed"
+  >("all");
+  const [selectedTicketId, setSelectedTicketId] = useState<number | null>(null);
+  const [ticketReply, setTicketReply] = useState("");
+  const [ticketReplyStatus, setTicketReplyStatus] = useState<
+    "processing" | "under_review" | "responded" | "resolved"
+  >("responded");
 
   // Edit firm form
   const [editName, setEditName] = useState("");
@@ -206,6 +225,7 @@ export default function SuperadminDashboard() {
     setGoogleCalClientId(platformSettings.calendar?.googleClientId || "");
     setMsCalClientId(platformSettings.calendar?.microsoftClientId || "");
     setMsCalTenant(platformSettings.calendar?.microsoftTenant || "common");
+    setTicketsPerMonth(String(platformSettings.supportTicketsPerMonth ?? 10));
   }, [platformSettings]);
 
   const createFirmMutation = trpc.superadmin.createFirm.useMutation({
@@ -327,6 +347,33 @@ export default function SuperadminDashboard() {
     onSuccess: () => {
       toast.success(t("superadmin.announcementDeleted"));
       void refetchAnnouncements();
+    },
+    onError: (err) => toast.error(err.message),
+  });
+  const { data: supportTickets, refetch: refetchSupportTickets } =
+    trpc.superadmin.listSupportTickets.useQuery(
+      { status: ticketFilter, limit: 100 },
+      { enabled: isSuperadmin && tab === "tickets" }
+    );
+  const { data: supportTicketDetail, refetch: refetchTicketDetail } =
+    trpc.superadmin.getSupportTicket.useQuery(
+      { id: selectedTicketId! },
+      { enabled: isSuperadmin && selectedTicketId != null }
+    );
+  const updateTicketStatusMutation = trpc.superadmin.updateSupportTicketStatus.useMutation({
+    onSuccess: () => {
+      toast.success(t("superadmin.ticketStatusUpdated"));
+      void refetchSupportTickets();
+      void refetchTicketDetail();
+    },
+    onError: (err) => toast.error(err.message),
+  });
+  const replyTicketMutation = trpc.superadmin.replySupportTicket.useMutation({
+    onSuccess: () => {
+      toast.success(t("superadmin.ticketReplySent"));
+      setTicketReply("");
+      void refetchSupportTickets();
+      void refetchTicketDetail();
     },
     onError: (err) => toast.error(err.message),
   });
@@ -494,6 +541,7 @@ export default function SuperadminDashboard() {
       microsoftCalendarClientId: msCalClientId,
       microsoftCalendarClientSecret: msCalSecret || undefined,
       microsoftCalendarTenant: msCalTenant || "common",
+      supportTicketsPerMonth: Math.max(0, parseInt(ticketsPerMonth, 10) || 0),
     });
   };
 
@@ -599,6 +647,9 @@ export default function SuperadminDashboard() {
             <TabsTrigger value="users">{t("superadmin.tabUsers")}</TabsTrigger>
             <TabsTrigger value="leads">
               <Mail className="h-3.5 w-3.5 mr-1" /> {t("superadmin.tabLeads")}
+            </TabsTrigger>
+            <TabsTrigger value="tickets">
+              <Ticket className="h-3.5 w-3.5 mr-1" /> {t("superadmin.tabTickets")}
             </TabsTrigger>
             <TabsTrigger value="announcements">
               <Megaphone className="h-3.5 w-3.5 mr-1" /> {t("superadmin.tabAnnouncements")}
@@ -1515,6 +1566,20 @@ export default function SuperadminDashboard() {
                     <Label>{t("superadmin.supportEmail")}</Label>
                     <Input className="mt-1" value={supportEmail} onChange={(e) => setSupportEmail(e.target.value)} />
                   </div>
+                  <div>
+                    <Label>{t("superadmin.ticketsPerMonth")}</Label>
+                    <Input
+                      type="number"
+                      min={0}
+                      max={1000}
+                      className="mt-1"
+                      value={ticketsPerMonth}
+                      onChange={(e) => setTicketsPerMonth(e.target.value)}
+                    />
+                    <p className="text-xs text-muted-foreground mt-1">
+                      {t("superadmin.ticketsPerMonthHint")}
+                    </p>
+                  </div>
                 </CardContent>
               </Card>
 
@@ -1718,6 +1783,191 @@ export default function SuperadminDashboard() {
               <Save className="h-4 w-4 mr-1.5" />
               {updatePlatformMutation.isPending ? t("superadmin.saving") : t("superadmin.savePlatform")}
             </Button>
+          </TabsContent>
+
+          {/* ─── Support tickets ──────────────────────────────────── */}
+          <TabsContent value="tickets" className="space-y-4">
+            <div className="flex flex-wrap items-end justify-between gap-3">
+              <div>
+                <h2 className="text-xl font-semibold">{t("superadmin.ticketsTitle")}</h2>
+                <p className="text-sm text-muted-foreground">{t("superadmin.ticketsSubtitle")}</p>
+              </div>
+              <div className="w-[200px]">
+                <Label>{t("superadmin.ticketFilter")}</Label>
+                <Select
+                  value={ticketFilter}
+                  onValueChange={(v) => setTicketFilter(v as typeof ticketFilter)}
+                >
+                  <SelectTrigger className="mt-1">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">{t("common.all")}</SelectItem>
+                    <SelectItem value="open">Open</SelectItem>
+                    <SelectItem value="processing">Processing</SelectItem>
+                    <SelectItem value="under_review">Under review</SelectItem>
+                    <SelectItem value="responded">Responded</SelectItem>
+                    <SelectItem value="resolved">Resolved</SelectItem>
+                    <SelectItem value="closed">Closed</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <div className="border rounded-lg bg-white divide-y">
+              {(supportTickets || []).map((ticket) => (
+                <button
+                  key={ticket.id}
+                  type="button"
+                  className="w-full text-start px-4 py-3 hover:bg-muted/40"
+                  onClick={() => setSelectedTicketId(ticket.id)}
+                >
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="font-mono text-xs">{ticket.ticketNumber}</span>
+                    <Badge variant="outline">{ticket.status}</Badge>
+                    <Badge variant="secondary">{ticket.sensitivity}</Badge>
+                    <span className="text-sm font-medium truncate">{ticket.subject}</span>
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    {ticket.firmName || `Firm #${ticket.firmId}`} · {ticket.creatorEmail || "—"} ·{" "}
+                    {new Date(ticket.updatedAt).toLocaleString()}
+                  </p>
+                </button>
+              ))}
+              {!supportTickets?.length && (
+                <p className="p-6 text-center text-sm text-muted-foreground">
+                  {t("superadmin.noTickets")}
+                </p>
+              )}
+            </div>
+
+            <Dialog
+              open={selectedTicketId != null}
+              onOpenChange={(o) => {
+                if (!o) {
+                  setSelectedTicketId(null);
+                  setTicketReply("");
+                }
+              }}
+            >
+              <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+                <DialogHeader>
+                  <DialogTitle>
+                    {supportTicketDetail?.ticket.ticketNumber} — {supportTicketDetail?.ticket.subject}
+                  </DialogTitle>
+                  <DialogDescription>
+                    {supportTicketDetail?.firmName} · {supportTicketDetail?.ticket.sensitivity}
+                  </DialogDescription>
+                </DialogHeader>
+                {supportTicketDetail && (
+                  <div className="space-y-4">
+                    <div className="flex flex-wrap gap-2 items-center">
+                      <Label>{t("superadmin.ticketStatus")}</Label>
+                      <Select
+                        value={supportTicketDetail.ticket.status}
+                        onValueChange={(status) =>
+                          updateTicketStatusMutation.mutate({
+                            id: supportTicketDetail.ticket.id,
+                            status: status as
+                              | "open"
+                              | "processing"
+                              | "under_review"
+                              | "responded"
+                              | "resolved"
+                              | "closed",
+                          })
+                        }
+                      >
+                        <SelectTrigger className="w-[180px]">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="open">Open</SelectItem>
+                          <SelectItem value="processing">Processing</SelectItem>
+                          <SelectItem value="under_review">Under review</SelectItem>
+                          <SelectItem value="responded">Responded</SelectItem>
+                          <SelectItem value="resolved">Resolved</SelectItem>
+                          <SelectItem value="closed">Closed</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-2 max-h-[40vh] overflow-y-auto">
+                      {supportTicketDetail.messages.map((m) => (
+                        <div key={m.id} className="border rounded-lg p-3 text-sm">
+                          <div className="flex justify-between text-xs text-muted-foreground mb-1">
+                            <span>
+                              {m.authorKind === "superadmin"
+                                ? "Cliavo"
+                                : m.authorName || m.authorEmail || "Firm"}
+                            </span>
+                            <span>{new Date(m.createdAt).toLocaleString()}</span>
+                          </div>
+                          <p className="whitespace-pre-wrap">{m.body}</p>
+                          <div className="mt-1 flex flex-wrap gap-2">
+                            {supportTicketDetail.attachments
+                              .filter((a) => a.messageId === m.id)
+                              .map((a) => (
+                                <a
+                                  key={a.id}
+                                  href={a.fileUrl}
+                                  target="_blank"
+                                  rel="noreferrer"
+                                  className="text-xs underline"
+                                >
+                                  {a.fileName}
+                                </a>
+                              ))}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                    {supportTicketDetail.ticket.status !== "closed" && (
+                      <div className="space-y-2 border-t pt-3">
+                        <Label>{t("superadmin.ticketReply")}</Label>
+                        <Textarea
+                          rows={4}
+                          value={ticketReply}
+                          onChange={(e) => setTicketReply(e.target.value)}
+                        />
+                        <div className="flex flex-wrap gap-2 items-end">
+                          <div>
+                            <Label>{t("superadmin.ticketMarkAs")}</Label>
+                            <Select
+                              value={ticketReplyStatus}
+                              onValueChange={(v) =>
+                                setTicketReplyStatus(v as typeof ticketReplyStatus)
+                              }
+                            >
+                              <SelectTrigger className="mt-1 w-[180px]">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="processing">Processing</SelectItem>
+                                <SelectItem value="under_review">Under review</SelectItem>
+                                <SelectItem value="responded">Responded</SelectItem>
+                                <SelectItem value="resolved">Resolved</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                          <Button
+                            className="ml-auto"
+                            disabled={!ticketReply.trim() || replyTicketMutation.isPending}
+                            onClick={() =>
+                              replyTicketMutation.mutate({
+                                ticketId: supportTicketDetail.ticket.id,
+                                body: ticketReply,
+                                markStatus: ticketReplyStatus,
+                              })
+                            }
+                          >
+                            {t("superadmin.sendTicketReply")}
+                          </Button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </DialogContent>
+            </Dialog>
           </TabsContent>
 
           {/* ─── Announcements ────────────────────────────────────── */}

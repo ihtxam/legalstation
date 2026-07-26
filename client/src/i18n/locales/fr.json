@@ -544,7 +544,20 @@
     "announcementDeleted": "Annonce supprimée",
     "noAnnouncements": "Aucune annonce",
     "activate": "Activer",
-    "deactivate": "Désactiver"
+    "deactivate": "Désactiver",
+    "tabTickets": "Tickets",
+    "ticketsTitle": "Support tickets",
+    "ticketsSubtitle": "Issues and bug reports from firm admins",
+    "ticketFilter": "Filter",
+    "noTickets": "No tickets",
+    "ticketStatus": "Status",
+    "ticketReply": "Reply",
+    "ticketMarkAs": "Mark as",
+    "sendTicketReply": "Send reply",
+    "ticketStatusUpdated": "Ticket status updated",
+    "ticketReplySent": "Reply sent — firm admin notified by email",
+    "ticketsPerMonth": "Tickets per firm / month",
+    "ticketsPerMonthHint": "Monthly limit for how many tickets each firm can open (default 10)."
   },
   "login": {
     "email": "E-mail",
@@ -1267,7 +1280,45 @@
     "docsTitle": "Documentation en libre-service",
     "docsHint": "Guides pour les dossiers, clients, facturation, calendrier, forfaits et paiements.",
     "openDocs": "Ouvrir docs.cliavo.com",
-    "openLocalHelp": "Aide dans l'application"
+    "openLocalHelp": "Aide dans l'application",
+    "ticketsTitle": "Support tickets",
+    "ticketsHint": "Report bugs or request help. Attach screenshots and track status here.",
+    "quotaLine": "{{used}} / {{limit}} tickets used this month",
+    "newTicket": "New ticket",
+    "noTickets": "No tickets yet",
+    "unread": "Update",
+    "subject": "Subject",
+    "sensitivityLabel": "Sensitivity",
+    "description": "Describe the issue",
+    "screenshots": "Screenshots",
+    "screenshotsOnly": "Only image screenshots are allowed",
+    "attach": "Attach",
+    "uploading": "Uploading…",
+    "uploadFailed": "Upload failed",
+    "submitTicket": "Submit ticket",
+    "ticketCreated": "Ticket {{number}} created",
+    "replySent": "Reply sent",
+    "addReply": "Add a comment / reply",
+    "sendReply": "Send reply",
+    "fromCliavo": "Cliavo Support",
+    "fromYou": "You",
+    "ticketClosed": "This ticket is closed.",
+    "autoCloseHint": "Marked resolved — closes automatically on {{date}} if you do not reply.",
+    "bellTickets": "{{count}} ticket update(s)",
+    "status": {
+      "open": "Open",
+      "processing": "Processing",
+      "under_review": "Under review",
+      "responded": "Responded",
+      "resolved": "Resolved",
+      "closed": "Closed"
+    },
+    "sensitivity": {
+      "low": "Low",
+      "medium": "Medium",
+      "high": "High",
+      "critical": "Critical"
+    }
   },
   "announcements": {
     "dismiss": "Compris"

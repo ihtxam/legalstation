@@ -544,7 +544,20 @@
     "announcementDeleted": "تم حذف الإعلان",
     "noAnnouncements": "لا توجد إعلانات",
     "activate": "تفعيل",
-    "deactivate": "إلغاء التفعيل"
+    "deactivate": "إلغاء التفعيل",
+    "tabTickets": "Tickets",
+    "ticketsTitle": "Support tickets",
+    "ticketsSubtitle": "Issues and bug reports from firm admins",
+    "ticketFilter": "Filter",
+    "noTickets": "No tickets",
+    "ticketStatus": "Status",
+    "ticketReply": "Reply",
+    "ticketMarkAs": "Mark as",
+    "sendTicketReply": "Send reply",
+    "ticketStatusUpdated": "Ticket status updated",
+    "ticketReplySent": "Reply sent — firm admin notified by email",
+    "ticketsPerMonth": "Tickets per firm / month",
+    "ticketsPerMonthHint": "Monthly limit for how many tickets each firm can open (default 10)."
   },
   "login": {
     "email": "البريد",
@@ -1267,7 +1280,45 @@
     "docsTitle": "وثائق المساعدة الذاتية",
     "docsHint": "أدلة حول القضايا والعملاء والفوترة والتقويم والباقات والمدفوعات.",
     "openDocs": "فتح docs.cliavo.com",
-    "openLocalHelp": "فتح المساعدة داخل التطبيق"
+    "openLocalHelp": "فتح المساعدة داخل التطبيق",
+    "ticketsTitle": "Support tickets",
+    "ticketsHint": "Report bugs or request help. Attach screenshots and track status here.",
+    "quotaLine": "{{used}} / {{limit}} tickets used this month",
+    "newTicket": "New ticket",
+    "noTickets": "No tickets yet",
+    "unread": "Update",
+    "subject": "Subject",
+    "sensitivityLabel": "Sensitivity",
+    "description": "Describe the issue",
+    "screenshots": "Screenshots",
+    "screenshotsOnly": "Only image screenshots are allowed",
+    "attach": "Attach",
+    "uploading": "Uploading…",
+    "uploadFailed": "Upload failed",
+    "submitTicket": "Submit ticket",
+    "ticketCreated": "Ticket {{number}} created",
+    "replySent": "Reply sent",
+    "addReply": "Add a comment / reply",
+    "sendReply": "Send reply",
+    "fromCliavo": "Cliavo Support",
+    "fromYou": "You",
+    "ticketClosed": "This ticket is closed.",
+    "autoCloseHint": "Marked resolved — closes automatically on {{date}} if you do not reply.",
+    "bellTickets": "{{count}} ticket update(s)",
+    "status": {
+      "open": "Open",
+      "processing": "Processing",
+      "under_review": "Under review",
+      "responded": "Responded",
+      "resolved": "Resolved",
+      "closed": "Closed"
+    },
+    "sensitivity": {
+      "low": "Low",
+      "medium": "Medium",
+      "high": "High",
+      "critical": "Critical"
+    }
   },
   "announcements": {
     "dismiss": "حسنًا"

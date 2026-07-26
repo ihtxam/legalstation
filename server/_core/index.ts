@@ -71,18 +71,18 @@ async function startServer() {
     try {
       if (!req.file) return res.status(400).json({ error: "No file provided" });
       const purpose = String(req.body?.purpose || "document");
-      // Firm logos: allow common image types up to 5MB (separate from document policy)
-      if (purpose === "logo") {
+      // Firm logos / ticket screenshots: allow common image types up to 5MB
+      if (purpose === "logo" || purpose === "ticket_screenshot") {
         const mime = String(req.file.mimetype || "").toLowerCase();
         if (!mime.startsWith("image/")) {
           return res.status(400).json({
-            error: "Logo must be an image file (PNG, JPEG, GIF, or WebP).",
+            error: "File must be an image (PNG, JPEG, GIF, or WebP).",
             code: "FILE_TYPE_NOT_ALLOWED",
           });
         }
         if (req.file.size > 5 * 1024 * 1024) {
           return res.status(400).json({
-            error: "Logo is too large. Maximum size is 5 MB.",
+            error: "Image is too large. Maximum size is 5 MB.",
             code: "FILE_TOO_LARGE",
             maxBytes: 5 * 1024 * 1024,
           });
@@ -167,6 +167,24 @@ async function startServer() {
       return res.json({ ok: true, ...result });
     } catch (err: any) {
       console.error("[Scheduled] calendar-sync", err);
+      return res.status(500).json({ error: err.message ?? "Job failed" });
+    }
+  });
+
+  app.post("/api/scheduled/support-ticket-autoclose", async (req, res) => {
+    try {
+      const secret = process.env.SCHEDULED_JOB_SECRET || ENV.cookieSecret;
+      const provided =
+        req.get("x-scheduled-job-secret") ||
+        (typeof req.query.secret === "string" ? req.query.secret : undefined);
+      if (secret && provided !== secret) {
+        return res.status(401).json({ error: "Unauthorized" });
+      }
+      const { autoCloseResolvedTickets } = await import("../supportTickets");
+      const result = await autoCloseResolvedTickets();
+      return res.json({ ok: true, ...result });
+    } catch (err: any) {
+      console.error("[Scheduled] support-ticket-autoclose", err);
       return res.status(500).json({ error: err.message ?? "Job failed" });
     }
   });

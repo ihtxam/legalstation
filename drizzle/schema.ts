@@ -1026,3 +1026,64 @@ export const announcementDismissals = mysqlTable("announcement_dismissals", {
 
 export type AnnouncementDismissal = typeof announcementDismissals.$inferSelect;
 export type InsertAnnouncementDismissal = typeof announcementDismissals.$inferInsert;
+
+/** Firm-admin support / bug tickets handled by platform superadmins. */
+export const supportTickets = mysqlTable("support_tickets", {
+  id: int("id").autoincrement().primaryKey(),
+  ticketNumber: varchar("ticketNumber", { length: 32 }).notNull().unique(),
+  firmId: int("firmId").notNull(),
+  createdByUserId: int("createdByUserId").notNull(),
+  subject: varchar("subject", { length: 255 }).notNull(),
+  body: text("body").notNull(),
+  sensitivity: mysqlEnum("sensitivity", ["low", "medium", "high", "critical"])
+    .notNull()
+    .default("medium"),
+  status: mysqlEnum("status", [
+    "open",
+    "processing",
+    "under_review",
+    "responded",
+    "resolved",
+    "closed",
+  ])
+    .notNull()
+    .default("open"),
+  resolvedAt: timestamp("resolvedAt"),
+  autoCloseAt: timestamp("autoCloseAt"),
+  closedAt: timestamp("closedAt"),
+  lastFirmReplyAt: timestamp("lastFirmReplyAt"),
+  lastSuperadminReplyAt: timestamp("lastSuperadminReplyAt"),
+  firmLastViewedAt: timestamp("firmLastViewedAt"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type SupportTicket = typeof supportTickets.$inferSelect;
+export type InsertSupportTicket = typeof supportTickets.$inferInsert;
+
+export const supportTicketMessages = mysqlTable("support_ticket_messages", {
+  id: int("id").autoincrement().primaryKey(),
+  ticketId: int("ticketId").notNull(),
+  authorUserId: int("authorUserId").notNull(),
+  authorKind: mysqlEnum("authorKind", ["firm", "superadmin"]).notNull(),
+  body: text("body").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type SupportTicketMessage = typeof supportTicketMessages.$inferSelect;
+export type InsertSupportTicketMessage = typeof supportTicketMessages.$inferInsert;
+
+export const supportTicketAttachments = mysqlTable("support_ticket_attachments", {
+  id: int("id").autoincrement().primaryKey(),
+  ticketId: int("ticketId").notNull(),
+  messageId: int("messageId"),
+  fileName: varchar("fileName", { length: 255 }).notNull(),
+  fileKey: varchar("fileKey", { length: 512 }).notNull(),
+  fileUrl: varchar("fileUrl", { length: 1024 }).notNull(),
+  mimeType: varchar("mimeType", { length: 128 }),
+  size: int("size").notNull().default(0),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type SupportTicketAttachment = typeof supportTicketAttachments.$inferSelect;
+export type InsertSupportTicketAttachment = typeof supportTicketAttachments.$inferInsert;

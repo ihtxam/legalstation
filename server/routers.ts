@@ -40,6 +40,7 @@ import { clientPackagesRouter } from "./routers/clientPackages";
 import { ondemandServicesRouter } from "./routers/ondemandServices";
 import { signupRouter } from "./routers/signup";
 import { announcementsRouter } from "./routers/announcements";
+import { supportTicketsRouter } from "./routers/supportTickets";
 import { updateUserById } from "./db";
 import {
   TWO_FACTOR_COOKIE,
@@ -224,6 +225,7 @@ export const appRouter = router({
   clientPackages: clientPackagesRouter,
   ondemandServices: ondemandServicesRouter,
   announcements: announcementsRouter,
+  supportTickets: supportTicketsRouter,
 });
 
 export type AppRouter = typeof appRouter;

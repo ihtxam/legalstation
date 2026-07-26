@@ -50,11 +50,18 @@ export default function AppLayout({ children, title, breadcrumb }: AppLayoutProp
   const [location] = useLocation();
   const { data: firmData } = trpc.firm.myFirm.useQuery();
   const { data: unreadCount } = trpc.messages.unreadCount.useQuery();
+  const isFirmAdminRole =
+    firmData?.member?.firmRole === "admin" || firmData?.member?.firmRole === "subadmin";
+  const { data: ticketUnread = 0 } = trpc.supportTickets.unreadCount.useQuery(undefined, {
+    enabled: Boolean(user) && isFirmAdminRole,
+    refetchInterval: 60_000,
+  });
   const [sidebarOpen, setSidebarOpen] = useState(true);
 
   const isClient = !firmData;
   const isAdmin = Boolean(firmData?.capabilities?.canAccessAdminConsole);
   const isSuperadmin = user?.role === "superadmin";
+  const bellCount = (unreadCount || 0) + (ticketUnread || 0);
 
   const clientNavItems = [
     { href: "/dashboard", label: t("nav.dashboard"), icon: LayoutDashboard },
@@ -161,7 +168,16 @@ export default function AppLayout({ children, title, breadcrumb }: AppLayoutProp
               location === "/support" ? "bg-white/15 text-white" : "text-white/65 hover:bg-white/10 hover:text-white"
             )}>
               <LifeBuoy className="w-4 h-4 shrink-0" />
-              {sidebarOpen && <span>{t("nav.support")}</span>}
+              {sidebarOpen && (
+                <>
+                  <span className="flex-1">{t("nav.support")}</span>
+                  {ticketUnread > 0 && (
+                    <Badge className="bg-[var(--color-gold)] text-white text-xs px-1.5 py-0 h-5 min-w-5 flex items-center justify-center">
+                      {ticketUnread > 99 ? "99+" : ticketUnread}
+                    </Badge>
+                  )}
+                </>
+              )}
             </div>
           </Link>
           <Link href="/settings">
@@ -224,12 +240,22 @@ export default function AppLayout({ children, title, breadcrumb }: AppLayoutProp
             ) : null}
           </div>
           <div className="flex items-center gap-2">
-            <button className="relative p-2 text-muted-foreground hover:text-foreground rounded-lg hover:bg-accent transition-colors">
+            <Link
+              href={ticketUnread > 0 ? "/support" : "/messages"}
+              className="relative p-2 text-muted-foreground hover:text-foreground rounded-lg hover:bg-accent transition-colors"
+              title={
+                ticketUnread > 0
+                  ? t("support.bellTickets", { count: ticketUnread })
+                  : t("nav.messages")
+              }
+            >
               <Bell className="w-4 h-4" />
-              {unreadCount && unreadCount > 0 && (
-                <span className="absolute top-1.5 end-1.5 w-2 h-2 bg-[var(--color-gold)] rounded-full" />
+              {bellCount > 0 && (
+                <span className="absolute top-1 end-1 min-w-[1rem] h-4 px-1 rounded-full bg-[var(--color-gold)] text-[10px] leading-4 text-white text-center font-semibold">
+                  {bellCount > 99 ? "99+" : bellCount}
+                </span>
               )}
-            </button>
+            </Link>
           </div>
         </header>
 
