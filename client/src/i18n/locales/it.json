@@ -1556,7 +1556,15 @@
       "cta": "Call to action",
       "contact": "Contact",
       "image": "Image",
-      "divider": "Divider"
+      "divider": "Divider",
+      "stats": "Statistiche",
+      "testimonials": "Testimonianze",
+      "team": "Team",
+      "faq": "FAQ",
+      "gallery": "Galleria",
+      "logos": "Loghi",
+      "packages": "Pacchetti",
+      "services": "Servizi on-demand"
     },
     "fields": {
       "eyebrow": "Eyebrow",
@@ -1567,7 +1575,21 @@
       "sectionTitle": "Section title",
       "itemTitle": "Item title",
       "itemDesc": "Item description",
-      "address": "Address"
+      "address": "Address",
+      "statValue": "Valore (es. 500+)",
+      "statLabel": "Etichetta",
+      "quote": "Citazione",
+      "author": "Nome autore",
+      "role": "Ruolo (opzionale)",
+      "name": "Nome",
+      "photoUrl": "URL foto (opzionale)",
+      "bio": "Breve bio (opzionale)",
+      "question": "Domanda",
+      "answer": "Risposta",
+      "caption": "Didascalia (opzionale)",
+      "logoUrl": "URL logo (opzionale)",
+      "subtitle": "Sottotitolo",
+      "limit": "Numero massimo"
     },
     "livePreview": "Anteprima live",
     "showPreview": "Mostra anteprima",
@@ -1578,7 +1600,15 @@
     "pageTitleRequired": "Il titolo della pagina è obbligatorio",
     "pageNotFound": "Pagina non trovata",
     "seoTitlePlaceholder": "Titolo nei risultati di ricerca",
-    "seoSnippetPreview": "Anteprima risultato di ricerca"
+    "seoSnippetPreview": "Anteprima risultato di ricerca",
+    "templateModern": "Moderno",
+    "templateServices": "Servizi & pacchetti",
+    "templateTeam": "Team",
+    "liveDataBlocks": "Blocchi dati live",
+    "liveDataHint": "Questi blocchi mostrano automaticamente i Pacchetti / Servizi pubblicati — gestisci i contenuti da Upselling.",
+    "liveBadge": "· live",
+    "addItem": "Aggiungi elemento",
+    "dragToReorder": "Trascina per riordinare"
   },
   "upselling": {
     "hint": "Vendi pacchetti in abbonamento e servizi una tantum ai clienti da un unico posto.",

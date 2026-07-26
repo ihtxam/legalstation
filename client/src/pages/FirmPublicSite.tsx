@@ -134,7 +134,12 @@ export default function FirmPublicSitePage() {
       </header>
 
       <main className="flex-1">
-        <CmsPageBody content={data.page.content} primary={primary} />
+        <CmsPageBody
+          content={data.page.content}
+          primary={primary}
+          mode="public"
+          firmSlug={data.firm.slug}
+        />
       </main>
 
       <footer className="border-t border-border py-6 text-center text-xs text-muted-foreground">

@@ -1556,7 +1556,15 @@
       "cta": "Call to action",
       "contact": "Contact",
       "image": "Image",
-      "divider": "Divider"
+      "divider": "Divider",
+      "stats": "Statistiken",
+      "testimonials": "Referenzen",
+      "team": "Team",
+      "faq": "FAQ",
+      "gallery": "Galerie",
+      "logos": "Logoleiste",
+      "packages": "Pakete",
+      "services": "On-Demand-Services"
     },
     "fields": {
       "eyebrow": "Eyebrow",
@@ -1567,7 +1575,21 @@
       "sectionTitle": "Section title",
       "itemTitle": "Item title",
       "itemDesc": "Item description",
-      "address": "Address"
+      "address": "Address",
+      "statValue": "Wert (z. B. 500+)",
+      "statLabel": "Beschriftung",
+      "quote": "Zitat",
+      "author": "Name",
+      "role": "Rolle (optional)",
+      "name": "Name",
+      "photoUrl": "Foto-URL (optional)",
+      "bio": "Kurzbio (optional)",
+      "question": "Frage",
+      "answer": "Antwort",
+      "caption": "Bildunterschrift (optional)",
+      "logoUrl": "Logo-URL (optional)",
+      "subtitle": "Untertitel",
+      "limit": "Max. Anzahl"
     },
     "livePreview": "Live-Vorschau",
     "showPreview": "Vorschau zeigen",
@@ -1578,7 +1600,15 @@
     "pageTitleRequired": "Seitentitel ist erforderlich",
     "pageNotFound": "Seite nicht gefunden",
     "seoTitlePlaceholder": "Titel in Suchergebnissen",
-    "seoSnippetPreview": "Such-Snippet-Vorschau"
+    "seoSnippetPreview": "Such-Snippet-Vorschau",
+    "templateModern": "Modern",
+    "templateServices": "Services & Pakete",
+    "templateTeam": "Team",
+    "liveDataBlocks": "Live-Datenblöcke",
+    "liveDataHint": "Diese Blöcke zeigen automatisch Ihre veröffentlichten Pakete / Services — den Inhalt verwalten Sie unter Upselling.",
+    "liveBadge": "· live",
+    "addItem": "Eintrag hinzufügen",
+    "dragToReorder": "Zum Sortieren ziehen"
   },
   "upselling": {
     "hint": "Verkaufen Sie Abonnementpakete und Einzelleistungen an Ihre Mandanten an einem Ort.",

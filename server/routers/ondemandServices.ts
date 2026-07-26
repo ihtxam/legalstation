@@ -4,12 +4,13 @@ import { and, asc, desc, eq, ne } from "drizzle-orm";
 import {
   clients,
   firmOndemandServices,
+  firms,
   serviceOrderAttachments,
   serviceOrderItems,
   serviceOrders,
   users,
 } from "../../drizzle/schema";
-import { protectedProcedure, router } from "../_core/trpc";
+import { protectedProcedure, publicProcedure, router } from "../_core/trpc";
 import {
   addCaseAssignment,
   createCase,
@@ -105,6 +106,31 @@ export const ondemandServicesRouter = router({
       .where(eq(firmOndemandServices.firmId, member.firmId))
       .orderBy(asc(firmOndemandServices.sortOrder), desc(firmOndemandServices.createdAt));
   }),
+
+  /** Public catalog for a firm (by slug) — used by the CMS "services" block on the public website. */
+  listPublicByFirmSlug: publicProcedure
+    .input(z.object({ firmSlug: z.string().min(1) }))
+    .query(async ({ input }) => {
+      const db = await getDb();
+      if (!db) return { firm: null, services: [] as ReturnType<typeof publicService>[] };
+      const [firm] = await db.select().from(firms).where(eq(firms.slug, input.firmSlug)).limit(1);
+      if (!firm) return { firm: null, services: [] };
+      const rows = await db
+        .select()
+        .from(firmOndemandServices)
+        .where(
+          and(
+            eq(firmOndemandServices.firmId, firm.id),
+            eq(firmOndemandServices.isActive, true),
+            eq(firmOndemandServices.isPublic, true)
+          )
+        )
+        .orderBy(asc(firmOndemandServices.sortOrder));
+      return {
+        firm: { id: firm.id, name: firm.name, slug: firm.slug },
+        services: rows.map(publicService),
+      };
+    }),
 
   createService: protectedProcedure
     .input(

@@ -1556,7 +1556,15 @@
       "cta": "Call to action",
       "contact": "Contact",
       "image": "Image",
-      "divider": "Divider"
+      "divider": "Divider",
+      "stats": "Stats",
+      "testimonials": "Testimonials",
+      "team": "Team",
+      "faq": "FAQ",
+      "gallery": "Gallery",
+      "logos": "Logo strip",
+      "packages": "Packages",
+      "services": "On-demand services"
     },
     "fields": {
       "eyebrow": "Eyebrow",
@@ -1567,7 +1575,21 @@
       "sectionTitle": "Section title",
       "itemTitle": "Item title",
       "itemDesc": "Item description",
-      "address": "Address"
+      "address": "Address",
+      "statValue": "Value (e.g. 500+)",
+      "statLabel": "Label",
+      "quote": "Quote",
+      "author": "Author name",
+      "role": "Role (optional)",
+      "name": "Name",
+      "photoUrl": "Photo URL (optional)",
+      "bio": "Short bio (optional)",
+      "question": "Question",
+      "answer": "Answer",
+      "caption": "Caption (optional)",
+      "logoUrl": "Logo URL (optional)",
+      "subtitle": "Subtitle",
+      "limit": "Max shown"
     },
     "livePreview": "Live preview",
     "showPreview": "Show preview",
@@ -1578,7 +1600,15 @@
     "pageTitleRequired": "Page title is required",
     "pageNotFound": "Page not found",
     "seoTitlePlaceholder": "Title shown in search results",
-    "seoSnippetPreview": "Search snippet preview"
+    "seoSnippetPreview": "Search snippet preview",
+    "templateModern": "Modern",
+    "templateServices": "Services & packages",
+    "templateTeam": "Team",
+    "liveDataBlocks": "Live data blocks",
+    "liveDataHint": "These blocks automatically show your published Packages / Services — manage the actual content from Upselling.",
+    "liveBadge": "· live",
+    "addItem": "Add item",
+    "dragToReorder": "Drag to reorder"
   },
   "upselling": {
     "hint": "Sell subscription packages and one-shot legal services to your clients from one place.",

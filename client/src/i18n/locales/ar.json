@@ -1556,7 +1556,15 @@
       "cta": "Call to action",
       "contact": "Contact",
       "image": "Image",
-      "divider": "Divider"
+      "divider": "Divider",
+      "stats": "إحصائيات",
+      "testimonials": "آراء العملاء",
+      "team": "الفريق",
+      "faq": "الأسئلة الشائعة",
+      "gallery": "معرض صور",
+      "logos": "شريط الشعارات",
+      "packages": "الباقات",
+      "services": "الخدمات عند الطلب"
     },
     "fields": {
       "eyebrow": "Eyebrow",
@@ -1567,7 +1575,21 @@
       "sectionTitle": "Section title",
       "itemTitle": "Item title",
       "itemDesc": "Item description",
-      "address": "Address"
+      "address": "Address",
+      "statValue": "القيمة (مثال 500+)",
+      "statLabel": "التسمية",
+      "quote": "الاقتباس",
+      "author": "اسم القائل",
+      "role": "المنصب (اختياري)",
+      "name": "الاسم",
+      "photoUrl": "رابط الصورة (اختياري)",
+      "bio": "نبذة قصيرة (اختياري)",
+      "question": "السؤال",
+      "answer": "الإجابة",
+      "caption": "التسمية التوضيحية (اختياري)",
+      "logoUrl": "رابط الشعار (اختياري)",
+      "subtitle": "العنوان الفرعي",
+      "limit": "الحد الأقصى للعرض"
     },
     "livePreview": "معاينة مباشرة",
     "showPreview": "إظهار المعاينة",
@@ -1578,7 +1600,15 @@
     "pageTitleRequired": "عنوان الصفحة مطلوب",
     "pageNotFound": "الصفحة غير موجودة",
     "seoTitlePlaceholder": "العنوان في نتائج البحث",
-    "seoSnippetPreview": "معاينة نتيجة البحث"
+    "seoSnippetPreview": "معاينة نتيجة البحث",
+    "templateModern": "عصري",
+    "templateServices": "الخدمات والباقات",
+    "templateTeam": "الفريق",
+    "liveDataBlocks": "كتل البيانات المباشرة",
+    "liveDataHint": "تعرض هذه الكتل تلقائيًا الباقات/الخدمات المنشورة — أدر المحتوى الفعلي من Upselling.",
+    "liveBadge": "· مباشر",
+    "addItem": "إضافة عنصر",
+    "dragToReorder": "اسحب لإعادة الترتيب"
   },
   "upselling": {
     "hint": "بِع باقات الاشتراك والخدمات لمرة واحدة لعملائك من مكان واحد.",

@@ -1556,7 +1556,15 @@
       "cta": "Call to action",
       "contact": "Contact",
       "image": "Image",
-      "divider": "Divider"
+      "divider": "Divider",
+      "stats": "Statistiques",
+      "testimonials": "Témoignages",
+      "team": "Équipe",
+      "faq": "FAQ",
+      "gallery": "Galerie",
+      "logos": "Logos",
+      "packages": "Forfaits",
+      "services": "Services à la demande"
     },
     "fields": {
       "eyebrow": "Eyebrow",
@@ -1567,7 +1575,21 @@
       "sectionTitle": "Section title",
       "itemTitle": "Item title",
       "itemDesc": "Item description",
-      "address": "Address"
+      "address": "Address",
+      "statValue": "Valeur (ex. 500+)",
+      "statLabel": "Libellé",
+      "quote": "Citation",
+      "author": "Nom de l’auteur",
+      "role": "Fonction (optionnel)",
+      "name": "Nom",
+      "photoUrl": "URL photo (optionnel)",
+      "bio": "Courte bio (optionnel)",
+      "question": "Question",
+      "answer": "Réponse",
+      "caption": "Légende (optionnel)",
+      "logoUrl": "URL du logo (optionnel)",
+      "subtitle": "Sous-titre",
+      "limit": "Nombre maximum"
     },
     "livePreview": "Aperçu en direct",
     "showPreview": "Afficher l’aperçu",
@@ -1578,7 +1600,15 @@
     "pageTitleRequired": "Le titre de la page est obligatoire",
     "pageNotFound": "Page introuvable",
     "seoTitlePlaceholder": "Titre affiché dans les résultats de recherche",
-    "seoSnippetPreview": "Aperçu du résultat de recherche"
+    "seoSnippetPreview": "Aperçu du résultat de recherche",
+    "templateModern": "Moderne",
+    "templateServices": "Services & forfaits",
+    "templateTeam": "Équipe",
+    "liveDataBlocks": "Blocs de données en direct",
+    "liveDataHint": "Ces blocs affichent automatiquement vos Forfaits / Services publiés — gérez le contenu réel depuis Upselling.",
+    "liveBadge": "· en direct",
+    "addItem": "Ajouter un élément",
+    "dragToReorder": "Glisser pour réorganiser"
   },
   "upselling": {
     "hint": "Vendez forfaits d’abonnement et services ponctuels à vos clients depuis un seul endroit.",
