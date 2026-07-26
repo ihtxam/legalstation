@@ -355,7 +355,13 @@
     "tabPayments": "Zahlungen",
     "storageTitle": "Dokumentenspeicher",
     "storageHint": "Speicherquota für Kanzleidokumente. Kontaktieren Sie Cliavo für ein Upgrade.",
-    "tabAppearance": "Darstellung"
+    "tabAppearance": "Darstellung",
+    "domainsTitle": "Website-Domains",
+    "domainsHint": "Subdomain und optionale eigene Domain für Website und Login.",
+    "subdomain": "Subdomain",
+    "subdomainHint": "Für name.plattform.com und /site/name.",
+    "customDomain": "Eigene Domain",
+    "customDomainPlaceholder": "www.ihrekanzlei.ch"
   },
   "notFound": {
     "title": "Seite nicht gefunden",
@@ -919,7 +925,8 @@
     "addressPlaceholder": "Bahnhofstrasse 1, 8001 Zürich",
     "emailPlaceholder": "info@kanzlei.ch",
     "phonePlaceholder": "+41 44 000 00 00",
-    "vatPlaceholder": "CHE-123.456.789 MWST"
+    "vatPlaceholder": "CHE-123.456.789 MWST",
+    "sitePathHint": "Öffentliche Website (ohne DNS): {{url}}"
   },
   "platformLogin": {
     "title": "Cliavo-Plattform",
@@ -1379,5 +1386,52 @@
     "upgradeSuccess": "Paket aktiviert.",
     "upgradeCancelled": "Checkout cancelled — you can try again anytime.",
     "checkoutFailed": "Could not start checkout"
+  },
+  "cms": {
+    "publicUrlsTitle": "Your public website URLs",
+    "publicUrlsHint": "Publish a homepage (and other pages) to make them live. Path URLs work immediately; subdomain/custom domain need DNS.",
+    "urlPath": "Path (always works)",
+    "urlSubdomain": "Subdomain",
+    "urlCustom": "Custom domain",
+    "subdomainDnsHint": "Set APP_BASE_DOMAIN and wildcard DNS for name.yourplatform.com subdomains.",
+    "viewLive": "View live page",
+    "tab": {
+      "build": "Builder",
+      "seo": "SEO",
+      "preview": "Preview"
+    },
+    "seoHint": "Search engines and social previews use these fields for this page.",
+    "seoTitle": "Meta title",
+    "seoDescription": "Meta description",
+    "seoDescriptionPlaceholder": "Short summary for Google and link previews (about 150 characters).",
+    "templates": "Templates",
+    "templateClassic": "Classic firm",
+    "templateMinimal": "Minimal",
+    "templateContact": "Contact-first",
+    "replaceWithTemplate": "Replace current blocks with this template?",
+    "homeSlugHint": "Homepage is served at / (slug stored as home).",
+    "noBlocks": "Add blocks or pick a template to build this page.",
+    "deleteConfirm": "Delete this page?",
+    "dividerHint": "Visual spacer between sections.",
+    "blocks": {
+      "hero": "Hero",
+      "richText": "Text",
+      "features": "Features",
+      "cta": "Call to action",
+      "contact": "Contact",
+      "image": "Image",
+      "divider": "Divider"
+    },
+    "fields": {
+      "eyebrow": "Eyebrow",
+      "headline": "Headline",
+      "subheadline": "Supporting text",
+      "ctaLabel": "Button label",
+      "ctaHref": "Button link",
+      "sectionTitle": "Section title",
+      "itemTitle": "Item title",
+      "itemDesc": "Item description",
+      "address": "Address"
+    }
   }
 }

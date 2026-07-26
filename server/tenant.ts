@@ -89,3 +89,47 @@ export function firmLoginUrl(firmSlug: string, req?: Request): string {
 export function platformLoginUrl(req?: Request): string {
   return `${getAppBaseUrl(req)}/platform/login`;
 }
+
+/** Apex used for firm subdomains; falls back to hostname of APP_URL when unset. */
+export function getFirmBaseDomain(): string | null {
+  const configured = (ENV.appBaseDomain || "").toLowerCase().replace(/^\./, "").trim();
+  if (configured) return configured;
+  try {
+    if (ENV.appUrl) return new URL(ENV.appUrl).hostname.toLowerCase();
+  } catch {
+    /* ignore */
+  }
+  return null;
+}
+
+/** Public website URLs for a firm (path-based always works; subdomain when DNS/base domain ready). */
+export function firmPublicSiteUrls(
+  firm: { slug: string | null; customDomain?: string | null; subdomainStatus?: string | null },
+  req?: Request
+) {
+  const appBase = getAppBaseUrl(req);
+  const slug = (firm.slug || "").trim();
+  const pathHome = slug ? `${appBase}/site/${encodeURIComponent(slug)}` : null;
+  const baseDomain = getFirmBaseDomain();
+  const proto = ENV.isProduction ? "https" : "http";
+  const subdomainHome =
+    slug && baseDomain ? `${proto}://${slug}.${baseDomain}` : null;
+  const customHome =
+    firm.customDomain && firm.subdomainStatus === "active"
+      ? `${proto}://${firm.customDomain.replace(/^https?:\/\//, "").replace(/\/$/, "")}`
+      : null;
+
+  return {
+    pathHome,
+    pathPage: (pageSlug: string) =>
+      pathHome ? `${pathHome}/${encodeURIComponent(pageSlug)}` : null,
+    subdomainHome,
+    subdomainPage: (pageSlug: string) =>
+      subdomainHome ? `${subdomainHome}/${encodeURIComponent(pageSlug)}` : null,
+    customHome,
+    customPage: (pageSlug: string) =>
+      customHome ? `${customHome}/${encodeURIComponent(pageSlug)}` : null,
+    preferredHome: customHome || subdomainHome || pathHome,
+    baseDomain,
+  };
+}

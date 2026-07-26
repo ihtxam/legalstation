@@ -46,6 +46,8 @@ export default function SettingsPage() {
     phone: "",
     vatNumber: "",
     logoUrl: "",
+    slug: "",
+    customDomain: "",
     iban: "",
     qrIban: "",
     creditorStreet: "",
@@ -72,6 +74,10 @@ export default function SettingsPage() {
   const [totpCode, setTotpCode] = useState("");
   const [locale, setLocale] = useState<AppLocale>("en");
   const isFirmAdmin = canManageFirm;
+  const { data: signupInfo } = trpc.signup.info.useQuery(undefined, { enabled: isAuthenticated });
+  const platformBaseDomain =
+    signupInfo?.appBaseDomain ||
+    (typeof window !== "undefined" ? window.location.hostname.replace(/^www\./, "") : "platform.com");
 
   const setupTotp = trpc.auth.setupTotp.useMutation({
     onSuccess: (data) => setTotpSetup({ qrDataUrl: data.qrDataUrl, secret: data.secret }),
@@ -190,6 +196,8 @@ export default function SettingsPage() {
         phone: firmData.firm.phone ?? "",
         vatNumber: firmData.firm.vatNumber ?? "",
         logoUrl: firmData.firm.logoUrl ?? "",
+        slug: firmData.firm.slug ?? "",
+        customDomain: firmData.firm.customDomain ?? "",
         iban: firmData.firm.iban ?? "",
         qrIban: firmData.firm.qrIban ?? "",
         creditorStreet: firmData.firm.creditorStreet ?? "",
@@ -475,6 +483,8 @@ export default function SettingsPage() {
                     logoUrl: firmForm.logoUrl || null,
                     ...(isFirmAdmin
                       ? {
+                          slug: firmForm.slug.trim() || undefined,
+                          customDomain: firmForm.customDomain.trim() || null,
                           maxUploadMb: mb,
                           allowedUploadTypes: allowedTypes,
                           iban: firmForm.iban || null,
@@ -495,12 +505,51 @@ export default function SettingsPage() {
                     ? t("settings.saveUnsavedChanges")
                     : t("settings.noChanges")}
               </Button>
-              {firmData?.firm && (
-                <CustomDomainDnsHelp
-                  customDomain={firmData.firm.customDomain}
-                  subdomainStatus={firmData.firm.subdomainStatus}
-                  slug={firmData.firm.slug}
-                />
+              {isFirmAdmin && (
+                <div className="border-t border-border pt-4 space-y-3">
+                  <div>
+                    <h4 className="font-semibold text-foreground">{t("settings.domainsTitle")}</h4>
+                    <p className="text-sm text-muted-foreground mt-1">{t("settings.domainsHint")}</p>
+                  </div>
+                  <div>
+                    <Label htmlFor="firmSlug">{t("settings.subdomain")}</Label>
+                    <div className="flex items-center gap-2 mt-1.5">
+                      <Input
+                        id="firmSlug"
+                        className={getFieldHighlight("slug")}
+                        value={firmForm.slug}
+                        onChange={(e) =>
+                          setFirmForm((f) => ({
+                            ...f,
+                            slug: e.target.value
+                              .toLowerCase()
+                              .replace(/[^a-z0-9-]/g, "-")
+                              .replace(/-+/g, "-"),
+                          }))
+                        }
+                      />
+                      <span className="text-sm text-muted-foreground whitespace-nowrap shrink-0">
+                        .{platformBaseDomain}
+                      </span>
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-1">{t("settings.subdomainHint")}</p>
+                  </div>
+                  <div>
+                    <Label htmlFor="customDomain">{t("settings.customDomain")}</Label>
+                    <Input
+                      id="customDomain"
+                      className={`mt-1.5 ${getFieldHighlight("customDomain")}`}
+                      placeholder={t("settings.customDomainPlaceholder")}
+                      value={firmForm.customDomain}
+                      onChange={(e) => setFirmForm((f) => ({ ...f, customDomain: e.target.value }))}
+                    />
+                  </div>
+                  <CustomDomainDnsHelp
+                    customDomain={firmForm.customDomain || firmData?.firm?.customDomain}
+                    subdomainStatus={firmData?.firm?.subdomainStatus}
+                    slug={firmForm.slug || firmData?.firm?.slug}
+                  />
+                </div>
               )}
             </div>
           </TabsContent>}

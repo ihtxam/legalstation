@@ -30,6 +30,8 @@ export const LOCKED_FIRM_ALLOWED_PATHS = new Set([
   "firm.listPlans",
   "firm.createPlanCheckout",
   "firm.activatePlan",
+  "firmPages.publicUrls",
+  "firmPages.list",
   "supportTickets.quota",
   "supportTickets.listMine",
   "supportTickets.get",

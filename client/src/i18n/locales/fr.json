@@ -355,7 +355,13 @@
     "tabPayments": "Paiements",
     "storageTitle": "Stockage des documents",
     "storageHint": "Quota de stockage pour les documents du cabinet. Contactez Cliavo pour l'augmenter.",
-    "tabAppearance": "Apparence"
+    "tabAppearance": "Apparence",
+    "domainsTitle": "Domaines du site",
+    "domainsHint": "Définissez votre sous-domaine Cliavo (nom.platform.com) et un domaine personnalisé optionnel pour le site et la connexion.",
+    "subdomain": "Sous-domaine",
+    "subdomainHint": "Utilisé pour nom.votreplateforme.com et /site/nom.",
+    "customDomain": "Domaine personnalisé",
+    "customDomainPlaceholder": "www.votrecabinet.ch"
   },
   "notFound": {
     "title": "Page introuvable",
@@ -919,7 +925,8 @@
     "addressPlaceholder": "Bahnhofstrasse 1, 8001 Zürich",
     "emailPlaceholder": "info@cabinet.ch",
     "phonePlaceholder": "+41 44 000 00 00",
-    "vatPlaceholder": "CHE-123.456.789 MWST"
+    "vatPlaceholder": "CHE-123.456.789 MWST",
+    "sitePathHint": "Site public (sans DNS) : {{url}}"
   },
   "platformLogin": {
     "title": "Plateforme Cliavo",
@@ -1007,7 +1014,7 @@
       "lost": "Lost"
     },
     "cmsTitle": "Website pages",
-    "cmsHint": "Simple CMS for your firm homepage and content pages.",
+    "cmsHint": "Construisez la page d’accueil avec des blocs, modèles et SEO par page. Publiez pour la mettre en ligne.",
     "newPage": "New page",
     "editPage": "Edit page",
     "pageTitle": "Page title",
@@ -1379,5 +1386,52 @@
     "upgradeSuccess": "Forfait activé. Bon retour !",
     "upgradeCancelled": "Paiement annulé — vous pouvez réessayer.",
     "checkoutFailed": "Impossible de démarrer le paiement"
+  },
+  "cms": {
+    "publicUrlsTitle": "URLs publiques de votre site",
+    "publicUrlsHint": "Publiez une page d’accueil (et d’autres pages) pour les rendre visibles. Les URLs /site/… fonctionnent tout de suite ; le sous-domaine/domaine personnalisé nécessite le DNS.",
+    "urlPath": "Chemin (toujours disponible)",
+    "urlSubdomain": "Sous-domaine",
+    "urlCustom": "Domaine personnalisé",
+    "subdomainDnsHint": "Set APP_BASE_DOMAIN and wildcard DNS for name.yourplatform.com subdomains.",
+    "viewLive": "Voir la page en ligne",
+    "tab": {
+      "build": "Constructeur",
+      "seo": "SEO",
+      "preview": "Aperçu"
+    },
+    "seoHint": "Search engines and social previews use these fields for this page.",
+    "seoTitle": "Meta titre",
+    "seoDescription": "Meta description",
+    "seoDescriptionPlaceholder": "Short summary for Google and link previews (about 150 characters).",
+    "templates": "Modèles",
+    "templateClassic": "Cabinet classique",
+    "templateMinimal": "Minimal",
+    "templateContact": "Contact d’abord",
+    "replaceWithTemplate": "Replace current blocks with this template?",
+    "homeSlugHint": "Homepage is served at / (slug stored as home).",
+    "noBlocks": "Add blocks or pick a template to build this page.",
+    "deleteConfirm": "Delete this page?",
+    "dividerHint": "Visual spacer between sections.",
+    "blocks": {
+      "hero": "Hero",
+      "richText": "Text",
+      "features": "Features",
+      "cta": "Call to action",
+      "contact": "Contact",
+      "image": "Image",
+      "divider": "Divider"
+    },
+    "fields": {
+      "eyebrow": "Eyebrow",
+      "headline": "Headline",
+      "subheadline": "Supporting text",
+      "ctaLabel": "Button label",
+      "ctaHref": "Button link",
+      "sectionTitle": "Section title",
+      "itemTitle": "Item title",
+      "itemDesc": "Item description",
+      "address": "Address"
+    }
   }
 }

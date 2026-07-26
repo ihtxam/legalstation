@@ -36,6 +36,10 @@ export default function FirmOnboardingPage() {
   const { data: firmData, isLoading, refetch } = trpc.firm.myFirm.useQuery(undefined, {
     enabled: isAuthenticated,
   });
+  const { data: signupInfo } = trpc.signup.info.useQuery();
+  const baseDomain =
+    signupInfo?.appBaseDomain ||
+    (typeof window !== "undefined" ? window.location.hostname.replace(/^www\./, "") : "platform.com");
   const stepMut = trpc.firm.completeOnboardingStep.useMutation({
     onError: (e) => toast.error(e.message),
   });
@@ -277,9 +281,23 @@ export default function FirmOnboardingPage() {
                     value={slug}
                     onChange={(e) => setSlug(sanitizeSlug(e.target.value))}
                   />
-                  <span className="text-sm text-muted-foreground whitespace-nowrap">.your-domain</span>
+                  <span className="text-sm text-muted-foreground whitespace-nowrap">.{baseDomain}</span>
                 </div>
-                <p className="text-xs text-muted-foreground mt-1">{t("onboarding.subdomainHint")}</p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  {t("onboarding.subdomainHint")}{" "}
+                  {slug ? (
+                    <strong className="text-foreground">
+                      {slug}.{baseDomain}
+                    </strong>
+                  ) : null}
+                </p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  {t("onboarding.sitePathHint", {
+                    url: slug
+                      ? `${typeof window !== "undefined" ? window.location.origin : ""}/site/${slug}`
+                      : "/site/your-firm",
+                  })}
+                </p>
               </div>
               <div>
                 <Label>{t("onboarding.customDomain")}</Label>

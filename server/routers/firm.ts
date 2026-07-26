@@ -562,6 +562,8 @@ export const firmRouter = router({
       primaryColor: z.string().regex(/^#[0-9A-Fa-f]{6}$/).optional().nullable(),
       secondaryColor: z.string().regex(/^#[0-9A-Fa-f]{6}$/).optional().nullable(),
       customDomain: z.string().max(255).optional().nullable(),
+      /** Firm subdomain slug → {slug}.{APP_BASE_DOMAIN} */
+      slug: z.string().min(2).max(80).optional(),
       /** Max upload size in MB (converted to bytes server-side). */
       maxUploadMb: z.number().min(0.1).max(50).optional(),
       /** Allowed extensions without dots, e.g. ["pdf","jpg","png"]. */
@@ -590,6 +592,8 @@ export const firmRouter = router({
         iban,
         qrIban,
         creditorCountry,
+        customDomain,
+        slug,
         ...rest
       } = input;
       const { UPLOAD_HARD_MAX_BYTES } = await import("@shared/uploadPolicy");
@@ -610,8 +614,39 @@ export const firmRouter = router({
           message: "QR-IBAN is invalid. It must be a valid 21-character Swiss QR-IBAN.",
         });
       }
+
+      let nextSlug: string | undefined;
+      if (slug !== undefined) {
+        const { slugifyFirmName } = await import("../auth/password");
+        const { isReservedSubdomain } = await import("../tenant");
+        nextSlug = slugifyFirmName(slug);
+        if (!nextSlug || nextSlug.length < 2) {
+          throw new TRPCError({ code: "BAD_REQUEST", message: "Invalid subdomain" });
+        }
+        if (isReservedSubdomain(nextSlug)) {
+          throw new TRPCError({ code: "BAD_REQUEST", message: "This subdomain is reserved" });
+        }
+        const existing = await getFirmBySlug(nextSlug);
+        if (existing && existing.id !== member.firmId) {
+          throw new TRPCError({ code: "CONFLICT", message: "This subdomain is already taken" });
+        }
+      }
+
+      const nextCustomDomain =
+        customDomain !== undefined
+          ? customDomain?.trim()
+            ? customDomain
+                .trim()
+                .toLowerCase()
+                .replace(/^https?:\/\//, "")
+                .replace(/\/$/, "")
+            : null
+          : undefined;
+
       await updateFirm(member.firmId, {
         ...rest,
+        ...(nextSlug !== undefined ? { slug: nextSlug, subdomainStatus: "pending" as const } : {}),
+        ...(nextCustomDomain !== undefined ? { customDomain: nextCustomDomain } : {}),
         iban: nextIban,
         qrIban: nextQrIban,
         creditorCountry:

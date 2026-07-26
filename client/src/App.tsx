@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useLocation } from "wouter";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { Toaster } from "@/components/ui/sonner";
@@ -44,6 +44,46 @@ import TrialBanner from "./components/TrialBanner";
 import AnnouncementPopup from "./components/AnnouncementPopup";
 import SupportPage from "./pages/Support";
 import AccountPage from "./pages/Account";
+import FirmPublicSitePage from "./pages/FirmPublicSite";
+
+function HomeOrFirmSite() {
+  const [mode, setMode] = useState<"loading" | "platform" | "firm">("loading");
+  useEffect(() => {
+    fetch("/api/auth/tenant")
+      .then((r) => r.json())
+      .then((d) => setMode(d?.mode === "firm" ? "firm" : "platform"))
+      .catch(() => setMode("platform"));
+  }, []);
+  if (mode === "loading") {
+    return (
+      <div className="min-h-screen flex items-center justify-center text-sm text-muted-foreground">
+        Loading…
+      </div>
+    );
+  }
+  if (mode === "firm") return <FirmPublicSitePage />;
+  return <Home />;
+}
+
+/** On a firm subdomain/custom domain, unknown paths are CMS pages (e.g. /about). */
+function NotFoundOrFirmPage() {
+  const [mode, setMode] = useState<"loading" | "platform" | "firm">("loading");
+  useEffect(() => {
+    fetch("/api/auth/tenant")
+      .then((r) => r.json())
+      .then((d) => setMode(d?.mode === "firm" ? "firm" : "platform"))
+      .catch(() => setMode("platform"));
+  }, []);
+  if (mode === "loading") {
+    return (
+      <div className="min-h-screen flex items-center justify-center text-sm text-muted-foreground">
+        Loading…
+      </div>
+    );
+  }
+  if (mode === "firm") return <FirmPublicSitePage />;
+  return <NotFound />;
+}
 
 function Router() {
   const { user, refresh, loading } = useAuth();
@@ -178,7 +218,9 @@ function Router() {
       <AnnouncementPopup />
       <div className={isAppShell ? "flex-1 min-h-0 overflow-hidden" : undefined}>
         <Switch>
-          <Route path="/" component={Home} />
+          <Route path="/" component={HomeOrFirmSite} />
+          <Route path="/site/:firmSlug/:pageSlug" component={FirmPublicSitePage} />
+          <Route path="/site/:firmSlug" component={FirmPublicSitePage} />
           <Route path="/login" component={LoginPage} />
           <Route path="/platform/login" component={PlatformLoginPage} />
           <Route path="/onboarding" component={OnboardingPage} />
@@ -210,7 +252,7 @@ function Router() {
           <Route path="/audit" component={AuditLogPage} />
           <Route path="/analytics" component={AdminAnalyticsPage} />
           <Route path="/404" component={NotFound} />
-          <Route component={NotFound} />
+          <Route component={NotFoundOrFirmPage} />
         </Switch>
       </div>
       {!firmLocked && <FloatingTimer />}
