@@ -14,7 +14,7 @@
     "auditLog": "Journal d'audit",
     "signOut": "Se déconnecter",
     "leads": "Prospects",
-    "cms": "Site web",
+    "cms": "CMS",
     "packages": "Forfaits",
     "services": "Services",
     "support": "Assistance",
@@ -1085,8 +1085,8 @@
       "won": "Won",
       "lost": "Lost"
     },
-    "cmsTitle": "Website pages",
-    "cmsHint": "Construisez la page d’accueil avec des blocs, modèles et SEO par page. Publiez pour la mettre en ligne.",
+    "cmsTitle": "CMS",
+    "cmsHint": "Créez et publiez les pages publiques du cabinet avec aperçu en direct, SEO et page d’accueil.",
     "newPage": "New page",
     "editPage": "Edit page",
     "pageTitle": "Page title",
@@ -1523,7 +1523,7 @@
     "checkoutFailed": "Impossible de démarrer le paiement"
   },
   "cms": {
-    "publicUrlsTitle": "URLs publiques de votre site",
+    "publicUrlsTitle": "URLs publiques du CMS",
     "publicUrlsHint": "Publiez une page d’accueil (et d’autres pages) pour les rendre visibles. Les URLs /site/… fonctionnent tout de suite ; le sous-domaine/domaine personnalisé nécessite le DNS.",
     "urlPath": "Chemin (toujours disponible)",
     "urlSubdomain": "Sous-domaine",
@@ -1533,7 +1533,8 @@
     "tab": {
       "build": "Constructeur",
       "seo": "SEO",
-      "preview": "Aperçu"
+      "preview": "Aperçu",
+      "content": "Contenu"
     },
     "seoHint": "Search engines and social previews use these fields for this page.",
     "seoTitle": "Meta titre",
@@ -1567,7 +1568,17 @@
       "itemTitle": "Item title",
       "itemDesc": "Item description",
       "address": "Address"
-    }
+    },
+    "livePreview": "Aperçu en direct",
+    "showPreview": "Afficher l’aperçu",
+    "hidePreview": "Masquer l’aperçu",
+    "addBlock": "Ajouter un bloc",
+    "editorHint": "Modifiez à gauche — l’aperçu se met à jour en direct.",
+    "pageTitlePlaceholder": "ex. Accueil, À propos",
+    "pageTitleRequired": "Le titre de la page est obligatoire",
+    "pageNotFound": "Page introuvable",
+    "seoTitlePlaceholder": "Titre affiché dans les résultats de recherche",
+    "seoSnippetPreview": "Aperçu du résultat de recherche"
   },
   "upselling": {
     "hint": "Vendez forfaits d’abonnement et services ponctuels à vos clients depuis un seul endroit.",

@@ -14,7 +14,7 @@
     "auditLog": "سجل التدقيق",
     "signOut": "تسجيل الخروج",
     "leads": "العملاء المحتملون",
-    "cms": "الموقع",
+    "cms": "نظام المحتوى",
     "packages": "الباقات",
     "services": "الخدمات",
     "support": "الدعم",
@@ -1085,8 +1085,8 @@
       "won": "Won",
       "lost": "Lost"
     },
-    "cmsTitle": "Website pages",
-    "cmsHint": "Simple CMS for your firm homepage and content pages.",
+    "cmsTitle": "نظام المحتوى",
+    "cmsHint": "أنشئ وانشر صفحات المكتب العامة مع معاينة مباشرة وتحسين محركات البحث والصفحة الرئيسية.",
     "newPage": "New page",
     "editPage": "Edit page",
     "pageTitle": "Page title",
@@ -1523,7 +1523,7 @@
     "checkoutFailed": "Could not start checkout"
   },
   "cms": {
-    "publicUrlsTitle": "Your public website URLs",
+    "publicUrlsTitle": "روابط نظام المحتوى العامة",
     "publicUrlsHint": "Publish a homepage (and other pages) to make them live. Path URLs work immediately; subdomain/custom domain need DNS.",
     "urlPath": "Path (always works)",
     "urlSubdomain": "Subdomain",
@@ -1533,7 +1533,8 @@
     "tab": {
       "build": "Builder",
       "seo": "SEO",
-      "preview": "Preview"
+      "preview": "Preview",
+      "content": "المحتوى"
     },
     "seoHint": "Search engines and social previews use these fields for this page.",
     "seoTitle": "Meta title",
@@ -1567,7 +1568,17 @@
       "itemTitle": "Item title",
       "itemDesc": "Item description",
       "address": "Address"
-    }
+    },
+    "livePreview": "معاينة مباشرة",
+    "showPreview": "إظهار المعاينة",
+    "hidePreview": "إخفاء المعاينة",
+    "addBlock": "إضافة كتلة",
+    "editorHint": "عدّل على اليسار — تتحدث المعاينة أثناء الكتابة.",
+    "pageTitlePlaceholder": "مثال: الرئيسية، من نحن",
+    "pageTitleRequired": "عنوان الصفحة مطلوب",
+    "pageNotFound": "الصفحة غير موجودة",
+    "seoTitlePlaceholder": "العنوان في نتائج البحث",
+    "seoSnippetPreview": "معاينة نتيجة البحث"
   },
   "upselling": {
     "hint": "بِع باقات الاشتراك والخدمات لمرة واحدة لعملائك من مكان واحد.",

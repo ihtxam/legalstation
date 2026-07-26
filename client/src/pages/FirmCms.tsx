@@ -4,63 +4,22 @@ import { trpc } from "@/lib/trpc";
 import AppLayout from "@/components/AppLayout";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import {
-  Dialog,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import CmsPageEditor, { type CmsPageForm } from "@/components/CmsPageEditor";
-import { serializeCmsDocument, cmsTemplate } from "@shared/cmsBlocks";
 import { ExternalLink, Home, Pencil, Plus, Trash2 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
+import { useLocation } from "wouter";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
-
-const emptyForm = (firmName?: string): CmsPageForm => ({
-  title: "",
-  slug: "",
-  content: serializeCmsDocument(cmsTemplate("classic", firmName)),
-  published: false,
-  isHome: false,
-  seoTitle: "",
-  seoDescription: "",
-});
 
 export default function FirmCmsPage() {
   const { t } = useTranslation();
   const { isAuthenticated, loading } = useAuth();
+  const [, navigate] = useLocation();
   const utils = trpc.useUtils();
-  const { data: firmData } = trpc.firm.myFirm.useQuery(undefined, { enabled: isAuthenticated });
   const { data: pages, isLoading } = trpc.firmPages.list.useQuery(undefined, {
     enabled: isAuthenticated,
   });
   const { data: urls } = trpc.firmPages.publicUrls.useQuery(undefined, {
     enabled: isAuthenticated,
-  });
-
-  const [open, setOpen] = useState(false);
-  const [form, setForm] = useState<CmsPageForm>(emptyForm());
-
-  const create = trpc.firmPages.create.useMutation({
-    onSuccess: async () => {
-      toast.success(t("crm.pageSaved"));
-      setOpen(false);
-      setForm(emptyForm(firmData?.firm?.name));
-      await utils.firmPages.list.invalidate();
-    },
-    onError: (e) => toast.error(e.message),
-  });
-
-  const update = trpc.firmPages.update.useMutation({
-    onSuccess: async () => {
-      toast.success(t("crm.pageSaved"));
-      setOpen(false);
-      setForm(emptyForm(firmData?.firm?.name));
-      await utils.firmPages.list.invalidate();
-    },
-    onError: (e) => toast.error(e.message),
   });
 
   const setHome = trpc.firmPages.setHome.useMutation({
@@ -83,24 +42,6 @@ export default function FirmCmsPage() {
     if (!loading && !isAuthenticated) startLogin();
   }, [isAuthenticated, loading]);
 
-  const save = () => {
-    if (!form.title.trim()) return;
-    const payload = {
-      title: form.title.trim(),
-      slug: form.isHome ? "home" : form.slug || undefined,
-      content: form.content,
-      published: form.published,
-      isHome: form.isHome,
-      seoTitle: form.seoTitle.trim() || null,
-      seoDescription: form.seoDescription.trim() || null,
-    };
-    if (form.id) {
-      update.mutate({ id: form.id, ...payload });
-    } else {
-      create.mutate(payload);
-    }
-  };
-
   const pagePublicUrl = (page: { slug: string; isHome: boolean; published: boolean }) => {
     if (!page.published || !urls?.pathHome) return null;
     if (page.isHome) return urls.preferredHome || urls.pathHome;
@@ -117,10 +58,7 @@ export default function FirmCmsPage() {
           </div>
           <Button
             className="bg-[var(--color-navy)] text-white"
-            onClick={() => {
-              setForm(emptyForm(firmData?.firm?.name));
-              setOpen(true);
-            }}
+            onClick={() => navigate("/cms/new")}
           >
             <Plus className="w-4 h-4 me-1.5" /> {t("crm.newPage")}
           </Button>
@@ -134,7 +72,12 @@ export default function FirmCmsPage() {
               {urls.pathHome && (
                 <li>
                   <span className="text-muted-foreground">{t("cms.urlPath")}: </span>
-                  <a href={urls.pathHome} target="_blank" rel="noreferrer" className="underline text-[var(--color-navy)]">
+                  <a
+                    href={urls.pathHome}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="underline text-[var(--color-navy)]"
+                  >
                     {urls.pathHome}
                   </a>
                 </li>
@@ -142,18 +85,31 @@ export default function FirmCmsPage() {
               {urls.subdomainHome && (
                 <li>
                   <span className="text-muted-foreground">{t("cms.urlSubdomain")}: </span>
-                  <a href={urls.subdomainHome} target="_blank" rel="noreferrer" className="underline text-[var(--color-navy)]">
+                  <a
+                    href={urls.subdomainHome}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="underline text-[var(--color-navy)]"
+                  >
                     {urls.subdomainHome}
                   </a>
                   {urls.baseDomain && (
-                    <span className="text-muted-foreground"> ({urls.slug}.{urls.baseDomain})</span>
+                    <span className="text-muted-foreground">
+                      {" "}
+                      ({urls.slug}.{urls.baseDomain})
+                    </span>
                   )}
                 </li>
               )}
               {urls.customHome && (
                 <li>
                   <span className="text-muted-foreground">{t("cms.urlCustom")}: </span>
-                  <a href={urls.customHome} target="_blank" rel="noreferrer" className="underline text-[var(--color-navy)]">
+                  <a
+                    href={urls.customHome}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="underline text-[var(--color-navy)]"
+                  >
                     {urls.customHome}
                   </a>
                 </li>
@@ -168,7 +124,15 @@ export default function FirmCmsPage() {
         {isLoading ? (
           <p className="text-sm text-muted-foreground">{t("common.loading")}</p>
         ) : !pages?.length ? (
-          <p className="text-sm text-muted-foreground text-center py-10">{t("crm.noPages")}</p>
+          <div className="rounded-xl border border-dashed border-border py-12 text-center space-y-3">
+            <p className="text-sm text-muted-foreground">{t("crm.noPages")}</p>
+            <Button
+              className="bg-[var(--color-navy)] text-white"
+              onClick={() => navigate("/cms/new")}
+            >
+              <Plus className="w-4 h-4 me-1.5" /> {t("crm.newPage")}
+            </Button>
+          </div>
         ) : (
           <ul className="space-y-2">
             {pages.map((page) => {
@@ -207,28 +171,19 @@ export default function FirmCmsPage() {
                   </div>
                   <div className="flex items-center gap-1">
                     {!page.isHome && (
-                      <Button size="sm" variant="outline" onClick={() => setHome.mutate({ id: page.id })}>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => setHome.mutate({ id: page.id })}
+                      >
                         {t("crm.setHome")}
                       </Button>
                     )}
                     <Button
                       size="sm"
                       variant="ghost"
-                      onClick={() => {
-                        setForm({
-                          id: page.id,
-                          title: page.title,
-                          slug: page.slug,
-                          content:
-                            page.content ||
-                            serializeCmsDocument(cmsTemplate("classic", firmData?.firm?.name)),
-                          published: page.published,
-                          isHome: page.isHome,
-                          seoTitle: page.seoTitle || "",
-                          seoDescription: page.seoDescription || "",
-                        });
-                        setOpen(true);
-                      }}
+                      onClick={() => navigate(`/cms/${page.id}`)}
+                      title={t("common.edit")}
                     >
                       <Pencil className="w-3.5 h-3.5" />
                     </Button>
@@ -249,34 +204,6 @@ export default function FirmCmsPage() {
           </ul>
         )}
       </div>
-
-      <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="max-w-3xl max-h-[92vh] overflow-hidden flex flex-col">
-          <DialogHeader>
-            <DialogTitle>{form.id ? t("crm.editPage") : t("crm.newPage")}</DialogTitle>
-          </DialogHeader>
-          <div className="flex-1 overflow-y-auto py-2 pe-1">
-            <CmsPageEditor
-              form={form}
-              setForm={setForm}
-              firmName={firmData?.firm?.name}
-              primaryColor={firmData?.firm?.primaryColor || "#00BFA6"}
-            />
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setOpen(false)}>
-              {t("common.cancel")}
-            </Button>
-            <Button
-              className="bg-[var(--color-navy)] text-white"
-              disabled={!form.title.trim() || create.isPending || update.isPending}
-              onClick={save}
-            >
-              {t("common.save")}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </AppLayout>
   );
 }
