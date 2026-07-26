@@ -987,8 +987,6 @@
     "vatHint": "L'aliquota standard svizzera MWST è attualmente dell'8,1%",
     "subdomain": "Sottodominio",
     "subdomainHint": "Avvocati e clienti accederanno da questo sottodominio una volta configurato il DNS.",
-    "customDomain": "Dominio personalizzato (facoltativo)",
-    "customDomainPlaceholder": "portal.tuostudio.ch",
     "youreReady": "Sei pronto",
     "finishHint": "Termina per aprire la dashboard. Potrai modificare branding e sottodominio in Impostazioni.",
     "back": "Indietro",
@@ -999,7 +997,8 @@
     "emailPlaceholder": "info@studio.ch",
     "phonePlaceholder": "+41 44 000 00 00",
     "vatPlaceholder": "CHE-123.456.789 MWST",
-    "sitePathHint": "Sito pubblico (senza DNS): {{url}}"
+    "sitePathHint": "Sito pubblico (senza DNS): {{url}}",
+    "customDomainLater": "Vuoi usare il tuo dominio (es. portal.tuostudio.ch)? Potrai collegarlo in qualsiasi momento in Impostazioni → Area di lavoro."
   },
   "platformLogin": {
     "title": "Piattaforma Cliavo",
@@ -1103,14 +1102,15 @@
     "pageSaved": "Page saved",
     "pageDeleted": "Page deleted",
     "noPages": "No pages yet.",
-    "dnsTitle": "Custom domain DNS",
-    "dnsIntro": "Point your domain at Cliavo so clients can use your branded URL.",
-    "dnsARecord": "Point an A record of your domain to",
-    "dnsCname": "Optional: CNAME www to your apex domain (or the same A record).",
-    "dnsCurrentDomain": "Configured domain",
-    "dnsSlug": "Subdomain slug",
+    "dnsTitle": "Collega il tuo dominio",
     "subdomainStatus": "Status",
-    "dnsNote": "Production IP is {{ip}}. DNS changes can take up to 24–48 hours to propagate."
+    "dnsCnameIntro": "Crea un record CNAME nelle impostazioni DNS del tuo dominio:",
+    "dnsColType": "Tipo",
+    "dnsColName": "Nome (il tuo dominio)",
+    "dnsColValue": "Valore (punta a)",
+    "dnsExampleDomain": "portal.tuostudio.ch",
+    "dnsApexNote": "Dominio principale senza sottodominio (es. tuostudio.ch)? Crea invece un record A che punta a {{ip}}.",
+    "dnsPropagationNote": "Le modifiche DNS possono richiedere fino a 24–48 ore."
   },
   "roles": {
     "admin": "Admin",

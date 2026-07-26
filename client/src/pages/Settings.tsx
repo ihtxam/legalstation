@@ -619,8 +619,8 @@ export default function SettingsPage() {
                   </div>
                   <CustomDomainDnsHelp
                     customDomain={firmForm.customDomain || firmData?.firm?.customDomain}
-                    subdomainStatus={firmData?.firm?.subdomainStatus}
                     slug={firmForm.slug || firmData?.firm?.slug}
+                    baseDomain={platformBaseDomain}
                   />
                 </div>
               )}

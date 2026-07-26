@@ -987,8 +987,6 @@
     "vatHint": "نسبة MWST السويسرية القياسية حاليًا 8.1%",
     "subdomain": "النطاق الفرعي",
     "subdomainHint": "سيسجّل المحامون والعملاء الدخول عبر هذا النطاق بعد إعداد DNS.",
-    "customDomain": "نطاق مخصص (اختياري)",
-    "customDomainPlaceholder": "portal.yourfirm.ch",
     "youreReady": "أنت جاهز",
     "finishHint": "أنهِ لفتح لوحة المكتب. يمكنك تغيير الهوية والنطاق لاحقًا في الإعدادات.",
     "back": "رجوع",
@@ -999,7 +997,8 @@
     "emailPlaceholder": "info@firm.ch",
     "phonePlaceholder": "+41 44 000 00 00",
     "vatPlaceholder": "CHE-123.456.789 MWST",
-    "sitePathHint": "الموقع العام (بدون DNS): {{url}}"
+    "sitePathHint": "الموقع العام (بدون DNS): {{url}}",
+    "customDomainLater": "هل تريد استخدام نطاقك الخاص (مثل portal.yourfirm.ch)؟ يمكنك ربطه في أي وقت لاحقًا من الإعدادات ← مساحة العمل."
   },
   "platformLogin": {
     "title": "منصة Cliavo",
@@ -1103,14 +1102,15 @@
     "pageSaved": "Page saved",
     "pageDeleted": "Page deleted",
     "noPages": "No pages yet.",
-    "dnsTitle": "Custom domain DNS",
-    "dnsIntro": "Point your domain at Cliavo so clients can use your branded URL.",
-    "dnsARecord": "Point an A record of your domain to",
-    "dnsCname": "Optional: CNAME www to your apex domain (or the same A record).",
-    "dnsCurrentDomain": "Configured domain",
-    "dnsSlug": "Subdomain slug",
+    "dnsTitle": "ربط نطاقك",
     "subdomainStatus": "Status",
-    "dnsNote": "Production IP is {{ip}}. DNS changes can take up to 24–48 hours to propagate."
+    "dnsCnameIntro": "أنشئ سجل CNAME واحدًا في إعدادات DNS لنطاقك:",
+    "dnsColType": "النوع",
+    "dnsColName": "الاسم (نطاقك)",
+    "dnsColValue": "القيمة (يشير إلى)",
+    "dnsExampleDomain": "portal.yourfirm.ch",
+    "dnsApexNote": "نطاق جذري بدون نطاق فرعي (مثل yourfirm.ch)؟ أنشئ بدلاً من ذلك سجل A يشير إلى {{ip}}.",
+    "dnsPropagationNote": "قد تستغرق تغييرات DNS حتى 24–48 ساعة."
   },
   "roles": {
     "admin": "مسؤول",

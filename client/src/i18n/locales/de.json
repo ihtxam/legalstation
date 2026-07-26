@@ -987,8 +987,6 @@
     "vatHint": "Der Schweizer MWST-Standardsatz beträgt derzeit 8,1 %",
     "subdomain": "Subdomain",
     "subdomainHint": "Anwälte und Mandanten melden sich nach DNS-Konfiguration über diese Subdomain an.",
-    "customDomain": "Eigene Domain (optional)",
-    "customDomainPlaceholder": "portal.ihrekazlei.ch",
     "youreReady": "Sie sind bereit",
     "finishHint": "Schliessen Sie ab, um das Dashboard zu öffnen. Branding und Subdomain können später in den Einstellungen geändert werden.",
     "back": "Zurück",
@@ -999,7 +997,8 @@
     "emailPlaceholder": "info@kanzlei.ch",
     "phonePlaceholder": "+41 44 000 00 00",
     "vatPlaceholder": "CHE-123.456.789 MWST",
-    "sitePathHint": "Öffentliche Website (ohne DNS): {{url}}"
+    "sitePathHint": "Öffentliche Website (ohne DNS): {{url}}",
+    "customDomainLater": "Möchten Sie Ihre eigene Domain verwenden (z. B. portal.ihrekanzlei.ch)? Sie können sie jederzeit später unter Einstellungen → Arbeitsbereich verbinden."
   },
   "platformLogin": {
     "title": "Cliavo-Plattform",
@@ -1103,14 +1102,15 @@
     "pageSaved": "Page saved",
     "pageDeleted": "Page deleted",
     "noPages": "No pages yet.",
-    "dnsTitle": "Custom domain DNS",
-    "dnsIntro": "Point your domain at Cliavo so clients can use your branded URL.",
-    "dnsARecord": "Point an A record of your domain to",
-    "dnsCname": "Optional: CNAME www to your apex domain (or the same A record).",
-    "dnsCurrentDomain": "Configured domain",
-    "dnsSlug": "Subdomain slug",
+    "dnsTitle": "Eigene Domain verbinden",
     "subdomainStatus": "Status",
-    "dnsNote": "Production IP is {{ip}}. DNS changes can take up to 24–48 hours to propagate."
+    "dnsCnameIntro": "Erstellen Sie einen CNAME-Eintrag in den DNS-Einstellungen Ihrer Domain:",
+    "dnsColType": "Typ",
+    "dnsColName": "Name (Ihre Domain)",
+    "dnsColValue": "Wert (zeigt auf)",
+    "dnsExampleDomain": "portal.ihrekanzlei.ch",
+    "dnsApexNote": "Root-Domain ohne Subdomain (z. B. ihrekanzlei.ch)? Erstellen Sie stattdessen einen A-Eintrag auf {{ip}}.",
+    "dnsPropagationNote": "DNS-Änderungen können bis zu 24–48 Stunden dauern."
   },
   "roles": {
     "admin": "Admin",

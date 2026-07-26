@@ -9,7 +9,6 @@ import { useEffect, useState } from "react";
 import { useLocation } from "wouter";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
-import CustomDomainDnsHelp from "@/components/CustomDomainDnsHelp";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { currencyLabel, normalizeCurrency } from "@shared/currencies";
 import { useSupportedCurrencies } from "@/hooks/useSupportedCurrencies";
@@ -60,7 +59,6 @@ export default function FirmOnboardingPage() {
   const [currency, setCurrency] = useState("CHF");
   const [vatRate, setVatRate] = useState("8.10");
   const [slug, setSlug] = useState("");
-  const [customDomain, setCustomDomain] = useState("");
 
   useEffect(() => {
     if (!loading && !isAuthenticated) startLogin();
@@ -85,7 +83,6 @@ export default function FirmOnboardingPage() {
     setCurrency(normalizeCurrency(f.defaultCurrency || platformDefaultCurrency));
     setVatRate(String(f.defaultVatRate || "8.10"));
     setSlug(sanitizeSlug(f.slug || f.name || ""));
-    setCustomDomain(f.customDomain || "");
   }, [firmData, navigate, platformDefaultCurrency]);
 
   if (loading || isLoading) {
@@ -124,7 +121,6 @@ export default function FirmOnboardingPage() {
       defaultCurrency?: string;
       defaultVatRate?: number;
       slug?: string;
-      customDomain?: string | null;
     } = {
       step: finish ? 5 : next,
       finish,
@@ -152,7 +148,6 @@ export default function FirmOnboardingPage() {
         return;
       }
       payload.slug = cleanSlug;
-      payload.customDomain = customDomain.trim() || null;
     }
 
     try {
@@ -314,20 +309,9 @@ export default function FirmOnboardingPage() {
                   })}
                 </p>
               </div>
-              <div>
-                <Label>{t("onboarding.customDomain")}</Label>
-                <Input
-                  className="mt-1.5"
-                  placeholder={t("onboarding.customDomainPlaceholder")}
-                  value={customDomain}
-                  onChange={(e) => setCustomDomain(e.target.value)}
-                />
-              </div>
-              <CustomDomainDnsHelp
-                customDomain={customDomain}
-                subdomainStatus={firmData?.firm.subdomainStatus}
-                slug={slug}
-              />
+              <p className="text-xs text-muted-foreground rounded-lg border border-border bg-muted/30 p-3">
+                {t("onboarding.customDomainLater")}
+              </p>
             </>
           )}
 

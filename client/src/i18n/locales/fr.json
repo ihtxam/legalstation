@@ -987,8 +987,6 @@
     "vatHint": "Le taux standard suisse MWST est actuellement de 8,1 %",
     "subdomain": "Sous-domaine",
     "subdomainHint": "Avocats et clients se connecteront sur ce sous-domaine une fois le DNS configuré.",
-    "customDomain": "Domaine personnalisé (facultatif)",
-    "customDomainPlaceholder": "portal.votrecabinet.ch",
     "youreReady": "Vous êtes prêt",
     "finishHint": "Terminez pour ouvrir le tableau de bord. Vous pourrez modifier la marque et le sous-domaine dans Paramètres.",
     "back": "Retour",
@@ -999,7 +997,8 @@
     "emailPlaceholder": "info@cabinet.ch",
     "phonePlaceholder": "+41 44 000 00 00",
     "vatPlaceholder": "CHE-123.456.789 MWST",
-    "sitePathHint": "Site public (sans DNS) : {{url}}"
+    "sitePathHint": "Site public (sans DNS) : {{url}}",
+    "customDomainLater": "Vous souhaitez utiliser votre propre domaine (p. ex. portal.votrecabinet.ch) ? Vous pourrez le connecter à tout moment dans Réglages → Espace de travail."
   },
   "platformLogin": {
     "title": "Plateforme Cliavo",
@@ -1103,14 +1102,15 @@
     "pageSaved": "Page saved",
     "pageDeleted": "Page deleted",
     "noPages": "No pages yet.",
-    "dnsTitle": "Custom domain DNS",
-    "dnsIntro": "Point your domain at Cliavo so clients can use your branded URL.",
-    "dnsARecord": "Point an A record of your domain to",
-    "dnsCname": "Optional: CNAME www to your apex domain (or the same A record).",
-    "dnsCurrentDomain": "Configured domain",
-    "dnsSlug": "Subdomain slug",
+    "dnsTitle": "Connecter votre domaine",
     "subdomainStatus": "Status",
-    "dnsNote": "Production IP is {{ip}}. DNS changes can take up to 24–48 hours to propagate."
+    "dnsCnameIntro": "Créez un enregistrement CNAME dans les réglages DNS de votre domaine :",
+    "dnsColType": "Type",
+    "dnsColName": "Nom (votre domaine)",
+    "dnsColValue": "Valeur (pointe vers)",
+    "dnsExampleDomain": "portal.votrecabinet.ch",
+    "dnsApexNote": "Domaine racine sans sous-domaine (p. ex. votrecabinet.ch) ? Créez plutôt un enregistrement A pointant vers {{ip}}.",
+    "dnsPropagationNote": "Les modifications DNS peuvent prendre jusqu'à 24–48 heures."
   },
   "roles": {
     "admin": "Admin",

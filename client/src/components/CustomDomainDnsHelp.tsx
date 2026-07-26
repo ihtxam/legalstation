@@ -1,53 +1,50 @@
-import { Badge } from "@/components/ui/badge";
 import { useTranslation } from "react-i18next";
 
-const PROD_IP = "179.237.107.63";
+const FALLBACK_IP = "179.237.107.63";
+const FALLBACK_BASE_DOMAIN = "cliavo.com";
 
+/**
+ * Minimal "connect your domain" instructions: one CNAME record pointing the
+ * firm's domain at their Cliavo subdomain, shown as a concrete example.
+ */
 export default function CustomDomainDnsHelp({
   customDomain,
-  subdomainStatus,
   slug,
+  baseDomain,
 }: {
   customDomain?: string | null;
-  subdomainStatus?: string | null;
   slug?: string | null;
+  baseDomain?: string | null;
 }) {
   const { t } = useTranslation();
-  const ip = (typeof import.meta !== "undefined" && (import.meta as any).env?.VITE_APP_PUBLIC_IP) || PROD_IP;
+  const target = `${(slug || "your-firm").trim()}.${(baseDomain || FALLBACK_BASE_DOMAIN).trim()}`;
+  const domain = (customDomain || "").trim() || t("crm.dnsExampleDomain");
 
   return (
     <div className="rounded-xl border border-border bg-muted/30 p-4 space-y-3">
-      <div className="flex items-center justify-between gap-2 flex-wrap">
-        <h4 className="font-semibold text-sm text-foreground">{t("crm.dnsTitle")}</h4>
-        {subdomainStatus && (
-          <Badge variant="secondary">
-            {t("crm.subdomainStatus")}: {subdomainStatus}
-          </Badge>
-        )}
+      <h4 className="font-semibold text-sm text-foreground">{t("crm.dnsTitle")}</h4>
+      <p className="text-sm text-muted-foreground">{t("crm.dnsCnameIntro")}</p>
+      <div className="bg-card border border-border rounded-lg p-3 overflow-x-auto">
+        <table className="text-sm w-full">
+          <thead>
+            <tr className="text-xs text-muted-foreground text-left">
+              <th className="pr-6 font-medium">{t("crm.dnsColType")}</th>
+              <th className="pr-6 font-medium">{t("crm.dnsColName")}</th>
+              <th className="font-medium">{t("crm.dnsColValue")}</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr className="font-mono">
+              <td className="pr-6 pt-1">CNAME</td>
+              <td className="pr-6 pt-1">{domain}</td>
+              <td className="pt-1 text-[var(--color-navy)]">{target}</td>
+            </tr>
+          </tbody>
+        </table>
       </div>
-      <p className="text-sm text-muted-foreground">{t("crm.dnsIntro")}</p>
-      <ul className="text-sm space-y-2 font-mono bg-card border border-border rounded-lg p-3">
-        <li>
-          <span className="text-muted-foreground">A</span>{" "}
-          <span className="font-sans">{t("crm.dnsARecord")}</span>{" "}
-          <code className="text-[var(--color-navy)]">{ip}</code>
-        </li>
-        <li>
-          <span className="text-muted-foreground">CNAME</span>{" "}
-          <span className="font-sans">{t("crm.dnsCname")}</span>
-        </li>
-      </ul>
-      {customDomain && (
-        <p className="text-xs text-muted-foreground">
-          {t("crm.dnsCurrentDomain")}: <strong className="text-foreground">{customDomain}</strong>
-        </p>
-      )}
-      {slug && (
-        <p className="text-xs text-muted-foreground">
-          {t("crm.dnsSlug")}: <strong className="text-foreground">{slug}</strong>
-        </p>
-      )}
-      <p className="text-xs text-muted-foreground">{t("crm.dnsNote", { ip: PROD_IP })}</p>
+      <p className="text-xs text-muted-foreground">
+        {t("crm.dnsApexNote", { ip: FALLBACK_IP })} {t("crm.dnsPropagationNote")}
+      </p>
     </div>
   );
 }
