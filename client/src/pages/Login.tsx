@@ -22,7 +22,7 @@ type TenantInfo =
 
 export default function LoginPage() {
   const { t } = useTranslation();
-  const { isAuthenticated, loading, refresh, user } = useAuth();
+  const { isAuthenticated, loading, refresh, user, logout } = useAuth();
   const [, navigate] = useLocation();
   const search = useSearch();
   const params = new URLSearchParams(search);
@@ -104,15 +104,34 @@ export default function LoginPage() {
         method: "POST",
         headers: { "content-type": "application/json" },
         credentials: "include",
-        body: JSON.stringify({ currentPassword: password, newPassword }),
+        body: JSON.stringify({
+          // Optional when mustChangePassword is already set on the session.
+          ...(password ? { currentPassword: password } : {}),
+          newPassword,
+        }),
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error || "Failed to change password");
+      setMustChange(false);
       await refresh();
       toast.success(t("login.passwordUpdated"));
       navigate(nextPath || "/onboarding");
     } catch (err) {
       toast.error(err instanceof Error ? err.message : t("login.loginFailed"));
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const onSignOut = async () => {
+    setBusy(true);
+    try {
+      await logout();
+      setMustChange(false);
+      setPassword("");
+      setNewPassword("");
+      setConfirmPassword("");
+      toast.message(t("login.signedOut"));
     } finally {
       setBusy(false);
     }
@@ -151,12 +170,27 @@ export default function LoginPage() {
         <div className="bg-card rounded-xl border border-border p-6 shadow-sm">
           {mustChange ? (
             <form className="space-y-4" onSubmit={onChangePassword}>
+              <p className="text-sm text-muted-foreground">{t("login.mustChangeHint")}</p>
+              <div>
+                <Label htmlFor="currentPassword">{t("login.currentPassword")}</Label>
+                <Input
+                  id="currentPassword"
+                  type="password"
+                  className="mt-1.5"
+                  autoComplete="current-password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder={t("login.tempPasswordPlaceholder")}
+                />
+                <p className="text-xs text-muted-foreground mt-1">{t("login.currentPasswordOptional")}</p>
+              </div>
               <div>
                 <Label htmlFor="newPassword">{t("login.newPassword")}</Label>
                 <Input
                   id="newPassword"
                   type="password"
                   className="mt-1.5"
+                  autoComplete="new-password"
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
                   required
@@ -169,6 +203,7 @@ export default function LoginPage() {
                   id="confirmPassword"
                   type="password"
                   className="mt-1.5"
+                  autoComplete="new-password"
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   required
@@ -184,6 +219,14 @@ export default function LoginPage() {
                 {busy ? t("common.loading") : t("login.updatePassword")}
                 <ArrowRight className="w-4 h-4 ml-2" />
               </Button>
+              <button
+                type="button"
+                className="w-full text-sm text-muted-foreground underline hover:text-foreground"
+                onClick={onSignOut}
+                disabled={busy}
+              >
+                {t("login.useDifferentAccount")}
+              </button>
             </form>
           ) : (
             <form className="space-y-4" onSubmit={onLogin}>

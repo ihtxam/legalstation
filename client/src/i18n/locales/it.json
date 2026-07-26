@@ -605,7 +605,13 @@
     "mustChange": "Imposta una nuova password per continuare",
     "passwordUpdated": "Password aggiornata",
     "passwordMismatch": "Le password non corrispondono",
-    "passwordTooShort": "La password deve avere almeno 8 caratteri"
+    "passwordTooShort": "La password deve avere almeno 8 caratteri",
+    "mustChangeHint": "Per sicurezza, scegli una nuova password prima di continuare.",
+    "currentPassword": "Password temporanea / attuale",
+    "tempPasswordPlaceholder": "Dall’email di invito (opzionale se già connesso)",
+    "currentPasswordOptional": "Opzionale se hai già effettuato l’accesso con la password temporanea.",
+    "useDifferentAccount": "Esci e usa un altro account",
+    "signedOut": "Disconnesso"
   },
   "caseDetail": {
     "title": "Pratica",

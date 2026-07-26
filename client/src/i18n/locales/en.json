@@ -605,7 +605,13 @@
     "mustChange": "Please set a new password to continue",
     "passwordUpdated": "Password updated",
     "passwordMismatch": "Passwords do not match",
-    "passwordTooShort": "Password must be at least 8 characters"
+    "passwordTooShort": "Password must be at least 8 characters",
+    "mustChangeHint": "For security, choose a new password before continuing.",
+    "currentPassword": "Temporary / current password",
+    "tempPasswordPlaceholder": "From your invite email (optional if already signed in)",
+    "currentPasswordOptional": "Optional if you already signed in with the temporary password.",
+    "useDifferentAccount": "Sign out and use a different account",
+    "signedOut": "Signed out"
   },
   "caseDetail": {
     "title": "Case",

@@ -605,7 +605,13 @@
     "mustChange": "Veuillez définir un nouveau mot de passe",
     "passwordUpdated": "Mot de passe mis à jour",
     "passwordMismatch": "Les mots de passe ne correspondent pas",
-    "passwordTooShort": "Le mot de passe doit contenir au moins 8 caractères"
+    "passwordTooShort": "Le mot de passe doit contenir au moins 8 caractères",
+    "mustChangeHint": "Pour des raisons de sécurité, choisissez un nouveau mot de passe avant de continuer.",
+    "currentPassword": "Mot de passe temporaire / actuel",
+    "tempPasswordPlaceholder": "Depuis votre e-mail d’invitation (optionnel si déjà connecté)",
+    "currentPasswordOptional": "Optionnel si vous êtes déjà connecté avec le mot de passe temporaire.",
+    "useDifferentAccount": "Se déconnecter et utiliser un autre compte",
+    "signedOut": "Déconnecté"
   },
   "caseDetail": {
     "title": "Dossier",

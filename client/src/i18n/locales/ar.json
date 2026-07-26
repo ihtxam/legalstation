@@ -605,7 +605,13 @@
     "mustChange": "يرجى تعيين كلمة مرور جديدة للمتابعة",
     "passwordUpdated": "تم تحديث كلمة المرور",
     "passwordMismatch": "كلمتا المرور غير متطابقتين",
-    "passwordTooShort": "يجب أن تكون كلمة المرور 8 أحرف على الأقل"
+    "passwordTooShort": "يجب أن تكون كلمة المرور 8 أحرف على الأقل",
+    "mustChangeHint": "لأسباب أمنية، اختر كلمة مرور جديدة قبل المتابعة.",
+    "currentPassword": "كلمة المرور المؤقتة / الحالية",
+    "tempPasswordPlaceholder": "من رسالة الدعوة (اختياري إذا كنت مسجّلاً بالفعل)",
+    "currentPasswordOptional": "اختياري إذا سجّلت الدخول بالفعل بكلمة المرور المؤقتة.",
+    "useDifferentAccount": "تسجيل الخروج واستخدام حساب آخر",
+    "signedOut": "تم تسجيل الخروج"
   },
   "caseDetail": {
     "title": "القضية",

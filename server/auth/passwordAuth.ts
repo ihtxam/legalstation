@@ -169,7 +169,16 @@ export function registerPasswordAuthRoutes(app: Express) {
       const [row] = await db.select().from(users).where(eq(users.id, user.id)).limit(1);
       if (!row) return res.status(404).json({ error: "User not found" });
 
-      if (row.passwordHash) {
+      // Forced first-login change: user already authenticated with the temporary
+      // password session — do not require re-entering currentPassword (the login
+      // form state is often empty when returning with an existing cookie).
+      const forcedChange = Boolean(row.mustChangePassword);
+      if (row.passwordHash && !forcedChange) {
+        if (!currentPassword || !verifyPassword(currentPassword, row.passwordHash)) {
+          return res.status(401).json({ error: "Current password is incorrect" });
+        }
+      } else if (row.passwordHash && forcedChange && currentPassword) {
+        // If they did supply a current password (just logged in), still verify it.
         if (!verifyPassword(currentPassword, row.passwordHash)) {
           return res.status(401).json({ error: "Current password is incorrect" });
         }
