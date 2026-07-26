@@ -37,7 +37,7 @@ export async function emailInvoiceToClient(opts: {
       <p>Amount due: <strong>${currency} ${invoice.total}</strong></p>
       ${
         opts.includePaymentLink !== false && paymentUrl
-          ? `<p><a href="${paymentUrl}" style="background-color:#14B8A6;color:white;padding:10px 20px;text-decoration:none;border-radius:4px;display:inline-block;">Pay Now</a></p>`
+          ? `<p><a href="${paymentUrl}" style="background-color:#00BFA6;color:white;padding:10px 20px;text-decoration:none;border-radius:4px;display:inline-block;">Pay Now</a></p>`
           : ""
       }
       <p>A Swiss QR-bill payment slip is included on page 2 when your firm banking details are configured.</p>

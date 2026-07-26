@@ -4,88 +4,91 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
-  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
-  --font-serif: "Playfair Display", ui-serif, Georgia, serif;
+  --font-sans: "Sora", ui-sans-serif, system-ui, sans-serif;
+  --font-serif: "Sora", ui-sans-serif, system-ui, sans-serif;
 
-  /* Platform palette: Light #F8FAFC · Dark #111827 · Accent #14B8A6 */
-  --color-background: #F8FAFC;
-  --color-foreground: #111827;
-  --color-card: #ffffff;
-  --color-card-foreground: #111827;
-  --color-popover: #ffffff;
-  --color-popover-foreground: #111827;
-  --color-primary: #111827;
-  --color-primary-foreground: #F8FAFC;
-  --color-secondary: #E2E8F0;
-  --color-secondary-foreground: #111827;
-  --color-muted: #F1F5F9;
+  /*
+   * Cliavo brand palette
+   * Deep Purple #7C3AED · Teal #00BFA6 · Slate Gray #64748B · White #FFFFFF
+   */
+  --color-background: #FFFFFF;
+  --color-foreground: #1E293B;
+  --color-card: #FFFFFF;
+  --color-card-foreground: #1E293B;
+  --color-popover: #FFFFFF;
+  --color-popover-foreground: #1E293B;
+  --color-primary: #7C3AED;
+  --color-primary-foreground: #FFFFFF;
+  --color-secondary: #F1F5F9;
+  --color-secondary-foreground: #1E293B;
+  --color-muted: #F8FAFC;
   --color-muted-foreground: #64748B;
-  --color-accent: #14B8A6;
-  --color-accent-foreground: #ffffff;
+  --color-accent: #00BFA6;
+  --color-accent-foreground: #FFFFFF;
   --color-destructive: #DC2626;
-  --color-destructive-foreground: #ffffff;
+  --color-destructive-foreground: #FFFFFF;
   --color-border: #E2E8F0;
   --color-input: #E2E8F0;
-  --color-ring: #14B8A6;
-  --color-chart-1: #14B8A6;
-  --color-chart-2: #0D9488;
-  --color-chart-3: #111827;
-  --color-chart-4: #38BDF8;
-  --color-chart-5: #F59E0B;
-  --color-sidebar: #111827;
-  --color-sidebar-foreground: #F8FAFC;
-  --color-sidebar-primary: #14B8A6;
-  --color-sidebar-primary-foreground: #ffffff;
-  --color-sidebar-accent: #1F2937;
-  --color-sidebar-accent-foreground: #F8FAFC;
-  --color-sidebar-border: #1F2937;
-  --color-sidebar-ring: #14B8A6;
+  --color-ring: #7C3AED;
+  --color-chart-1: #7C3AED;
+  --color-chart-2: #00BFA6;
+  --color-chart-3: #64748B;
+  --color-chart-4: #A78BFA;
+  --color-chart-5: #2DD4BF;
+  --color-sidebar: #7C3AED;
+  --color-sidebar-foreground: #FFFFFF;
+  --color-sidebar-primary: #00BFA6;
+  --color-sidebar-primary-foreground: #FFFFFF;
+  --color-sidebar-accent: #6D28D9;
+  --color-sidebar-accent-foreground: #FFFFFF;
+  --color-sidebar-border: #6D28D9;
+  --color-sidebar-ring: #00BFA6;
 
   --radius-sm: 0.25rem;
   --radius-md: 0.375rem;
   --radius-lg: 0.5rem;
   --radius-xl: 0.75rem;
-  --radius: 0.375rem;
+  --radius: 0.5rem;
 
-  /* Cliavo brand tokens (used across components) */
-  --color-navy: #111827;
-  --color-navy-light: #1F2937;
-  --color-gold: #14B8A6;
-  --color-gold-light: #5EEAD4;
-  --color-success: #059669;
+  /* Legacy component tokens → brand mapping */
+  --color-navy: #7C3AED;
+  --color-navy-light: #6D28D9;
+  --color-gold: #00BFA6;
+  --color-gold-light: #2DD4BF;
+  --color-success: #00BFA6;
   --color-warning: #D97706;
   --color-danger: #DC2626;
-  --color-info: #0284C7;
+  --color-info: #7C3AED;
 }
 
 .dark {
-  --color-background: #111827;
+  --color-background: #0F172A;
   --color-foreground: #F8FAFC;
-  --color-card: #1F2937;
+  --color-card: #1E293B;
   --color-card-foreground: #F8FAFC;
-  --color-popover: #1F2937;
+  --color-popover: #1E293B;
   --color-popover-foreground: #F8FAFC;
-  --color-primary: #14B8A6;
-  --color-primary-foreground: #111827;
-  --color-secondary: #1F2937;
+  --color-primary: #A78BFA;
+  --color-primary-foreground: #0F172A;
+  --color-secondary: #1E293B;
   --color-secondary-foreground: #F8FAFC;
-  --color-muted: #1F2937;
+  --color-muted: #1E293B;
   --color-muted-foreground: #94A3B8;
-  --color-accent: #14B8A6;
-  --color-accent-foreground: #ffffff;
+  --color-accent: #00BFA6;
+  --color-accent-foreground: #FFFFFF;
   --color-destructive: #EF4444;
-  --color-destructive-foreground: #ffffff;
-  --color-border: #374151;
-  --color-input: #374151;
-  --color-ring: #14B8A6;
-  --color-sidebar: #0B1220;
-  --color-sidebar-foreground: #F8FAFC;
-  --color-sidebar-primary: #14B8A6;
-  --color-sidebar-primary-foreground: #ffffff;
-  --color-sidebar-accent: #1F2937;
-  --color-sidebar-accent-foreground: #F8FAFC;
-  --color-sidebar-border: #1F2937;
-  --color-sidebar-ring: #14B8A6;
+  --color-destructive-foreground: #FFFFFF;
+  --color-border: #334155;
+  --color-input: #334155;
+  --color-ring: #A78BFA;
+  --color-sidebar: #5B21B6;
+  --color-sidebar-foreground: #FFFFFF;
+  --color-sidebar-primary: #00BFA6;
+  --color-sidebar-primary-foreground: #FFFFFF;
+  --color-sidebar-accent: #6D28D9;
+  --color-sidebar-accent-foreground: #FFFFFF;
+  --color-sidebar-border: #6D28D9;
+  --color-sidebar-ring: #00BFA6;
 }
 
 @layer base {
@@ -94,11 +97,11 @@
   }
   body {
     @apply bg-background text-foreground font-sans antialiased;
-    font-feature-settings: "cv11", "ss01";
-    font-variation-settings: "opsz" 32;
+    font-feature-settings: "ss01";
   }
   h1, h2, h3 {
     letter-spacing: -0.02em;
+    font-family: var(--font-sans);
   }
   button:active {
     transform: scale(0.97);
@@ -128,7 +131,7 @@
   .status-closed { @apply bg-slate-100 text-slate-600 border border-slate-200; }
   .status-archived { @apply bg-slate-50 text-slate-500 border border-slate-200; }
   .status-draft { @apply bg-slate-100 text-slate-600 border border-slate-200; }
-  .status-sent { @apply bg-blue-50 text-blue-700 border border-blue-200; }
+  .status-sent { @apply bg-violet-50 text-violet-700 border border-violet-200; }
   .status-paid { @apply bg-emerald-50 text-emerald-700 border border-emerald-200; }
   .status-overdue { @apply bg-red-50 text-red-700 border border-red-200; }
   .status-cancelled { @apply bg-slate-100 text-slate-500 border border-slate-200; }

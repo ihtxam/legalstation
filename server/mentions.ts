@@ -54,12 +54,12 @@ export async function notifyMentionedUsers(opts: {
           htmlContent: `
             <html><body style="font-family: Inter, sans-serif; color:#1a1a1a;">
               <div style="max-width:600px;margin:0 auto;padding:20px;">
-                <h2 style="color:#111827;">You were mentioned</h2>
+                <h2 style="color:#7C3AED;">You were mentioned</h2>
                 <p><strong>${opts.actorName}</strong> mentioned you:</p>
-                <div style="background:#f5f5f5;padding:12px;border-left:4px solid #14B8A6;margin:16px 0;">
+                <div style="background:#f5f5f5;padding:12px;border-left:4px solid #00BFA6;margin:16px 0;">
                   ${opts.preview.replace(/</g, "&lt;").slice(0, 500)}
                 </div>
-                <p><a href="${opts.url}" style="background:#14B8A6;color:#fff;padding:10px 18px;text-decoration:none;border-radius:6px;display:inline-block;">Open in Cliavo</a></p>
+                <p><a href="${opts.url}" style="background:#00BFA6;color:#fff;padding:10px 18px;text-decoration:none;border-radius:6px;display:inline-block;">Open in Cliavo</a></p>
               </div>
             </body></html>
           `,
