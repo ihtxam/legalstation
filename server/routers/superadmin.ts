@@ -1373,7 +1373,9 @@ export const superadminRouter = router({
         body: input.body.trim(),
         severity: input.severity,
         audience: input.audience,
-        startsAt: input.startsAt ?? new Date(),
+        // Floor to the second: MySQL TIMESTAMP rounds .5+ fractions UP, which would
+        // make a just-created announcement invisible (startsAt > NOW()) for ~1s.
+        startsAt: input.startsAt ?? new Date(Math.floor(Date.now() / 1000) * 1000),
         endsAt: input.endsAt ?? null,
         isActive: input.isActive,
         createdByUserId: ctx.user.id,
