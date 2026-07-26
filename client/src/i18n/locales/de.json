@@ -230,7 +230,8 @@
     "address": "Adresse",
     "city": "Ort",
     "postalCode": "PLZ",
-    "country": "Land"
+    "country": "Land",
+    "updated": "Klient aktualisiert"
   },
   "invoices": {
     "billing": "Abrechnung",

@@ -230,7 +230,8 @@
     "address": "Indirizzo",
     "city": "Città",
     "postalCode": "CAP",
-    "country": "Paese"
+    "country": "Paese",
+    "updated": "Cliente aggiornato"
   },
   "invoices": {
     "billing": "Fatturazione",

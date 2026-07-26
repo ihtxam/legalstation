@@ -230,7 +230,8 @@
     "address": "العنوان",
     "city": "المدينة",
     "postalCode": "الرمز البريدي",
-    "country": "البلد"
+    "country": "البلد",
+    "updated": "تم تحديث العميل"
   },
   "invoices": {
     "billing": "الفوترة",

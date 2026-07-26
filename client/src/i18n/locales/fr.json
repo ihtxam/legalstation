@@ -230,7 +230,8 @@
     "address": "Adresse",
     "city": "Ville",
     "postalCode": "NPA",
-    "country": "Pays"
+    "country": "Pays",
+    "updated": "Client mis à jour"
   },
   "invoices": {
     "billing": "Facturation",
