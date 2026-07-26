@@ -37,13 +37,14 @@
   --chart-3: #14d4bc;
   --chart-4: #475569;
   --chart-5: #94a3b8;
-  --sidebar: #00bfa6;
+  /* Deeper teal sidebar (matches brand without the bright mint wash) */
+  --sidebar: #2f7a72;
   --sidebar-foreground: #ffffff;
   --sidebar-primary: #ffffff;
-  --sidebar-primary-foreground: #00bfa6;
-  --sidebar-accent: #00a894;
+  --sidebar-primary-foreground: #2f7a72;
+  --sidebar-accent: #276961;
   --sidebar-accent-foreground: #ffffff;
-  --sidebar-border: #00a894;
+  --sidebar-border: #276961;
   --sidebar-ring: #ffffff;
   --navy: #00bfa6;
   --navy-light: #00a894;
