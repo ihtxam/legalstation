@@ -36,8 +36,11 @@ export async function postFileUpload(file: File): Promise<{ fileKey: string; fil
   if (!res.ok) {
     throw new Error(data.error || "Upload failed");
   }
-  if (!data.fileKey || !data.fileUrl) {
+  // /api/upload returns { key, url }; accept the older { fileKey, fileUrl } shape too.
+  const fileKey = data.key || data.fileKey;
+  const fileUrl = data.url || data.fileUrl;
+  if (!fileKey || !fileUrl) {
     throw new Error(data.error || "Upload failed");
   }
-  return { fileKey: data.fileKey, fileUrl: data.fileUrl };
+  return { fileKey, fileUrl };
 }
