@@ -9,10 +9,11 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { Building2, Users, Send, Upload, X, Shield, Languages, ShieldCheck, Calendar, CreditCard } from "lucide-react";
+import { Building2, Users, Send, Upload, X, Shield, Languages, ShieldCheck, Calendar, CreditCard, Palette } from "lucide-react";
 import RolePermissionsTable from "@/components/RolePermissionsTable";
 import { CalendarIntegrations } from "@/components/CalendarIntegrations";
 import { FirmAdyenSettings } from "@/components/FirmAdyenSettings";
+import AppearanceControls from "@/components/AppearanceControls";
 import { useTranslation } from "react-i18next";
 import { setAppLocale } from "@/i18n";
 import { APP_LOCALES, APP_LOCALE_LABELS, isAppLocale, type AppLocale } from "@shared/locales";
@@ -278,6 +279,7 @@ export default function SettingsPage() {
             <TabsTrigger value="calendar"><Calendar className="w-4 h-4 mr-1.5" />{t("settings.tabCalendar")}</TabsTrigger>
             <TabsTrigger value="security"><Shield className="w-4 h-4 mr-1.5" />{t("settings.tabSecurity")}</TabsTrigger>
             <TabsTrigger value="language"><Languages className="w-4 h-4 mr-1.5" />{t("settings.tabLanguage")}</TabsTrigger>
+            <TabsTrigger value="appearance"><Palette className="w-4 h-4 mr-1.5" />{t("settings.tabAppearance")}</TabsTrigger>
           </TabsList>
 
           {canManageFirm && <TabsContent value="firm">
@@ -584,6 +586,16 @@ export default function SettingsPage() {
               >
                 {t("common.save")}
               </Button>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="appearance">
+            <div className="bg-card border border-border rounded-xl p-6 space-y-2">
+              <div className="mb-4">
+                <h3 className="font-semibold text-foreground">{t("appearance.heading")}</h3>
+                <p className="text-sm text-muted-foreground mt-1">{t("appearance.intro")}</p>
+              </div>
+              <AppearanceControls variant="panel" />
             </div>
           </TabsContent>
 

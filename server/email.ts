@@ -75,7 +75,7 @@ export async function sendFirmInviteEmail(
     <html>
       <body style="font-family: Sora, Inter, sans-serif; color: #1a1a1a;">
         <div style="max-width: 600px; margin: 0 auto; padding: 20px;">
-          <h2 style="color: #7C3AED; margin-bottom: 20px;">${s.firmHeading(firmName)}</h2>
+          <h2 style="color: #00BFA6; margin-bottom: 20px;">${s.firmHeading(firmName)}</h2>
           <p>${s.greeting}</p>
           <p>${s.firmBody(inviterName, firmName)}</p>
           <p style="margin: 30px 0;">
@@ -109,7 +109,7 @@ export async function sendClientInviteEmail(
     <html>
       <body style="font-family: Sora, Inter, sans-serif; color: #1a1a1a;">
         <div style="max-width: 600px; margin: 0 auto; padding: 20px;">
-          <h2 style="color: #7C3AED; margin-bottom: 20px;">${s.clientHeading(firmName)}</h2>
+          <h2 style="color: #00BFA6; margin-bottom: 20px;">${s.clientHeading(firmName)}</h2>
           <p>${s.greeting}</p>
           <p>${s.clientBody(firmName)}</p>
           <p style="margin: 30px 0;">
@@ -145,7 +145,7 @@ export async function sendFirmCredentialsEmail(opts: {
     <html>
       <body style="font-family: Sora, Inter, sans-serif; color: #1a1a1a;">
         <div style="max-width: 600px; margin: 0 auto; padding: 20px;">
-          <h2 style="color: #7C3AED; margin-bottom: 20px;">Your Cliavo workspace is ready</h2>
+          <h2 style="color: #00BFA6; margin-bottom: 20px;">Your Cliavo workspace is ready</h2>
           <p>Hi ${ownerName},</p>
           <p>Your law firm <strong>${firmName}</strong> has been provisioned on Cliavo.</p>
           <p>Sign in with these credentials, then complete onboarding (branding, currency, taxes, subdomain):</p>
@@ -185,7 +185,7 @@ export async function sendMessageNotificationEmail(
     <html>
       <body style="font-family: Sora, Inter, sans-serif; color: #1a1a1a;">
         <div style="max-width: 600px; margin: 0 auto; padding: 20px;">
-          <h2 style="color: #7C3AED; margin-bottom: 20px;">New Message in ${caseTitle}</h2>
+          <h2 style="color: #00BFA6; margin-bottom: 20px;">New Message in ${caseTitle}</h2>
           <p>Hi,</p>
           <p><strong>${senderName}</strong> sent you a message in case <strong>${caseTitle}</strong>:</p>
           <div style="background-color: #f5f5f5; padding: 15px; border-left: 4px solid #00BFA6; margin: 20px 0; border-radius: 4px;">
@@ -221,7 +221,7 @@ export async function sendDocumentUploadNotificationEmail(
     <html>
       <body style="font-family: Sora, Inter, sans-serif; color: #1a1a1a;">
         <div style="max-width: 600px; margin: 0 auto; padding: 20px;">
-          <h2 style="color: #7C3AED; margin-bottom: 20px;">New Document in ${caseTitle}</h2>
+          <h2 style="color: #00BFA6; margin-bottom: 20px;">New Document in ${caseTitle}</h2>
           <p>Hi,</p>
           <p><strong>${uploaderName}</strong> uploaded a document in case <strong>${caseTitle}</strong>:</p>
           <p style="background-color: #f5f5f5; padding: 15px; border-left: 4px solid #00BFA6; margin: 20px 0; border-radius: 4px; color: #333;">
@@ -259,7 +259,7 @@ export async function sendCaseUpdateEmail(opts: {
     <html>
       <body style="font-family: Sora, Inter, sans-serif; color: #1a1a1a;">
         <div style="max-width: 600px; margin: 0 auto; padding: 20px;">
-          <h2 style="color: #7C3AED; margin-bottom: 20px;">Update on ${caseTitle}</h2>
+          <h2 style="color: #00BFA6; margin-bottom: 20px;">Update on ${caseTitle}</h2>
           <p>Hi ${recipientName},</p>
           <p><strong>${updateTitle}</strong></p>
           <div style="background-color: #f5f5f5; padding: 15px; border-left: 4px solid #00BFA6; margin: 20px 0; border-radius: 4px;">
@@ -296,7 +296,7 @@ export async function sendDocumentRequestEmail(opts: {
     <html>
       <body style="font-family: Sora, Inter, sans-serif; color: #1a1a1a;">
         <div style="max-width: 600px; margin: 0 auto; padding: 20px;">
-          <h2 style="color: #7C3AED; margin-bottom: 20px;">Document requested</h2>
+          <h2 style="color: #00BFA6; margin-bottom: 20px;">Document requested</h2>
           <p>Hi ${recipientName},</p>
           <p>Your legal team requested a document for <strong>${caseTitle}</strong>:</p>
           <div style="background-color: #f5f5f5; padding: 15px; border-left: 4px solid #00BFA6; margin: 20px 0; border-radius: 4px;">
@@ -334,7 +334,7 @@ export async function sendLeadNotificationEmail(opts: {
     <html>
       <body style="font-family: Sora, Inter, sans-serif; color: #1a1a1a;">
         <div style="max-width: 600px; margin: 0 auto; padding: 20px;">
-          <h2 style="color: #7C3AED;">New ${opts.type} lead</h2>
+          <h2 style="color: #00BFA6;">New ${opts.type} lead</h2>
           <p><strong>Firm:</strong> ${opts.firmName}</p>
           <p><strong>Contact:</strong> ${opts.contactName}</p>
           <p><strong>Email:</strong> ${opts.email}</p>

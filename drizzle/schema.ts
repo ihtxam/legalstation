@@ -48,8 +48,8 @@ export const firms = mysqlTable("firms", {
   defaultCurrency: varchar("defaultCurrency", { length: 3 }).notNull().default("CHF"),
   /** Default VAT / MWST rate percent (e.g. 8.10) */
   defaultVatRate: decimal("defaultVatRate", { precision: 5, scale: 2 }).notNull().default("8.10"),
-  primaryColor: varchar("primaryColor", { length: 7 }).default("#7C3AED"),
-  secondaryColor: varchar("secondaryColor", { length: 7 }).default("#00BFA6"),
+  primaryColor: varchar("primaryColor", { length: 7 }).default("#00BFA6"),
+  secondaryColor: varchar("secondaryColor", { length: 7 }).default("#64748B"),
   /** Optional vanity host, e.g. portal.mueller-law.ch */
   customDomain: varchar("customDomain", { length: 255 }),
   subdomainStatus: mysqlEnum("subdomainStatus", ["none", "pending", "active", "rejected"])

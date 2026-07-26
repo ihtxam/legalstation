@@ -354,7 +354,8 @@
     "tabRoles": "الأدوار",
     "tabPayments": "المدفوعات",
     "storageTitle": "تخزين المستندات",
-    "storageHint": "حصة تخزين مستندات المكتب. تواصل مع Cliavo للترقية."
+    "storageHint": "حصة تخزين مستندات المكتب. تواصل مع Cliavo للترقية.",
+    "tabAppearance": "المظهر"
   },
   "notFound": {
     "title": "الصفحة غير موجودة",
@@ -1322,5 +1323,22 @@
   },
   "announcements": {
     "dismiss": "حسنًا"
+  },
+  "appearance": {
+    "heading": "المظهر",
+    "intro": "اختر الوضع النهاري/الليلي وحجم النص.",
+    "theme": "السمة",
+    "themeHint": "نهاري = فاتح · ليلي = داكن.",
+    "day": "نهاري",
+    "night": "ليلي",
+    "switchToDay": "التبديل إلى النهاري",
+    "switchToNight": "التبديل إلى الليلي",
+    "textSizeLabel": "حجم النص",
+    "textSizeHint": "يُطبق على التطبيق بالكامل.",
+    "textSize": {
+      "sm": "صغير",
+      "md": "افتراضي",
+      "lg": "كبير"
+    }
   }
 }

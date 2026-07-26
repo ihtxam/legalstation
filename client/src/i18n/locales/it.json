@@ -354,7 +354,8 @@
     "tabRoles": "Ruoli",
     "tabPayments": "Pagamenti",
     "storageTitle": "Archiviazione documenti",
-    "storageHint": "Quota di archiviazione dello studio. Contatta Cliavo per aumentarla."
+    "storageHint": "Quota di archiviazione dello studio. Contatta Cliavo per aumentarla.",
+    "tabAppearance": "Aspetto"
   },
   "notFound": {
     "title": "Pagina non trovata",
@@ -1322,5 +1323,22 @@
   },
   "announcements": {
     "dismiss": "Ho capito"
+  },
+  "appearance": {
+    "heading": "Aspetto",
+    "intro": "Scegli modalità giorno/notte e dimensione del testo.",
+    "theme": "Tema",
+    "themeHint": "Giorno = chiaro · Notte = scuro.",
+    "day": "Giorno",
+    "night": "Notte",
+    "switchToDay": "Passa al giorno",
+    "switchToNight": "Passa alla notte",
+    "textSizeLabel": "Dimensione testo",
+    "textSizeHint": "Si applica a tutta l’app.",
+    "textSize": {
+      "sm": "Piccolo",
+      "md": "Predefinito",
+      "lg": "Grande"
+    }
   }
 }

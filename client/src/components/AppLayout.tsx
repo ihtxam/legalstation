@@ -32,6 +32,7 @@ import { Separator } from "@/components/ui/separator";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
+import AppearanceControls from "@/components/AppearanceControls";
 
 interface AppLayoutProps {
   children: React.ReactNode;
@@ -237,7 +238,7 @@ export default function AppLayout({ children, title, breadcrumb }: AppLayoutProp
       {/* Desktop / large tablet persistent sidebar */}
       <aside
         className={cn(
-          "hidden lg:flex flex-col bg-[var(--color-navy)] text-white transition-[width] duration-300 ease-snappy shrink-0 h-full",
+          "hidden lg:flex flex-col bg-[var(--color-sidebar)] text-[var(--color-sidebar-foreground)] transition-[width] duration-300 ease-snappy shrink-0 h-full",
           desktopExpanded ? "w-64" : "w-[4.5rem]"
         )}
       >
@@ -260,7 +261,7 @@ export default function AppLayout({ children, title, breadcrumb }: AppLayoutProp
         />
         <aside
           className={cn(
-            "absolute inset-y-0 start-0 w-[min(18rem,86vw)] max-w-full flex flex-col bg-[var(--color-navy)] text-white shadow-xl transition-transform duration-300 ease-snappy pt-[env(safe-area-inset-top)]",
+            "absolute inset-y-0 start-0 w-[min(18rem,86vw)] max-w-full flex flex-col bg-[var(--color-sidebar)] text-[var(--color-sidebar-foreground)] shadow-xl transition-transform duration-300 ease-snappy pt-[env(safe-area-inset-top)]",
             mobileOpen ? "translate-x-0" : "-translate-x-full"
           )}
         >
@@ -316,6 +317,7 @@ export default function AppLayout({ children, title, breadcrumb }: AppLayoutProp
             ) : null}
           </div>
 
+          <AppearanceControls variant="bar" className="shrink-0" />
           <Link
             href={ticketUnread > 0 ? "/support" : "/messages"}
             className="relative p-2 text-muted-foreground hover:text-foreground rounded-lg hover:bg-accent transition-colors shrink-0"

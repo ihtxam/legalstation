@@ -463,7 +463,7 @@ export const firmRouter = router({
         logoUrl: z.string().nullable().optional(),
         primaryColor: z
           .string()
-          .regex(/^#[0-9A-Fa-f]{6}$/, "Primary color must be a hex value like #7C3AED")
+          .regex(/^#[0-9A-Fa-f]{6}$/, "Primary color must be a hex value like #00BFA6")
           .optional(),
         secondaryColor: z
           .string()

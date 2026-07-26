@@ -354,7 +354,8 @@
     "tabRoles": "Roles",
     "tabPayments": "Payments",
     "storageTitle": "Document storage",
-    "storageHint": "Firm-wide document storage quota. Contact Cliavo to upgrade beyond your current limit."
+    "storageHint": "Firm-wide document storage quota. Contact Cliavo to upgrade beyond your current limit.",
+    "tabAppearance": "Appearance"
   },
   "notFound": {
     "title": "Page Not Found",
@@ -1322,5 +1323,22 @@
   },
   "announcements": {
     "dismiss": "Got it"
+  },
+  "appearance": {
+    "heading": "Appearance",
+    "intro": "Choose day or night mode and adjust text size for comfortable reading.",
+    "theme": "Theme",
+    "themeHint": "Day uses a light background; night uses a dark background.",
+    "day": "Day",
+    "night": "Night",
+    "switchToDay": "Switch to day mode",
+    "switchToNight": "Switch to night mode",
+    "textSizeLabel": "Text size",
+    "textSizeHint": "Applies across the app. Default is slightly compact.",
+    "textSize": {
+      "sm": "Small",
+      "md": "Default",
+      "lg": "Large"
+    }
   }
 }

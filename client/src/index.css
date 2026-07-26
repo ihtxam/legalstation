@@ -9,18 +9,18 @@
 
   /*
    * Cliavo brand palette
-   * Deep Purple #7C3AED · Teal #00BFA6 · Slate Gray #64748B · White #FFFFFF
+   * Teal #00BFA6 · Slate Gray #64748B · White #FFFFFF
    */
   --color-background: #FFFFFF;
-  --color-foreground: #1E293B;
+  --color-foreground: #334155;
   --color-card: #FFFFFF;
-  --color-card-foreground: #1E293B;
+  --color-card-foreground: #334155;
   --color-popover: #FFFFFF;
-  --color-popover-foreground: #1E293B;
-  --color-primary: #7C3AED;
+  --color-popover-foreground: #334155;
+  --color-primary: #00BFA6;
   --color-primary-foreground: #FFFFFF;
   --color-secondary: #F1F5F9;
-  --color-secondary-foreground: #1E293B;
+  --color-secondary-foreground: #334155;
   --color-muted: #F8FAFC;
   --color-muted-foreground: #64748B;
   --color-accent: #00BFA6;
@@ -29,20 +29,20 @@
   --color-destructive-foreground: #FFFFFF;
   --color-border: #E2E8F0;
   --color-input: #E2E8F0;
-  --color-ring: #7C3AED;
-  --color-chart-1: #7C3AED;
-  --color-chart-2: #00BFA6;
-  --color-chart-3: #64748B;
-  --color-chart-4: #A78BFA;
-  --color-chart-5: #2DD4BF;
-  --color-sidebar: #7C3AED;
+  --color-ring: #00BFA6;
+  --color-chart-1: #00BFA6;
+  --color-chart-2: #64748B;
+  --color-chart-3: #14D4BC;
+  --color-chart-4: #475569;
+  --color-chart-5: #94A3B8;
+  --color-sidebar: #00BFA6;
   --color-sidebar-foreground: #FFFFFF;
-  --color-sidebar-primary: #00BFA6;
-  --color-sidebar-primary-foreground: #FFFFFF;
-  --color-sidebar-accent: #6D28D9;
+  --color-sidebar-primary: #FFFFFF;
+  --color-sidebar-primary-foreground: #00BFA6;
+  --color-sidebar-accent: #00A894;
   --color-sidebar-accent-foreground: #FFFFFF;
-  --color-sidebar-border: #6D28D9;
-  --color-sidebar-ring: #00BFA6;
+  --color-sidebar-border: #00A894;
+  --color-sidebar-ring: #FFFFFF;
 
   --radius-sm: 0.25rem;
   --radius-md: 0.375rem;
@@ -51,27 +51,27 @@
   --radius: 0.5rem;
 
   /* Legacy component tokens → brand mapping */
-  --color-navy: #7C3AED;
-  --color-navy-light: #6D28D9;
+  --color-navy: #00BFA6;
+  --color-navy-light: #00A894;
   --color-gold: #00BFA6;
-  --color-gold-light: #2DD4BF;
+  --color-gold-light: #5EEAD4;
   --color-success: #00BFA6;
   --color-warning: #D97706;
   --color-danger: #DC2626;
-  --color-info: #7C3AED;
+  --color-info: #64748B;
 }
 
 .dark {
   --color-background: #0F172A;
-  --color-foreground: #F8FAFC;
+  --color-foreground: #F1F5F9;
   --color-card: #1E293B;
-  --color-card-foreground: #F8FAFC;
+  --color-card-foreground: #F1F5F9;
   --color-popover: #1E293B;
-  --color-popover-foreground: #F8FAFC;
-  --color-primary: #A78BFA;
-  --color-primary-foreground: #0F172A;
+  --color-popover-foreground: #F1F5F9;
+  --color-primary: #00BFA6;
+  --color-primary-foreground: #042F2E;
   --color-secondary: #1E293B;
-  --color-secondary-foreground: #F8FAFC;
+  --color-secondary-foreground: #F1F5F9;
   --color-muted: #1E293B;
   --color-muted-foreground: #94A3B8;
   --color-accent: #00BFA6;
@@ -80,15 +80,34 @@
   --color-destructive-foreground: #FFFFFF;
   --color-border: #334155;
   --color-input: #334155;
-  --color-ring: #A78BFA;
-  --color-sidebar: #5B21B6;
-  --color-sidebar-foreground: #FFFFFF;
+  --color-ring: #00BFA6;
+  --color-sidebar: #0F172A;
+  --color-sidebar-foreground: #F1F5F9;
   --color-sidebar-primary: #00BFA6;
   --color-sidebar-primary-foreground: #FFFFFF;
-  --color-sidebar-accent: #6D28D9;
-  --color-sidebar-accent-foreground: #FFFFFF;
-  --color-sidebar-border: #6D28D9;
+  --color-sidebar-accent: #1E293B;
+  --color-sidebar-accent-foreground: #F1F5F9;
+  --color-sidebar-border: #334155;
   --color-sidebar-ring: #00BFA6;
+
+  --color-navy: #00BFA6;
+  --color-navy-light: #14D4BC;
+  --color-gold: #00BFA6;
+  --color-gold-light: #5EEAD4;
+}
+
+/* Slightly smaller default type; user-adjustable via data-text-size */
+html {
+  font-size: 14px;
+}
+html[data-text-size="sm"] {
+  font-size: 12.5px;
+}
+html[data-text-size="md"] {
+  font-size: 14px;
+}
+html[data-text-size="lg"] {
+  font-size: 16px;
 }
 
 @layer base {
@@ -96,13 +115,16 @@
     @apply border-border outline-ring/50;
   }
   body {
-    @apply bg-background text-foreground font-sans antialiased;
+    @apply bg-background text-foreground font-sans antialiased text-sm;
     font-feature-settings: "ss01";
   }
   h1, h2, h3 {
     letter-spacing: -0.02em;
     font-family: var(--font-sans);
   }
+  h1 { @apply text-2xl font-semibold; }
+  h2 { @apply text-xl font-semibold; }
+  h3 { @apply text-base font-semibold; }
   button:active {
     transform: scale(0.97);
     transition: transform 160ms cubic-bezier(0.23, 1, 0.32, 1);
@@ -125,20 +147,17 @@
     min-width: 0;
     min-height: 0;
   }
-  /* Status badge utilities */
   .status-open { @apply bg-emerald-50 text-emerald-700 border border-emerald-200; }
   .status-pending { @apply bg-amber-50 text-amber-700 border border-amber-200; }
   .status-closed { @apply bg-slate-100 text-slate-600 border border-slate-200; }
   .status-archived { @apply bg-slate-50 text-slate-500 border border-slate-200; }
   .status-draft { @apply bg-slate-100 text-slate-600 border border-slate-200; }
-  .status-sent { @apply bg-violet-50 text-violet-700 border border-violet-200; }
+  .status-sent { @apply bg-teal-50 text-teal-700 border border-teal-200; }
   .status-paid { @apply bg-emerald-50 text-emerald-700 border border-emerald-200; }
   .status-overdue { @apply bg-red-50 text-red-700 border border-red-200; }
   .status-cancelled { @apply bg-slate-100 text-slate-500 border border-slate-200; }
-  /* Ease tokens */
   .ease-snappy { transition-timing-function: cubic-bezier(0.23, 1, 0.32, 1); }
 
-  /* Responsive page helpers */
   .page-shell {
     @apply p-4 sm:p-5 md:p-6 space-y-4 sm:space-y-5 mx-auto w-full;
   }
@@ -153,13 +172,11 @@
   }
 }
 
-/* Prevent accidental horizontal page scroll on small devices */
 html, body, #root {
   max-width: 100%;
   overflow-x: clip;
 }
 
-/* RTL polish */
 html[dir="rtl"] .text-left {
   text-align: right;
 }

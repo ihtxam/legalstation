@@ -10,6 +10,18 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+    <script>
+      (function () {
+        try {
+          var theme = localStorage.getItem("cliavo_theme") || localStorage.getItem("theme");
+          if (theme === "dark") document.documentElement.classList.add("dark");
+          var size = localStorage.getItem("cliavo_text_size") || "md";
+          if (size === "sm" || size === "md" || size === "lg") {
+            document.documentElement.dataset.textSize = size;
+          }
+        } catch (e) {}
+      })();
+    </script>
   </head>
 
   <body>

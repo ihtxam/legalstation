@@ -354,7 +354,8 @@
     "tabRoles": "Rollen",
     "tabPayments": "Zahlungen",
     "storageTitle": "Dokumentenspeicher",
-    "storageHint": "Speicherquota für Kanzleidokumente. Kontaktieren Sie Cliavo für ein Upgrade."
+    "storageHint": "Speicherquota für Kanzleidokumente. Kontaktieren Sie Cliavo für ein Upgrade.",
+    "tabAppearance": "Darstellung"
   },
   "notFound": {
     "title": "Seite nicht gefunden",
@@ -1322,5 +1323,22 @@
   },
   "announcements": {
     "dismiss": "Verstanden"
+  },
+  "appearance": {
+    "heading": "Darstellung",
+    "intro": "Tag-/Nachtmodus und Textgröße wählen.",
+    "theme": "Thema",
+    "themeHint": "Tag = hell · Nacht = dunkel.",
+    "day": "Tag",
+    "night": "Nacht",
+    "switchToDay": "Zum Tagmodus",
+    "switchToNight": "Zum Nachtmodus",
+    "textSizeLabel": "Textgröße",
+    "textSizeHint": "Gilt für die gesamte App.",
+    "textSize": {
+      "sm": "Klein",
+      "md": "Standard",
+      "lg": "Groß"
+    }
   }
 }

@@ -354,7 +354,8 @@
     "tabRoles": "Rôles",
     "tabPayments": "Paiements",
     "storageTitle": "Stockage des documents",
-    "storageHint": "Quota de stockage pour les documents du cabinet. Contactez Cliavo pour l'augmenter."
+    "storageHint": "Quota de stockage pour les documents du cabinet. Contactez Cliavo pour l'augmenter.",
+    "tabAppearance": "Apparence"
   },
   "notFound": {
     "title": "Page introuvable",
@@ -1322,5 +1323,22 @@
   },
   "announcements": {
     "dismiss": "Compris"
+  },
+  "appearance": {
+    "heading": "Apparence",
+    "intro": "Choisissez le mode jour/nuit et la taille du texte.",
+    "theme": "Thème",
+    "themeHint": "Jour = fond clair · Nuit = fond sombre.",
+    "day": "Jour",
+    "night": "Nuit",
+    "switchToDay": "Passer en mode jour",
+    "switchToNight": "Passer en mode nuit",
+    "textSizeLabel": "Taille du texte",
+    "textSizeHint": "S’applique à toute l’application.",
+    "textSize": {
+      "sm": "Petit",
+      "md": "Par défaut",
+      "lg": "Grand"
+    }
   }
 }
