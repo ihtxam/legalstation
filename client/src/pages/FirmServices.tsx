@@ -15,7 +15,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
-import { BriefcaseBusiness, Plus, Check, X, UserPlus } from "lucide-react";
+import { BriefcaseBusiness, Plus, Check, X, UserPlus, Pencil } from "lucide-react";
 import { useLocation } from "wouter";
 
 type ServiceForm = {
@@ -38,6 +38,18 @@ const emptyService: ServiceForm = {
   isPublic: true,
 };
 
+type ServiceRow = {
+  id: number;
+  name: string;
+  description: string | null;
+  category: ServiceForm["category"];
+  price: string;
+  estimatedHours: string;
+  deliveryNotes: string | null;
+  isActive: boolean;
+  isPublic: boolean;
+};
+
 export default function FirmServicesPage() {
   const { t } = useTranslation();
   const { isAuthenticated, loading } = useAuth();
@@ -55,15 +67,15 @@ export default function FirmServicesPage() {
   const createSvc = trpc.ondemandServices.createService.useMutation({
     onSuccess: async () => {
       toast.success(t("services.created"));
-      setOpen(false);
-      setForm(emptyService);
+      closeDialog();
       await services.refetch();
     },
     onError: (e) => toast.error(e.message),
   });
   const updateSvc = trpc.ondemandServices.updateService.useMutation({
-    onSuccess: async () => {
+    onSuccess: async (_data, variables) => {
       toast.success(t("services.updated"));
+      if (variables.name != null) closeDialog();
       await services.refetch();
     },
     onError: (e) => toast.error(e.message),
@@ -106,6 +118,7 @@ export default function FirmServicesPage() {
   });
 
   const [open, setOpen] = useState(false);
+  const [editingId, setEditingId] = useState<number | null>(null);
   const [form, setForm] = useState<ServiceForm>(emptyService);
   const [acceptFor, setAcceptFor] = useState<number | null>(null);
   const [lawyerId, setLawyerId] = useState<string>("");
@@ -118,6 +131,55 @@ export default function FirmServicesPage() {
   const lawyers = (members.data || []).filter((m) =>
     ["admin", "subadmin", "lawyer"].includes(m.member.firmRole)
   );
+  const saving = createSvc.isPending || (updateSvc.isPending && editingId != null);
+
+  function closeDialog() {
+    setOpen(false);
+    setEditingId(null);
+    setForm(emptyService);
+  }
+
+  function openCreate() {
+    setEditingId(null);
+    setForm(emptyService);
+    setOpen(true);
+  }
+
+  function openEdit(svc: ServiceRow) {
+    setEditingId(svc.id);
+    setForm({
+      name: svc.name,
+      description: svc.description || "",
+      category: svc.category,
+      price: String(Number(svc.price) || 0),
+      estimatedHours: String(Number(svc.estimatedHours) || 0),
+      deliveryNotes: svc.deliveryNotes || "",
+      isPublic: svc.isPublic,
+    });
+    setOpen(true);
+  }
+
+  function saveService() {
+    const payload = {
+      name: form.name.trim(),
+      description: form.description.trim() || undefined,
+      category: form.category,
+      price: parseFloat(form.price) || 0,
+      estimatedHours: parseFloat(form.estimatedHours) || 1,
+      deliveryNotes: form.deliveryNotes.trim() || undefined,
+      isPublic: form.isPublic,
+    };
+    if (editingId != null) {
+      updateSvc.mutate({
+        id: editingId,
+        ...payload,
+        description: form.description.trim() || null,
+        deliveryNotes: form.deliveryNotes.trim() || null,
+      });
+    } else {
+      createSvc.mutate(payload);
+    }
+  }
 
   if (loading || !firmData) {
     return (
@@ -141,7 +203,7 @@ export default function FirmServicesPage() {
             <p className="text-sm text-muted-foreground mt-1">{t("services.firmHint")}</p>
           </div>
           {canManage && (
-            <Button onClick={() => setOpen(true)}>
+            <Button onClick={openCreate}>
               <Plus className="w-4 h-4 me-1.5" />
               {t("services.create")}
             </Button>
@@ -251,18 +313,24 @@ export default function FirmServicesPage() {
                         {t(`services.cat.${svc.category}`)}
                       </p>
                     </div>
-                    <div className="flex gap-2">
+                    <div className="flex flex-wrap gap-2 items-center">
                       <Badge variant={svc.isActive ? "default" : "secondary"}>
                         {svc.isActive ? t("common.active") : t("common.inactive")}
                       </Badge>
                       {canManage && (
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => updateSvc.mutate({ id: svc.id, isActive: !svc.isActive })}
-                        >
-                          {svc.isActive ? t("packages.deactivate") : t("packages.activate")}
-                        </Button>
+                        <>
+                          <Button size="sm" variant="outline" onClick={() => openEdit(svc)}>
+                            <Pencil className="w-3.5 h-3.5 me-1.5" />
+                            {t("common.edit")}
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => updateSvc.mutate({ id: svc.id, isActive: !svc.isActive })}
+                          >
+                            {svc.isActive ? t("packages.deactivate") : t("packages.activate")}
+                          </Button>
+                        </>
                       )}
                     </div>
                   </div>
@@ -276,10 +344,18 @@ export default function FirmServicesPage() {
         </Tabs>
       </div>
 
-      <Dialog open={open} onOpenChange={setOpen}>
+      <Dialog
+        open={open}
+        onOpenChange={(v) => {
+          if (!v) closeDialog();
+          else setOpen(true);
+        }}
+      >
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>{t("services.create")}</DialogTitle>
+            <DialogTitle>
+              {editingId != null ? t("services.edit") : t("services.create")}
+            </DialogTitle>
           </DialogHeader>
           <div className="space-y-3">
             <div>
@@ -360,24 +436,11 @@ export default function FirmServicesPage() {
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setOpen(false)}>
+            <Button variant="outline" onClick={closeDialog}>
               {t("common.cancel")}
             </Button>
-            <Button
-              disabled={!form.name.trim() || createSvc.isPending}
-              onClick={() =>
-                createSvc.mutate({
-                  name: form.name.trim(),
-                  description: form.description.trim() || undefined,
-                  category: form.category,
-                  price: parseFloat(form.price) || 0,
-                  estimatedHours: parseFloat(form.estimatedHours) || 1,
-                  deliveryNotes: form.deliveryNotes.trim() || undefined,
-                  isPublic: form.isPublic,
-                })
-              }
-            >
-              {createSvc.isPending ? t("common.loading") : t("common.save")}
+            <Button disabled={!form.name.trim() || saving} onClick={saveService}>
+              {saving ? t("common.loading") : t("common.save")}
             </Button>
           </DialogFooter>
         </DialogContent>

@@ -1267,7 +1267,8 @@
       "employment": "Employment",
       "corporate": "Corporate",
       "other": "Other"
-    }
+    },
+    "edit": "Edit service"
   },
   "adyen": {
     "title": "Adyen payment gateway",
