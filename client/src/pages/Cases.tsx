@@ -144,7 +144,7 @@ export default function CasesPage() {
           <DialogHeader><DialogTitle>{t("cases.new")}</DialogTitle></DialogHeader>
           <div className="space-y-4 py-2">
             <div><Label>{t("cases.formTitle")} <span className="text-destructive">*</span></Label><Input className="mt-1.5" value={form.title} onChange={e => setForm(f => ({ ...f, title: e.target.value }))} /></div>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div><Label>{t("cases.formReference")}</Label><Input className="mt-1.5" placeholder="e.g. 2024-001" value={form.referenceNumber} onChange={e => setForm(f => ({ ...f, referenceNumber: e.target.value }))} /></div>
               <div>
                 <Label>{t("cases.formType")}</Label>
