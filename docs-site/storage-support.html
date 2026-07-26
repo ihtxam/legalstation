@@ -3,28 +3,60 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Storage & support · Cliavo Help</title>
+  <title>Support &amp; storage · Cliavo Help</title>
   <link rel="stylesheet" href="./styles.css" />
 </head>
 <body>
   <div class="shell">
-    <a class="back" href="./index.html">← Help Center</a>
+    <header class="top">
+      <div class="brand">Cliavo<span>Help Center</span></div>
+      <div class="search">
+        <input type="search" id="searchInput" placeholder="Search the docs…" autocomplete="off" />
+        <div class="search-results" id="searchResults" hidden></div>
+      </div>
+      <nav><a href="./index.html">All topics</a></nav>
+    </header>
+
     <article class="article">
-      <h1>Storage, announcements & support</h1>
-      <h2>Storage quota</h2>
-      <p>Each firm has a document storage limit (default <strong>10 GB</strong>; common presets 2 / 10 / 50 GB). Usage appears in <strong>Settings → Firm</strong>. Uploads are blocked when the quota is exceeded — contact Cliavo to upgrade.</p>
-      <h2>Platform announcements</h2>
-      <p>Cliavo may show popup announcements in your workspace (new features, maintenance, unpaid bills). Dismiss them after reading; critical messages may reappear until resolved.</p>
-      <h2>Support tickets</h2>
-      <p>Firm admins can open tickets from <strong>Support</strong> (bug reports, issues, screenshots, sensitivity). Each ticket gets a number (e.g. <code>TKT-2026-00001</code>). Statuses include open, processing, under review, responded, resolved, and closed. Reply in the same thread; the bell icon shows updates. Resolved tickets auto-close after 7 days without a firm reply. Monthly ticket limits are set by Cliavo.</p>
-      <h2>Contact support</h2>
+      <h1>Support &amp; storage</h1>
+      <p>
+        How to reach Cliavo when something's unclear, how support tickets work, what platform
+        announcements are, and how document storage limits behave.
+      </p>
+
+      <h2 id="tickets">Support tickets</h2>
       <ul>
-        <li>In-app: open <strong>Support</strong> in the sidebar.</li>
+        <li>Firm admins open tickets under <strong>Support</strong> with a subject, description, and a <strong>sensitivity</strong> level (low → critical).</li>
+        <li>Attach up to <strong>5 files per ticket</strong> (documents or screenshots, max 1&nbsp;MB each) to show exactly what you see.</li>
+        <li>Tickets get a number like <code>TKT-2026-00042</code> and a status: <em>open → processing → under review → responded → resolved → closed</em>.</li>
+        <li>Replies from Cliavo appear in the ticket thread and are flagged unread in your sidebar until you view them; you can reply back with more details or attachments.</li>
+        <li>Resolved tickets close automatically after a few days if you don't reply; there is a fair-use monthly ticket limit per firm.</li>
+      </ul>
+
+      <h2 id="announcements">Platform announcements</h2>
+      <ul>
+        <li>Cliavo occasionally posts announcements (maintenance, new features) that appear as a banner/popup in your workspace.</li>
+        <li>Severities: info, warning, critical. Audience is either firm admins only or all members.</li>
+        <li>Click <strong>Got it</strong> to dismiss — an announcement won't reappear once dismissed, and announcements published before your account existed are never shown to you.</li>
+      </ul>
+
+      <h2 id="storage">Storage quotas</h2>
+      <ul>
+        <li>Case document storage counts against your firm's <strong>storage quota</strong> (set by your plan).</li>
+        <li>Per-file size and file-type rules are configurable — see <a href="./settings.html#uploads">Settings → Upload policy</a>.</li>
+        <li>When the quota is reached, uploads fail with a clear message; delete old files or ask support for a higher quota.</li>
+        <li>Support-ticket attachments do not count against firm storage.</li>
+      </ul>
+
+      <h2 id="contact">Other ways to reach us</h2>
+      <ul>
         <li>Email: <a href="mailto:support@cliavo.com">support@cliavo.com</a></li>
-        <li>Docs: this Help Center at <code>docs.cliavo.com</code> (also available at <code>/help</code> on your Cliavo host).</li>
+        <li>This help center: <code>cliavo.com/help</code> — use the search bar at the top of every page.</li>
       </ul>
     </article>
-    <footer class="footer">support@cliavo.com</footer>
+
+    <footer class="footer"><a href="./index.html">← Help Center</a> · support@cliavo.com</footer>
   </div>
+  <script src="./search.js" defer></script>
 </body>
 </html>

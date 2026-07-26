@@ -3,29 +3,62 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Agenda & calendar · Cliavo Help</title>
+  <title>Agenda &amp; calendar · Cliavo Help</title>
   <link rel="stylesheet" href="./styles.css" />
 </head>
 <body>
   <div class="shell">
-    <a class="back" href="./index.html">← Help Center</a>
+    <header class="top">
+      <div class="brand">Cliavo<span>Help Center</span></div>
+      <div class="search">
+        <input type="search" id="searchInput" placeholder="Search the docs…" autocomplete="off" />
+        <div class="search-results" id="searchResults" hidden></div>
+      </div>
+      <nav><a href="./index.html">All topics</a></nav>
+    </header>
+
     <article class="article">
-      <h1>Agenda & calendar sync</h1>
-      <p>The Agenda shows deadlines, tasks, client activities, and personal events.</p>
-      <h2>Connect an external calendar</h2>
-      <ol>
-        <li>Open <strong>Settings → Calendar</strong>.</li>
-        <li>Connect Google or Outlook (OAuth). Platform credentials are configured once by Cliavo superadmin for all firms.</li>
-        <li>Or connect iCloud with an Apple ID + app-specific password.</li>
-        <li>Choose two-way, push-only, or pull-only sync, then sync.</li>
-      </ol>
-      <h2>What syncs</h2>
+      <h1>Agenda &amp; calendar</h1>
+      <p>
+        One agenda for everything with a date on it: case deadlines, tasks that are due, client
+        meetings and reminders, your own personal events — and, if you connect an external
+        calendar, your Google / Outlook / iCloud events too.
+      </p>
+
+      <h2 id="agenda">What appears in your agenda</h2>
       <ul>
-        <li><strong>Out:</strong> case deadlines, tasks, meetings, personal agenda events.</li>
-        <li><strong>In:</strong> events from the connected calendar appear on Agenda (duplicates avoided when Cliavo already pushed them).</li>
+        <li><strong>Case deadlines</strong> — from the deadline field on cases.</li>
+        <li><strong>Task due dates</strong> — case tasks assigned to you.</li>
+        <li><strong>Client activities</strong> — meetings, to-dos, and reminders with dates.</li>
+        <li><strong>Personal events</strong> — created directly in the calendar with title, location, start/end, or all-day.</li>
+        <li><strong>Imported events</strong> — pulled from connected external calendars.</li>
       </ul>
+
+      <h2 id="providers">Connecting external calendars</h2>
+      <p>Each user can connect their own calendars under Calendar → Connections:</p>
+      <table>
+        <tr><th>Provider</th><th>How it connects</th></tr>
+        <tr><td>Google Calendar</td><td>OAuth — sign in with Google and grant calendar access.</td></tr>
+        <tr><td>Microsoft / Outlook</td><td>OAuth — Microsoft 365 or Outlook.com account.</td></tr>
+        <tr><td>Apple iCloud</td><td>CalDAV with your Apple ID and an <em>app-specific password</em> (create one at appleid.apple.com).</td></tr>
+      </table>
+
+      <h2 id="sync">Two-way sync</h2>
+      <ul>
+        <li>Choose the sync direction per connection: <strong>both ways</strong>, <strong>push only</strong> (Cliavo → external), or <strong>pull only</strong> (external → Cliavo).</li>
+        <li>Cliavo pushes deadlines, meetings, and personal events to the external calendar, and imports external events so your agenda shows real availability.</li>
+        <li>Sync runs on a schedule and can be triggered manually with <strong>Sync now</strong>. The connection shows the last sync time and any error.</li>
+        <li>Access tokens are stored encrypted; disconnecting removes the link immediately.</li>
+      </ul>
+
+      <div class="tip">
+        Tip: lawyers who live in Outlook can set "push only" so court deadlines appear in Outlook,
+        without their private appointments being imported into the workspace.
+      </div>
     </article>
-    <footer class="footer">support@cliavo.com</footer>
+
+    <footer class="footer"><a href="./index.html">← Help Center</a> · support@cliavo.com</footer>
   </div>
+  <script src="./search.js" defer></script>
 </body>
 </html>

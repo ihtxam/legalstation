@@ -3,24 +3,78 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Packages & services · Cliavo Help</title>
+  <title>Packages &amp; services · Cliavo Help</title>
   <link rel="stylesheet" href="./styles.css" />
 </head>
 <body>
   <div class="shell">
-    <a class="back" href="./index.html">← Help Center</a>
+    <header class="top">
+      <div class="brand">Cliavo<span>Help Center</span></div>
+      <div class="search">
+        <input type="search" id="searchInput" placeholder="Search the docs…" autocomplete="off" />
+        <div class="search-results" id="searchResults" hidden></div>
+      </div>
+      <nav><a href="./index.html">All topics</a></nav>
+    </header>
+
     <article class="article">
-      <h1>Client packages & on-demand services</h1>
-      <h2>Subscription packages</h2>
-      <p>Firm admins define packages (quotas, consultation hours, features, tier labels) under <strong>Packages</strong>. Clients can subscribe via the public subscribe page for your firm.</p>
-      <h2>On-demand services</h2>
+      <h1>Packages &amp; services (Upselling)</h1>
+      <p>
+        Two recurring-revenue tools live under <strong>Upselling</strong>: subscription
+        <strong>packages</strong> (legal protection plans billed monthly/yearly) and an
+        <strong>on-demand services</strong> catalog (fixed-price legal products with a full order
+        workflow).
+      </p>
+
+      <h2 id="packages">Subscription packages</h2>
       <ul>
-        <li>Publish a service catalog under <strong>Services</strong>.</li>
-        <li>Clients add items to a cart and check out.</li>
-        <li>The firm accepts the order; Cliavo can create a case and assign a lawyer.</li>
+        <li>Each package has a name, description, feature list, and a <strong>highlight label</strong> (e.g. "Most popular").</li>
+        <li><strong>Pricing per interval</strong>: monthly, 6-month, and yearly prices, plus a minimum commitment (e.g. 12 months).</li>
+        <li><strong>Entitlements</strong>: cases per period, consultation hours per period, and included fixed-work hours.</li>
+        <li>Restrict which <strong>case types</strong> a package covers (e.g. only employment and tenancy law).</li>
+        <li>Toggle <strong>active</strong> (sellable) and <strong>public</strong> (visible on your website) separately, and order them with drag handles.</li>
       </ul>
+
+      <h2 id="subscribers">Subscribers</h2>
+      <ul>
+        <li>Clients subscribe from your public website (the package block links to registration) — the client record, portal account, and subscription are created together.</li>
+        <li>Subscriptions track status (<em>active, past due, cancelled, expired</em>), the current billing period, and the commitment end date.</li>
+        <li>Subscribed clients can <strong>change plan</strong> from their portal; entitlement usage (cases, hours) is visible per period.</li>
+        <li>When a subscriber opens a case, they complete an <a href="./cases-clients.html#intake">intake form</a> so the lawyer starts with context.</li>
+      </ul>
+
+      <h2 id="services">On-demand services catalog</h2>
+      <ul>
+        <li>Each service has a name, description, <strong>category</strong> (advice, contract, documents, employment, corporate, other), and a fixed <strong>price</strong>.</li>
+        <li><strong>Fulfilment type</strong>: <em>document</em> (you deliver files) or <em>consultation</em> (you deliver a meeting).</li>
+        <li>Set estimated effort hours, delivery notes, and the default case type used if the order becomes a case.</li>
+        <li>Like packages: active/public switches and manual ordering; public services appear automatically in the website <strong>Services block</strong>.</li>
+      </ul>
+
+      <h2 id="orders">The order lifecycle</h2>
+      <p>Clients buy services from their portal (or from your website after registering):</p>
+      <ol>
+        <li><strong>Cart &amp; checkout</strong> — the client picks services, adds a brief per item, and checks out. With Stripe/Adyen connected they pay online; otherwise the firm can mark the order paid manually.</li>
+        <li><strong>Intake</strong> — after payment the client submits the intake description so your team knows exactly what's needed.</li>
+        <li><strong>Acceptance</strong> — the firm reviews and <strong>accepts</strong> (optionally assigning a lawyer, and creating a linked case) or <strong>rejects</strong> with a reason.</li>
+        <li><strong>Delivery</strong> — the lawyer uploads deliverables (documents) or holds the consultation, with remarks for the client.</li>
+        <li><strong>Revisions</strong> — the client can request changes within the included revision rounds (default 2); each round is tracked.</li>
+        <li><strong>Completion</strong> — the order is completed and locked; every step is recorded in the order's event timeline.</li>
+      </ol>
+      <p>
+        Orders have human-readable numbers (e.g. <code>ORD-2026-00012</code>) and appear in the firm's
+        order list with status filters, so nothing gets lost.
+      </p>
+
+      <h2 id="currency">Currencies</h2>
+      <p>
+        Packages and services are priced in your firm's currency; orders carry their currency
+        end-to-end. See <a href="./billing.html#currencies">multi-currency billing</a>.
+      </p>
     </article>
-    <footer class="footer">support@cliavo.com</footer>
+
+    <footer class="footer"><a href="./index.html">← Help Center</a> · support@cliavo.com</footer>
   </div>
+  <script src="./search.js" defer></script>
 </body>
 </html>

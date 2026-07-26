@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Cliavo Help Center</title>
-  <meta name="description" content="Self-support documentation for Cliavo law firm platform." />
+  <meta name="description" content="Documentation for the Cliavo law firm platform: cases, clients, billing, CMS website, packages, services, security, and more." />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
@@ -13,62 +13,89 @@
 <body>
   <div class="shell">
     <header class="top">
-      <div class="brand">Cliavo<span>Help Center · docs.cliavo.com</span></div>
+      <div class="brand">Cliavo<span>Help Center</span></div>
+      <div class="search">
+        <input type="search" id="searchInput" placeholder="Search the docs… (e.g. invoice, 2FA, custom domain)" autocomplete="off" />
+        <div class="search-results" id="searchResults" hidden></div>
+      </div>
       <nav>
-        <a href="./getting-started.html">Getting started</a>
-        <a href="./cases-clients.html">Cases & clients</a>
-        <a href="./billing.html">Billing</a>
         <a href="mailto:support@cliavo.com">support@cliavo.com</a>
       </nav>
     </header>
 
     <section class="hero">
-      <h1>Self-support for your firm workspace</h1>
+      <h1>Everything about your Cliavo workspace</h1>
       <p>
-        Guides for the features available in Cliavo today — cases, clients, agenda, packages,
-        on-demand services, payments, calendar sync, security, and more.
+        Detailed guides for every feature — from your first login to running cases, tracking time,
+        invoicing with Swiss QR-bills, publishing your firm website, and selling packages and
+        on-demand services. Use the search bar above to jump straight to an answer.
       </p>
     </section>
 
     <div class="grid">
       <a class="card" href="./getting-started.html">
         <h3>Getting started</h3>
-        <p>Sign in, invite your team, complete firm settings, and start working.</p>
+        <p>Create your workspace, complete the onboarding wizard, sign in, change language, and get your team ready.</p>
+      </a>
+      <a class="card" href="./clients-crm.html">
+        <h3>Clients &amp; CRM</h3>
+        <p>Individual and company clients, activities and reminders, and the leads pipeline from first contact to conversion.</p>
       </a>
       <a class="card" href="./cases-clients.html">
-        <h3>Cases & clients</h3>
-        <p>Matter management, document uploads, tasks, stages, and client portal.</p>
+        <h3>Cases &amp; matters</h3>
+        <p>Open and manage cases, matter stages, tasks and subtasks, notes, assignments, and client intake forms.</p>
       </a>
-      <a class="card" href="./agenda-calendar.html">
-        <h3>Agenda & calendar</h3>
-        <p>Deadlines, meetings, and Google / Outlook / iCloud sync.</p>
+      <a class="card" href="./time-tracking.html">
+        <h3>Time tracking</h3>
+        <p>Live timers, manual entries, editing before submission, hourly rates, and turning time into invoices.</p>
       </a>
       <a class="card" href="./billing.html">
-        <h3>Billing & invoices</h3>
-        <p>Time tracking, invoices, Swiss QR, payment plans, Adyen & Stripe.</p>
+        <h3>Billing &amp; invoices</h3>
+        <p>Invoices, VAT, multi-currency billing, Swiss QR-bills, payment plans with installments, and invoice PDFs.</p>
       </a>
-      <a class="card" href="./packages-services.html">
-        <h3>Packages & services</h3>
-        <p>Client subscription packages and on-demand service checkout.</p>
+      <a class="card" href="./documents-messages.html">
+        <h3>Documents &amp; messages</h3>
+        <p>Uploading and organising case documents, document requests, upload rules, and secure case messaging.</p>
       </a>
-      <a class="card" href="./security.html">
-        <h3>Security & roles</h3>
-        <p>Two-factor authentication, invites, and role permissions.</p>
-      </a>
-      <a class="card" href="./storage-support.html">
-        <h3>Storage & support</h3>
-        <p>Storage quotas, announcements, and how to reach Cliavo support.</p>
+      <a class="card" href="./agenda-calendar.html">
+        <h3>Agenda &amp; calendar</h3>
+        <p>Deadlines, meetings, personal events, and two-way sync with Google, Outlook, and iCloud calendars.</p>
       </a>
       <a class="card" href="./website-leads.html">
-        <h3>Website & leads</h3>
-        <p>Firm CMS pages and lead capture for new inquiries.</p>
+        <h3>Website (CMS) &amp; leads</h3>
+        <p>The page builder with all block types and templates, live preview, SEO, your subdomain and custom domain, and lead capture.</p>
+      </a>
+      <a class="card" href="./packages-services.html">
+        <h3>Packages &amp; services</h3>
+        <p>Subscription packages for clients, the on-demand services catalog, carts, checkout, and the full order lifecycle.</p>
+      </a>
+      <a class="card" href="./client-portal.html">
+        <h3>Client portal</h3>
+        <p>What your clients see: their cases, invoices, documents, messages, subscriptions, and service orders.</p>
+      </a>
+      <a class="card" href="./team-roles.html">
+        <h3>Team &amp; roles</h3>
+        <p>Inviting lawyers, assistants, and sub-admins, what each role can do, and customising role permissions.</p>
+      </a>
+      <a class="card" href="./security.html">
+        <h3>Security</h3>
+        <p>Passwords, two-factor authentication, sessions, tenant isolation, encryption, and backups.</p>
+      </a>
+      <a class="card" href="./settings.html">
+        <h3>Settings</h3>
+        <p>Firm profile, branding, currency and VAT defaults, domains, payment gateways, and upload policies.</p>
+      </a>
+      <a class="card" href="./storage-support.html">
+        <h3>Support &amp; storage</h3>
+        <p>Support tickets with attachments, platform announcements, and storage quotas.</p>
       </a>
     </div>
 
     <footer class="footer">
-      Need a human? Email <a href="mailto:support@cliavo.com">support@cliavo.com</a>.
-      Publish this folder at <strong>docs.cliavo.com</strong> (also served in-app at <code>/help</code>).
+      Need a human? Email <a href="mailto:support@cliavo.com">support@cliavo.com</a> or open a ticket
+      in your workspace under <strong>Support</strong>. This help center is served in-app at <code>/help</code>.
     </footer>
   </div>
+  <script src="./search.js" defer></script>
 </body>
 </html>

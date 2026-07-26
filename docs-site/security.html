@@ -3,26 +3,81 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Security & roles · Cliavo Help</title>
+  <title>Security · Cliavo Help</title>
   <link rel="stylesheet" href="./styles.css" />
 </head>
 <body>
   <div class="shell">
-    <a class="back" href="./index.html">← Help Center</a>
+    <header class="top">
+      <div class="brand">Cliavo<span>Help Center</span></div>
+      <div class="search">
+        <input type="search" id="searchInput" placeholder="Search the docs…" autocomplete="off" />
+        <div class="search-results" id="searchResults" hidden></div>
+      </div>
+      <nav><a href="./index.html">All topics</a></nav>
+    </header>
+
     <article class="article">
-      <h1>Security & roles</h1>
-      <h2>Two-factor authentication (2FA)</h2>
-      <p>Enable TOTP under <strong>Settings → Security</strong>. After password login, users must enter a code from their authenticator app.</p>
-      <h2>Roles</h2>
+      <h1>Security</h1>
+      <p>
+        Law firms handle privileged information, so security is built into every layer: strong
+        authentication, strict tenant isolation, encrypted transport, and audited platform
+        operations.
+      </p>
+
+      <h2 id="passwords">Passwords &amp; sign-in</h2>
       <ul>
-        <li><strong>Admin</strong> — full firm settings, team, CMS, analytics.</li>
-        <li><strong>Subadmin / Lawyer / Assistant / Client</strong> — access controlled by the firm role matrix.</li>
+        <li>Passwords are stored as salted <strong>scrypt hashes</strong> — never in plain text.</li>
+        <li>Minimum length 8 characters; changing your password requires the current one.</li>
+        <li>Accounts provisioned with a temporary password must set a new password on first login.</li>
+        <li>Sessions are signed, HTTP-only cookies; <strong>Sign out</strong> invalidates the session cookie immediately.</li>
+        <li>Superadmin (platform) logins are separated from firm logins — a superadmin cannot enter the firm UI via the normal login and vice versa.</li>
       </ul>
-      <p>Admins can customize the authorization matrix in Settings → Roles.</p>
-      <h2>Invites</h2>
-      <p>Staff and clients join via secure invite links. Temporary passwords may be emailed when a firm is provisioned.</p>
+
+      <h2 id="two-factor">Two-factor authentication (2FA)</h2>
+      <ul>
+        <li>Any user can enable TOTP 2FA under <strong>Settings → Security</strong>: scan the QR code with Google Authenticator, 1Password, or any TOTP app, and confirm with a code.</li>
+        <li>After every password login, a 6-digit code is required. 2FA state is re-challenged on each fresh login — codes are never "remembered" across logins.</li>
+        <li>Disable 2FA requires a valid current code.</li>
+      </ul>
+
+      <h2 id="isolation">Tenant isolation</h2>
+      <ul>
+        <li>Every record (client, case, invoice, document, message…) is bound to your firm. All queries filter by firm membership — another firm can neither read nor write your data.</li>
+        <li>Clients only reach their own records through the portal; internal notes stay internal.</li>
+        <li>Role checks apply on every operation server-side, not just hidden buttons in the UI.</li>
+      </ul>
+
+      <h2 id="encryption">Encryption &amp; infrastructure</h2>
+      <ul>
+        <li>All traffic is <strong>HTTPS</strong> (TLS via Let's Encrypt); HTTP requests are redirected.</li>
+        <li>Calendar OAuth tokens are stored <strong>encrypted at rest</strong>.</li>
+        <li>Hosting is on Swiss infrastructure (data residency CH) with the database on a private network, unreachable from the internet.</li>
+        <li>File downloads are served through authenticated, path-checked routes.</li>
+      </ul>
+
+      <h2 id="auditing">Auditing &amp; platform operations</h2>
+      <ul>
+        <li>Case timelines record every material action per matter.</li>
+        <li>Platform-level administrative actions (firm creation, plan changes, impersonation, announcements) are written to a <strong>superadmin audit log</strong>.</li>
+        <li>Support impersonation is explicit, temporary, audited, and clearly labelled in the UI while active.</li>
+      </ul>
+
+      <h2 id="backups">Backups &amp; availability</h2>
+      <ul>
+        <li>The production database runs with persistent volumes and scheduled dumps; ask support about the current backup and retention policy for your deployment.</li>
+        <li>On-premise/single-tenant deployment with an offline license is available for firms with strict hosting requirements — contact Cliavo.</li>
+      </ul>
+
+      <h2 id="reporting">Reporting a security issue</h2>
+      <p>
+        Found something? Email <a href="mailto:support@cliavo.com">support@cliavo.com</a> with
+        "SECURITY" in the subject. Please do not test against other firms' data.
+      </p>
     </article>
-    <footer class="footer">support@cliavo.com</footer>
+
+    <footer class="footer"><a href="./index.html">← Help Center</a> · support@cliavo.com</footer>
   </div>
+  <script src="./search.js" defer></script>
 </body>
 </html>

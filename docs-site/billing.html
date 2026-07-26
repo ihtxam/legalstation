@@ -3,28 +3,94 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Billing & invoices · Cliavo Help</title>
+  <title>Billing &amp; invoices · Cliavo Help</title>
   <link rel="stylesheet" href="./styles.css" />
 </head>
 <body>
   <div class="shell">
-    <a class="back" href="./index.html">← Help Center</a>
+    <header class="top">
+      <div class="brand">Cliavo<span>Help Center</span></div>
+      <div class="search">
+        <input type="search" id="searchInput" placeholder="Search the docs…" autocomplete="off" />
+        <div class="search-results" id="searchResults" hidden></div>
+      </div>
+      <nav><a href="./index.html">All topics</a></nav>
+    </header>
+
     <article class="article">
-      <h1>Billing & invoices</h1>
-      <h2>Time tracking</h2>
-      <p>Track billable time against cases, optionally with the floating timer, then convert entries into invoice lines.</p>
-      <h2>Invoices</h2>
+      <h1>Billing &amp; invoices</h1>
+      <p>
+        Create invoices manually or from tracked time, bill in your client's currency, attach Swiss
+        QR payment parts, split large amounts into installment plans, and follow every invoice from
+        draft to paid.
+      </p>
+
+      <h2 id="creating">Creating an invoice</h2>
       <ul>
-        <li>Create draft invoices, add line items, apply Swiss VAT rates.</li>
-        <li>Generate PDF / Swiss QR-bill when firm banking details are set.</li>
-        <li>Optional installment (payment plan) schedules.</li>
+        <li>Pick the <strong>client</strong> (and optionally the case), a <strong>due date</strong>, and the <strong>VAT rate</strong> (your firm default is pre-filled).</li>
+        <li>Add line items — each with a description, <strong>hourly</strong> or <strong>flat-fee</strong> billing type, quantity, and unit price. Totals and VAT are calculated automatically.</li>
+        <li>Invoices from <a href="./time-tracking.html#invoice-from-time">time entries</a> arrive with one line per entry, ready to adjust.</li>
+        <li>Invoices get a sequential number and can be edited while in draft.</li>
       </ul>
-      <h2>Online payments</h2>
-      <p>Firms can configure Adyen (firm-level merchant keys) and/or Stripe. Checkout priority is Adyen → Stripe → offline / QR.</p>
-      <h2>Client view</h2>
-      <p>Clients see open invoices in the portal and can pay online when a gateway is configured.</p>
+
+      <h2 id="statuses">Invoice statuses</h2>
+      <table>
+        <tr><th>Status</th><th>Meaning</th></tr>
+        <tr><td>Draft</td><td>Being prepared; editable.</td></tr>
+        <tr><td>Sent</td><td>Issued to the client (visible in their portal).</td></tr>
+        <tr><td>Paid</td><td>Payment received in full.</td></tr>
+        <tr><td>Overdue</td><td>Past the due date without payment.</td></tr>
+        <tr><td>Cancelled</td><td>Voided.</td></tr>
+      </table>
+
+      <h2 id="currencies">Multi-currency billing</h2>
+      <p>
+        Your firm has a <strong>default currency</strong> (chosen during onboarding or in Settings), and
+        each invoice carries its own currency. The platform supports CHF, EUR, USD, GBP, AED, SAR,
+        QAR, KWD, BHD, OMR, and JOD (availability is controlled platform-wide). Amounts are always
+        formatted with the right symbol and decimal rules for the currency.
+      </p>
+
+      <h2 id="qr-bill">Swiss QR-bills</h2>
+      <ul>
+        <li>Add your <strong>IBAN or QR-IBAN</strong> and creditor address (street, number, postal code, city, country) in Settings.</li>
+        <li>Invoice PDFs then include a compliant <strong>Swiss QR payment part</strong> that clients can scan in their e-banking.</li>
+        <li>QR-bills are generated for <strong>CHF and EUR</strong> invoices only (the Swiss standard does not allow other currencies); other currencies simply omit the QR part.</li>
+        <li>Installment invoices include a QR part per installment amount.</li>
+      </ul>
+
+      <h2 id="payment-plans">Payment plans (installments)</h2>
+      <p>Split a large invoice into a schedule the client can afford:</p>
+      <ul>
+        <li>Choose the number of installments (up to 12), the interval, and the amount per installment.</li>
+        <li>Cliavo can <strong>auto-generate an invoice per installment</strong> when it falls due, and optionally email it to the client automatically (a daily scheduled job takes care of this).</li>
+        <li>Mark installments paid as money arrives; the plan shows a timeline of what's paid, due, and upcoming.</li>
+      </ul>
+
+      <h2 id="pdf">Invoice PDFs &amp; sending</h2>
+      <p>
+        Every invoice has a print-ready PDF (firm logo, address, line items, VAT breakdown, and the
+        QR part where applicable). Invoices can be emailed to clients, and clients also see them in
+        their <a href="./client-portal.html">portal</a>.
+      </p>
+
+      <h2 id="online-payments">Online payments</h2>
+      <p>
+        Connect <strong>Stripe</strong> or <strong>Adyen</strong> (Settings → Payments) to let clients pay
+        service orders and invoices online. Firms can bring their own Adyen merchant account —
+        including HMAC-verified webhooks — or use platform-level credentials. Without a gateway,
+        orders can always be marked paid manually. See <a href="./settings.html#payments">Settings → Payments</a>.
+      </p>
+
+      <h2 id="dashboard">Revenue overview</h2>
+      <p>
+        The dashboard shows outstanding, overdue, and collected amounts in your firm currency, and
+        admin analytics break revenue down over time so you can spot trends.
+      </p>
     </article>
-    <footer class="footer">support@cliavo.com</footer>
+
+    <footer class="footer"><a href="./index.html">← Help Center</a> · support@cliavo.com</footer>
   </div>
+  <script src="./search.js" defer></script>
 </body>
 </html>

@@ -3,22 +3,94 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Website & leads · Cliavo Help</title>
+  <title>Website (CMS) &amp; leads · Cliavo Help</title>
   <link rel="stylesheet" href="./styles.css" />
 </head>
 <body>
   <div class="shell">
-    <a class="back" href="./index.html">← Help Center</a>
+    <header class="top">
+      <div class="brand">Cliavo<span>Help Center</span></div>
+      <div class="search">
+        <input type="search" id="searchInput" placeholder="Search the docs…" autocomplete="off" />
+        <div class="search-results" id="searchResults" hidden></div>
+      </div>
+      <nav><a href="./index.html">All topics</a></nav>
+    </header>
+
     <article class="article">
-      <h1>Website CMS & leads</h1>
-      <h2>Firm website pages</h2>
-      <p>Admins can manage firm public pages under <strong>Website (CMS)</strong> — useful for a simple firm presence tied to your subdomain or custom domain.</p>
-      <h2>Leads</h2>
-      <p>Inbound inquiries appear under <strong>Leads</strong> so your team can qualify and convert them into clients or cases.</p>
-      <h2>Custom domain</h2>
-      <p>Configure a custom domain in firm settings and follow the DNS instructions shown there. Superadmin can approve subdomain status for the firm.</p>
+      <h1>Website (CMS) &amp; leads</h1>
+      <p>
+        Every firm gets a public website built with the CMS page builder — no web agency needed.
+        Pages are composed from ready-made blocks, edited with a live preview, styled with your
+        branding, and published at your subdomain or custom domain.
+      </p>
+
+      <h2 id="editor">The page editor</h2>
+      <ul>
+        <li>Create a page from <strong>CMS</strong>: it opens a full-screen editor with the block list on one side and a <strong>live preview</strong> on the other.</li>
+        <li>Reorder blocks by <strong>drag and drop</strong> (grip handle) — the preview updates instantly.</li>
+        <li>Every page has a title, a URL slug, a <strong>published</strong> switch, and a <strong>homepage</strong> switch (one page is your site's front page).</li>
+        <li>The <strong>SEO tab</strong> sets the meta title and description used by search engines.</li>
+      </ul>
+
+      <h2 id="blocks">Block types</h2>
+      <table>
+        <tr><th>Block</th><th>What it shows</th></tr>
+        <tr><td>Hero</td><td>Big headline, subtitle, and a call-to-action button.</td></tr>
+        <tr><td>Text</td><td>Headed rich-text section for any content.</td></tr>
+        <tr><td>Features</td><td>Grid of feature cards (icon, title, text).</td></tr>
+        <tr><td>Stats</td><td>Key numbers — years of experience, cases won, clients served.</td></tr>
+        <tr><td>Testimonials</td><td>Client quotes with names.</td></tr>
+        <tr><td>Team</td><td>Your lawyers with photos, roles, and bios.</td></tr>
+        <tr><td>FAQ</td><td>Question/answer accordion.</td></tr>
+        <tr><td>Gallery</td><td>Image grid.</td></tr>
+        <tr><td>Logo strip</td><td>Bar of association / client logos.</td></tr>
+        <tr><td>Packages</td><td><strong>Live block</strong> — automatically renders your published subscription packages.</td></tr>
+        <tr><td>Services</td><td><strong>Live block</strong> — automatically renders your published on-demand services.</td></tr>
+        <tr><td>Contact</td><td>Contact form that creates a lead in your CRM.</td></tr>
+      </table>
+      <p>
+        List-style blocks (features, stats, testimonials, team, FAQ, gallery, logos) support adding
+        and removing items freely. The <strong>Packages</strong> and <strong>Services</strong> blocks pull live
+        data from <a href="./packages-services.html">Upselling</a> — publish a new package and your
+        website updates by itself.
+      </p>
+
+      <h2 id="templates">Templates</h2>
+      <p>
+        Start from a template instead of a blank page: <strong>Classic</strong>, <strong>Minimal</strong>,
+        <strong>Modern</strong>, <strong>Services &amp; packages</strong>, <strong>Team</strong>, or
+        <strong>Contact</strong>. Templates pre-fill a sensible block layout you then edit.
+      </p>
+
+      <h2 id="branding">Branding</h2>
+      <p>
+        The public site uses your logo and brand colors from
+        <a href="./settings.html#branding">Settings → Branding</a>, so the website, workspace, and
+        client portal all match.
+      </p>
+
+      <h2 id="urls">Where your site is published</h2>
+      <ul>
+        <li><strong>Immediately</strong> (no DNS needed): <code>https://cliavo.com/site/your-slug</code></li>
+        <li><strong>Your subdomain</strong>: <code>https://your-slug.cliavo.com</code> — also where your team and clients sign in.</li>
+        <li><strong>Custom domain</strong>: connect e.g. <code>portal.yourfirm.ch</code> in Settings → Workspace with a single CNAME record. See <a href="./settings.html#domains">Domains</a>.</li>
+      </ul>
+
+      <h2 id="leads">Lead capture</h2>
+      <ul>
+        <li>The <strong>Contact block</strong> on your public pages feeds submissions straight into your <a href="./clients-crm.html#leads">CRM leads pipeline</a> with source "website".</li>
+        <li>Package and service blocks link visitors to subscription registration and service checkout, turning your website into a storefront.</li>
+      </ul>
+
+      <div class="tip">
+        Tip: keep one published homepage plus a few focused pages (About, Services, Contact).
+        Search engines read your SEO title/description per page — write them like an ad for the page.
+      </div>
     </article>
-    <footer class="footer">support@cliavo.com</footer>
+
+    <footer class="footer"><a href="./index.html">← Help Center</a> · support@cliavo.com</footer>
   </div>
+  <script src="./search.js" defer></script>
 </body>
 </html>

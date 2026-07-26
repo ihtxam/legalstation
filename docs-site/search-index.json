@@ -1,0 +1,578 @@
+[
+ {
+  "page": "Agenda & calendar",
+  "title": "Agenda & calendar",
+  "url": "./agenda-calendar.html",
+  "text": "Agenda & calendar One agenda for everything with a date on it: case deadlines, tasks that are due, client meetings and reminders, your own personal events — and, if you connect an external calendar, your Google / Outlook / iCloud events too."
+ },
+ {
+  "page": "Agenda & calendar",
+  "title": "What appears in your agenda",
+  "url": "./agenda-calendar.html#agenda",
+  "text": "Case deadlines — from the deadline field on cases. Task due dates — case tasks assigned to you. Client activities — meetings, to-dos, and reminders with dates. Personal events — created directly in the calendar with title, location, start/end, or all-day. Imported events — pulled from connected external calendars."
+ },
+ {
+  "page": "Agenda & calendar",
+  "title": "Connecting external calendars",
+  "url": "./agenda-calendar.html#providers",
+  "text": "Each user can connect their own calendars under Calendar → Connections: Provider How it connects Google Calendar OAuth — sign in with Google and grant calendar access. Microsoft / Outlook OAuth — Microsoft 365 or Outlook.com account. Apple iCloud CalDAV with your Apple ID and an app-specific password (create one at appleid.apple.com)."
+ },
+ {
+  "page": "Agenda & calendar",
+  "title": "Two-way sync",
+  "url": "./agenda-calendar.html#sync",
+  "text": "Choose the sync direction per connection: both ways , push only (Cliavo → external), or pull only (external → Cliavo). Cliavo pushes deadlines, meetings, and personal events to the external calendar, and imports external events so your agenda shows real availability. Sync runs on a schedule and can be triggered manually with Sync now . The connection shows the last sync time and any error. Access tokens are stored encrypted; disconnecting removes the link immediately. Tip: lawyers who live in Outlook can set \"push only\" so court deadlines appear in Outlook, without their private appointments b"
+ },
+ {
+  "page": "Billing & invoices",
+  "title": "Billing & invoices",
+  "url": "./billing.html",
+  "text": "Billing & invoices Create invoices manually or from tracked time, bill in your client's currency, attach Swiss QR payment parts, split large amounts into installment plans, and follow every invoice from draft to paid."
+ },
+ {
+  "page": "Billing & invoices",
+  "title": "Creating an invoice",
+  "url": "./billing.html#creating",
+  "text": "Pick the client (and optionally the case), a due date , and the VAT rate (your firm default is pre-filled). Add line items — each with a description, hourly or flat-fee billing type, quantity, and unit price. Totals and VAT are calculated automatically. Invoices from time entries arrive with one line per entry, ready to adjust. Invoices get a sequential number and can be edited while in draft."
+ },
+ {
+  "page": "Billing & invoices",
+  "title": "Invoice statuses",
+  "url": "./billing.html#statuses",
+  "text": "Status Meaning Draft Being prepared; editable. Sent Issued to the client (visible in their portal). Paid Payment received in full. Overdue Past the due date without payment. Cancelled Voided."
+ },
+ {
+  "page": "Billing & invoices",
+  "title": "Multi-currency billing",
+  "url": "./billing.html#currencies",
+  "text": "Your firm has a default currency (chosen during onboarding or in Settings), and each invoice carries its own currency. The platform supports CHF, EUR, USD, GBP, AED, SAR, QAR, KWD, BHD, OMR, and JOD (availability is controlled platform-wide). Amounts are always formatted with the right symbol and decimal rules for the currency."
+ },
+ {
+  "page": "Billing & invoices",
+  "title": "Swiss QR-bills",
+  "url": "./billing.html#qr-bill",
+  "text": "Add your IBAN or QR-IBAN and creditor address (street, number, postal code, city, country) in Settings. Invoice PDFs then include a compliant Swiss QR payment part that clients can scan in their e-banking. QR-bills are generated for CHF and EUR invoices only (the Swiss standard does not allow other currencies); other currencies simply omit the QR part. Installment invoices include a QR part per installment amount."
+ },
+ {
+  "page": "Billing & invoices",
+  "title": "Payment plans (installments)",
+  "url": "./billing.html#payment-plans",
+  "text": "Split a large invoice into a schedule the client can afford: Choose the number of installments (up to 12), the interval, and the amount per installment. Cliavo can auto-generate an invoice per installment when it falls due, and optionally email it to the client automatically (a daily scheduled job takes care of this). Mark installments paid as money arrives; the plan shows a timeline of what's paid, due, and upcoming."
+ },
+ {
+  "page": "Billing & invoices",
+  "title": "Invoice PDFs & sending",
+  "url": "./billing.html#pdf",
+  "text": "Every invoice has a print-ready PDF (firm logo, address, line items, VAT breakdown, and the QR part where applicable). Invoices can be emailed to clients, and clients also see them in their portal ."
+ },
+ {
+  "page": "Billing & invoices",
+  "title": "Online payments",
+  "url": "./billing.html#online-payments",
+  "text": "Connect Stripe or Adyen (Settings → Payments) to let clients pay service orders and invoices online. Firms can bring their own Adyen merchant account — including HMAC-verified webhooks — or use platform-level credentials. Without a gateway, orders can always be marked paid manually. See Settings → Payments ."
+ },
+ {
+  "page": "Billing & invoices",
+  "title": "Revenue overview",
+  "url": "./billing.html#dashboard",
+  "text": "The dashboard shows outstanding, overdue, and collected amounts in your firm currency, and admin analytics break revenue down over time so you can spot trends."
+ },
+ {
+  "page": "Cases & matters",
+  "title": "Cases & matters",
+  "url": "./cases-clients.html",
+  "text": "Cases & matters Cases (matters) are the heart of Cliavo: each case bundles its clients, assigned lawyers, documents, notes, tasks, time entries, messages, and deadlines in one place."
+ },
+ {
+  "page": "Cases & matters",
+  "title": "Creating a case",
+  "url": "./cases-clients.html#creating",
+  "text": "Title and an optional internal reference number . Type — civil, criminal, corporate, family, real estate, employment, tax, immigration, intellectual property, or other. Status — open, pending, closed, or archived. Optional description , court name , court file number , and a deadline (deadlines appear in your agenda ). Attach one or more clients and assign lawyers right away, or later from the case page."
+ },
+ {
+  "page": "Cases & matters",
+  "title": "Clients and lawyers on a case",
+  "url": "./cases-clients.html#assignments",
+  "text": "A case can have several clients and several lawyers. From the case detail page use Assign client (choose an existing client or create a new one inline) and Assign lawyer . Lawyers see the cases assigned to them; admins and sub-admins see all firm cases. Every assignment is recorded in the case timeline."
+ },
+ {
+  "page": "Cases & matters",
+  "title": "Matter stages (workflow board)",
+  "url": "./cases-clients.html#stages",
+  "text": "Firms can define their own matter stages — e.g. Intake → Research → Drafting → Court → Closed — each with a name, color, and order. Cases move through stages so you can see at a glance where every matter stands. Stages marked as closed stages indicate the matter is finished. Manage stages from the case board; drag to reorder."
+ },
+ {
+  "page": "Cases & matters",
+  "title": "Tasks & subtasks",
+  "url": "./cases-clients.html#tasks",
+  "text": "Create tasks on a case with a title, description, assignee , and due date . Tasks support subtasks (parent/child), @mentions , and manual ordering. Statuses: to do → in progress → done (or cancelled ). Completed tasks keep their completion timestamp. Tasks can be linked to a matter stage so stage boards show outstanding work."
+ },
+ {
+  "page": "Cases & matters",
+  "title": "Notes & case timeline",
+  "url": "./cases-clients.html#notes",
+  "text": "Case notes have a title, rich text body, and a visibility setting: internal (team only) or shared (visible to the client in the portal). The case timeline (events) records everything that happens: creation, assignments, uploads, notes, status changes — a full audit trail per matter."
+ },
+ {
+  "page": "Cases & matters",
+  "title": "Client intake forms",
+  "url": "./cases-clients.html#intake",
+  "text": "For cases that come from subscription packages or on-demand services, clients complete a structured intake form : what happened, when, how, their involvement, the desired outcome, and a privacy level (standard, sensitive, private). The submission is attached to the case so the assigned lawyer starts with full context."
+ },
+ {
+  "page": "Cases & matters",
+  "title": "Cases from orders and disputes",
+  "url": "./cases-clients.html#litige",
+  "text": "On-demand service orders can be converted into cases automatically when accepted, carrying over the client, the service type's default case type, and the client's brief. See the order lifecycle . Tip: use the global timer while working on a case — it follows you across pages and books tracked time straight onto the case. See Time tracking ."
+ },
+ {
+  "page": "Client portal",
+  "title": "Client portal",
+  "url": "./client-portal.html",
+  "text": "Client portal The client portal is your clients' own secure view of the firm: their cases, invoices, documents, messages, subscription, and service orders — branded with your logo and colors, available in five languages."
+ },
+ {
+  "page": "Client portal",
+  "title": "How clients get access",
+  "url": "./client-portal.html#access",
+  "text": "Invite from the firm — send a client invite (Settings → Team or the client page). The invite email links to a registration page where the client sets a name and password. Self-registration via packages — visitors who subscribe to a package on your website get a portal account automatically. Clients sign in at your firm login URL with email + password, and can enable 2FA like any user."
+ },
+ {
+  "page": "Client portal",
+  "title": "What clients see",
+  "url": "./client-portal.html#what-they-see",
+  "text": "Dashboard — active cases, open invoices, and recent activity at a glance. Cases — only the cases they are attached to, with shared notes, status, and the case timeline. Documents — files on their cases; they can upload documents themselves (e.g. responding to a document request ). Messages — the secure message thread per case, instead of email back-and-forth. Invoices — issued invoices with amounts, due dates, status, and PDF download (with the Swiss QR part where applicable). Subscription — their package, entitlements used this period, and plan switching. Services — the firm's service catalog"
+ },
+ {
+  "page": "Client portal",
+  "title": "What clients can never see",
+  "url": "./client-portal.html#isolation",
+  "text": "Other clients' cases, invoices, or documents — access is strictly scoped to their own records. Internal case notes (only notes marked shared are visible). Your team's time entries, rates, or internal tasks."
+ },
+ {
+  "page": "Client portal",
+  "title": "On mobile",
+  "url": "./client-portal.html#mobile-portal",
+  "text": "The Cliavo mobile app has a client mode with the same scope: cases, invoices, documents (including camera scanning), and messages. Tip: the portal lives at your firm URL — your-slug.cliavo.com or your custom domain — so clients always see your brand, not ours."
+ },
+ {
+  "page": "Clients & CRM",
+  "title": "Clients & CRM",
+  "url": "./clients-crm.html",
+  "text": "Clients & CRM The Clients area is your firm's address book and lightweight CRM: every person or company you work for, their contact details, their cases, invoices, activities, and portal access."
+ },
+ {
+  "page": "Clients & CRM",
+  "title": "Individual and company clients",
+  "url": "./clients-crm.html#client-types",
+  "text": "Individuals — first/last name, date of birth, and contact details. A first or last name is required. Companies — company name (required), registration number, and a contact person. Both types share email, phone, full address (street, city, postal code, country), and free-form notes. Clients have a status : invited (created but no portal account yet), active , or inactive . Admins, sub-admins, and lawyers can create clients; the client list is searchable and each client has a detail page with an inline Edit form."
+ },
+ {
+  "page": "Clients & CRM",
+  "title": "Creating clients where you need them",
+  "url": "./clients-crm.html#create-anywhere",
+  "text": "Besides the Clients page, you can create a client on the fly from the Assign client dialog inside a case — switch the toggle from Existing client to Create client , fill the short form, and the new client is created and assigned to the case in one step."
+ },
+ {
+  "page": "Clients & CRM",
+  "title": "Activities, notes & reminders",
+  "url": "./clients-crm.html#activities",
+  "text": "Each client has an activity timeline for day-to-day relationship work: Notes — meeting summaries or anything worth remembering. Meetings — with a date, so they appear in your agenda. To-dos and next actions — assignable to a team member with a due date. Reminders — pick a remind-at time to be nudged about follow-ups. You can @mention teammates and mark items complete when done."
+ },
+ {
+  "page": "Clients & CRM",
+  "title": "Leads pipeline",
+  "url": "./clients-crm.html#leads",
+  "text": "The CRM section includes a leads pipeline for potential clients who are not (yet) clients. Each lead has a contact name, email, phone, company, source, notes, and an assigned team member, and moves through stages: Stage Meaning New Just came in (e.g. from your website contact form). Contacted You reached out. Qualified Real potential — worth pursuing. Consultation A first consultation is booked or done. Proposal You sent an engagement proposal or quote. Won / Lost Outcome of the pursuit. When a lead is won, use Convert to turn it into a real client (and optionally a first case) without retypin"
+ },
+ {
+  "page": "Clients & CRM",
+  "title": "Giving clients portal access",
+  "url": "./clients-crm.html#portal-access",
+  "text": "Clients can receive their own login to the client portal . From Settings → Team (or the client page), send a client invite linked to the client record; they set their own password and see only their own cases, invoices, and documents. See Invitations . Tip: subscription clients (see Packages ) can register themselves from your public website — the client record and portal account are created automatically."
+ },
+ {
+  "page": "Documents & messages",
+  "title": "Documents & messages",
+  "url": "./documents-messages.html",
+  "text": "Documents & messages Keep every pleading, contract, and piece of evidence on the case it belongs to, request documents from clients with a deadline, and communicate through secure case messaging instead of email threads."
+ },
+ {
+  "page": "Documents & messages",
+  "title": "Uploading documents",
+  "url": "./documents-messages.html#uploading",
+  "text": "Upload files on the case page (or let clients upload through the portal / mobile app camera scan). Each document stores its file name, type, size, an optional description , and who uploaded it. Documents can be organised into folders per case. Downloads are served through authenticated links — no public URLs."
+ },
+ {
+  "page": "Documents & messages",
+  "title": "Upload rules & quotas",
+  "url": "./documents-messages.html#policy",
+  "text": "Firms have a per-file upload size limit and an allowed file-type list (e.g. PDF, Word, images) — see Settings → Upload policy . Each firm also has a total storage quota ; uploads beyond the quota are refused with a clear message. Quotas are set per plan and can be adjusted by Cliavo. Support-ticket attachments have their own compact limit (1&nbsp;MB per file) and don't count against firm storage."
+ },
+ {
+  "page": "Documents & messages",
+  "title": "Document requests",
+  "url": "./documents-messages.html#requests",
+  "text": "Stop chasing clients by email — request exactly what you need: Create a request on a case with a title, description, and due date (e.g. \"Signed power of attorney\"). The client sees the request in their portal and uploads the file directly against it. The request is marked fulfilled with a link to the uploaded document, or can be cancelled if no longer needed."
+ },
+ {
+  "page": "Documents & messages",
+  "title": "Case messaging",
+  "url": "./documents-messages.html#messaging",
+  "text": "Every case has a private message thread between the firm and the client(s) on that case. Clients write from their portal; lawyers reply from the case page. Replies support threading. Unread counters in the sidebar show where something is waiting for you, and messages can be marked read. Messages stay attached to the matter forever — a clean, auditable record of client communication."
+ },
+ {
+  "page": "Documents & messages",
+  "title": "Document intelligence",
+  "url": "./documents-messages.html#analysis",
+  "text": "Where AI features are enabled, uploaded documents can be analysed to extract summaries and key facts to speed up review. Ask Cliavo support if you want this switched on for your firm."
+ },
+ {
+  "page": "Getting started",
+  "title": "Getting started",
+  "url": "./getting-started.html",
+  "text": "Getting started Cliavo is a complete practice-management platform for law firms. Every firm gets its own isolated workspace with its own branding, team, clients, cases, billing, and public website. This guide takes you from creating an account to a fully working firm."
+ },
+ {
+  "page": "Getting started",
+  "title": "Create your workspace",
+  "url": "./getting-started.html#create-workspace",
+  "text": "There are two ways a firm workspace is created: Self-serve trial — click Start free trial on cliavo.com, enter your firm name, your name, email, and a password. Your workspace is created instantly with a 15-day trial on the starter plan, and you are taken straight to onboarding. Provisioned by Cliavo — our team creates the firm for you and sends the owner a credentials email with a temporary password . On first login you are asked to set your own password before continuing."
+ },
+ {
+  "page": "Getting started",
+  "title": "The onboarding wizard",
+  "url": "./getting-started.html#onboarding",
+  "text": "After signup you complete a short wizard. Everything can be changed later in Settings. 1 · Firm profile — legal name, address, contact email, phone, and VAT/UID number. These appear on your invoices. 2 · Branding — upload your logo and pick your primary and secondary brand colors. They style your workspace, client portal, and public website. 3 · Currency & tax — the default billing currency for new invoices and packages (CHF, EUR, USD, GBP, AED, SAR, and more) and your default VAT rate (Swiss standard is 8.1%). 4 · Subdomain — pick your firm address, e.g. yourfirm.cliavo.com . Lawyers and clie"
+ },
+ {
+  "page": "Getting started",
+  "title": "Signing in",
+  "url": "./getting-started.html#sign-in",
+  "text": "Firm members and clients sign in with email + password at /login (or your firm subdomain). If two-factor authentication is enabled, you enter a 6-digit authenticator code after your password. If your account was created with a temporary password, you are asked to set a new one before you can continue. You do not need to re-type the temporary password. Platform operators (Cliavo staff) use a separate login at /platform/login ; superadmin accounts can never enter a firm workspace through the normal login."
+ },
+ {
+  "page": "Getting started",
+  "title": "Recommended first steps",
+  "url": "./getting-started.html#first-steps",
+  "text": "Invite your team from Settings → Team: sub-admins, lawyers, and assistants each get an email invite. See Team & roles . Add banking details (IBAN or QR-IBAN plus creditor address) in Settings so Swiss QR-bills can be generated on invoices. Set your hourly rate in Time Reports so tracked time is valued correctly. Create your first client and case — see Clients & CRM and Cases & matters . Publish your website — pick a template in CMS and go live in minutes. See Website (CMS) ."
+ },
+ {
+  "page": "Getting started",
+  "title": "Languages",
+  "url": "./getting-started.html#languages",
+  "text": "The interface is available in English, French, German, Italian, and Arabic (with full right-to-left layout for Arabic). Each user picks their own language from the language switcher; invitation emails can also be sent in the recipient's language. Platform administrators control which languages are enabled."
+ },
+ {
+  "page": "Getting started",
+  "title": "Trial, plans & account",
+  "url": "./getting-started.html#trial-plans",
+  "text": "Your trial banner shows the days remaining. When the trial ends, the workspace is locked (read-only access to account and support) until a plan is activated. Under Account you can see your current plan, price, and billing cycle, and upgrade at any time. If your firm is suspended or payment is past due, admins keep access to Account, Support, and plan checkout so they can restore service."
+ },
+ {
+  "page": "Getting started",
+  "title": "Mobile app",
+  "url": "./getting-started.html#mobile",
+  "text": "Cliavo has a companion mobile app (iOS and Android) for lawyers and clients: dashboards, cases, invoices, and document scanning with the camera. It signs in against https://cliavo.com with the same email and password."
+ },
+ {
+  "page": "Everything about your Cliavo workspace",
+  "title": "Everything about your Cliavo workspace",
+  "url": "./index.html",
+  "text": "Cliavo Help Center Cliavo Help Center support@cliavo.com Everything about your Cliavo workspace Detailed guides for every feature — from your first login to running cases, tracking time, invoicing with Swiss QR-bills, publishing your firm website, and selling packages and on-demand services. Use the search bar above to jump straight to an answer. Getting started Create your workspace, complete the"
+ },
+ {
+  "page": "Packages & services (Upselling)",
+  "title": "Packages & services (Upselling)",
+  "url": "./packages-services.html",
+  "text": "Packages & services (Upselling) Two recurring-revenue tools live under Upselling : subscription packages (legal protection plans billed monthly/yearly) and an on-demand services catalog (fixed-price legal products with a full order workflow)."
+ },
+ {
+  "page": "Packages & services (Upselling)",
+  "title": "Subscription packages",
+  "url": "./packages-services.html#packages",
+  "text": "Each package has a name, description, feature list, and a highlight label (e.g. \"Most popular\"). Pricing per interval : monthly, 6-month, and yearly prices, plus a minimum commitment (e.g. 12 months). Entitlements : cases per period, consultation hours per period, and included fixed-work hours. Restrict which case types a package covers (e.g. only employment and tenancy law). Toggle active (sellable) and public (visible on your website) separately, and order them with drag handles."
+ },
+ {
+  "page": "Packages & services (Upselling)",
+  "title": "Subscribers",
+  "url": "./packages-services.html#subscribers",
+  "text": "Clients subscribe from your public website (the package block links to registration) — the client record, portal account, and subscription are created together. Subscriptions track status ( active, past due, cancelled, expired ), the current billing period, and the commitment end date. Subscribed clients can change plan from their portal; entitlement usage (cases, hours) is visible per period. When a subscriber opens a case, they complete an intake form so the lawyer starts with context."
+ },
+ {
+  "page": "Packages & services (Upselling)",
+  "title": "On-demand services catalog",
+  "url": "./packages-services.html#services",
+  "text": "Each service has a name, description, category (advice, contract, documents, employment, corporate, other), and a fixed price . Fulfilment type : document (you deliver files) or consultation (you deliver a meeting). Set estimated effort hours, delivery notes, and the default case type used if the order becomes a case. Like packages: active/public switches and manual ordering; public services appear automatically in the website Services block ."
+ },
+ {
+  "page": "Packages & services (Upselling)",
+  "title": "The order lifecycle",
+  "url": "./packages-services.html#orders",
+  "text": "Clients buy services from their portal (or from your website after registering): Cart & checkout — the client picks services, adds a brief per item, and checks out. With Stripe/Adyen connected they pay online; otherwise the firm can mark the order paid manually. Intake — after payment the client submits the intake description so your team knows exactly what's needed. Acceptance — the firm reviews and accepts (optionally assigning a lawyer, and creating a linked case) or rejects with a reason. Delivery — the lawyer uploads deliverables (documents) or holds the consultation, with remarks for the"
+ },
+ {
+  "page": "Packages & services (Upselling)",
+  "title": "Currencies",
+  "url": "./packages-services.html#currency",
+  "text": "Packages and services are priced in your firm's currency; orders carry their currency end-to-end. See multi-currency billing ."
+ },
+ {
+  "page": "Security",
+  "title": "Security",
+  "url": "./security.html",
+  "text": "Security Law firms handle privileged information, so security is built into every layer: strong authentication, strict tenant isolation, encrypted transport, and audited platform operations."
+ },
+ {
+  "page": "Security",
+  "title": "Passwords & sign-in",
+  "url": "./security.html#passwords",
+  "text": "Passwords are stored as salted scrypt hashes — never in plain text. Minimum length 8 characters; changing your password requires the current one. Accounts provisioned with a temporary password must set a new password on first login. Sessions are signed, HTTP-only cookies; Sign out invalidates the session cookie immediately. Superadmin (platform) logins are separated from firm logins — a superadmin cannot enter the firm UI via the normal login and vice versa."
+ },
+ {
+  "page": "Security",
+  "title": "Two-factor authentication (2FA)",
+  "url": "./security.html#two-factor",
+  "text": "Any user can enable TOTP 2FA under Settings → Security : scan the QR code with Google Authenticator, 1Password, or any TOTP app, and confirm with a code. After every password login, a 6-digit code is required. 2FA state is re-challenged on each fresh login — codes are never \"remembered\" across logins. Disable 2FA requires a valid current code."
+ },
+ {
+  "page": "Security",
+  "title": "Tenant isolation",
+  "url": "./security.html#isolation",
+  "text": "Every record (client, case, invoice, document, message…) is bound to your firm. All queries filter by firm membership — another firm can neither read nor write your data. Clients only reach their own records through the portal; internal notes stay internal. Role checks apply on every operation server-side, not just hidden buttons in the UI."
+ },
+ {
+  "page": "Security",
+  "title": "Encryption & infrastructure",
+  "url": "./security.html#encryption",
+  "text": "All traffic is HTTPS (TLS via Let's Encrypt); HTTP requests are redirected. Calendar OAuth tokens are stored encrypted at rest . Hosting is on Swiss infrastructure (data residency CH) with the database on a private network, unreachable from the internet. File downloads are served through authenticated, path-checked routes."
+ },
+ {
+  "page": "Security",
+  "title": "Auditing & platform operations",
+  "url": "./security.html#auditing",
+  "text": "Case timelines record every material action per matter. Platform-level administrative actions (firm creation, plan changes, impersonation, announcements) are written to a superadmin audit log . Support impersonation is explicit, temporary, audited, and clearly labelled in the UI while active."
+ },
+ {
+  "page": "Security",
+  "title": "Backups & availability",
+  "url": "./security.html#backups",
+  "text": "The production database runs with persistent volumes and scheduled dumps; ask support about the current backup and retention policy for your deployment. On-premise/single-tenant deployment with an offline license is available for firms with strict hosting requirements — contact Cliavo."
+ },
+ {
+  "page": "Security",
+  "title": "Reporting a security issue",
+  "url": "./security.html#reporting",
+  "text": "Found something? Email support@cliavo.com with \"SECURITY\" in the subject. Please do not test against other firms' data."
+ },
+ {
+  "page": "Settings",
+  "title": "Settings",
+  "url": "./settings.html",
+  "text": "Settings Everything about your firm's configuration lives in Settings. Most tabs are admin-only; every user has their personal security and language preferences."
+ },
+ {
+  "page": "Settings",
+  "title": "Firm profile",
+  "url": "./settings.html#profile",
+  "text": "Legal name, address, contact email, phone, website, and VAT/UID number — printed on your invoices and shown on your public site's contact section."
+ },
+ {
+  "page": "Settings",
+  "title": "Branding",
+  "url": "./settings.html#branding",
+  "text": "Upload your logo (PNG/JPEG/WebP, up to 5&nbsp;MB). Pick primary and secondary colors — they style the workspace, client portal, emails, and the public website."
+ },
+ {
+  "page": "Settings",
+  "title": "Currency & VAT defaults",
+  "url": "./settings.html#billing-defaults",
+  "text": "The firm's default currency is used for new invoices, packages, services, and rate displays. Available currencies (CHF, EUR, USD, GBP, AED, SAR, QAR, KWD, BHD, OMR, JOD) are enabled platform-wide. The default VAT rate pre-fills new invoices (Swiss standard 8.1%). Swiss QR-bill banking: IBAN / QR-IBAN and creditor address. See QR-bills ."
+ },
+ {
+  "page": "Settings",
+  "title": "Workspace domains",
+  "url": "./settings.html#domains",
+  "text": "Subdomain — your workspace and public site at your-slug.cliavo.com . Changing the slug changes your links, so pick carefully. Custom domain — enter your domain (e.g. portal.yourfirm.ch ) and create one CNAME record at your DNS provider pointing it at your Cliavo subdomain: Type Name (your domain) Value (points to) CNAME portal.yourfirm.ch your-slug.cliavo.com Root domains without a subdomain (e.g. yourfirm.ch ) use an A record to the Cliavo IP instead. DNS changes can take up to 24–48 hours."
+ },
+ {
+  "page": "Settings",
+  "title": "Payment gateways",
+  "url": "./settings.html#payments",
+  "text": "Adyen — connect your own merchant account (API key, merchant account, HMAC key, test/live environment). Webhooks update order payment status automatically. Stripe — checkout for service orders where configured. No gateway? Orders can be marked paid manually — nothing blocks your workflow."
+ },
+ {
+  "page": "Settings",
+  "title": "Upload policy & storage",
+  "url": "./settings.html#uploads",
+  "text": "Per-file size limit and allowed file types for case documents. A firm-wide storage quota ; usage counts documents across all cases. Limits are tied to your plan and can be raised — contact support."
+ },
+ {
+  "page": "Settings",
+  "title": "Team & roles",
+  "url": "./settings.html#roles-settings",
+  "text": "Invite members, set roles, and customise the role permission matrix. Covered in detail in Team & roles ."
+ },
+ {
+  "page": "Settings",
+  "title": "Personal preferences",
+  "url": "./settings.html#personal",
+  "text": "Language — each user chooses EN/FR/DE/IT/AR; Arabic flips the layout to RTL. Security — change password, enable/disable 2FA . Calendar connections — see Agenda & calendar ."
+ },
+ {
+  "page": "Settings",
+  "title": "Account & plan",
+  "url": "./settings.html#account",
+  "text": "The Account page shows your subscription plan, price, billing cycle, trial days remaining, and lets you upgrade. If the workspace is locked (trial ended, suspended, past due), admins can still reach Account and Support to restore service."
+ },
+ {
+  "page": "Support & storage",
+  "title": "Support & storage",
+  "url": "./storage-support.html",
+  "text": "Support & storage How to reach Cliavo when something's unclear, how support tickets work, what platform announcements are, and how document storage limits behave."
+ },
+ {
+  "page": "Support & storage",
+  "title": "Support tickets",
+  "url": "./storage-support.html#tickets",
+  "text": "Firm admins open tickets under Support with a subject, description, and a sensitivity level (low → critical). Attach up to 5 files per ticket (documents or screenshots, max 1&nbsp;MB each) to show exactly what you see. Tickets get a number like TKT-2026-00042 and a status: open → processing → under review → responded → resolved → closed . Replies from Cliavo appear in the ticket thread and are flagged unread in your sidebar until you view them; you can reply back with more details or attachments. Resolved tickets close automatically after a few days if you don't reply; there is a fair-use mont"
+ },
+ {
+  "page": "Support & storage",
+  "title": "Platform announcements",
+  "url": "./storage-support.html#announcements",
+  "text": "Cliavo occasionally posts announcements (maintenance, new features) that appear as a banner/popup in your workspace. Severities: info, warning, critical. Audience is either firm admins only or all members. Click Got it to dismiss — an announcement won't reappear once dismissed, and announcements published before your account existed are never shown to you."
+ },
+ {
+  "page": "Support & storage",
+  "title": "Storage quotas",
+  "url": "./storage-support.html#storage",
+  "text": "Case document storage counts against your firm's storage quota (set by your plan). Per-file size and file-type rules are configurable — see Settings → Upload policy . When the quota is reached, uploads fail with a clear message; delete old files or ask support for a higher quota. Support-ticket attachments do not count against firm storage."
+ },
+ {
+  "page": "Support & storage",
+  "title": "Other ways to reach us",
+  "url": "./storage-support.html#contact",
+  "text": "Email: support@cliavo.com This help center: cliavo.com/help — use the search bar at the top of every page."
+ },
+ {
+  "page": "Team & roles",
+  "title": "Team & roles",
+  "url": "./team-roles.html",
+  "text": "Team & roles Bring your whole firm into one workspace with role-based access: admins run the firm, sub-admins help manage it, lawyers work their cases, and assistants support the team."
+ },
+ {
+  "page": "Team & roles",
+  "title": "The four firm roles",
+  "url": "./team-roles.html#roles",
+  "text": "Role Typical person Default access Admin Owner / managing partner Everything: all cases, billing, settings, team, roles, website, upselling. Sub-admin Office manager Firm-wide cases and clients, invites, most management screens; not firm-critical settings. Lawyer Associate / partner Their assigned cases, own time tracking, invoicing, clients. Assistant Paralegal / secretary Support access to assigned cases; no billing or settings by default. Clients are not firm members — they get portal accounts instead."
+ },
+ {
+  "page": "Team & roles",
+  "title": "Customising role permissions",
+  "url": "./team-roles.html#capabilities",
+  "text": "Under Settings → Roles , admins can fine-tune what each role can do per area — for example whether lawyers see all firm cases or only their own , who can create invoices, manage the website, or invite people. Overrides apply to your firm only and can be reset to platform defaults with one click."
+ },
+ {
+  "page": "Team & roles",
+  "title": "Invitations",
+  "url": "./team-roles.html#invites",
+  "text": "Invite teammates by email with a chosen role; client invites are linked to a client record. Pick the email language per invite (EN/FR/DE/IT/AR). The invitee opens the link, sets their name and password, and lands in the workspace — invitations expire after a while and can be re-sent. If the invitee already has a Cliavo account (same email), they can accept the invite while signed in and join the firm with their existing login."
+ },
+ {
+  "page": "Team & roles",
+  "title": "Managing members",
+  "url": "./team-roles.html#managing",
+  "text": "The Team page lists every member with their role and title. Each lawyer manages their own hourly rate ; admins can see rates for billing purposes. Lawyers are assignable to cases, tasks, leads, and service orders. Tip: give receptionists the assistant role and grant only what they need in Settings → Roles — the permission matrix beats sharing an admin login every time."
+ },
+ {
+  "page": "Time tracking",
+  "title": "Time tracking",
+  "url": "./time-tracking.html",
+  "text": "Time tracking Track billable and non-billable time with a live timer or manual entries, review and edit everything before submission, and turn approved time into invoices in two clicks."
+ },
+ {
+  "page": "Time tracking",
+  "title": "The live timer",
+  "url": "./time-tracking.html#timer",
+  "text": "Start a timer from a case (or from Time Reports) with a description of what you're doing. The floating timer stays visible on every page while it runs — it is stored server-side, so it keeps counting even if you close the tab or switch devices. You can pause / resume , edit the description or case while running, and stop to save the accumulated time as a draft entry, or discard it."
+ },
+ {
+  "page": "Time tracking",
+  "title": "Manual entries",
+  "url": "./time-tracking.html#manual",
+  "text": "Add an entry with a case, description, duration (minutes), and date — for work you did away from the screen. Each saved entry gets a timestamp , and the list shows the most recent entries at the top. Entries can be marked billable or non-billable and can carry a custom hourly rate."
+ },
+ {
+  "page": "Time tracking",
+  "title": "Editing before submission",
+  "url": "./time-tracking.html#editing",
+  "text": "Draft and submitted entries can be edited — change the case, description, duration, or date — or deleted, right up until they are invoiced. Once an entry is attached to an invoice it is locked to keep billing consistent."
+ },
+ {
+  "page": "Time tracking",
+  "title": "Entry workflow",
+  "url": "./time-tracking.html#workflow",
+  "text": "Status Meaning Draft Just recorded; fully editable. Submitted Marked ready for billing (you can submit many at once). Invoiced Included on an invoice; locked."
+ },
+ {
+  "page": "Time tracking",
+  "title": "Hourly rates",
+  "url": "./time-tracking.html#rates",
+  "text": "Every lawyer sets their hourly rate (in the firm's currency) in Time Reports. The rate is stored with each entry when it's created, so historical entries keep the rate that applied at the time. Individual entries can override the rate."
+ },
+ {
+  "page": "Time tracking",
+  "title": "Creating an invoice from time entries",
+  "url": "./time-tracking.html#invoice-from-time",
+  "text": "In Time Reports , select the submitted entries you want to bill (optionally filtered by case or client). Choose the client, a due date, and the VAT rate. Cliavo creates an invoice with one line per entry (description, hours × rate) in your firm's default currency, and marks the entries as invoiced. See Billing & invoices for what happens next."
+ },
+ {
+  "page": "Time tracking",
+  "title": "Reports & summaries",
+  "url": "./time-tracking.html#reports",
+  "text": "Time Reports shows totals by period, case, and biller — tracked vs. billable hours and their value — so you can review productivity before billing runs and catch unbilled work."
+ },
+ {
+  "page": "Website (CMS) & leads",
+  "title": "Website (CMS) & leads",
+  "url": "./website-leads.html",
+  "text": "Website (CMS) & leads Every firm gets a public website built with the CMS page builder — no web agency needed. Pages are composed from ready-made blocks, edited with a live preview, styled with your branding, and published at your subdomain or custom domain."
+ },
+ {
+  "page": "Website (CMS) & leads",
+  "title": "The page editor",
+  "url": "./website-leads.html#editor",
+  "text": "Create a page from CMS : it opens a full-screen editor with the block list on one side and a live preview on the other. Reorder blocks by drag and drop (grip handle) — the preview updates instantly. Every page has a title, a URL slug, a published switch, and a homepage switch (one page is your site's front page). The SEO tab sets the meta title and description used by search engines."
+ },
+ {
+  "page": "Website (CMS) & leads",
+  "title": "Block types",
+  "url": "./website-leads.html#blocks",
+  "text": "Block What it shows Hero Big headline, subtitle, and a call-to-action button. Text Headed rich-text section for any content. Features Grid of feature cards (icon, title, text). Stats Key numbers — years of experience, cases won, clients served. Testimonials Client quotes with names. Team Your lawyers with photos, roles, and bios. FAQ Question/answer accordion. Gallery Image grid. Logo strip Bar of association / client logos. Packages Live block — automatically renders your published subscription packages. Services Live block — automatically renders your published on-demand services. Contact Co"
+ },
+ {
+  "page": "Website (CMS) & leads",
+  "title": "Templates",
+  "url": "./website-leads.html#templates",
+  "text": "Start from a template instead of a blank page: Classic , Minimal , Modern , Services & packages , Team , or Contact . Templates pre-fill a sensible block layout you then edit."
+ },
+ {
+  "page": "Website (CMS) & leads",
+  "title": "Branding",
+  "url": "./website-leads.html#branding",
+  "text": "The public site uses your logo and brand colors from Settings → Branding , so the website, workspace, and client portal all match."
+ },
+ {
+  "page": "Website (CMS) & leads",
+  "title": "Where your site is published",
+  "url": "./website-leads.html#urls",
+  "text": "Immediately (no DNS needed): https://cliavo.com/site/your-slug Your subdomain : https://your-slug.cliavo.com — also where your team and clients sign in. Custom domain : connect e.g. portal.yourfirm.ch in Settings → Workspace with a single CNAME record. See Domains ."
+ },
+ {
+  "page": "Website (CMS) & leads",
+  "title": "Lead capture",
+  "url": "./website-leads.html#leads",
+  "text": "The Contact block on your public pages feeds submissions straight into your CRM leads pipeline with source \"website\". Package and service blocks link visitors to subscription registration and service checkout, turning your website into a storefront. Tip: keep one published homepage plus a few focused pages (About, Services, Contact). Search engines read your SEO title/description per page — write them like an ad for the page."
+ }
+]

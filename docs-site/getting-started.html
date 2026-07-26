@@ -8,27 +8,89 @@
 </head>
 <body>
   <div class="shell">
-    <a class="back" href="./index.html">← Help Center</a>
+    <header class="top">
+      <div class="brand">Cliavo<span>Help Center</span></div>
+      <div class="search">
+        <input type="search" id="searchInput" placeholder="Search the docs…" autocomplete="off" />
+        <div class="search-results" id="searchResults" hidden></div>
+      </div>
+      <nav><a href="./index.html">All topics</a></nav>
+    </header>
+
     <article class="article">
       <h1>Getting started</h1>
-      <p>Cliavo is a multi-tenant platform for law firms: each merchant (firm) has its own workspace, branding, clients, and billing.</p>
-      <h2>Sign in</h2>
+      <p>
+        Cliavo is a complete practice-management platform for law firms. Every firm gets its own
+        isolated workspace with its own branding, team, clients, cases, billing, and public website.
+        This guide takes you from creating an account to a fully working firm.
+      </p>
+
+      <h2 id="create-workspace">Create your workspace</h2>
+      <p>There are two ways a firm workspace is created:</p>
       <ul>
-        <li>Firm users sign in with email and password on your firm login URL.</li>
-        <li>If 2FA is enabled, enter the authenticator code after password login.</li>
-        <li>Platform operators use the separate superadmin login.</li>
+        <li>
+          <strong>Self-serve trial</strong> — click <em>Start free trial</em> on cliavo.com, enter your
+          firm name, your name, email, and a password. Your workspace is created instantly with a
+          <strong>15-day trial</strong> on the starter plan, and you are taken straight to onboarding.
+        </li>
+        <li>
+          <strong>Provisioned by Cliavo</strong> — our team creates the firm for you and sends the owner a
+          credentials email with a <strong>temporary password</strong>. On first login you are asked to set
+          your own password before continuing.
+        </li>
       </ul>
-      <h2>First firm setup</h2>
+
+      <h2 id="onboarding">The onboarding wizard</h2>
+      <p>After signup you complete a short wizard. Everything can be changed later in Settings.</p>
       <ul>
-        <li>Complete firm profile (name, address, VAT, logo, banking for Swiss QR).</li>
-        <li>Invite lawyers, assistants, and sub-admins from <strong>Settings → Team</strong>.</li>
-        <li>Adjust role permissions under <strong>Settings → Roles</strong> if needed.</li>
-        <li>Connect payments (Adyen and/or Stripe) under <strong>Settings → Payments</strong>.</li>
+        <li><strong>1 · Firm profile</strong> — legal name, address, contact email, phone, and VAT/UID number. These appear on your invoices.</li>
+        <li><strong>2 · Branding</strong> — upload your logo and pick your primary and secondary brand colors. They style your workspace, client portal, and public website.</li>
+        <li><strong>3 · Currency &amp; tax</strong> — the default billing currency for new invoices and packages (CHF, EUR, USD, GBP, AED, SAR, and more) and your default VAT rate (Swiss standard is 8.1%).</li>
+        <li><strong>4 · Subdomain</strong> — pick your firm address, e.g. <code>yourfirm.cliavo.com</code>. Lawyers and clients sign in there, and your public site is also reachable at <code>cliavo.com/site/yourfirm</code> immediately, no DNS needed. A custom domain (e.g. <code>portal.yourfirm.ch</code>) can be connected later in <a href="./settings.html#domains">Settings → Workspace</a>.</li>
       </ul>
-      <h2>Languages</h2>
-      <p>The product UI supports English, French, German, Italian, and Arabic. Users can change language in Settings.</p>
+
+      <h2 id="sign-in">Signing in</h2>
+      <ul>
+        <li>Firm members and clients sign in with <strong>email + password</strong> at <code>/login</code> (or your firm subdomain).</li>
+        <li>If <a href="./security.html#two-factor">two-factor authentication</a> is enabled, you enter a 6-digit authenticator code after your password.</li>
+        <li>If your account was created with a temporary password, you are asked to set a new one before you can continue. You do not need to re-type the temporary password.</li>
+        <li>Platform operators (Cliavo staff) use a separate login at <code>/platform/login</code>; superadmin accounts can never enter a firm workspace through the normal login.</li>
+      </ul>
+
+      <h2 id="first-steps">Recommended first steps</h2>
+      <ul>
+        <li><strong>Invite your team</strong> from Settings → Team: sub-admins, lawyers, and assistants each get an email invite. See <a href="./team-roles.html">Team &amp; roles</a>.</li>
+        <li><strong>Add banking details</strong> (IBAN or QR-IBAN plus creditor address) in Settings so Swiss QR-bills can be generated on invoices.</li>
+        <li><strong>Set your hourly rate</strong> in Time Reports so tracked time is valued correctly.</li>
+        <li><strong>Create your first client and case</strong> — see <a href="./clients-crm.html">Clients &amp; CRM</a> and <a href="./cases-clients.html">Cases &amp; matters</a>.</li>
+        <li><strong>Publish your website</strong> — pick a template in CMS and go live in minutes. See <a href="./website-leads.html">Website (CMS)</a>.</li>
+      </ul>
+
+      <h2 id="languages">Languages</h2>
+      <p>
+        The interface is available in <strong>English, French, German, Italian, and Arabic</strong> (with
+        full right-to-left layout for Arabic). Each user picks their own language from the language
+        switcher; invitation emails can also be sent in the recipient's language. Platform
+        administrators control which languages are enabled.
+      </p>
+
+      <h2 id="trial-plans">Trial, plans &amp; account</h2>
+      <ul>
+        <li>Your trial banner shows the days remaining. When the trial ends, the workspace is locked (read-only access to account and support) until a plan is activated.</li>
+        <li>Under <strong>Account</strong> you can see your current plan, price, and billing cycle, and upgrade at any time.</li>
+        <li>If your firm is suspended or payment is past due, admins keep access to Account, Support, and plan checkout so they can restore service.</li>
+      </ul>
+
+      <h2 id="mobile">Mobile app</h2>
+      <p>
+        Cliavo has a companion mobile app (iOS and Android) for lawyers and clients: dashboards,
+        cases, invoices, and document scanning with the camera. It signs in against
+        <code>https://cliavo.com</code> with the same email and password.
+      </p>
     </article>
-    <footer class="footer">support@cliavo.com</footer>
+
+    <footer class="footer"><a href="./index.html">← Help Center</a> · support@cliavo.com</footer>
   </div>
+  <script src="./search.js" defer></script>
 </body>
 </html>
