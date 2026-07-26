@@ -122,3 +122,17 @@ describe("Role-based access control", () => {
     expect(isInternal("client")).toBe(false);
   });
 });
+
+describe("Pending MVP features wiring", () => {
+  it("exposes invoicePdf, document audit, and admin analytics routers", () => {
+    const ctx = makeCtx();
+    const caller = appRouter.createCaller(ctx);
+    expect(typeof caller.invoicePdf.generate).toBe("function");
+    expect(typeof caller.documents.getVersions).toBe("function");
+    expect(typeof caller.documents.getAuditLog).toBe("function");
+    expect(typeof caller.documents.firmAuditLog).toBe("function");
+    expect(typeof caller.documents.uploadVersion).toBe("function");
+    expect(typeof caller.dashboard.adminAnalytics).toBe("function");
+    expect(typeof caller.documentAnalysis.analyzeDocument).toBe("function");
+  });
+});

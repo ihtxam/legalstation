@@ -2,12 +2,29 @@ import { z } from "zod";
 import { protectedProcedure, router } from "../_core/trpc";
 import { TRPCError } from "@trpc/server";
 import { generateInvoicePdf } from "../invoicePdfGenerator";
-import { getInvoiceById, getFirmMemberByUserId, getClientByUserId } from "../db";
+import { getInvoiceByIdOnly, getFirmMemberByUserId, getClientByUserId } from "../db";
 import { sendEmail } from "../email";
+
+async function assertInvoiceAccess(userId: number, invoiceId: number) {
+  const invoice = await getInvoiceByIdOnly(invoiceId);
+  if (!invoice) throw new TRPCError({ code: "NOT_FOUND", message: "Invoice not found" });
+
+  const member = await getFirmMemberByUserId(userId);
+  if (member && member.firmId === invoice.firmId) {
+    return { invoice, member, client: undefined as Awaited<ReturnType<typeof getClientByUserId>> };
+  }
+
+  const client = await getClientByUserId(userId);
+  if (client && client.id === invoice.clientId) {
+    return { invoice, member: undefined as Awaited<ReturnType<typeof getFirmMemberByUserId>>, client };
+  }
+
+  throw new TRPCError({ code: "FORBIDDEN", message: "You do not have access to this invoice" });
+}
 
 export const invoicePdfRouter = router({
   /**
-   * Generate invoice PDF
+   * Generate invoice PDF with firm letterhead
    */
   generate: protectedProcedure
     .input(z.object({
@@ -15,22 +32,8 @@ export const invoicePdfRouter = router({
       includePaymentLink: z.boolean().optional(),
     }))
     .mutation(async ({ ctx, input }) => {
-      const invoice = await getInvoiceById(input.invoiceId, 0);
-      if (!invoice) throw new TRPCError({ code: "NOT_FOUND" });
+      const { invoice } = await assertInvoiceAccess(ctx.user.id, input.invoiceId);
 
-      // Check access: lawyer/admin or client
-      const member = await getFirmMemberByUserId(ctx.user.id);
-      const client = await getClientByUserId(ctx.user.id);
-
-      if (member && member.firmId === invoice.firmId) {
-        // Lawyer/admin can generate
-      } else if (client && client.id === invoice.clientId) {
-        // Client can generate their own
-      } else {
-        throw new TRPCError({ code: "FORBIDDEN" });
-      }
-
-      // Generate PDF
       const pdfBuffer = await generateInvoicePdf({
         invoiceId: input.invoiceId,
         includePaymentLink: input.includePaymentLink,
@@ -54,23 +57,17 @@ export const invoicePdfRouter = router({
       includePaymentLink: z.boolean().optional(),
     }))
     .mutation(async ({ ctx, input }) => {
-      const invoice = await getInvoiceById(input.invoiceId, 0);
-      if (!invoice) throw new TRPCError({ code: "NOT_FOUND" });
-
-      // Check access: only lawyer/admin can send
-      const member = await getFirmMemberByUserId(ctx.user.id);
-      if (!member || member.firmId !== invoice.firmId) {
-        throw new TRPCError({ code: "FORBIDDEN" });
+      const { invoice, member } = await assertInvoiceAccess(ctx.user.id, input.invoiceId);
+      if (!member) {
+        throw new TRPCError({ code: "FORBIDDEN", message: "Only firm members can email invoices" });
       }
 
-      // Generate PDF
       const pdfBuffer = await generateInvoicePdf({
         invoiceId: input.invoiceId,
         includePaymentLink: input.includePaymentLink,
         adyenPaymentUrl: invoice.adyenPaymentLinkUrl || undefined,
       });
 
-      // Send email with payment link
       await sendEmail({
         to: [{ email: input.recipientEmail }],
         subject: `Invoice ${invoice.invoiceNumber}`,
@@ -84,6 +81,10 @@ export const invoicePdfRouter = router({
           <p>Thank you for your business.</p>
         `,
         sender: { email: "invoices@lexflow.app", name: "LexFlow Invoices" },
+        attachment: [{
+          name: `invoice-${invoice.invoiceNumber}.pdf`,
+          content: pdfBuffer.toString("base64"),
+        }],
       });
 
       return { success: true, message: "Invoice sent successfully" };

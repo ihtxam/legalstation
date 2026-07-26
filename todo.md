@@ -57,7 +57,7 @@
 - [x] Client invoice view: outstanding balance on dashboard
 - [x] Stripe Checkout integration: payment link per invoice
 - [x] Stripe webhook: checkout.session.completed → mark invoice paid
-- [ ] Server-side PDF generation with firm letterhead
+- [x] Server-side PDF generation with firm letterhead
 
 ## Phase 8: Dashboards
 - [x] Lawyer dashboard: open/pending cases, pending/overdue invoices, total revenue
@@ -76,14 +76,14 @@
 - [x] Print styles for invoice PDF
 
 ## Post-MVP Enhancements
-- [ ] Email notifications for messages and document uploads (requires email provider)
+- [x] Email notifications for messages and document uploads (Brevo)
 - [ ] 2FA optional login
-- [ ] Multi-language UI (FR / DE / EN)
-- [ ] Case assignment UI (add/remove lawyers and clients in case detail)
-- [ ] Document version history viewer UI
-- [ ] Audit log viewer page for admins
-- [ ] Invoice PDF with firm letterhead (server-side generation)
-- [ ] Full admin analytics dashboard
+- [ ] Multi-language UI (FR / DE / EN) — see open i18n PRs
+- [x] Case assignment UI (add/remove lawyers and clients in case detail)
+- [x] Document version history viewer UI
+- [x] Audit log viewer page for admins
+- [x] Invoice PDF with firm letterhead (server-side generation)
+- [x] Full admin analytics dashboard
 
 ## Critical MVP Fixes (Phase 10)
 - [x] Brevo API integration: send firm invite, client invite, and message notification emails
@@ -119,7 +119,7 @@
 - [x] Payment plan creation: lawyers define schedule (e.g., 50% upfront, 50% on completion)
 - [x] Payment plan UI: PaymentPlanScheduler component (monthly/custom intervals)
 - [x] Payment plan visualization on invoice detail page (PaymentInstallmentTimeline component)
-- [ ] Auto-generate scheduled invoices based on plan
+- [ ] Auto-generate scheduled invoices based on plan — see PR #18 (swiss-qr-installments)
 - [x] Adyen integration: payment link per invoice
 - [x] Payment status tracking: pending, paid, overdue, cancelled
 
@@ -144,8 +144,8 @@
 - [x] Time analytics: total hours, billable hours, utilization rate
 - [x] Daily time breakdown with date grouping
 - [x] Firm analytics for admins (all lawyers' time data)
-- [ ] Add time entries to invoices (simplified integration)
-- [ ] Time entry submission workflow (draft → submitted → billed)
+- [ ] Add time entries to invoices (simplified integration) — see PR #7 (time-invoice-ux)
+- [ ] Time entry submission workflow (draft → submitted → billed) — see PR #7
 
 ## Phase 8: Enhanced Client Portal
 - [x] Improved document exchange UI with drag-and-drop upload (DocumentExchange component)
@@ -169,7 +169,7 @@
 - [x] Display analysis results in client portal
 - [x] Update documents.register to return documentId for analysis triggering
 - [ ] Test with various document types (PDF, Word, text)
-- [ ] Trigger analysis automatically on document upload (post-MVP)
+- [x] Trigger analysis automatically on document upload
 
 ## Phase 10: Settings Enhancements
 - [x] Add logo upload feature to Firm settings tab

@@ -6,7 +6,7 @@ import { StatusBadge } from "@/components/StatusBadge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
-import { Briefcase, Receipt, TrendingUp, Clock, AlertTriangle, ArrowRight, Calendar, Crown } from "lucide-react";
+import { Briefcase, Receipt, TrendingUp, Clock, AlertTriangle, ArrowRight, Calendar, Crown, BarChart3 } from "lucide-react";
 import { useEffect } from "react";
 import { useLocation } from "wouter";
 import { CASE_TYPE_LABELS } from "@shared/types";
@@ -21,8 +21,10 @@ function formatCHF(amount: number) {
 function LawyerDashboard() {
   const { data: stats, isLoading } = trpc.dashboard.lawyerStats.useQuery();
   const { data: activity, isLoading: activityLoading } = trpc.dashboard.recentActivity.useQuery();
+  const { data: firmData } = trpc.firm.myFirm.useQuery();
   const { user } = useAuth();
   const [, navigate] = useLocation();
+  const isAdmin = firmData?.member?.firmRole === "admin";
 
   // Setup superadmin mutation
   const setupSuperadminMutation = trpc.superadmin.setupSuperadmin.useMutation({
@@ -90,7 +92,101 @@ function LawyerDashboard() {
         ))}
       </div>
 
-      {/* Recent Activity - TODO: fix date formatting issue */}
+      {isAdmin && (
+        <Card className="border-border shadow-none">
+          <CardContent className="p-5 flex items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <BarChart3 className="w-5 h-5 text-[var(--color-navy)]" />
+              <div>
+                <p className="font-medium text-foreground">Firm analytics</p>
+                <p className="text-sm text-muted-foreground">Revenue trends, case mix, and invoice status</p>
+              </div>
+            </div>
+            <Button variant="outline" onClick={() => navigate("/analytics")}>
+              Open <ArrowRight className="w-4 h-4 ml-1.5" />
+            </Button>
+          </CardContent>
+        </Card>
+      )}
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <Card className="border-border shadow-none">
+          <CardHeader>
+            <CardTitle className="text-base flex items-center gap-2">
+              <TrendingUp className="w-4 h-4" /> Total revenue
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {isLoading ? (
+              <Skeleton className="h-10 w-32" />
+            ) : (
+              <p className="text-3xl font-bold text-foreground">{formatCHF(stats?.totalRevenue ?? 0)}</p>
+            )}
+          </CardContent>
+        </Card>
+
+        <Card className="border-border shadow-none">
+          <CardHeader>
+            <CardTitle className="text-base flex items-center gap-2">
+              <Calendar className="w-4 h-4" /> Upcoming deadlines
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {isLoading ? (
+              <Skeleton className="h-16 w-full" />
+            ) : !stats?.upcomingDeadlines?.length ? (
+              <p className="text-sm text-muted-foreground">No upcoming deadlines</p>
+            ) : (
+              stats.upcomingDeadlines.map((c) => (
+                <button
+                  key={c.id}
+                  onClick={() => navigate(`/cases/${c.id}`)}
+                  className="w-full text-left flex items-center justify-between gap-3 py-2 border-b border-border last:border-0"
+                >
+                  <div className="min-w-0">
+                    <p className="text-sm font-medium truncate">{c.title}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {CASE_TYPE_LABELS[c.type as keyof typeof CASE_TYPE_LABELS] || c.type}
+                    </p>
+                  </div>
+                  <p className="text-xs text-muted-foreground shrink-0">
+                    {c.deadline ? format(new Date(c.deadline), "dd MMM yyyy") : "—"}
+                  </p>
+                </button>
+              ))
+            )}
+          </CardContent>
+        </Card>
+      </div>
+
+      <Card className="border-border shadow-none">
+        <CardHeader>
+          <CardTitle className="text-base">Recent activity</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          {activityLoading ? (
+            <Skeleton className="h-20 w-full" />
+          ) : !activity?.length ? (
+            <p className="text-sm text-muted-foreground">No recent activity</p>
+          ) : (
+            activity.slice(0, 10).map(({ event, case: c }) => (
+              <button
+                key={event.id}
+                onClick={() => navigate(`/cases/${c.id}`)}
+                className="w-full text-left flex items-start justify-between gap-3 py-2 border-b border-border last:border-0"
+              >
+                <div className="min-w-0">
+                  <p className="text-sm font-medium truncate">{c.title}</p>
+                  <p className="text-xs text-muted-foreground truncate">{event.content || event.eventType}</p>
+                </div>
+                <p className="text-xs text-muted-foreground shrink-0">
+                  {format(new Date(event.createdAt), "dd MMM")}
+                </p>
+              </button>
+            ))
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 }

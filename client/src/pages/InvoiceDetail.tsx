@@ -309,6 +309,22 @@ export default function InvoiceDetailPage() {
     onSuccess: () => { refetch(); toast.success("Invoice updated"); },
     onError: (e) => toast.error(e.message),
   });
+  const generatePdf = trpc.invoicePdf.generate.useMutation({
+    onSuccess: (result) => {
+      const binary = atob(result.buffer);
+      const bytes = new Uint8Array(binary.length);
+      for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+      const blob = new Blob([bytes], { type: "application/pdf" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = result.filename;
+      a.click();
+      URL.revokeObjectURL(url);
+      toast.success("PDF downloaded");
+    },
+    onError: (e) => toast.error(e.message || "Failed to generate PDF"),
+  });
 
   if (isNewInvoice) return <NewInvoiceForm />;
   if (isLoading) return <LexLayout title="Invoice"><div className="p-6"><Skeleton className="h-64 w-full" /></div></LexLayout>;
@@ -413,20 +429,13 @@ export default function InvoiceDetailPage() {
 
         {/* Actions */}
         <div className="flex gap-3 justify-end">
-          <Button variant="outline" onClick={() => {
-            const pdfWindow = window.open('', '', 'width=800,height=600');
-            if (pdfWindow) {
-              pdfWindow.document.write(`
-                <html><head><title>Invoice ${invoice.invoiceNumber}</title></head>
-                <body onload="window.print()">
-                  <h1>Invoice ${invoice.invoiceNumber}</h1>
-                  <p>Total: ${formatCHF(total)}</p>
-                </body></html>
-              `);
-              pdfWindow.document.close();
-            }
-          }}>
-            <Download className="w-4 h-4 mr-1.5" /> Download PDF
+          <Button
+            variant="outline"
+            disabled={generatePdf.isPending}
+            onClick={() => generatePdf.mutate({ invoiceId, includePaymentLink: true })}
+          >
+            <Download className="w-4 h-4 mr-1.5" />
+            {generatePdf.isPending ? "Generating…" : "Download PDF"}
           </Button>
           {invoice.status === "draft" && (
             <Button className="bg-[var(--color-navy)] hover:bg-[var(--color-navy-light)] text-white" onClick={() => updateStatus.mutate({ id: invoiceId, status: "sent" })}>

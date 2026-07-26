@@ -16,13 +16,16 @@ import { Badge } from "@/components/ui/badge";
 import {
   Calendar, FileText, MessageSquare, Lock, Globe, Plus,
   Upload, Download, Eye, Trash2, Clock, Edit2, FolderOpen,
-  AlertCircle, Users, X
+  AlertCircle, Users, X, History, ScrollText
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useLocation, useParams } from "wouter";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { CASE_TYPE_LABELS } from "@shared/types";
+import { DocumentVersionsDialog } from "@/components/DocumentVersionsDialog";
+import { DocumentAuditDialog } from "@/components/DocumentAuditDialog";
+import { DocumentSummaryCard } from "@/components/DocumentSummaryCard";
 
 function CaseTimeline({ caseId, isInternal }: { caseId: number; isInternal: boolean }) {
   const { data: events, isLoading, refetch } = trpc.cases.getEvents.useQuery({ caseId });
@@ -128,12 +131,49 @@ function CaseDocuments({ caseId, firmId }: { caseId: number; firmId: number }) {
   const [showUpload, setShowUpload] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [folderId, setFolderId] = useState("");
+  const [summaries, setSummaries] = useState<Record<number, any>>({});
+  const [summariesLoading, setSummariesLoading] = useState<Record<number, boolean>>({});
   const fileInputRef = useRef<HTMLInputElement>(null);
   
   const updateVisibility = trpc.documents.updateVisibility.useMutation({ onSuccess: () => refetch() });
   const logAccess = trpc.documents.logAccess.useMutation();
+  const analyzeDocument = trpc.documentAnalysis.analyzeDocument.useMutation();
   const register = trpc.documents.register.useMutation({
-    onSuccess: () => { setShowUpload(false); setSelectedFile(null); refetch(); toast.success("Document uploaded"); },
+    onSuccess: async (result) => {
+      setShowUpload(false);
+      setSelectedFile(null);
+      refetch();
+      toast.success("Document uploaded");
+      if (result.documentId && result.fileUrl) {
+        setSummariesLoading((prev) => ({ ...prev, [result.documentId!]: true }));
+        try {
+          const analysis = await analyzeDocument.mutateAsync({
+            documentId: result.documentId,
+            documentUrl: result.fileUrl,
+            fileName: result.name,
+            mimeType: result.mimeType,
+          });
+          setSummaries((prev) => ({
+            ...prev,
+            [result.documentId!]: {
+              documentId: result.documentId,
+              status: "completed",
+              ...analysis.summary,
+              keyPoints: JSON.stringify(analysis.summary.keyPoints || []),
+              extractedEntities: JSON.stringify(analysis.summary.extractedEntities || []),
+            },
+          }));
+          toast.success("Document analysis complete");
+        } catch {
+          setSummaries((prev) => ({
+            ...prev,
+            [result.documentId!]: { documentId: result.documentId, status: "failed", error: "Analysis failed" },
+          }));
+        } finally {
+          setSummariesLoading((prev) => ({ ...prev, [result.documentId!]: false }));
+        }
+      }
+    },
     onError: (e: any) => toast.error(e.message),
   });
 
@@ -168,13 +208,25 @@ function CaseDocuments({ caseId, firmId }: { caseId: number; firmId: number }) {
                 <span className="text-sm font-semibold text-foreground">{folder.name}</span>
                 <span className="text-xs text-muted-foreground">({fDocs.length})</span>
               </div>
-              <DocList docs={fDocs} onToggle={updateVisibility.mutate} onLog={logAccess.mutate} />
+              <DocList
+                docs={fDocs}
+                onToggle={updateVisibility.mutate}
+                onLog={logAccess.mutate}
+                summaries={summaries}
+                summariesLoading={summariesLoading}
+              />
             </div>
           ))}
           {unfoldered.length > 0 && (
             <div>
               <p className="text-sm font-semibold text-muted-foreground mb-2">Unfiled</p>
-              <DocList docs={unfoldered} onToggle={updateVisibility.mutate} onLog={logAccess.mutate} />
+              <DocList
+                docs={unfoldered}
+                onToggle={updateVisibility.mutate}
+                onLog={logAccess.mutate}
+                summaries={summaries}
+                summariesLoading={summariesLoading}
+              />
             </div>
           )}
         </div>
@@ -202,7 +254,7 @@ function CaseDocuments({ caseId, firmId }: { caseId: number; firmId: number }) {
                   caseId,
                   name: selectedFile.name,
                   originalName: selectedFile.name,
-                  mimeType: selectedFile.type,
+                  mimeType: selectedFile.type || "application/octet-stream",
                   size: selectedFile.size,
                   fileKey,
                   fileUrl,
@@ -218,31 +270,80 @@ function CaseDocuments({ caseId, firmId }: { caseId: number; firmId: number }) {
   );
 }
 
-function DocList({ docs, onToggle, onLog }: { docs: any[]; onToggle: (v: any) => void; onLog: (v: any) => void }) {
+function DocList({
+  docs,
+  onToggle,
+  onLog,
+  summaries = {},
+  summariesLoading = {},
+}: {
+  docs: any[];
+  onToggle: (v: any) => void;
+  onLog: (v: any) => void;
+  summaries?: Record<number, any>;
+  summariesLoading?: Record<number, boolean>;
+}) {
+  const [versionsDoc, setVersionsDoc] = useState<any | null>(null);
+  const [auditDoc, setAuditDoc] = useState<any | null>(null);
+
   return (
-    <div className="bg-card border border-border rounded-xl divide-y divide-border overflow-hidden">
-      {docs.map(({ doc }) => (
-        <div key={doc.id} className="flex items-center gap-3 px-4 py-3 hover:bg-accent/50 transition-colors">
-          <FileText className="w-4 h-4 text-muted-foreground shrink-0" />
-          <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium text-foreground truncate">{doc.name}</p>
-            <p className="text-xs text-muted-foreground">{(doc.size / 1024).toFixed(1)} KB · v{doc.currentVersion}</p>
+    <>
+      <div className="bg-card border border-border rounded-xl divide-y divide-border overflow-hidden">
+        {docs.map(({ doc }) => (
+          <div key={doc.id} className="px-4 py-3 hover:bg-accent/50 transition-colors space-y-3">
+            <div className="flex items-center gap-3">
+              <FileText className="w-4 h-4 text-muted-foreground shrink-0" />
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium text-foreground truncate">{doc.name}</p>
+                <p className="text-xs text-muted-foreground">{(doc.size / 1024).toFixed(1)} KB · v{doc.currentVersion}</p>
+              </div>
+              <StatusBadge status={doc.visibility} />
+              <div className="flex items-center gap-1">
+                <button
+                  title="Version history"
+                  onClick={() => setVersionsDoc(doc)}
+                  className="p-1.5 text-muted-foreground hover:text-foreground rounded transition-colors"
+                >
+                  <History className="w-3.5 h-3.5" />
+                </button>
+                <button
+                  title="Audit log"
+                  onClick={() => setAuditDoc(doc)}
+                  className="p-1.5 text-muted-foreground hover:text-foreground rounded transition-colors"
+                >
+                  <ScrollText className="w-3.5 h-3.5" />
+                </button>
+                <button title="Toggle visibility" onClick={() => onToggle({ id: doc.id, visibility: doc.visibility === "internal" ? "shared" : "internal" })}
+                  className="p-1.5 text-muted-foreground hover:text-foreground rounded transition-colors">
+                  {doc.visibility === "internal" ? <Lock className="w-3.5 h-3.5" /> : <Globe className="w-3.5 h-3.5" />}
+                </button>
+                <a href={doc.fileUrl} target="_blank" rel="noopener noreferrer"
+                  onClick={() => onLog({ documentId: doc.id, action: "download" })}
+                  className="p-1.5 text-muted-foreground hover:text-foreground rounded transition-colors">
+                  <Download className="w-3.5 h-3.5" />
+                </a>
+              </div>
+            </div>
+            {(summaries[doc.id] || summariesLoading[doc.id]) && (
+              <DocumentSummaryCard summary={summaries[doc.id]} isLoading={summariesLoading[doc.id]} />
+            )}
           </div>
-          <StatusBadge status={doc.visibility} />
-          <div className="flex items-center gap-1">
-            <button title="Toggle visibility" onClick={() => onToggle({ id: doc.id, visibility: doc.visibility === "internal" ? "shared" : "internal" })}
-              className="p-1.5 text-muted-foreground hover:text-foreground rounded transition-colors">
-              {doc.visibility === "internal" ? <Lock className="w-3.5 h-3.5" /> : <Globe className="w-3.5 h-3.5" />}
-            </button>
-            <a href={doc.fileUrl} target="_blank" rel="noopener noreferrer"
-              onClick={() => onLog({ documentId: doc.id, action: "download" })}
-              className="p-1.5 text-muted-foreground hover:text-foreground rounded transition-colors">
-              <Download className="w-3.5 h-3.5" />
-            </a>
-          </div>
-        </div>
-      ))}
-    </div>
+        ))}
+      </div>
+      <DocumentVersionsDialog
+        documentId={versionsDoc?.id ?? null}
+        documentName={versionsDoc?.name}
+        open={!!versionsDoc}
+        onOpenChange={(open) => !open && setVersionsDoc(null)}
+        onDownload={(id) => onLog({ documentId: id, action: "download" })}
+      />
+      <DocumentAuditDialog
+        documentId={auditDoc?.id ?? null}
+        documentName={auditDoc?.name}
+        open={!!auditDoc}
+        onOpenChange={(open) => !open && setAuditDoc(null)}
+      />
+    </>
   );
 }
 

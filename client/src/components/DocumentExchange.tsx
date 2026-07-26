@@ -1,11 +1,12 @@
 import { useState, useRef } from "react";
-import { FileText, Upload, Download, Lock, Globe, Trash2, Share2, Eye, Copy, CheckCircle } from "lucide-react";
+import { FileText, Upload, Download, Lock, Globe, Trash2, Share2, Eye, Copy, CheckCircle, History } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { DocumentSummaryCard } from "./DocumentSummaryCard";
+import { DocumentVersionsDialog } from "./DocumentVersionsDialog";
 
 interface DocumentExchangeProps {
   docs: any[];
@@ -18,6 +19,7 @@ interface DocumentExchangeProps {
   canShare: boolean;
   summaries?: Record<number, any>;
   summariesLoading?: Record<number, boolean>;
+  showVersions?: boolean;
 }
 
 export function DocumentExchange({
@@ -31,6 +33,7 @@ export function DocumentExchange({
   canShare,
   summaries = {},
   summariesLoading = {},
+  showVersions = true,
 }: DocumentExchangeProps) {
   const [showUpload, setShowUpload] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -38,6 +41,7 @@ export function DocumentExchange({
   const [uploading, setUploading] = useState(false);
   const [selectedDoc, setSelectedDoc] = useState<any | null>(null);
   const [showShareDialog, setShowShareDialog] = useState(false);
+  const [versionsDoc, setVersionsDoc] = useState<any | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleDrag = (e: React.DragEvent) => {
@@ -157,6 +161,15 @@ export function DocumentExchange({
 
                 {/* Actions */}
                 <div className="flex items-center gap-1 shrink-0">
+                  {showVersions && (
+                    <button
+                      title="Version history"
+                      onClick={() => setVersionsDoc(doc)}
+                      className="p-2 text-muted-foreground hover:text-foreground hover:bg-muted rounded transition-colors"
+                    >
+                      <History className="w-4 h-4" />
+                    </button>
+                  )}
                   {/* Download */}
                   <button
                     title="Download document"
@@ -363,6 +376,14 @@ export function DocumentExchange({
           </DialogContent>
         </Dialog>
       )}
+
+      <DocumentVersionsDialog
+        documentId={versionsDoc?.id ?? null}
+        documentName={versionsDoc?.name}
+        open={!!versionsDoc}
+        onOpenChange={(open) => !open && setVersionsDoc(null)}
+        onDownload={(id) => onDownload(id, versionsDoc?.name || "")}
+      />
     </div>
   );
 }

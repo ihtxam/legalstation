@@ -23,6 +23,8 @@ import SuperadminDashboard from "./pages/SuperadminDashboard";
 import AdminSettings from "./pages/AdminSettings";
 import ClientPortalPage from "./pages/ClientPortal";
 import TimeReportsPage from "./pages/TimeReports";
+import AuditLogPage from "./pages/AuditLog";
+import AnalyticsPage from "./pages/Analytics";
 
 function Router() {
   const { user } = useAuth();
@@ -54,6 +56,8 @@ function Router() {
       <Route path="/admin/settings" component={AdminSettings} />
       <Route path="/client-portal" component={ClientPortalPage} />
       <Route path="/time-reports" component={TimeReportsPage} />
+      <Route path="/audit-log" component={AuditLogPage} />
+      <Route path="/analytics" component={AnalyticsPage} />
       <Route path="/404" component={NotFound} />
       <Route component={NotFound} />
     </Switch>

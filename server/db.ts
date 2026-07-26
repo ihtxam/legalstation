@@ -392,9 +392,27 @@ export async function createDocumentVersion(data: InsertDocumentVersion) {
 export async function getDocumentVersions(documentId: number) {
   const db = await getDb();
   if (!db) return [];
-  return db.select().from(documentVersions)
+  return db.select({ version: documentVersions, uploader: users })
+    .from(documentVersions)
+    .innerJoin(users, eq(documentVersions.uploadedByUserId, users.id))
     .where(eq(documentVersions.documentId, documentId))
     .orderBy(desc(documentVersions.version));
+}
+
+export async function getFirmDocumentAuditLog(firmId: number, limit = 100) {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select({
+    log: documentAuditLog,
+    user: users,
+    document: documents,
+  })
+    .from(documentAuditLog)
+    .innerJoin(users, eq(documentAuditLog.userId, users.id))
+    .innerJoin(documents, eq(documentAuditLog.documentId, documents.id))
+    .where(eq(documents.firmId, firmId))
+    .orderBy(desc(documentAuditLog.createdAt))
+    .limit(limit);
 }
 
 export async function pruneOldVersions(documentId: number) {
@@ -495,6 +513,14 @@ export async function getInvoiceById(id: number, firmId: number) {
   if (!db) return undefined;
   const result = await db.select().from(invoices)
     .where(and(eq(invoices.id, id), eq(invoices.firmId, firmId))).limit(1);
+  return result[0];
+}
+
+/** Lookup invoice by id only (access control must be applied by the caller). */
+export async function getInvoiceByIdOnly(id: number) {
+  const db = await getDb();
+  if (!db) return undefined;
+  const result = await db.select().from(invoices).where(eq(invoices.id, id)).limit(1);
   return result[0];
 }
 

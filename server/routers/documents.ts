@@ -10,6 +10,7 @@ import {
   getDocumentFolders,
   getDocumentsByCase,
   getDocumentVersions,
+  getFirmDocumentAuditLog,
   getFirmMemberByUserId,
   getClientByUserId,
   pruneOldVersions,
@@ -56,27 +57,75 @@ export const documentsRouter = router({
     }))
     .mutation(async ({ ctx, input }) => {
       const member = await getFirmMemberByUserId(ctx.user.id);
-      if (!member) throw new TRPCError({ code: "UNAUTHORIZED" });
-      await createDocument({
+      const client = member ? null : await getClientByUserId(ctx.user.id);
+      if (!member && !client) throw new TRPCError({ code: "UNAUTHORIZED" });
+
+      const firmId = member?.firmId ?? client!.firmId;
+      const visibility = member ? input.visibility : "shared";
+
+      const result = await createDocument({
         ...input,
-        firmId: member.firmId,
+        visibility,
+        firmId,
         uploadedByUserId: ctx.user.id,
         currentVersion: 1,
       });
-      const docs = await getDocumentsByCase(input.caseId, true);
-      const doc = docs[0]?.doc;
-      if (doc) {
+      const documentId = Number((result as { insertId?: number }).insertId);
+
+      if (documentId) {
         await createDocumentVersion({
-          documentId: doc.id,
+          documentId,
           version: 1,
           fileKey: input.fileKey,
           fileUrl: input.fileUrl,
           size: input.size,
           uploadedByUserId: ctx.user.id,
         });
-        await createDocumentAuditEntry({ documentId: doc.id, userId: ctx.user.id, action: "upload" });
+        await createDocumentAuditEntry({ documentId, userId: ctx.user.id, action: "upload" });
       }
-      return { success: true, documentId: doc?.id || null };
+
+      return { success: true, documentId: documentId || null, fileUrl: input.fileUrl, mimeType: input.mimeType, name: input.name };
+    }),
+
+  uploadVersion: protectedProcedure
+    .input(z.object({
+      documentId: z.number(),
+      fileKey: z.string(),
+      fileUrl: z.string(),
+      size: z.number(),
+      mimeType: z.string().optional(),
+    }))
+    .mutation(async ({ ctx, input }) => {
+      const member = await getFirmMemberByUserId(ctx.user.id);
+      if (!member || !["admin", "lawyer", "assistant"].includes(member.firmRole)) {
+        throw new TRPCError({ code: "FORBIDDEN" });
+      }
+      const doc = await getDocumentById(input.documentId, member.firmId);
+      if (!doc) throw new TRPCError({ code: "NOT_FOUND" });
+
+      const nextVersion = (doc.currentVersion || 1) + 1;
+      await createDocumentVersion({
+        documentId: doc.id,
+        version: nextVersion,
+        fileKey: input.fileKey,
+        fileUrl: input.fileUrl,
+        size: input.size,
+        uploadedByUserId: ctx.user.id,
+      });
+      await updateDocument(doc.id, member.firmId, {
+        currentVersion: nextVersion,
+        fileKey: input.fileKey,
+        fileUrl: input.fileUrl,
+        size: input.size,
+        ...(input.mimeType ? { mimeType: input.mimeType } : {}),
+      });
+      await createDocumentAuditEntry({
+        documentId: doc.id,
+        userId: ctx.user.id,
+        action: "version_upload",
+      });
+      await pruneOldVersions(doc.id);
+      return { success: true, version: nextVersion };
     }),
 
   updateVisibility: protectedProcedure
@@ -111,6 +160,16 @@ export const documentsRouter = router({
       const member = await getFirmMemberByUserId(ctx.user.id);
       if (!member || !["admin", "lawyer"].includes(member.firmRole)) throw new TRPCError({ code: "FORBIDDEN" });
       return getDocumentAuditLog(input.documentId);
+    }),
+
+  firmAuditLog: protectedProcedure
+    .input(z.object({ limit: z.number().min(1).max(500).optional() }).optional())
+    .query(async ({ ctx, input }) => {
+      const member = await getFirmMemberByUserId(ctx.user.id);
+      if (!member || member.firmRole !== "admin") {
+        throw new TRPCError({ code: "FORBIDDEN", message: "Admin access required" });
+      }
+      return getFirmDocumentAuditLog(member.firmId, input?.limit ?? 100);
     }),
 
   getVersions: protectedProcedure

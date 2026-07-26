@@ -15,6 +15,8 @@ import {
   Scale,
   ChevronRight,
   Bell,
+  BarChart3,
+  ScrollText,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -47,6 +49,12 @@ const lawyerNavItems = [
   { href: "/time-reports", label: "Time Reports", icon: FileText },
 ];
 
+const adminNavItems = [
+  ...lawyerNavItems,
+  { href: "/analytics", label: "Analytics", icon: BarChart3 },
+  { href: "/audit-log", label: "Audit Log", icon: ScrollText },
+];
+
 interface LexLayoutProps {
   children: React.ReactNode;
   title?: string;
@@ -62,7 +70,14 @@ export default function LexLayout({ children, title, breadcrumb }: LexLayoutProp
 
   const isClient = !firmData;
   const isSuperadmin = user?.role === "superadmin";
-  const items = isClient ? clientNavItems : isSuperadmin ? navItems : lawyerNavItems;
+  const isAdmin = firmData?.member?.firmRole === "admin";
+  const items = isClient
+    ? clientNavItems
+    : isSuperadmin
+      ? navItems
+      : isAdmin
+        ? adminNavItems
+        : lawyerNavItems;
 
   const initials = user?.name
     ? user.name.split(" ").map((n: string) => n[0]).join("").toUpperCase().slice(0, 2)

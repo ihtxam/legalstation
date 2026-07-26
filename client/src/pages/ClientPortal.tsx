@@ -63,10 +63,32 @@ export default function ClientPortalPage() {
   const deleteDocument = trpc.documents.delete.useMutation();
   const logDocAccess = trpc.documents.logAccess.useMutation();
   const registerDocument = trpc.documents.register.useMutation();
+  const analyzeDocument = trpc.documentAnalysis.analyzeDocument.useMutation();
+  const utils = trpc.useUtils();
   const { refetch: refetchDocs } = trpc.documents.list.useQuery(
     { caseId: selectedCaseId! },
     { enabled: isAuthenticated && !!selectedCaseId }
   );
+
+  useEffect(() => {
+    if (!documents?.length) return;
+    let cancelled = false;
+    (async () => {
+      for (const item of documents) {
+        const doc = item.doc;
+        if (!doc?.id || summaries[doc.id] || summariesLoading[doc.id]) continue;
+        try {
+          const summary = await utils.documentAnalysis.getSummary.fetch({ documentId: doc.id });
+          if (!cancelled && summary) {
+            setSummaries((prev) => ({ ...prev, [doc.id]: summary }));
+          }
+        } catch {
+          // ignore missing summaries
+        }
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [documents]);
 
   if (loading) return <LexLayout title="My Cases"><Skeleton className="h-64 w-full" /></LexLayout>;
 
@@ -228,24 +250,50 @@ export default function ClientPortalPage() {
                               caseId: selectedCaseId!,
                               name: file.name,
                               originalName: file.name,
-                              mimeType: file.type,
+                              mimeType: file.type || "application/octet-stream",
                               size: file.size,
                               fileKey,
                               fileUrl,
+                              visibility: "shared",
                             },
                             {
-                              onSuccess: async (result: any) => {
+                              onSuccess: async (result) => {
                                 refetchDocs();
                                 toast.success("Document uploaded successfully");
-                                // Trigger AI analysis if document was created
-                                if (result.documentId) {
-                                  setSummariesLoading((prev) => ({ ...prev, [result.documentId]: true }));
-                                  toast.loading("Analyzing document with AI...");
-                                  // Simulate analysis completion
-                                  setTimeout(() => {
-                                    setSummariesLoading((prev) => ({ ...prev, [result.documentId]: false }));
-                                    toast.success("Document analysis complete");
-                                  }, 2000);
+                                if (result.documentId && result.fileUrl) {
+                                  setSummariesLoading((prev) => ({ ...prev, [result.documentId!]: true }));
+                                  const toastId = toast.loading("Analyzing document with AI...");
+                                  try {
+                                    const analysis = await analyzeDocument.mutateAsync({
+                                      documentId: result.documentId,
+                                      documentUrl: result.fileUrl,
+                                      fileName: result.name,
+                                      mimeType: result.mimeType,
+                                    });
+                                    setSummaries((prev) => ({
+                                      ...prev,
+                                      [result.documentId!]: {
+                                        documentId: result.documentId,
+                                        status: "completed",
+                                        ...analysis.summary,
+                                        keyPoints: JSON.stringify(analysis.summary.keyPoints || []),
+                                        extractedEntities: JSON.stringify(analysis.summary.extractedEntities || []),
+                                      },
+                                    }));
+                                    toast.success("Document analysis complete", { id: toastId });
+                                  } catch {
+                                    setSummaries((prev) => ({
+                                      ...prev,
+                                      [result.documentId!]: {
+                                        documentId: result.documentId,
+                                        status: "failed",
+                                        error: "Analysis failed",
+                                      },
+                                    }));
+                                    toast.error("Document analysis failed", { id: toastId });
+                                  } finally {
+                                    setSummariesLoading((prev) => ({ ...prev, [result.documentId!]: false }));
+                                  }
                                 }
                               },
                               onError: () => {

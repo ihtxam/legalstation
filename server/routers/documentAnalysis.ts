@@ -9,7 +9,7 @@ import {
 } from "../db.documentAnalysis";
 import { invokeLLM } from "../_core/llm";
 
-export const documentAnalysisRouter = router<any>({
+export const documentAnalysisRouter = router({
   // Get document summary
   getSummary: protectedProcedure
     .input(z.object({ documentId: z.number() }))

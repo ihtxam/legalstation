@@ -40,6 +40,7 @@ export const appRouter = router({
   settings: settingsRouter,
   adyen: adyenRouter,
   documentAnalysis: documentAnalysisRouter,
+  invoicePdf: invoicePdfRouter,
 });
 
 export type AppRouter = typeof appRouter;
