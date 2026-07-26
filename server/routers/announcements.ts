@@ -7,6 +7,7 @@ import {
 } from "../../drizzle/schema";
 import { protectedProcedure, router } from "../_core/trpc";
 import { getDb, getFirmMemberByUserId } from "../db";
+import { isAnnouncementVisibleTo } from "../announcementVisibility";
 
 export const announcementsRouter = router({
   /** Active announcements for the current firm user (not dismissed). */
@@ -30,9 +31,11 @@ export const announcementsRouter = router({
       )
       .orderBy(desc(platformAnnouncements.createdAt));
 
-    const isAdmin = ["admin", "subadmin"].includes(member.firmRole);
     const visible = rows.filter((a) =>
-      a.audience === "all_members" ? true : isAdmin
+      isAnnouncementVisibleTo(a, {
+        firmRole: member.firmRole,
+        accountCreatedAt: ctx.user.createdAt ?? null,
+      })
     );
 
     const dismissed = await db
