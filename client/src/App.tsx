@@ -24,6 +24,7 @@ import SettingsPage from "./pages/Settings";
 import AgendaPage from "./pages/Agenda";
 import FirmPackagesPage from "./pages/FirmPackages";
 import FirmServicesPage from "./pages/FirmServices";
+import FirmUpsellingPage from "./pages/FirmUpselling";
 import SubscribePage from "./pages/Subscribe";
 import OnboardingPage from "./pages/Onboarding";
 import FirmOnboardingPage from "./pages/FirmOnboarding";
@@ -195,6 +196,7 @@ function Router() {
     location.startsWith("/account") ||
     location.startsWith("/support") ||
     location.startsWith("/agenda") ||
+    location.startsWith("/upselling") ||
     location.startsWith("/packages") ||
     location.startsWith("/services") ||
     location.startsWith("/client-portal") ||
@@ -239,6 +241,7 @@ function Router() {
           <Route path="/account" component={AccountPage} />
           <Route path="/support" component={SupportPage} />
           <Route path="/agenda" component={AgendaPage} />
+          <Route path="/upselling" component={FirmUpsellingPage} />
           <Route path="/packages" component={FirmPackagesPage} />
           <Route path="/services" component={FirmServicesPage} />
           <Route path="/subscribe/:firmSlug" component={SubscribePage} />

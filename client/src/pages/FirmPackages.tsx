@@ -210,7 +210,13 @@ export default function FirmPackagesPage() {
   const saving = createPkg.isPending || updatePkg.isPending;
 
   return (
-    <AppLayout title={t("packages.title")} breadcrumb={[{ label: t("packages.title") }]}>
+    <AppLayout
+      title={t("packages.title")}
+      breadcrumb={[
+        { label: t("nav.upselling"), href: "/upselling" },
+        { label: t("packages.title") },
+      ]}
+    >
       <div className="p-6 max-w-4xl mx-auto space-y-6">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>

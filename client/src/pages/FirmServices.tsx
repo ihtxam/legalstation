@@ -192,7 +192,13 @@ export default function FirmServicesPage() {
   }
 
   return (
-    <AppLayout title={t("services.title")} breadcrumb={[{ label: t("services.title") }]}>
+    <AppLayout
+      title={t("services.title")}
+      breadcrumb={[
+        { label: t("nav.upselling"), href: "/upselling" },
+        { label: t("services.title") },
+      ]}
+    >
       <div className="p-6 max-w-5xl mx-auto space-y-6">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>

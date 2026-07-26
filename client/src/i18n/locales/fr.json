@@ -18,7 +18,8 @@
     "packages": "Forfaits",
     "services": "Services",
     "support": "Assistance",
-    "account": "Compte"
+    "account": "Compte",
+    "upselling": "Ventes additionnelles"
   },
   "common": {
     "loading": "Chargement…",
@@ -1450,5 +1451,12 @@
       "itemDesc": "Item description",
       "address": "Address"
     }
+  },
+  "upselling": {
+    "hint": "Vendez forfaits d’abonnement et services ponctuels à vos clients depuis un seul endroit.",
+    "packagesTitle": "Forfaits d’abonnement",
+    "packagesHint": "Plans récurrents avec facturation mensuelle, semestrielle ou annuelle. Heures et dossiers annuels ; engagement minimum d’un an.",
+    "servicesTitle": "Services à la demande",
+    "servicesHint": "Services ponctuels (contrats, conseils, revues). Les clients les achètent dans leur portail."
   }
 }

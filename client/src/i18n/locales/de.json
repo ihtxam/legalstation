@@ -18,7 +18,8 @@
     "packages": "Pakete",
     "services": "Services",
     "support": "Support",
-    "account": "Konto"
+    "account": "Konto",
+    "upselling": "Upselling"
   },
   "common": {
     "loading": "Laden…",
@@ -1450,5 +1451,12 @@
       "itemDesc": "Item description",
       "address": "Address"
     }
+  },
+  "upselling": {
+    "hint": "Verkaufen Sie Abonnementpakete und Einzelleistungen an Ihre Mandanten an einem Ort.",
+    "packagesTitle": "Abonnementpakete",
+    "packagesHint": "Wiederkehrende Pläne mit monatlicher, halbjährlicher oder jährlicher Abrechnung. Stunden und Fälle gelten pro Jahr; Mindestlaufzeit ein Jahr.",
+    "servicesTitle": "On-Demand-Leistungen",
+    "servicesHint": "Einzelleistungen (Verträge, Beratung, Prüfungen). Mandanten kaufen sie im Portal."
   }
 }

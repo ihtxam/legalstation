@@ -22,6 +22,8 @@ import {
   CalendarDays,
   Package,
   BriefcaseBusiness,
+  Store,
+  ChevronDown,
   LifeBuoy,
   PanelLeftClose,
   PanelLeft,
@@ -40,6 +42,24 @@ interface AppLayoutProps {
   title?: string;
   breadcrumb?: { label: string; href?: string }[];
 }
+
+type NavLeaf = {
+  kind?: "link";
+  href: string;
+  label: string;
+  icon: React.ComponentType<{ className?: string }>;
+};
+
+type NavGroup = {
+  kind: "group";
+  id: string;
+  label: string;
+  icon: React.ComponentType<{ className?: string }>;
+  href: string;
+  children: NavLeaf[];
+};
+
+type NavEntry = NavLeaf | NavGroup;
 
 function roleLabel(t: (key: string) => string, role?: string | null) {
   if (role === "admin") return t("roles.admin");
@@ -65,13 +85,22 @@ export default function AppLayout({ children, title, breadcrumb }: AppLayoutProp
   /** Desktop (≥lg): expanded vs icon rail. Mobile (<lg): drawer open/closed. */
   const [desktopExpanded, setDesktopExpanded] = useState(true);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const upsellingActive =
+    location.startsWith("/upselling") ||
+    location.startsWith("/packages") ||
+    location.startsWith("/services");
+  const [upsellingOpen, setUpsellingOpen] = useState(upsellingActive);
+
+  useEffect(() => {
+    if (upsellingActive) setUpsellingOpen(true);
+  }, [upsellingActive]);
 
   const isClient = !firmData;
   const isAdmin = Boolean(firmData?.capabilities?.canAccessAdminConsole);
   const isSuperadmin = user?.role === "superadmin";
   const bellCount = (unreadCount || 0) + (ticketUnread || 0);
 
-  const clientNavItems = [
+  const clientNavItems: NavEntry[] = [
     { href: "/dashboard", label: t("nav.dashboard"), icon: LayoutDashboard },
     { href: "/client-portal", label: t("nav.myCases"), icon: Briefcase },
     { href: "/agenda", label: t("nav.agenda"), icon: CalendarDays },
@@ -79,27 +108,40 @@ export default function AppLayout({ children, title, breadcrumb }: AppLayoutProp
     { href: "/invoices", label: t("nav.invoices"), icon: Receipt },
   ];
 
-  const lawyerNavItems = [
+  const upsellingChildren: NavLeaf[] = [
+    ...(isAdmin
+      ? [{ href: "/packages", label: t("nav.packages"), icon: Package } satisfies NavLeaf]
+      : []),
+    { href: "/services", label: t("nav.services"), icon: BriefcaseBusiness },
+  ];
+
+  const lawyerNavItems: NavEntry[] = [
     { href: "/dashboard", label: t("nav.dashboard"), icon: LayoutDashboard },
     { href: "/cases", label: t("nav.cases"), icon: Briefcase },
     { href: "/clients", label: t("nav.clients"), icon: Users },
     { href: "/agenda", label: t("nav.agenda"), icon: CalendarDays },
     { href: "/leads", label: t("nav.leads"), icon: Target },
-    { href: "/services", label: t("nav.services"), icon: BriefcaseBusiness },
+    {
+      kind: "group",
+      id: "upselling",
+      label: t("nav.upselling"),
+      icon: Store,
+      href: "/upselling",
+      children: upsellingChildren,
+    },
     { href: "/messages", label: t("nav.messages"), icon: MessageSquare },
     { href: "/invoices", label: t("nav.billing"), icon: Receipt },
     { href: "/time-reports", label: t("nav.timeReports"), icon: FileText },
     ...(isAdmin
       ? [
-          { href: "/packages", label: t("nav.packages"), icon: Package },
-          { href: "/cms", label: t("nav.cms"), icon: Globe },
-          { href: "/analytics", label: t("nav.analytics"), icon: BarChart3 },
-          { href: "/audit", label: t("nav.auditLog"), icon: Shield },
+          { href: "/cms", label: t("nav.cms"), icon: Globe } satisfies NavLeaf,
+          { href: "/analytics", label: t("nav.analytics"), icon: BarChart3 } satisfies NavLeaf,
+          { href: "/audit", label: t("nav.auditLog"), icon: Shield } satisfies NavLeaf,
         ]
       : []),
   ];
 
-  const navItems = [
+  const navItems: NavEntry[] = [
     { href: "/dashboard", label: t("nav.dashboard"), icon: LayoutDashboard },
     { href: "/cases", label: t("nav.cases"), icon: Briefcase },
     { href: "/clients", label: t("nav.clients"), icon: Users },
@@ -135,20 +177,22 @@ export default function AppLayout({ children, title, breadcrumb }: AppLayoutProp
     href: string,
     label: string,
     Icon: React.ComponentType<{ className?: string }>,
-    badge?: number
+    badge?: number,
+    opts?: { nested?: boolean; key?: string }
   ) => {
     const isActive = location === href || location.startsWith(href + "/");
     return (
-      <Link key={href} href={href} onClick={() => setMobileOpen(false)}>
+      <Link key={opts?.key || href} href={href} onClick={() => setMobileOpen(false)}>
         <div
           className={cn(
-            "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium cursor-pointer transition-all duration-150",
+            "flex items-center gap-3 rounded-lg text-sm font-medium cursor-pointer transition-all duration-150",
+            opts?.nested ? "px-3 py-2 ms-3" : "px-3 py-2.5",
             isActive
               ? "bg-white/15 text-white dark:bg-[var(--color-sidebar-primary)]/25 dark:text-[var(--color-gold-light)]"
               : "text-white/65 hover:bg-white/10 hover:text-white dark:text-white/55 dark:hover:bg-white/8"
           )}
         >
-          <Icon className="w-5 h-5 shrink-0" />
+          <Icon className={cn("shrink-0", opts?.nested ? "w-4 h-4" : "w-5 h-5")} />
           <span className={cn("flex-1 truncate", !showLabels && "lg:hidden")}>{label}</span>
           {badge != null && badge > 0 && (
             <Badge className={cn(
@@ -160,6 +204,74 @@ export default function AppLayout({ children, title, breadcrumb }: AppLayoutProp
           )}
         </div>
       </Link>
+    );
+  };
+
+  const renderNavEntry = (entry: NavEntry) => {
+    if (entry.kind === "group") {
+      const GroupIcon = entry.icon;
+      const childActive = entry.children.some(
+        (c) => location === c.href || location.startsWith(c.href + "/")
+      );
+      const groupActive = location === entry.href || childActive;
+      const open = entry.id === "upselling" ? upsellingOpen : true;
+      return (
+        <div key={entry.id} className="space-y-0.5">
+          <div className="flex items-center gap-0.5">
+            <Link
+              href={entry.href}
+              onClick={() => setMobileOpen(false)}
+              className="min-w-0 flex-1"
+            >
+              <div
+                className={cn(
+                  "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium cursor-pointer transition-all duration-150",
+                  groupActive
+                    ? "bg-white/15 text-white dark:bg-[var(--color-sidebar-primary)]/25 dark:text-[var(--color-gold-light)]"
+                    : "text-white/65 hover:bg-white/10 hover:text-white dark:text-white/55 dark:hover:bg-white/8"
+                )}
+              >
+                <GroupIcon className="w-5 h-5 shrink-0" />
+                <span className={cn("flex-1 truncate", !showLabels && "lg:hidden")}>
+                  {entry.label}
+                </span>
+              </div>
+            </Link>
+            <button
+              type="button"
+              className={cn(
+                "p-2 rounded-lg text-white/65 hover:bg-white/10 hover:text-white shrink-0",
+                !showLabels && "lg:hidden"
+              )}
+              aria-label={open ? "Collapse" : "Expand"}
+              aria-expanded={open}
+              onClick={() => {
+                if (entry.id === "upselling") setUpsellingOpen((v) => !v);
+              }}
+            >
+              <ChevronDown
+                className={cn("w-4 h-4 transition-transform", open ? "rotate-0" : "-rotate-90")}
+              />
+            </button>
+          </div>
+          {open && (
+            <div className={cn("space-y-0.5", !showLabels && "lg:hidden")}>
+              {entry.children.map((child) =>
+                navLink(child.href, child.label, child.icon, undefined, {
+                  nested: true,
+                  key: `${entry.id}-${child.href}`,
+                })
+              )}
+            </div>
+          )}
+        </div>
+      );
+    }
+    return navLink(
+      entry.href,
+      entry.label,
+      entry.icon,
+      entry.href === "/messages" && unreadCount ? unreadCount : undefined
     );
   };
 
@@ -189,14 +301,7 @@ export default function AppLayout({ children, title, breadcrumb }: AppLayoutProp
 
       <ScrollArea className="flex-1 py-3">
         <nav className="px-2 space-y-0.5">
-          {items.map(({ href, label, icon: Icon }) =>
-            navLink(
-              href,
-              label,
-              Icon,
-              href === "/messages" && unreadCount ? unreadCount : undefined
-            )
-          )}
+          {items.map((entry) => renderNavEntry(entry))}
         </nav>
       </ScrollArea>
 

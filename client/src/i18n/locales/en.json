@@ -18,7 +18,8 @@
     "signOut": "Sign out",
     "services": "Services",
     "support": "Support",
-    "account": "Account"
+    "account": "Account",
+    "upselling": "Upselling"
   },
   "common": {
     "loading": "Loading…",
@@ -1450,5 +1451,12 @@
       "itemDesc": "Item description",
       "address": "Address"
     }
+  },
+  "upselling": {
+    "hint": "Sell subscription packages and one-shot legal services to your clients from one place.",
+    "packagesTitle": "Subscription packages",
+    "packagesHint": "Recurring plans with monthly, biannual, or yearly billing. Hours and cases are yearly; minimum commitment one year.",
+    "servicesTitle": "On-demand services",
+    "servicesHint": "One-shot services (contracts, advice, reviews). Clients buy them in their portal."
   }
 }

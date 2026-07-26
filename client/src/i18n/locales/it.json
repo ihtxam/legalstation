@@ -18,7 +18,8 @@
     "packages": "Pacchetti",
     "services": "Servizi",
     "support": "Supporto",
-    "account": "Account"
+    "account": "Account",
+    "upselling": "Upselling"
   },
   "common": {
     "loading": "Caricamento…",
@@ -1450,5 +1451,12 @@
       "itemDesc": "Item description",
       "address": "Address"
     }
+  },
+  "upselling": {
+    "hint": "Vendi pacchetti in abbonamento e servizi una tantum ai clienti da un unico posto.",
+    "packagesTitle": "Pacchetti in abbonamento",
+    "packagesHint": "Piani ricorrenti con fatturazione mensile, semestrale o annuale. Ore e casi annuali; impegno minimo di un anno.",
+    "servicesTitle": "Servizi on-demand",
+    "servicesHint": "Servizi una tantum (contratti, consulenza, revisioni). I clienti li acquistano nel portale."
   }
 }
