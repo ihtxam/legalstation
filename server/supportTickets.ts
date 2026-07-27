@@ -64,6 +64,11 @@ export function isFirmAdminRole(role: string | null | undefined) {
   return role === "admin" || role === "subadmin";
 }
 
+/** Firm staff who can open / follow platform support tickets (not portal clients). */
+export function canUseSupportTickets(role: string | null | undefined) {
+  return role === "admin" || role === "subadmin" || role === "lawyer" || role === "assistant";
+}
+
 export async function getPlatformNotifyEmails(): Promise<string[]> {
   const db = await getDb();
   if (!db) return [];

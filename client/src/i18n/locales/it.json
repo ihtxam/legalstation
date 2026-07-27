@@ -1533,7 +1533,9 @@
     "attachments": "Allegati",
     "attachmentsHint": "Immagini o documenti fino a 1 MB ciascuno (PDF, DOC, DOCX, TXT, PNG, JPG, GIF, WEBP).",
     "fileTooLarge": "File troppo grande. Dimensione massima: {{max}}.",
-    "fileTypeNotAllowed": "Tipo di file non consentito per i ticket. Usa PDF, DOC, DOCX, TXT o un’immagine comune."
+    "fileTypeNotAllowed": "Tipo di file non consentito per i ticket. Usa PDF, DOC, DOCX, TXT o un’immagine comune.",
+    "introTickets": "Apri un ticket con Cliavo, segui le risposte qui oppure consulta la documentazione.",
+    "ticketsStaffOnly": "I ticket sono disponibili allo staff dello studio. Chiedi a un admin se serve."
   },
   "announcements": {
     "dismiss": "Ho capito"

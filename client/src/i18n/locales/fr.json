@@ -1533,7 +1533,9 @@
     "attachments": "Pièces jointes",
     "attachmentsHint": "Images ou documents jusqu’à 1 Mo chacun (PDF, DOC, DOCX, TXT, PNG, JPG, GIF, WEBP).",
     "fileTooLarge": "Fichier trop volumineux. Taille maximale : {{max}}.",
-    "fileTypeNotAllowed": "Type de fichier non autorisé pour les tickets. Utilisez PDF, DOC, DOCX, TXT ou une image courante."
+    "fileTypeNotAllowed": "Type de fichier non autorisé pour les tickets. Utilisez PDF, DOC, DOCX, TXT ou une image courante.",
+    "introTickets": "Ouvrez un ticket auprès de Cliavo, suivez les réponses ici, ou consultez la documentation.",
+    "ticketsStaffOnly": "Les tickets sont réservés au personnel du cabinet. Demandez à un admin si besoin."
   },
   "announcements": {
     "dismiss": "Compris"

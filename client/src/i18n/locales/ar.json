@@ -1533,7 +1533,9 @@
     "attachments": "المرفقات",
     "attachmentsHint": "صور أو مستندات بحد أقصى 1 ميجابايت لكل ملف (PDF, DOC, DOCX, TXT, PNG, JPG, GIF, WEBP).",
     "fileTooLarge": "الملف كبير جدًا. الحد الأقصى {{max}}.",
-    "fileTypeNotAllowed": "نوع الملف غير مسموح للتذاكر. استخدم PDF أو DOC أو DOCX أو TXT أو صورة شائعة."
+    "fileTypeNotAllowed": "نوع الملف غير مسموح للتذاكر. استخدم PDF أو DOC أو DOCX أو TXT أو صورة شائعة.",
+    "introTickets": "افتح تذكرة دعم مع كليافو وتابع الردود هنا أو تصفح وثائق المساعدة الذاتية.",
+    "ticketsStaffOnly": "تذاكر الدعم متاحة لموظفي المكتب. اطلب من المسؤول فتح تذكرة عند الحاجة."
   },
   "announcements": {
     "dismiss": "حسنًا"

@@ -80,7 +80,7 @@ export default function AppLayout({ children, title, breadcrumb }: AppLayoutProp
   const isFirmAdminRole =
     firmData?.member?.firmRole === "admin" || firmData?.member?.firmRole === "subadmin";
   const { data: ticketUnread = 0 } = trpc.supportTickets.unreadCount.useQuery(undefined, {
-    enabled: Boolean(user) && isFirmAdminRole,
+    enabled: Boolean(user) && Boolean(firmData) && user?.role !== "superadmin",
     refetchInterval: 60_000,
   });
 

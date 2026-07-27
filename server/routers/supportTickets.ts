@@ -15,7 +15,7 @@ import {
   getFirmName,
   getPlatformNotifyEmails,
   getTicketsPerMonthLimit,
-  isFirmAdminRole,
+  canUseSupportTickets,
   nextTicketNumber,
   notifyTicketCreated,
   notifyTicketReply,
@@ -33,10 +33,13 @@ const attachmentInput = z.object({
   size: z.number().int().min(0).max(TICKET_ATTACHMENT_MAX_BYTES).default(0),
 });
 
-async function requireFirmAdmin(userId: number) {
+async function requireFirmTicketAccess(userId: number) {
   const member = await getFirmMemberByUserId(userId);
-  if (!member || !isFirmAdminRole(member.firmRole)) {
-    throw new TRPCError({ code: "FORBIDDEN", message: "Only firm admins can manage support tickets" });
+  if (!member || !canUseSupportTickets(member.firmRole)) {
+    throw new TRPCError({
+      code: "FORBIDDEN",
+      message: "Only firm staff can manage support tickets",
+    });
   }
   return member;
 }
@@ -68,7 +71,7 @@ async function loadTicketThread(ticketId: number) {
 
 export const supportTicketsRouter = router({
   quota: protectedProcedure.query(async ({ ctx }) => {
-    const member = await requireFirmAdmin(ctx.user.id);
+    const member = await requireFirmTicketAccess(ctx.user.id);
     const limit = await getTicketsPerMonthLimit();
     const used = await countFirmTicketsThisMonth(member.firmId);
     return { limit, used, remaining: Math.max(0, limit - used) };
@@ -77,7 +80,7 @@ export const supportTicketsRouter = router({
   unreadCount: protectedProcedure.query(async ({ ctx }) => {
     if (ctx.user.role === "superadmin") return 0;
     const member = await getFirmMemberByUserId(ctx.user.id);
-    if (!member || !isFirmAdminRole(member.firmRole)) return 0;
+    if (!member || !canUseSupportTickets(member.firmRole)) return 0;
     const db = await getDb();
     if (!db) return 0;
     const rows = await db
@@ -92,7 +95,7 @@ export const supportTicketsRouter = router({
   }),
 
   listMine: protectedProcedure.query(async ({ ctx }) => {
-    const member = await requireFirmAdmin(ctx.user.id);
+    const member = await requireFirmTicketAccess(ctx.user.id);
     const db = await getDb();
     if (!db) return [];
     const rows = await db
@@ -110,7 +113,7 @@ export const supportTicketsRouter = router({
   get: protectedProcedure
     .input(z.object({ id: z.number() }))
     .query(async ({ ctx, input }) => {
-      const member = await requireFirmAdmin(ctx.user.id);
+      const member = await requireFirmTicketAccess(ctx.user.id);
       const db = await getDb();
       if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
       const [ticket] = await db
@@ -137,7 +140,7 @@ export const supportTicketsRouter = router({
       })
     )
     .mutation(async ({ ctx, input }) => {
-      const member = await requireFirmAdmin(ctx.user.id);
+      const member = await requireFirmTicketAccess(ctx.user.id);
       const db = await getDb();
       if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
 
@@ -208,7 +211,7 @@ export const supportTicketsRouter = router({
       })
     )
     .mutation(async ({ ctx, input }) => {
-      const member = await requireFirmAdmin(ctx.user.id);
+      const member = await requireFirmTicketAccess(ctx.user.id);
       const db = await getDb();
       if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
       const [ticket] = await db

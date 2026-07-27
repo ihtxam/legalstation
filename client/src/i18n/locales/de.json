@@ -1533,7 +1533,9 @@
     "attachments": "Anhänge",
     "attachmentsHint": "Bilder oder Dokumente bis maximal 1 MB (PDF, DOC, DOCX, TXT, PNG, JPG, GIF, WEBP).",
     "fileTooLarge": "Datei ist zu groß. Maximale Größe: {{max}}.",
-    "fileTypeNotAllowed": "Dateityp für Tickets nicht erlaubt. Nutzen Sie PDF, DOC, DOCX, TXT oder ein gängiges Bildformat."
+    "fileTypeNotAllowed": "Dateityp für Tickets nicht erlaubt. Nutzen Sie PDF, DOC, DOCX, TXT oder ein gängiges Bildformat.",
+    "introTickets": "Öffnen Sie ein Support-Ticket bei Cliavo, verfolgen Sie Antworten hier oder nutzen Sie die Hilfe-Docs.",
+    "ticketsStaffOnly": "Support-Tickets sind für Kanzlei-Mitarbeiter. Fragen Sie einen Admin bei Bedarf."
   },
   "announcements": {
     "dismiss": "Verstanden"

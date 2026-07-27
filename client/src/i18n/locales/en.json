@@ -1533,7 +1533,9 @@
     "attachments": "Attachments",
     "attachmentsHint": "Images or documents up to 1 MB each (PDF, DOC, DOCX, TXT, PNG, JPG, GIF, WEBP).",
     "fileTooLarge": "File is too large. Maximum size is {{max}}.",
-    "fileTypeNotAllowed": "File type not allowed for tickets. Use PDF, DOC, DOCX, TXT, or a common image format."
+    "fileTypeNotAllowed": "File type not allowed for tickets. Use PDF, DOC, DOCX, TXT, or a common image format.",
+    "introTickets": "Open a support ticket with Cliavo, track replies here, or browse self-help docs.",
+    "ticketsStaffOnly": "Support tickets are available to firm staff accounts. Ask a firm admin if you need help opening one."
   },
   "announcements": {
     "dismiss": "Got it"

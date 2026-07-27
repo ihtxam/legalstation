@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
   Dialog,
@@ -82,16 +83,28 @@ function statusVariant(status: string): "default" | "secondary" | "outline" | "d
 export default function SupportPage() {
   const { t, i18n } = useTranslation();
   const { user } = useAuth();
-  const { data: firmData } = trpc.firm.myFirm.useQuery(undefined, {
+  const {
+    data: firmData,
+    isLoading: firmLoading,
+    isFetched: firmFetched,
+  } = trpc.firm.myFirm.useQuery(undefined, {
     enabled: Boolean(user) && user?.role !== "superadmin",
   });
-  const isFirmAdmin =
-    firmData?.member?.firmRole === "admin" || firmData?.member?.firmRole === "subadmin";
+
+  const firmRole = firmData?.member?.firmRole;
+  const canUseTickets = Boolean(
+    firmRole === "admin" ||
+      firmRole === "subadmin" ||
+      firmRole === "lawyer" ||
+      firmRole === "assistant" ||
+      firmData?.capabilities?.canAccessAdminConsole
+  );
+  const showTicketsLoading = Boolean(user) && user?.role !== "superadmin" && (firmLoading || !firmFetched);
 
   const utils = trpc.useUtils();
-  const { data: quota } = trpc.supportTickets.quota.useQuery(undefined, { enabled: isFirmAdmin });
+  const { data: quota } = trpc.supportTickets.quota.useQuery(undefined, { enabled: canUseTickets });
   const { data: tickets, refetch: refetchTickets } = trpc.supportTickets.listMine.useQuery(undefined, {
-    enabled: isFirmAdmin,
+    enabled: canUseTickets,
   });
 
   const [showCreate, setShowCreate] = useState(false);
@@ -106,7 +119,7 @@ export default function SupportPage() {
 
   const { data: detail, refetch: refetchDetail } = trpc.supportTickets.get.useQuery(
     { id: selectedId! },
-    { enabled: isFirmAdmin && selectedId != null }
+    { enabled: canUseTickets && selectedId != null }
   );
 
   const createMutation = trpc.supportTickets.create.useMutation({
@@ -178,16 +191,38 @@ export default function SupportPage() {
   return (
     <AppLayout title={t("support.title")} breadcrumb={[{ label: t("support.title") }]}>
       <div className="page-shell max-w-4xl !space-y-6 sm:!space-y-8">
-        <div className="space-y-2">
-          <div className="flex items-center gap-2 text-[var(--color-navy)]">
-            <LifeBuoy className="w-6 h-6 shrink-0" />
-            <h2 className="text-xl sm:text-2xl font-serif font-semibold tracking-tight">{t("support.heading")}</h2>
+        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
+          <div className="space-y-2 min-w-0">
+            <div className="flex items-center gap-2 text-[var(--color-navy)]">
+              <LifeBuoy className="w-6 h-6 shrink-0" />
+              <h2 className="text-xl sm:text-2xl font-serif font-semibold tracking-tight">
+                {t("support.heading")}
+              </h2>
+            </div>
+            <p className="text-muted-foreground text-sm leading-relaxed">{t("support.introTickets")}</p>
           </div>
-          <p className="text-muted-foreground text-sm leading-relaxed">{t("support.intro")}</p>
+          {canUseTickets && (
+            <Button
+              className="bg-[var(--color-navy)] hover:bg-[var(--color-navy)]/90 w-full sm:w-auto shrink-0"
+              disabled={!canCreate}
+              onClick={() => setShowCreate(true)}
+            >
+              <Plus className="w-4 h-4 mr-1.5" />
+              {t("support.newTicket")}
+            </Button>
+          )}
         </div>
 
-        {isFirmAdmin && (
-          <section className="border border-border rounded-xl p-4 sm:p-6 space-y-4 bg-card">
+        {showTicketsLoading && (
+          <section className="border border-border rounded-xl p-4 sm:p-6 space-y-3 bg-card">
+            <Skeleton className="h-5 w-40" />
+            <Skeleton className="h-4 w-64" />
+            <Skeleton className="h-24 w-full" />
+          </section>
+        )}
+
+        {canUseTickets && (
+          <section className="border border-[var(--color-navy)]/25 rounded-xl p-4 sm:p-6 space-y-4 bg-card shadow-sm">
             <div className="page-header">
               <div className="min-w-0">
                 <h3 className="font-semibold text-foreground flex items-center gap-2">
@@ -202,7 +237,8 @@ export default function SupportPage() {
                 )}
               </div>
               <Button
-                className="bg-[var(--color-navy)] hover:bg-[var(--color-navy)]/90 w-full sm:w-auto"
+                variant="outline"
+                className="w-full sm:w-auto"
                 disabled={!canCreate}
                 onClick={() => setShowCreate(true)}
               >
@@ -236,28 +272,42 @@ export default function SupportPage() {
                 </button>
               ))}
               {!tickets?.length && (
-                <p className="p-6 text-center text-sm text-muted-foreground">{t("support.noTickets")}</p>
+                <div className="p-6 text-center space-y-3">
+                  <p className="text-sm text-muted-foreground">{t("support.noTickets")}</p>
+                  <Button
+                    className="bg-[var(--color-navy)] text-white"
+                    disabled={!canCreate}
+                    onClick={() => setShowCreate(true)}
+                  >
+                    <Plus className="w-4 h-4 mr-1.5" />
+                    {t("support.newTicket")}
+                  </Button>
+                </div>
               )}
             </div>
           </section>
         )}
 
-        <section className="border border-border rounded-xl p-4 sm:p-6 space-y-4 bg-card">
+        {!showTicketsLoading && !canUseTickets && firmData && (
+          <section className="border border-border rounded-xl p-4 sm:p-6 bg-muted/30">
+            <p className="text-sm text-muted-foreground">{t("support.ticketsStaffOnly")}</p>
+          </section>
+        )}
+
+        <section className="border border-border rounded-xl p-4 sm:p-5 bg-card">
           <div className="flex items-start gap-3">
-            <div className="mt-0.5 rounded-lg bg-[var(--color-navy)]/8 p-2 shrink-0">
-              <BookOpen className="w-5 h-5 text-[var(--color-navy)]" />
+            <div className="mt-0.5 rounded-lg bg-muted p-2 shrink-0">
+              <BookOpen className="w-4 h-4 text-muted-foreground" />
             </div>
-            <div className="min-w-0 space-y-3 flex-1">
-              <h3 className="font-semibold text-foreground">{t("support.docsTitle")}</h3>
-              <p className="text-sm text-muted-foreground">{t("support.docsHint")}</p>
-              <div className="flex flex-wrap gap-2">
-                <Button asChild className="bg-[var(--color-navy)] hover:bg-[var(--color-navy)]/90">
-                  <a href={helpUrlFor(i18n.language)} target="_blank" rel="noreferrer">
-                    {t("support.openLocalHelp")}
-                    <ExternalLink className="w-4 h-4 ml-1.5" />
-                  </a>
-                </Button>
-              </div>
+            <div className="min-w-0 space-y-2 flex-1">
+              <h3 className="font-medium text-sm text-foreground">{t("support.docsTitle")}</h3>
+              <p className="text-xs text-muted-foreground">{t("support.docsHint")}</p>
+              <Button asChild variant="outline" size="sm">
+                <a href={helpUrlFor(i18n.language)} target="_blank" rel="noreferrer">
+                  {t("support.openLocalHelp")}
+                  <ExternalLink className="w-3.5 h-3.5 ml-1.5" />
+                </a>
+              </Button>
             </div>
           </div>
         </section>
