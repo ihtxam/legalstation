@@ -36,13 +36,11 @@ import {
   Building2,
   Plus,
   Upload,
-  ShoppingCart,
 } from "lucide-react";
 import { format } from "date-fns";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
-import { ServiceOrderDetail } from "@/components/ServiceOrderDetail";
 import { CASE_TYPE_LABELS } from "@shared/types";
 
 export default function ClientPortalPage() {
@@ -52,14 +50,6 @@ export default function ClientPortalPage() {
   const [newMessage, setNewMessage] = useState("");
   const [showLitige, setShowLitige] = useState(false);
   const [showIntake, setShowIntake] = useState(false);
-  const [showChangePlan, setShowChangePlan] = useState(false);
-  const [planBillingInterval, setPlanBillingInterval] = useState<
-    "monthly" | "biannual" | "yearly" | null
-  >(null);
-  const [planPackageId, setPlanPackageId] = useState<number | null>(null);
-  const [showCart, setShowCart] = useState(false);
-  const [orderNotes, setOrderNotes] = useState("");
-  const [serviceBrief, setServiceBrief] = useState<Record<number, string>>({});
   const [litigeForm, setLitigeForm] = useState({
     title: "",
     type: "other" as keyof typeof CASE_TYPE_LABELS,
@@ -74,54 +64,7 @@ export default function ClientPortalPage() {
     undefined,
     { enabled: isAuthenticated }
   );
-  const { data: portalPackages } = trpc.clientPackages.listForClient.useQuery(undefined, {
-    enabled: isAuthenticated,
-  });
-  const changePlan = trpc.clientPackages.changePlan.useMutation({
-    onSuccess: async () => {
-      toast.success(t("packages.planChanged"));
-      setShowChangePlan(false);
-      await refetchSub();
-    },
-    onError: (e) => toast.error(e.message),
-  });
-  const [selectedOrderId, setSelectedOrderId] = useState<number | null>(null);
   const isSubscriber = mySub?.accessType === "subscriber";
-  const shopServices = trpc.ondemandServices.listPublicForClient.useQuery(undefined, {
-    enabled: isAuthenticated,
-  });
-  const cart = trpc.ondemandServices.getCart.useQuery(undefined, { enabled: isAuthenticated });
-  const myOrders = trpc.ondemandServices.myOrders.useQuery(undefined, { enabled: isAuthenticated });
-  const addToCart = trpc.ondemandServices.addToCart.useMutation({
-    onSuccess: async () => {
-      toast.success(t("services.addedToCart"));
-      await cart.refetch();
-    },
-    onError: (e) => toast.error(e.message),
-  });
-  const updateCartItem = trpc.ondemandServices.updateCartItem.useMutation({
-    onSuccess: async () => {
-      await cart.refetch();
-    },
-    onError: (e) => toast.error(e.message),
-  });
-  const checkout = trpc.ondemandServices.checkout.useMutation({
-    onSuccess: async (res) => {
-      toast.success(
-        res.paymentUrl ? t("services.checkoutSuccess") : t("services.checkoutSuccessIntake")
-      );
-      setShowCart(false);
-      setOrderNotes("");
-      await Promise.all([cart.refetch(), myOrders.refetch()]);
-      if (res.paymentUrl) {
-        window.location.href = res.paymentUrl;
-      } else if (res.orderId) {
-        setSelectedOrderId(res.orderId);
-      }
-    },
-    onError: (e) => toast.error(e.message),
-  });
-  const cartCount = cart.data?.items.reduce((n, i) => n + i.quantity, 0) ?? 0;
 
   useEffect(() => {
     if (!loading && !isAuthenticated) startLogin();
@@ -275,11 +218,6 @@ export default function ClientPortalPage() {
           </div>
           <div className="flex items-center gap-3 flex-wrap">
             <LanguageSwitcher />
-            <Button variant="outline" onClick={() => setShowCart(true)}>
-              <ShoppingCart className="w-4 h-4 mr-1.5" />
-              {t("services.cart")}
-              {cartCount > 0 ? ` (${cartCount})` : ""}
-            </Button>
             <Button
               className="bg-[var(--color-navy)] hover:bg-[var(--color-navy-light)] text-white"
               onClick={() => (isSubscriber ? setShowIntake(true) : setShowLitige(true))}
@@ -290,146 +228,6 @@ export default function ClientPortalPage() {
             </Button>
           </div>
         </div>
-
-        <div className="bg-card border border-border rounded-xl p-4 flex flex-wrap items-center justify-between gap-3">
-          <div>
-            <p className="font-medium text-sm">
-              {mySub?.hasSubscription
-                ? t("packages.currentPlan", { name: mySub.package?.name })
-                : t("packages.noActivePlan")}
-            </p>
-            {mySub?.hasSubscription ? (
-              <p className="text-xs text-muted-foreground mt-0.5">
-                {t("packages.quotaUsed", {
-                  used: mySub.quota.casesUsed,
-                  allowed: mySub.quota.casesAllowed,
-                })}
-                {mySub.package &&
-                Number(
-                  mySub.package.consultationHoursPerYear ??
-                    mySub.package.consultationHoursPerPeriod
-                ) > 0
-                  ? ` · ${t("packages.consultHours", {
-                      hours:
-                        mySub.package.consultationHoursPerYear ??
-                        mySub.package.consultationHoursPerPeriod,
-                    })}`
-                  : ""}
-                {" · "}
-                {t("packages.periodEnds", {
-                  date: new Date(mySub.subscription!.currentPeriodEnd).toLocaleDateString(),
-                })}
-                {mySub.subscription?.commitmentEndsAt
-                  ? ` · ${t("packages.commitmentEnds", {
-                      date: new Date(mySub.subscription.commitmentEndsAt).toLocaleDateString(),
-                    })}`
-                  : ""}
-              </p>
-            ) : (
-              <p className="text-xs text-muted-foreground mt-0.5">{t("packages.plansHint")}</p>
-            )}
-          </div>
-          <Button variant="outline" size="sm" onClick={() => setShowChangePlan(true)}>
-            {mySub?.hasSubscription ? t("packages.changePlan") : t("packages.plansForYou")}
-          </Button>
-        </div>
-
-        {(shopServices.data || []).length > 0 && (
-          <div className="space-y-3">
-            <div>
-              <h2 className="font-semibold text-foreground">{t("services.shopTitle")}</h2>
-              <p className="text-sm text-muted-foreground">{t("services.shopHint")}</p>
-            </div>
-            <div className="grid gap-3 sm:grid-cols-2">
-              {(shopServices.data || []).map((svc) => (
-                <div key={svc.id} className="border border-border rounded-xl p-4 bg-card space-y-2">
-                  <div className="flex items-start justify-between gap-2">
-                    <div>
-                      <p className="font-medium">{svc.name}</p>
-                      <p className="text-xs text-muted-foreground">
-                        {t(`services.cat.${svc.category}`)} · {svc.estimatedHours}h
-                      </p>
-                    </div>
-                    <p className="font-semibold text-sm whitespace-nowrap">
-                      {Number(svc.price).toFixed(2)} {svc.currency}
-                    </p>
-                  </div>
-                  {svc.description ? (
-                    <p className="text-sm text-muted-foreground">{svc.description}</p>
-                  ) : null}
-                  <Input
-                    placeholder={t("services.brief")}
-                    value={serviceBrief[svc.id] || ""}
-                    onChange={(e) =>
-                      setServiceBrief((prev) => ({ ...prev, [svc.id]: e.target.value }))
-                    }
-                  />
-                  <Button
-                    size="sm"
-                    className="w-full"
-                    disabled={addToCart.isPending}
-                    onClick={() =>
-                      addToCart.mutate({
-                        serviceId: svc.id,
-                        quantity: 1,
-                        clientBrief: serviceBrief[svc.id]?.trim() || undefined,
-                      })
-                    }
-                  >
-                    {t("services.addToCart")}
-                  </Button>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {(myOrders.data || []).length > 0 && (
-          <div className="space-y-2">
-            <div>
-              <h3 className="font-semibold text-sm">{t("services.myOrders")}</h3>
-              <p className="text-xs text-muted-foreground">{t("services.myOrdersHint")}</p>
-            </div>
-            {(myOrders.data || []).map(({ order, items }) => (
-              <button
-                key={order.id}
-                type="button"
-                onClick={() => setSelectedOrderId(order.id)}
-                className="w-full text-start border border-border rounded-xl px-4 py-3 text-sm flex flex-wrap justify-between gap-2 bg-card hover:border-[var(--color-navy)]/40 transition"
-              >
-                <div>
-                  <p className="font-medium">
-                    {order.orderNumber}{" "}
-                    <Badge variant="outline" className="capitalize ms-1">
-                      {order.status.replace(/_/g, " ")}
-                    </Badge>
-                    {order.isLocked ? (
-                      <Badge variant="secondary" className="ms-1">
-                        {t("services.locked")}
-                      </Badge>
-                    ) : null}
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    {items.map((i) => i.serviceName).join(", ")}
-                  </p>
-                  {order.canSubmitIntake ? (
-                    <p className="text-xs text-[var(--color-navy)] mt-0.5">
-                      {t("services.actionNeededIntake")}
-                    </p>
-                  ) : null}
-                  {order.canRequestRevision ? (
-                    <p className="text-xs text-[var(--color-navy)] mt-0.5">
-                      {t("services.actionNeededReview")}
-                    </p>
-                  ) : null}
-                </div>
-                <p className="text-sm font-medium">
-                  {Number(order.subtotal).toFixed(2)} {order.currency}
-                </p>
-              </button>
-            ))}
-          </div>
-        )}
 
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
           <div className="lg:col-span-1">
@@ -747,205 +545,6 @@ export default function ClientPortalPage() {
         }}
       />
 
-      <Dialog
-        open={showChangePlan}
-        onOpenChange={(v) => {
-          setShowChangePlan(v);
-          if (!v) {
-            setPlanPackageId(null);
-            setPlanBillingInterval(null);
-          }
-        }}
-      >
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>{t("packages.plansForYou")}</DialogTitle>
-          </DialogHeader>
-          <p className="text-sm text-muted-foreground">{t("packages.plansHint")}</p>
-          <div className="space-y-3">
-            {(portalPackages || []).map((pkg) => {
-              const intervals =
-                (pkg.availableIntervals as Array<"monthly" | "biannual" | "yearly"> | undefined) ||
-                [];
-              const selected = planPackageId === pkg.id;
-              return (
-                <div
-                  key={pkg.id}
-                  className={`w-full text-start border rounded-xl p-3 space-y-2 ${
-                    selected ? "border-[var(--color-navy)]" : "border-border"
-                  }`}
-                >
-                  <button
-                    type="button"
-                    className="w-full text-start space-y-1"
-                    disabled={changePlan.isPending}
-                    onClick={() => {
-                      setPlanPackageId(pkg.id);
-                      setPlanBillingInterval(intervals[0] || "monthly");
-                    }}
-                  >
-                    <p className="font-medium">
-                      {pkg.highlightLabel ? (
-                        <Badge variant="outline" className="me-2">
-                          {pkg.highlightLabel}
-                        </Badge>
-                      ) : null}
-                      {pkg.name}
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                      {[
-                        Number(pkg.monthlyPrice || 0) > 0
-                          ? `${Number(pkg.monthlyPrice).toFixed(2)} ${pkg.currency}/${t("packages.monthlyShort")}`
-                          : null,
-                        Number(pkg.biannualPrice || 0) > 0
-                          ? `${Number(pkg.biannualPrice).toFixed(2)} ${pkg.currency}/${t("packages.biannualShort")}`
-                          : null,
-                        Number(pkg.yearlyPrice || 0) > 0
-                          ? `${Number(pkg.yearlyPrice).toFixed(2)} ${pkg.currency}/${t("packages.yearlyShort")}`
-                          : null,
-                      ]
-                        .filter(Boolean)
-                        .join(" · ") ||
-                        `${Number(pkg.price).toFixed(2)} ${pkg.currency} / ${pkg.billingInterval}`}
-                      {(pkg.consultationHoursPerYear ?? pkg.consultationHoursPerPeriod) > 0
-                        ? ` · ${t("packages.consultHours", {
-                            hours:
-                              pkg.consultationHoursPerYear ?? pkg.consultationHoursPerPeriod,
-                          })}`
-                        : ""}
-                      {(pkg.casesPerYear ?? pkg.casesPerPeriod) > 0
-                        ? ` · ${t("packages.casesPerYear", {
-                            count: pkg.casesPerYear ?? pkg.casesPerPeriod,
-                          })}`
-                        : ""}
-                      {pkg.includedFixedHours > 0
-                        ? ` · ${t("packages.fixedHours", { hours: pkg.includedFixedHours })}`
-                        : ""}
-                    </p>
-                    <p className="text-xs text-muted-foreground">{t("packages.minCommitmentHint")}</p>
-                    {(pkg.features || []).length > 0 ? (
-                      <ul className="text-xs text-muted-foreground list-disc ps-4">
-                        {(pkg.features as string[]).slice(0, 4).map((f) => (
-                          <li key={f}>{f}</li>
-                        ))}
-                      </ul>
-                    ) : null}
-                  </button>
-                  {selected && intervals.length > 0 ? (
-                    <div className="space-y-2">
-                      <Label>{t("packages.chooseBilling")}</Label>
-                      <Select
-                        value={planBillingInterval || intervals[0]}
-                        onValueChange={(v) =>
-                          setPlanBillingInterval(v as "monthly" | "biannual" | "yearly")
-                        }
-                      >
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {intervals.map((iv) => (
-                            <SelectItem key={iv} value={iv}>
-                              {iv === "biannual"
-                                ? t("packages.biannual")
-                                : iv === "yearly"
-                                  ? t("packages.yearly")
-                                  : t("packages.monthly")}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      <Button
-                        className="w-full"
-                        disabled={changePlan.isPending || !planBillingInterval}
-                        onClick={() =>
-                          changePlan.mutate({
-                            packageId: pkg.id,
-                            billingInterval: planBillingInterval || intervals[0],
-                          })
-                        }
-                      >
-                        {changePlan.isPending ? t("common.loading") : t("packages.buyPlan")}
-                      </Button>
-                    </div>
-                  ) : null}
-                </div>
-              );
-            })}
-            {!portalPackages?.length ? (
-              <p className="text-sm text-muted-foreground">{t("packages.noPublicPackages")}</p>
-            ) : null}
-          </div>
-        </DialogContent>
-      </Dialog>
-
-      <Dialog open={showCart} onOpenChange={setShowCart}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>{t("services.cart")}</DialogTitle>
-          </DialogHeader>
-          {(cart.data?.items || []).length === 0 ? (
-            <p className="text-sm text-muted-foreground">{t("services.cartEmpty")}</p>
-          ) : (
-            <div className="space-y-3">
-              {(cart.data?.items || []).map((item) => (
-                <div key={item.id} className="border rounded-xl p-3 space-y-2">
-                  <div className="flex justify-between gap-2">
-                    <p className="font-medium text-sm">{item.serviceName}</p>
-                    <p className="text-sm">
-                      {(Number(item.unitPrice) * item.quantity).toFixed(2)} {item.currency}
-                    </p>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Label className="text-xs">{t("services.quantity")}</Label>
-                    <Input
-                      type="number"
-                      min={0}
-                      className="w-20 h-8"
-                      value={item.quantity}
-                      onChange={(e) =>
-                        updateCartItem.mutate({
-                          itemId: item.id,
-                          quantity: Math.max(0, parseInt(e.target.value || "0", 10)),
-                        })
-                      }
-                    />
-                  </div>
-                </div>
-              ))}
-              <p className="font-semibold text-sm">
-                {Number(cart.data?.order.subtotal || 0).toFixed(2)} {cart.data?.order.currency}
-              </p>
-              <div>
-                <Label>{t("services.orderNotes")}</Label>
-                <Textarea
-                  className="mt-1.5"
-                  value={orderNotes}
-                  onChange={(e) => setOrderNotes(e.target.value)}
-                />
-              </div>
-            </div>
-          )}
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setShowCart(false)}>
-              {t("common.cancel")}
-            </Button>
-            <Button
-              disabled={
-                checkout.isPending || !(cart.data?.items && cart.data.items.length > 0)
-              }
-              onClick={() =>
-                checkout.mutate({
-                  clientNotes: orderNotes.trim() || undefined,
-                })
-              }
-            >
-              {t("services.payAndOrder")}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
       <Dialog open={showLitige} onOpenChange={setShowLitige}>
         <DialogContent className="max-w-lg">
           <DialogHeader>
@@ -1057,17 +656,6 @@ export default function ClientPortalPage() {
         </DialogContent>
       </Dialog>
 
-      <ServiceOrderDetail
-        orderId={selectedOrderId}
-        open={selectedOrderId != null}
-        onOpenChange={(v) => {
-          if (!v) setSelectedOrderId(null);
-        }}
-        mode="client"
-        onChanged={() => {
-          void myOrders.refetch();
-        }}
-      />
     </AppLayout>
   );
 }

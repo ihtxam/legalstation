@@ -32,6 +32,8 @@ import InvitePage from "./pages/Invite";
 import SuperadminDashboard from "./pages/SuperadminDashboard";
 import AdminSettings from "./pages/AdminSettings";
 import ClientPortalPage from "./pages/ClientPortal";
+import ClientPortalServicesPage from "./pages/ClientPortalServices";
+import ClientPortalOffersPage from "./pages/ClientPortalOffers";
 import TimeReportsPage from "./pages/TimeReports";
 import AuditLogPage from "./pages/AuditLog";
 import AdminAnalyticsPage from "./pages/AdminAnalytics";
@@ -249,6 +251,8 @@ function Router() {
           <Route path="/superadmin" component={SuperadminDashboard} />
           <Route path="/superadmin/" component={SuperadminDashboard} />
           <Route path="/admin/settings" component={AdminSettings} />
+          <Route path="/client-portal/services" component={ClientPortalServicesPage} />
+          <Route path="/client-portal/offers" component={ClientPortalOffersPage} />
           <Route path="/client-portal" component={ClientPortalPage} />
           <Route path="/time-reports" component={TimeReportsPage} />
           <Route path="/leads" component={FirmLeadsPage} />

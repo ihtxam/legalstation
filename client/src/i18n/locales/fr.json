@@ -17,6 +17,7 @@
     "cms": "CMS",
     "packages": "Forfaits",
     "services": "Services",
+    "offers": "Offres",
     "support": "Assistance",
     "account": "Compte",
     "upselling": "Ventes additionnelles",
@@ -331,7 +332,13 @@
     "selectCase": "Sélectionnez un dossier pour voir les détails",
     "referencePrefix": "Référence :",
     "noUpdates": "Aucune mise à jour pour l'instant",
-    "language": "Langue"
+    "language": "Langue",
+    "servicesSubtitle": "Parcourez les services juridiques à la demande de {{firm}}",
+    "servicesSubtitleFallback": "Parcourez les services juridiques à la demande de votre cabinet.",
+    "servicesEmpty": "Aucun service n'est disponible pour le moment.",
+    "ordersEmpty": "Vous n'avez pas encore de commandes de services.",
+    "offersSubtitle": "Forfaits et offres de {{firm}}",
+    "offersSubtitleFallback": "Forfaits et offres de votre cabinet."
   },
   "settings": {
     "title": "Paramètres",

@@ -17,6 +17,7 @@
     "cms": "CMS",
     "packages": "Pacchetti",
     "services": "Servizi",
+    "offers": "Offerte",
     "support": "Supporto",
     "account": "Account",
     "upselling": "Upselling",
@@ -331,7 +332,13 @@
     "selectCase": "Seleziona una pratica per i dettagli",
     "referencePrefix": "Riferimento:",
     "noUpdates": "Nessun aggiornamento ancora",
-    "language": "Lingua"
+    "language": "Lingua",
+    "servicesSubtitle": "Sfoglia i servizi legali on-demand di {{firm}}",
+    "servicesSubtitleFallback": "Sfoglia i servizi legali on-demand del tuo studio.",
+    "servicesEmpty": "Nessun servizio disponibile al momento.",
+    "ordersEmpty": "Non hai ancora ordini di servizi.",
+    "offersSubtitle": "Piani di abbonamento e offerte di {{firm}}",
+    "offersSubtitleFallback": "Piani di abbonamento e offerte del tuo studio."
   },
   "settings": {
     "title": "Impostazioni",

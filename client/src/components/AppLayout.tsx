@@ -48,6 +48,8 @@ type NavLeaf = {
   href: string;
   label: string;
   icon: React.ComponentType<{ className?: string }>;
+  /** When true, only exact path matches (avoids /client-portal matching /client-portal/services). */
+  exact?: boolean;
 };
 
 type NavGroup = {
@@ -103,7 +105,9 @@ export default function AppLayout({ children, title, breadcrumb }: AppLayoutProp
 
   const clientNavItems: NavEntry[] = [
     { href: "/dashboard", label: t("nav.dashboard"), icon: LayoutDashboard },
-    { href: "/client-portal", label: t("nav.myCases"), icon: Briefcase },
+    { href: "/client-portal", label: t("nav.myCases"), icon: Briefcase, exact: true },
+    { href: "/client-portal/services", label: t("nav.services"), icon: BriefcaseBusiness },
+    { href: "/client-portal/offers", label: t("nav.offers"), icon: Package },
     { href: "/agenda", label: t("nav.agenda"), icon: CalendarDays },
     { href: "/messages", label: t("nav.messages"), icon: MessageSquare },
     { href: "/invoices", label: t("nav.invoices"), icon: Receipt },
@@ -180,9 +184,11 @@ export default function AppLayout({ children, title, breadcrumb }: AppLayoutProp
     label: string,
     Icon: React.ComponentType<{ className?: string }>,
     badge?: number,
-    opts?: { nested?: boolean; key?: string }
+    opts?: { nested?: boolean; key?: string; exact?: boolean }
   ) => {
-    const isActive = location === href || location.startsWith(href + "/");
+    const isActive = opts?.exact
+      ? location === href
+      : location === href || location.startsWith(href + "/");
     return (
       <Link
         key={opts?.key || href}
@@ -280,7 +286,8 @@ export default function AppLayout({ children, title, breadcrumb }: AppLayoutProp
       entry.href,
       entry.label,
       entry.icon,
-      entry.href === "/messages" && unreadCount ? unreadCount : undefined
+      entry.href === "/messages" && unreadCount ? unreadCount : undefined,
+      entry.exact ? { exact: true } : undefined
     );
   };
 

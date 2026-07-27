@@ -17,6 +17,7 @@
     "cms": "نظام المحتوى",
     "packages": "الباقات",
     "services": "الخدمات",
+    "offers": "العروض",
     "support": "الدعم",
     "account": "الحساب",
     "upselling": "البيع الإضافي",
@@ -331,7 +332,13 @@
     "selectCase": "اختر قضية لعرض التفاصيل",
     "referencePrefix": "المرجع:",
     "noUpdates": "لا تحديثات بعد",
-    "language": "اللغة"
+    "language": "اللغة",
+    "servicesSubtitle": "تصفح الخدمات القانونية عند الطلب من {{firm}}",
+    "servicesSubtitleFallback": "تصفح الخدمات القانونية عند الطلب من مكتبك.",
+    "servicesEmpty": "لا توجد خدمات متاحة حالياً.",
+    "ordersEmpty": "ليس لديك طلبات خدمات بعد.",
+    "offersSubtitle": "باقات الاشتراك والعروض من {{firm}}",
+    "offersSubtitleFallback": "باقات الاشتراك والعروض من مكتبك."
   },
   "settings": {
     "title": "الإعدادات",
