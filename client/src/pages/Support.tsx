@@ -223,28 +223,17 @@ export default function SupportPage() {
 
         {canUseTickets && (
           <section className="border border-[var(--color-navy)]/25 rounded-xl p-4 sm:p-6 space-y-4 bg-card shadow-sm">
-            <div className="page-header">
-              <div className="min-w-0">
-                <h3 className="font-semibold text-foreground flex items-center gap-2">
-                  <MessageSquare className="w-4 h-4 shrink-0" />
-                  {t("support.ticketsTitle")}
-                </h3>
-                <p className="text-sm text-muted-foreground mt-1">{t("support.ticketsHint")}</p>
-                {quota && (
-                  <p className="text-xs text-muted-foreground mt-2">
-                    {t("support.quotaLine", { used: quota.used, limit: quota.limit })}
-                  </p>
-                )}
-              </div>
-              <Button
-                variant="outline"
-                className="w-full sm:w-auto"
-                disabled={!canCreate}
-                onClick={() => setShowCreate(true)}
-              >
-                <Plus className="w-4 h-4 mr-1.5" />
-                {t("support.newTicket")}
-              </Button>
+            <div className="min-w-0">
+              <h3 className="font-semibold text-foreground flex items-center gap-2">
+                <MessageSquare className="w-4 h-4 shrink-0" />
+                {t("support.ticketsTitle")}
+              </h3>
+              <p className="text-sm text-muted-foreground mt-1">{t("support.ticketsHint")}</p>
+              {quota && (
+                <p className="text-xs text-muted-foreground mt-2">
+                  {t("support.quotaLine", { used: quota.used, limit: quota.limit })}
+                </p>
+              )}
             </div>
 
             <div className="divide-y border rounded-lg">
@@ -272,17 +261,7 @@ export default function SupportPage() {
                 </button>
               ))}
               {!tickets?.length && (
-                <div className="p-6 text-center space-y-3">
-                  <p className="text-sm text-muted-foreground">{t("support.noTickets")}</p>
-                  <Button
-                    className="bg-[var(--color-navy)] text-white"
-                    disabled={!canCreate}
-                    onClick={() => setShowCreate(true)}
-                  >
-                    <Plus className="w-4 h-4 mr-1.5" />
-                    {t("support.newTicket")}
-                  </Button>
-                </div>
+                <p className="p-6 text-center text-sm text-muted-foreground">{t("support.noTickets")}</p>
               )}
             </div>
           </section>

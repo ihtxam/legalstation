@@ -10,12 +10,17 @@
   <div class="shell">
     <header class="top">
       <div class="brand">Cliavo<span>Centre d'aide</span></div>
-      <div class="search">
-        <input type="search" id="searchInput" placeholder="Rechercher dans la documentation…" autocomplete="off" />
-        <div class="search-results" id="searchResults" hidden></div>
+      <div class="top-actions">
+        <div class="search" id="searchWrap">
+          <button type="button" class="search-toggle" id="searchToggle" aria-label="Search" aria-expanded="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg></button>
+          <div class="search-panel" id="searchPanel" hidden>
+            <input type="search" id="searchInput" data-index="./search-index.json" placeholder="Rechercher dans la documentation…" autocomplete="off" />
+            <div class="search-results" id="searchResults" hidden></div>
+          </div>
+        </div>
+        <nav><a href="./index.html">Tous les sujets</a></nav>
+        <div class="lang" aria-label="Langue"><a href="../agenda-calendar.html" lang="en">EN</a><a class="active" href="./agenda-calendar.html">FR</a><a href="../de/agenda-calendar.html" lang="de">DE</a><a href="../it/agenda-calendar.html" lang="it">IT</a><a href="../ar/agenda-calendar.html" lang="ar">AR</a></div>
       </div>
-      <nav><a href="./index.html">Tous les sujets</a></nav>
-      <div class="lang" aria-label="Langue"><a href="../agenda-calendar.html" lang="en">EN</a><a class="active" href="./agenda-calendar.html">FR</a><a href="../de/agenda-calendar.html" lang="de">DE</a><a href="../it/agenda-calendar.html" lang="it">IT</a><a href="../ar/agenda-calendar.html" lang="ar">AR</a></div>
     </header>
 
     <article class="article">

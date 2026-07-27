@@ -14,14 +14,19 @@
   <div class="shell">
     <header class="top">
       <div class="brand">Cliavo<span>Hilfe-Center</span></div>
-      <div class="search">
-        <input type="search" id="searchInput" placeholder="Dokumentation durchsuchen… (z. B. Rechnung, 2FA, eigene Domain)" autocomplete="off" />
-        <div class="search-results" id="searchResults" hidden></div>
-      </div>
-      <nav>
+      <div class="top-actions">
+        <div class="search" id="searchWrap">
+          <button type="button" class="search-toggle" id="searchToggle" aria-label="Search" aria-expanded="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg></button>
+          <div class="search-panel" id="searchPanel" hidden>
+            <input type="search" id="searchInput" data-index="./search-index.json" placeholder="Dokumentation durchsuchen…" autocomplete="off" />
+            <div class="search-results" id="searchResults" hidden></div>
+          </div>
+        </div>
+        <nav>
         <a href="mailto:support@cliavo.com">support@cliavo.com</a>
       </nav>
-      <div class="lang" aria-label="Sprache"><a href="../index.html" lang="en">EN</a><a href="../fr/index.html" lang="fr">FR</a><a class="active" href="./index.html">DE</a><a href="../it/index.html" lang="it">IT</a><a href="../ar/index.html" lang="ar">AR</a></div>
+        <div class="lang" aria-label="Sprache"><a href="../index.html" lang="en">EN</a><a href="../fr/index.html" lang="fr">FR</a><a class="active" href="./index.html">DE</a><a href="../it/index.html" lang="it">IT</a><a href="../ar/index.html" lang="ar">AR</a></div>
+      </div>
     </header>
 
     <section class="hero">
@@ -30,7 +35,7 @@
         Ausführliche Anleitungen zu jeder Funktion — von der ersten Anmeldung über die Führung von
         Mandaten, die Zeiterfassung, die Rechnungsstellung mit Schweizer QR-Rechnungen und die
         Veröffentlichung Ihrer Kanzlei-Website bis zum Verkauf von Paketen und
-        On-Demand-Dienstleistungen. Nutzen Sie die Suchleiste oben, um direkt zur Antwort zu springen.
+        On-Demand-Dienstleistungen. Nutzen Sie das Suchsymbol oben, um direkt zur Antwort zu springen.
       </p>
     </section>
 

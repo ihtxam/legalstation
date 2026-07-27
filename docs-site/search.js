@@ -1,7 +1,10 @@
-/* Live docs search: loads search-index.json once, filters as you type. */
+/* Live docs search: icon toggle + results panel. */
 (function () {
   var input = document.getElementById("searchInput");
   var panel = document.getElementById("searchResults");
+  var toggle = document.getElementById("searchToggle");
+  var wrap = document.getElementById("searchWrap");
+  var drawer = document.getElementById("searchPanel");
   if (!input || !panel) return;
 
   var index = null;
@@ -10,10 +13,36 @@
   function loadIndex() {
     if (index || loading) return;
     loading = true;
-    fetch("./search-index.json")
+    var base = input.getAttribute("data-index") || "./search-index.json";
+    fetch(base)
       .then(function (r) { return r.json(); })
-      .then(function (data) { index = data; run(); })
+      .then(function (data) { index = data; loading = false; run(); })
       .catch(function () { loading = false; });
+  }
+
+  function openSearch() {
+    if (!drawer || !wrap || !toggle) {
+      input.focus();
+      loadIndex();
+      return;
+    }
+    wrap.classList.add("open");
+    drawer.hidden = false;
+    toggle.setAttribute("aria-expanded", "true");
+    setTimeout(function () { input.focus(); }, 10);
+    loadIndex();
+  }
+
+  function closeSearch() {
+    if (!drawer || !wrap || !toggle) {
+      panel.hidden = true;
+      return;
+    }
+    wrap.classList.remove("open");
+    drawer.hidden = true;
+    panel.hidden = true;
+    toggle.setAttribute("aria-expanded", "false");
+    input.blur();
   }
 
   function escapeHtml(s) {
@@ -89,16 +118,34 @@
     panel.hidden = false;
   }
 
+  if (toggle) {
+    toggle.addEventListener("click", function (ev) {
+      ev.stopPropagation();
+      if (wrap && wrap.classList.contains("open")) closeSearch();
+      else openSearch();
+    });
+  }
+
   input.addEventListener("focus", loadIndex);
   input.addEventListener("input", function () { loadIndex(); run(); });
   input.addEventListener("keydown", function (ev) {
-    if (ev.key === "Escape") { panel.hidden = true; input.blur(); }
+    if (ev.key === "Escape") { closeSearch(); }
     if (ev.key === "Enter") {
       var first = panel.querySelector("a");
       if (first && !panel.hidden) window.location.href = first.getAttribute("href");
     }
   });
   document.addEventListener("click", function (ev) {
-    if (!panel.contains(ev.target) && ev.target !== input) panel.hidden = true;
+    if (!wrap) {
+      if (!panel.contains(ev.target) && ev.target !== input) panel.hidden = true;
+      return;
+    }
+    if (!wrap.contains(ev.target)) closeSearch();
+  });
+  document.addEventListener("keydown", function (ev) {
+    if ((ev.metaKey || ev.ctrlKey) && (ev.key === "k" || ev.key === "K")) {
+      ev.preventDefault();
+      openSearch();
+    }
   });
 })();
