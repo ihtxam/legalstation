@@ -1,5 +1,6 @@
 import type { CmsBlock, CmsDocument } from "@shared/cmsBlocks";
 import { parseCmsDocument } from "@shared/cmsBlocks";
+import { parseGrapesDocument } from "@shared/grapesPage";
 import { cn, formatCurrency } from "@/lib/utils";
 import { trpc } from "@/lib/trpc";
 import { User } from "lucide-react";
@@ -495,7 +496,7 @@ export function CmsBlocksView({
   );
 }
 
-/** Render CMS JSON blocks or fall back to plain HTML/text body. */
+/** Render CMS JSON blocks, GrapesJS visual pages, or fall back to plain HTML/text body. */
 export function CmsPageBody({
   content,
   primary = "#00BFA6",
@@ -507,6 +508,15 @@ export function CmsPageBody({
   mode?: RenderMode;
   firmSlug?: string;
 }) {
+  const grapes = parseGrapesDocument(content);
+  if (grapes) {
+    return (
+      <div className="cms-grapes-page bg-background text-foreground">
+        {grapes.css ? <style dangerouslySetInnerHTML={{ __html: grapes.css }} /> : null}
+        <div dangerouslySetInnerHTML={{ __html: grapes.html || "" }} />
+      </div>
+    );
+  }
   const doc = parseCmsDocument(content);
   if (doc) return <CmsBlocksView document={doc} primary={primary} mode={mode} firmSlug={firmSlug} />;
   if (!content?.trim()) return null;

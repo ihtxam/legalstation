@@ -80,8 +80,8 @@
   "home": {
     "signIn": "Anmelden",
     "badge": "Für Schweizer Kanzleien gebaut",
-    "title": "Der Arbeitsbereich Ihrer Kanzlei,",
-    "titleAccent": "in Minuten live.",
+    "title": "Kanzlei-Alltag,",
+    "titleAccent": "in einem ruhigen Workspace.",
     "subtitle": "Cliavo vereint Ihre gesamte Kanzlei in einem eleganten Arbeitsbereich — Mandate, Klienten, Dokumente, Abrechnung und Kommunikation.",
     "subtitleTrial": "Registrieren, eigenen Workspace-Slug erhalten und Cliavo {{days}} Tage kostenlos testen. Danach Cloud fortsetzen, eigene Domain oder On-Premise.",
     "getStarted": "Loslegen",
@@ -132,12 +132,12 @@
     "onpremTitle": "On-Premise-Deployment",
     "onpremDesc": "Cliavo selbst hosten? Nach dem Test helfen wir bei einer dedizierten Installation.",
     "contactOnprem": "On-Premise anfragen",
-    "featuresTitle": "Alles, was Ihre Kanzlei braucht",
-    "featuresSubtitle": "Eine Plattform für die Präzision und Vertraulichkeit juristischer Arbeit.",
+    "featuresTitle": "Alles für schlanke Abläufe",
+    "featuresSubtitle": "Vom Intake bis zur Rechnung — für kleine und mittlere Kanzleien.",
     "featureClients": "Klientenverwaltung",
-    "featureClientsDesc": "Verwalten Sie Privat- und Firmenklienten mit Onboarding und Profilen.",
+    "featureClientsDesc": "Privat- und Firmenklienten, Kontakte und Historie an einem Ort.",
     "featureCases": "Mandatsverwaltung",
-    "featureCasesDesc": "Verfolgen Sie Mandate mit Zeitachse, internen Notizen, Status und Fristen.",
+    "featureCasesDesc": "Mandate mit Status, Fristen, Notizen, Aufgaben und Timeline organisieren.",
     "featureDocs": "Sichere Dokumente",
     "featureDocsDesc": "Hochladen, versionieren und teilen mit Audit und Zugriffskontrolle.",
     "featureMessages": "Themenbezogene Nachrichten",
@@ -146,7 +146,21 @@
     "featureBillingDesc": "PDF-Rechnungen in CHF, MWST-konform und Stripe-Zahlungen.",
     "featureSaaS": "Multi-Tenant-SaaS",
     "featureSaaSDesc": "Isolierte Arbeitsbereiche pro Kanzlei mit rollenbasiertem Zugriff.",
-    "footerTagline": "— Schweizer Kanzleimanagement"
+    "footerTagline": "— Praxisverwaltung für moderne Kanzleien",
+    "subtitleClear": "Cliavo hilft Kanzleien, Klienten, Mandate, Dokumente, Abrechnung und Nachrichten zu organisieren — und gibt Klienten ein einfaches Portal für ihre Angelegenheiten und Services.",
+    "seeHow": "So hilft es",
+    "helpsTitle": "Für den echten Kanzleialltag",
+    "helpsSubtitle": "Eine Plattform für Team, Klientenreise und Wachstum — ohne Tool-Chaos.",
+    "forFirmsTitle": "Für Kanzleien",
+    "forFirmsDesc": "Tagesgeschäft an einem Ort: Klienten, Mandate, Fristen, Dokumente, Rollen, Rechnungen und Zeit.",
+    "forClientsTitle": "Für Ihre Klienten",
+    "forClientsDesc": "Klienten sehen Mandate, laden Dokumente hoch, schreiben der Kanzlei und zahlen — weniger Nachfassen.",
+    "forGrowthTitle": "Pakete & Services verkaufen",
+    "forGrowthDesc": "Abos und On-Demand-Services publizieren. Website und Portal werden zum Wachstumskanal.",
+    "trustOps": "Mandate, Docs & Billing",
+    "trustPortal": "Klientenportal inklusive",
+    "featureUpsell": "Pakete & On-Demand-Services",
+    "featureUpsellDesc": "Abos und Einzelleistungen über Site und Portal verkaufen."
   },
   "trial": {
     "active": "Trial: {{days}} day left. Upgrade your package anytime from Account.",
@@ -633,7 +647,13 @@
     "defaultCurrencyMustBeEnabled": "Die Standardwährung muss aktiviert sein",
     "swissQrCurrencyNote": "Swiss QR-Rechnungen werden nur für CHF und EUR erzeugt. Andere Währungen überspringen die QR-Seite.",
     "viewFirmAccount": "Kanzleikonto ansehen",
-    "unknownFirm": "Unbekannte Kanzlei"
+    "unknownFirm": "Unbekannte Kanzlei",
+    "legalTitle": "Recht & Cookies",
+    "legalDesc": "Plattform-AGB, Datenschutz und Cookies in Footer und Banner.",
+    "legalTermsHtml": "AGB (HTML)",
+    "legalPrivacyHtml": "Datenschutz (HTML)",
+    "legalCookiesHtml": "Cookies (HTML)",
+    "cookieBannerEnabled": "Cookie-Banner anzeigen"
   },
   "login": {
     "email": "E-Mail",
@@ -1654,7 +1674,15 @@
     "liveDataHint": "Diese Blöcke zeigen automatisch Ihre veröffentlichten Pakete / Services — den Inhalt verwalten Sie unter Upselling.",
     "liveBadge": "· live",
     "addItem": "Eintrag hinzufügen",
-    "dragToReorder": "Zum Sortieren ziehen"
+    "dragToReorder": "Zum Sortieren ziehen",
+    "visualBuilder": "Visueller Builder",
+    "blockBuilder": "Block-Builder",
+    "visualEditorHint": "Abschnitte per Drag & Drop gestalten und veröffentlichen.",
+    "switchToVisualConfirm": "Zum visuellen Builder wechseln? Block-Layout wird ersetzt.",
+    "switchToBlocksConfirm": "Zum Block-Builder wechseln? Visuelle Seite wird ersetzt.",
+    "addLegalPages": "Rechtsseiten hinzufügen",
+    "legalPagesCreated": "{{count}} Rechtsseite(n) erstellt.",
+    "legalPagesExist": "AGB, Datenschutz und Cookies existieren bereits."
   },
   "upselling": {
     "hint": "Verkaufen Sie Abonnementpakete und Einzelleistungen an Ihre Mandanten an einem Ort.",
@@ -1662,5 +1690,16 @@
     "packagesHint": "Wiederkehrende Pläne mit monatlicher, halbjährlicher oder jährlicher Abrechnung. Stunden und Fälle gelten pro Jahr; Mindestlaufzeit ein Jahr.",
     "servicesTitle": "On-Demand-Leistungen",
     "servicesHint": "Einzelleistungen (Verträge, Beratung, Prüfungen). Mandanten kaufen sie im Portal."
+  },
+  "legal": {
+    "terms": "AGB",
+    "privacy": "Datenschutz",
+    "cookiePolicy": "Cookie-Richtlinie",
+    "cookieBannerTitle": "Wir verwenden Cookies",
+    "cookieBannerBody": "{{brand}} verwendet Cookies für Sicherheit und Einstellungen. Mit dem Fortfahren akzeptieren Sie die Cookie-Richtlinie.",
+    "acceptCookies": "Akzeptieren",
+    "learnMore": "Mehr erfahren",
+    "backHome": "Zur Startseite",
+    "placeholderBody": "Diese Rechtsseite wird bald vom Administrator veröffentlicht."
   }
 }

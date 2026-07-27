@@ -4,7 +4,7 @@ import { trpc } from "@/lib/trpc";
 import AppLayout from "@/components/AppLayout";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ExternalLink, Home, Pencil, Plus, Trash2 } from "lucide-react";
+import { ExternalLink, Home, Pencil, Plus, Trash2, Shield } from "lucide-react";
 import { useEffect } from "react";
 import { useLocation } from "wouter";
 import { toast } from "sonner";
@@ -38,6 +38,18 @@ export default function FirmCmsPage() {
     onError: (e) => toast.error(e.message),
   });
 
+  const ensureLegal = trpc.firmPages.ensureLegalPages.useMutation({
+    onSuccess: (res) => {
+      toast.success(
+        res.created.length
+          ? t("cms.legalPagesCreated", { count: res.created.length })
+          : t("cms.legalPagesExist")
+      );
+      utils.firmPages.list.invalidate();
+    },
+    onError: (e) => toast.error(e.message),
+  });
+
   useEffect(() => {
     if (!loading && !isAuthenticated) startLogin();
   }, [isAuthenticated, loading]);
@@ -56,12 +68,23 @@ export default function FirmCmsPage() {
             <h1 className="text-xl font-semibold">{t("crm.cmsTitle")}</h1>
             <p className="text-sm text-muted-foreground mt-1">{t("crm.cmsHint")}</p>
           </div>
-          <Button
-            className="bg-[var(--color-navy)] text-white"
-            onClick={() => navigate("/cms/new")}
-          >
-            <Plus className="w-4 h-4 me-1.5" /> {t("crm.newPage")}
-          </Button>
+          <div className="flex items-center gap-2 flex-wrap">
+            <Button
+              type="button"
+              variant="outline"
+              disabled={ensureLegal.isPending}
+              onClick={() => ensureLegal.mutate()}
+            >
+              <Shield className="w-4 h-4 me-1.5" />
+              {t("cms.addLegalPages")}
+            </Button>
+            <Button
+              className="bg-[var(--color-navy)] text-white"
+              onClick={() => navigate("/cms/new")}
+            >
+              <Plus className="w-4 h-4 me-1.5" /> {t("crm.newPage")}
+            </Button>
+          </div>
         </div>
 
         {urls && (

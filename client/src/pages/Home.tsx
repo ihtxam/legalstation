@@ -18,13 +18,18 @@ import {
   Globe,
   Server,
   Sparkles,
+  BriefcaseBusiness,
+  Store,
+  LayoutDashboard,
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
-import { useLocation } from "wouter";
+import { Link, useLocation } from "wouter";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
+import CookieConsentBanner from "@/components/CookieConsentBanner";
 import { isAppLocale } from "@shared/locales";
+import { motion } from "framer-motion";
 
 type DemoStatus = {
   enabled: boolean;
@@ -160,7 +165,25 @@ export default function Home() {
     { icon: Shield, title: t("home.featureDocs"), desc: t("home.featureDocsDesc") },
     { icon: MessageSquare, title: t("home.featureMessages"), desc: t("home.featureMessagesDesc") },
     { icon: Receipt, title: t("home.featureBilling"), desc: t("home.featureBillingDesc") },
-    { icon: Scale, title: t("home.featureSaaS"), desc: t("home.featureSaaSDesc") },
+    { icon: Store, title: t("home.featureUpsell"), desc: t("home.featureUpsellDesc") },
+  ];
+
+  const audiences = [
+    {
+      icon: LayoutDashboard,
+      title: t("home.forFirmsTitle"),
+      desc: t("home.forFirmsDesc"),
+    },
+    {
+      icon: Users,
+      title: t("home.forClientsTitle"),
+      desc: t("home.forClientsDesc"),
+    },
+    {
+      icon: BriefcaseBusiness,
+      title: t("home.forGrowthTitle"),
+      desc: t("home.forGrowthDesc"),
+    },
   ];
 
   const pathSteps = [
@@ -183,44 +206,81 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-background">
-      <nav className="flex items-center justify-between gap-2 px-4 sm:px-8 py-4 sm:py-5 border-b border-border bg-card">
+      <nav className="flex items-center justify-between gap-2 px-4 sm:px-8 py-4 sm:py-5 border-b border-border bg-card/90 backdrop-blur sticky top-0 z-30">
         <div className="flex items-center gap-2.5 min-w-0">
           <div className="w-8 h-8 rounded-lg bg-[var(--color-navy)] flex items-center justify-center shrink-0">
             <Scale className="w-4 h-4 text-white" />
           </div>
-          <span className="font-serif font-semibold text-lg sm:text-xl text-foreground tracking-tight truncate">Cliavo</span>
+          <span className="font-serif font-semibold text-lg sm:text-xl text-foreground tracking-tight truncate">
+            Cliavo
+          </span>
         </div>
         <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
           <LanguageSwitcher />
-          <Button variant="ghost" size="sm" onClick={() => navigate("/platform/login")} className="text-muted-foreground hidden sm:inline-flex">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => navigate("/platform/login")}
+            className="text-muted-foreground hidden sm:inline-flex"
+          >
             Platform
           </Button>
-          <Button size="sm" onClick={() => startLogin()} className="bg-[var(--color-navy)] hover:bg-[var(--color-navy-light)] text-white">
+          <Button
+            size="sm"
+            onClick={() => startLogin()}
+            className="bg-[var(--color-navy)] hover:bg-[var(--color-navy-light)] text-white"
+          >
             {t("home.signIn")}
             <ArrowRight className="w-4 h-4 ml-1.5 hidden sm:inline" />
           </Button>
         </div>
       </nav>
 
-      <section className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-[#00BFA6] via-[#00A894] to-[#0F766E]" />
-        <div className="absolute inset-x-0 bottom-0 h-1 bg-white/80" />
+      <section className="relative overflow-hidden min-h-[min(88vh,760px)] flex items-center">
+        <div className="absolute inset-0 bg-gradient-to-br from-[#0B3D3A] via-[#0F766E] to-[#00BFA6]" />
+        <motion.div
+          className="absolute -top-24 -right-16 w-[420px] h-[420px] rounded-full bg-white/10 blur-3xl"
+          animate={{ opacity: [0.35, 0.55, 0.35], scale: [1, 1.08, 1] }}
+          transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
+        />
+        <motion.div
+          className="absolute bottom-0 left-[-10%] w-[380px] h-[380px] rounded-full bg-[var(--color-gold)]/20 blur-3xl"
+          animate={{ opacity: [0.25, 0.45, 0.25], x: [0, 24, 0] }}
+          transition={{ duration: 12, repeat: Infinity, ease: "easeInOut" }}
+        />
         <div
-          className="absolute inset-0 opacity-5"
+          className="absolute inset-0 opacity-[0.07]"
           style={{
             backgroundImage: "radial-gradient(circle at 1px 1px, white 1px, transparent 0)",
-            backgroundSize: "32px 32px",
+            backgroundSize: "28px 28px",
           }}
         />
-        <div className="relative max-w-5xl mx-auto px-4 sm:px-8 py-16 sm:py-24 md:py-28 text-center">
-          <p className="font-serif text-white/90 text-xl sm:text-2xl md:text-3xl tracking-tight mb-4 sm:mb-6">Cliavo</p>
-          <h1 className="font-serif text-3xl sm:text-4xl md:text-5xl font-semibold text-white leading-tight mb-4 sm:mb-5">
+        <div className="relative max-w-5xl mx-auto px-4 sm:px-8 py-16 sm:py-20 md:py-24 text-center w-full">
+          <motion.p
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+            className="font-serif text-white text-2xl sm:text-3xl md:text-4xl tracking-tight mb-5 sm:mb-6"
+          >
+            Cliavo
+          </motion.p>
+          <motion.h1
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.55, delay: 0.08 }}
+            className="font-serif text-3xl sm:text-4xl md:text-5xl font-semibold text-white leading-tight mb-4 sm:mb-5 max-w-3xl mx-auto"
+          >
             {t("home.title")}{" "}
             <span className="text-[var(--color-gold-light)]">{t("home.titleAccent")}</span>
-          </h1>
-          <p className="text-white/70 text-base sm:text-lg md:text-xl max-w-2xl mx-auto mb-6 sm:mb-8 leading-relaxed px-1">
-            {t("home.subtitleTrial", { days: trialDays })}
-          </p>
+          </motion.h1>
+          <motion.p
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.55, delay: 0.16 }}
+            className="text-white/75 text-base sm:text-lg md:text-xl max-w-2xl mx-auto mb-8 leading-relaxed px-1"
+          >
+            {t("home.subtitleClear")}
+          </motion.p>
           <div className="flex items-center justify-center gap-4 flex-wrap">
             <Button
               size="lg"
@@ -237,12 +297,11 @@ export default function Home() {
               size="lg"
               variant="outline"
               onClick={() => {
-                document.getElementById("firm-signup")?.scrollIntoView({ behavior: "smooth" });
-                setLeadTab("demo");
+                document.getElementById("how-it-helps")?.scrollIntoView({ behavior: "smooth" });
               }}
               className="border-white/40 bg-white/10 text-white hover:bg-white/20 h-12 px-8"
             >
-              {t("home.requestDemo")}
+              {t("home.seeHow")}
             </Button>
           </div>
           {demo.enabled && demo.users.length > 0 && (
@@ -267,8 +326,8 @@ export default function Home() {
           <div className="flex items-center justify-center gap-6 mt-10 text-white/60 text-sm flex-wrap">
             {[
               t("home.trustTrial", { days: trialDays }),
-              t("home.trustSlug"),
-              t("home.trustWhitelabel"),
+              t("home.trustOps"),
+              t("home.trustPortal"),
             ].map((item) => (
               <span key={item} className="flex items-center gap-1.5">
                 <Check className="w-3.5 h-3.5 text-[var(--color-gold)]" />
@@ -279,7 +338,39 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="border-b border-border bg-muted/20">
+      <section id="how-it-helps" className="border-b border-border bg-muted/25">
+        <div className="max-w-5xl mx-auto px-4 sm:px-8 py-16 sm:py-20">
+          <div className="text-center mb-12">
+            <h2 className="font-serif text-3xl font-semibold text-foreground mb-3">
+              {t("home.helpsTitle")}
+            </h2>
+            <p className="text-muted-foreground text-lg max-w-2xl mx-auto">{t("home.helpsSubtitle")}</p>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {audiences.map(({ icon: Icon, title, desc }, i) => (
+              <motion.div
+                key={title}
+                initial={{ opacity: 0, y: 18 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-40px" }}
+                transition={{ duration: 0.4, delay: i * 0.08 }}
+                className="relative"
+              >
+                <div className="text-[var(--color-gold)] font-serif text-sm mb-3">
+                  {String(i + 1).padStart(2, "0")}
+                </div>
+                <div className="w-10 h-10 rounded-lg bg-[var(--color-navy)]/8 flex items-center justify-center mb-4">
+                  <Icon className="w-5 h-5 text-[var(--color-navy)]" />
+                </div>
+                <h3 className="font-semibold text-foreground mb-2">{title}</h3>
+                <p className="text-muted-foreground text-sm leading-relaxed">{desc}</p>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="border-b border-border bg-background">
         <div className="max-w-5xl mx-auto px-8 py-16">
           <div className="text-center mb-12">
             <h2 className="font-serif text-3xl font-semibold text-foreground mb-3">{t("home.pathTitle")}</h2>
@@ -566,15 +657,33 @@ export default function Home() {
       </section>
 
       <footer className="border-t border-border py-8 px-8">
-        <div className="max-w-5xl mx-auto flex items-center justify-between text-muted-foreground text-sm flex-wrap gap-3">
-          <div className="flex items-center gap-2">
+        <div className="max-w-5xl mx-auto flex flex-col sm:flex-row items-center justify-between text-muted-foreground text-sm gap-4">
+          <div className="flex items-center gap-2 flex-wrap justify-center">
             <Scale className="w-4 h-4" />
             <span className="font-serif font-medium text-foreground">Cliavo</span>
             <span>{t("home.footerTagline")}</span>
           </div>
-          <span>© {new Date().getFullYear()} Cliavo</span>
+          <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1 text-xs">
+            <Link href="/legal/terms" className="hover:text-foreground hover:underline">
+              {t("legal.terms")}
+            </Link>
+            <Link href="/legal/privacy" className="hover:text-foreground hover:underline">
+              {t("legal.privacy")}
+            </Link>
+            <Link href="/legal/cookies" className="hover:text-foreground hover:underline">
+              {t("legal.cookiePolicy")}
+            </Link>
+            <span>© {new Date().getFullYear()} Cliavo</span>
+          </div>
         </div>
       </footer>
+
+      <CookieConsentBanner
+        scope="platform"
+        policyHref="/legal/cookies"
+        privacyHref="/legal/privacy"
+        brandName="Cliavo"
+      />
     </div>
   );
 }

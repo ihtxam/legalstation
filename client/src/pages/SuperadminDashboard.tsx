@@ -132,6 +132,10 @@ export default function SuperadminDashboard() {
   const [annSeverity, setAnnSeverity] = useState<"info" | "warning" | "critical">("info");
   const [annAudience, setAnnAudience] = useState<"firm_admins" | "all_members">("firm_admins");
   const [ticketsPerMonth, setTicketsPerMonth] = useState("10");
+  const [termsHtml, setTermsHtml] = useState("");
+  const [privacyHtml, setPrivacyHtml] = useState("");
+  const [cookiesHtml, setCookiesHtml] = useState("");
+  const [cookieBannerEnabled, setCookieBannerEnabled] = useState(true);
   const [ticketFilter, setTicketFilter] = useState<
     "all" | "open" | "processing" | "under_review" | "responded" | "resolved" | "closed"
   >("all");
@@ -249,6 +253,10 @@ export default function SuperadminDashboard() {
     setMsCalClientId(platformSettings.calendar?.microsoftClientId || "");
     setMsCalTenant(platformSettings.calendar?.microsoftTenant || "common");
     setTicketsPerMonth(String(platformSettings.supportTicketsPerMonth ?? 10));
+    setTermsHtml(platformSettings.legal?.termsHtml || "");
+    setPrivacyHtml(platformSettings.legal?.privacyHtml || "");
+    setCookiesHtml(platformSettings.legal?.cookiesHtml || "");
+    setCookieBannerEnabled(platformSettings.legal?.cookieBannerEnabled !== false);
   }, [platformSettings]);
 
   const createFirmMutation = trpc.superadmin.createFirm.useMutation({
@@ -575,6 +583,10 @@ export default function SuperadminDashboard() {
       microsoftCalendarClientSecret: msCalSecret || undefined,
       microsoftCalendarTenant: msCalTenant || "common",
       supportTicketsPerMonth: Math.max(0, parseInt(ticketsPerMonth, 10) || 0),
+      termsHtml,
+      privacyHtml,
+      cookiesHtml,
+      cookieBannerEnabled,
     });
   };
 
@@ -1642,6 +1654,51 @@ export default function SuperadminDashboard() {
                       {t("superadmin.ticketsPerMonthHint")}
                     </p>
                   </div>
+                </CardContent>
+              </Card>
+
+              <Card className="shadow-none lg:col-span-2">
+                <CardHeader>
+                  <CardTitle className="text-base flex items-center gap-2">
+                    <Shield className="h-4 w-4" /> {t("superadmin.legalTitle")}
+                  </CardTitle>
+                  <CardDescription>{t("superadmin.legalDesc")}</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  <div className="flex items-center justify-between gap-3">
+                    <Label>{t("superadmin.cookieBannerEnabled")}</Label>
+                    <Switch checked={cookieBannerEnabled} onCheckedChange={setCookieBannerEnabled} />
+                  </div>
+                  <div>
+                    <Label>{t("superadmin.legalTermsHtml")}</Label>
+                    <Textarea
+                      className="mt-1 font-mono text-xs min-h-28"
+                      value={termsHtml}
+                      onChange={(e) => setTermsHtml(e.target.value)}
+                      placeholder="<h1>Terms…</h1>"
+                    />
+                  </div>
+                  <div>
+                    <Label>{t("superadmin.legalPrivacyHtml")}</Label>
+                    <Textarea
+                      className="mt-1 font-mono text-xs min-h-28"
+                      value={privacyHtml}
+                      onChange={(e) => setPrivacyHtml(e.target.value)}
+                      placeholder="<h1>Privacy…</h1>"
+                    />
+                  </div>
+                  <div>
+                    <Label>{t("superadmin.legalCookiesHtml")}</Label>
+                    <Textarea
+                      className="mt-1 font-mono text-xs min-h-28"
+                      value={cookiesHtml}
+                      onChange={(e) => setCookiesHtml(e.target.value)}
+                      placeholder="<h1>Cookies…</h1>"
+                    />
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Public links: /legal/terms · /legal/privacy · /legal/cookies
+                  </p>
                 </CardContent>
               </Card>
 

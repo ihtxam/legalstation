@@ -80,8 +80,8 @@
   "home": {
     "signIn": "Se connecter",
     "badge": "Conçu pour les cabinets suisses",
-    "title": "L’espace de votre cabinet,",
-    "titleAccent": "prêt en quelques minutes.",
+    "title": "Les opérations du cabinet,",
+    "titleAccent": "dans un espace clair.",
     "subtitle": "Cliavo regroupe tout votre cabinet dans un espace élégant — dossiers, clients, documents, facturation et communication.",
     "subtitleTrial": "Inscrivez-vous, obtenez un slug dédié et testez Cliavo gratuitement pendant {{days}} jours. Puis continuez en cloud, ajoutez votre domaine, ou passez on-premise.",
     "getStarted": "Commencer",
@@ -132,12 +132,12 @@
     "onpremTitle": "Déploiement on-premise",
     "onpremDesc": "Vous préférez héberger Cliavo ? Nous pouvons préparer une installation dédiée après votre essai.",
     "contactOnprem": "Demander l’on-premise",
-    "featuresTitle": "Tout ce dont votre cabinet a besoin",
-    "featuresSubtitle": "Une plateforme conçue pour la précision et la confidentialité du travail juridique.",
+    "featuresTitle": "Tout pour fluidifier le cabinet",
+    "featuresSubtitle": "De l’accueil client à la facture — pour cabinets petits et moyens.",
     "featureClients": "Gestion des clients",
-    "featureClientsDesc": "Gérez particuliers et sociétés avec onboarding et profils complets.",
+    "featureClientsDesc": "Clients particuliers et entreprises, contacts et historique au même endroit.",
     "featureCases": "Gestion des dossiers",
-    "featureCasesDesc": "Suivez les dossiers avec chronologie, notes internes, statuts et échéances.",
+    "featureCasesDesc": "Organisez les affaires avec statuts, échéances, notes, tâches et chronologie.",
     "featureDocs": "Documents sécurisés",
     "featureDocsDesc": "Téléversez, versionnez et partagez avec audit et contrôles d'accès.",
     "featureMessages": "Messagerie filée",
@@ -146,7 +146,21 @@
     "featureBillingDesc": "Factures PDF en CHF, conformité TVA/MWST et paiements Stripe.",
     "featureSaaS": "SaaS multi-tenant",
     "featureSaaSDesc": "Espaces isolés par cabinet avec contrôle d'accès par rôles.",
-    "footerTagline": "— Gestion de cabinet juridique suisse"
+    "footerTagline": "— Gestion de cabinet pour avocats modernes",
+    "subtitleClear": "Cliavo aide les cabinets à organiser clients, dossiers, documents, facturation et messages — et offre aux clients un portail simple pour suivre leurs affaires et acheter des services au même endroit.",
+    "seeHow": "Voir comment ça aide",
+    "helpsTitle": "Conçu pour le travail juridique réel",
+    "helpsSubtitle": "Une plateforme pour le cabinet, le parcours client et la croissance — sans multiplier les outils.",
+    "forFirmsTitle": "Pour les cabinets",
+    "forFirmsDesc": "Gérez le quotidien au même endroit : clients, dossiers, échéances, documents, rôles, factures et temps.",
+    "forClientsTitle": "Pour vos clients",
+    "forClientsDesc": "Les clients voient leurs dossiers, envoient des documents, écrivent au cabinet et paient — moins de relances, plus de clarté.",
+    "forGrowthTitle": "Vendez forfaits et services",
+    "forGrowthDesc": "Publiez des abonnements et services à la demande. Votre site et le portail deviennent un canal de croissance.",
+    "trustOps": "Dossiers, docs et facturation",
+    "trustPortal": "Portail client inclus",
+    "featureUpsell": "Forfaits et services à la demande",
+    "featureUpsellDesc": "Vendez des abonnements et prestations ponctuelles depuis le site et le portail."
   },
   "trial": {
     "active": "Essai : {{days}} jour restant. Passez à un forfait depuis Compte.",
@@ -633,7 +647,13 @@
     "defaultCurrencyMustBeEnabled": "La devise par défaut doit être activée",
     "swissQrCurrencyNote": "Les QR-factures suisses ne sont générées que pour CHF et EUR. Les autres devises ignorent la page QR.",
     "viewFirmAccount": "Voir le compte du cabinet",
-    "unknownFirm": "Cabinet inconnu"
+    "unknownFirm": "Cabinet inconnu",
+    "legalTitle": "Légal et cookies",
+    "legalDesc": "CGU, confidentialité et cookies de la plateforme (pied de page et bannière).",
+    "legalTermsHtml": "Conditions générales (HTML)",
+    "legalPrivacyHtml": "Confidentialité (HTML)",
+    "legalCookiesHtml": "Cookies (HTML)",
+    "cookieBannerEnabled": "Afficher la bannière cookies"
   },
   "login": {
     "email": "E-mail",
@@ -1654,7 +1674,15 @@
     "liveDataHint": "Ces blocs affichent automatiquement vos Forfaits / Services publiés — gérez le contenu réel depuis Upselling.",
     "liveBadge": "· en direct",
     "addItem": "Ajouter un élément",
-    "dragToReorder": "Glisser pour réorganiser"
+    "dragToReorder": "Glisser pour réorganiser",
+    "visualBuilder": "Éditeur visuel",
+    "blockBuilder": "Éditeur par blocs",
+    "visualEditorHint": "Glissez-déposez des sections pour concevoir votre page, puis publiez.",
+    "switchToVisualConfirm": "Passer à l’éditeur visuel ? La mise en page par blocs sera remplacée.",
+    "switchToBlocksConfirm": "Passer à l’éditeur par blocs ? La page visuelle sera remplacée.",
+    "addLegalPages": "Ajouter pages légales",
+    "legalPagesCreated": "{{count}} page(s) légale(s) créée(s).",
+    "legalPagesExist": "Conditions, confidentialité et cookies existent déjà."
   },
   "upselling": {
     "hint": "Vendez forfaits d’abonnement et services ponctuels à vos clients depuis un seul endroit.",
@@ -1662,5 +1690,16 @@
     "packagesHint": "Plans récurrents avec facturation mensuelle, semestrielle ou annuelle. Heures et dossiers annuels ; engagement minimum d’un an.",
     "servicesTitle": "Services à la demande",
     "servicesHint": "Services ponctuels (contrats, conseils, revues). Les clients les achètent dans leur portail."
+  },
+  "legal": {
+    "terms": "Conditions générales",
+    "privacy": "Politique de confidentialité",
+    "cookiePolicy": "Politique cookies",
+    "cookieBannerTitle": "Nous utilisons des cookies",
+    "cookieBannerBody": "{{brand}} utilise des cookies pour sécuriser le site et mémoriser vos préférences. En continuant, vous acceptez notre politique cookies.",
+    "acceptCookies": "Accepter",
+    "learnMore": "En savoir plus",
+    "backHome": "Retour à l’accueil",
+    "placeholderBody": "Cette page légale sera publiée prochainement par l’administrateur."
   }
 }

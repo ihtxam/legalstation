@@ -361,4 +361,42 @@ export const firmPagesRouter = router({
         },
       };
     }),
+
+  /** Create published Terms / Privacy / Cookies pages if missing (editable in CMS). */
+  ensureLegalPages: protectedProcedure.mutation(async ({ ctx }) => {
+    const member = await requireAdmin(ctx.user.id);
+    const db = await getDb();
+    if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+
+    const { defaultLegalHtml } = await import("../../shared/grapesPage");
+    const [firm] = await db.select().from(firms).where(eq(firms.id, member.firmId)).limit(1);
+    const brand = firm?.name || "Our firm";
+
+    const defs: Array<{ slug: string; title: string; kind: "terms" | "privacy" | "cookies" }> = [
+      { slug: "terms", title: "Terms & Conditions", kind: "terms" },
+      { slug: "privacy", title: "Privacy Policy", kind: "privacy" },
+      { slug: "cookies", title: "Cookie Policy", kind: "cookies" },
+    ];
+
+    const created: string[] = [];
+    for (const def of defs) {
+      const [existing] = await db
+        .select({ id: firmPages.id })
+        .from(firmPages)
+        .where(and(eq(firmPages.firmId, member.firmId), eq(firmPages.slug, def.slug)))
+        .limit(1);
+      if (existing) continue;
+      await db.insert(firmPages).values({
+        firmId: member.firmId,
+        slug: def.slug,
+        title: def.title,
+        content: defaultLegalHtml(def.kind, brand),
+        published: true,
+        isHome: false,
+        createdByUserId: ctx.user.id,
+      });
+      created.push(def.slug);
+    }
+    return { created };
+  }),
 });

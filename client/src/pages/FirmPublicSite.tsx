@@ -2,7 +2,11 @@ import { useEffect } from "react";
 import { Link, useParams, useLocation } from "wouter";
 import { trpc } from "@/lib/trpc";
 import { CmsPageBody } from "@/components/CmsBlockRenderer";
+import CookieConsentBanner from "@/components/CookieConsentBanner";
 import { Scale } from "lucide-react";
+import { useTranslation } from "react-i18next";
+
+const LEGAL_SLUGS = new Set(["terms", "privacy", "cookies", "terms-and-conditions", "privacy-policy", "cookie-policy"]);
 
 /**
  * Public firm website.
@@ -10,6 +14,7 @@ import { Scale } from "lucide-react";
  * On firm subdomain/custom domain (no /site/ prefix), resolve firm from Host.
  */
 export default function FirmPublicSitePage() {
+  const { t } = useTranslation();
   const params = useParams<{ firmSlug?: string; pageSlug?: string }>();
   const [location] = useLocation();
   const hostMode = !location.startsWith("/site/");
@@ -90,6 +95,13 @@ export default function FirmPublicSitePage() {
     return isHome ? `/site/${data.firm.slug}` : `/site/${data.firm.slug}/${slug}`;
   };
 
+  const mainNav = data.nav.filter((item) => !LEGAL_SLUGS.has(item.slug));
+  const legalNav = data.nav.filter((item) => LEGAL_SLUGS.has(item.slug));
+  const cookieHref =
+    legalNav.find((p) => p.slug === "cookies" || p.slug === "cookie-policy")?.slug || "cookies";
+  const privacyHref =
+    legalNav.find((p) => p.slug === "privacy" || p.slug === "privacy-policy")?.slug || "privacy";
+
   return (
     <div className="min-h-screen flex flex-col bg-background text-foreground">
       <header className="border-b border-border bg-card/80 backdrop-blur sticky top-0 z-20">
@@ -108,7 +120,7 @@ export default function FirmPublicSitePage() {
             <span className="font-semibold truncate">{data.firm.name}</span>
           </Link>
           <nav className="flex flex-wrap items-center gap-3 text-sm">
-            {data.nav.map((item) => (
+            {mainNav.map((item) => (
               <Link
                 key={item.slug}
                 href={hrefFor(item.slug, item.isHome)}
@@ -142,9 +154,38 @@ export default function FirmPublicSitePage() {
         />
       </main>
 
-      <footer className="border-t border-border py-6 text-center text-xs text-muted-foreground">
-        © {new Date().getFullYear()} {data.firm.name}
+      <footer className="border-t border-border py-8">
+        <div className="max-w-5xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-muted-foreground">
+          <p>
+            © {new Date().getFullYear()} {data.firm.name}
+          </p>
+          <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1">
+            {(legalNav.length
+              ? legalNav
+              : [
+                  { slug: "terms", title: t("legal.terms"), isHome: false },
+                  { slug: "privacy", title: t("legal.privacy"), isHome: false },
+                  { slug: "cookies", title: t("legal.cookiePolicy"), isHome: false },
+                ]
+            ).map((item) => (
+              <Link
+                key={item.slug}
+                href={hrefFor(item.slug, false)}
+                className="hover:text-foreground hover:underline"
+              >
+                {item.title}
+              </Link>
+            ))}
+          </div>
+        </div>
       </footer>
+
+      <CookieConsentBanner
+        scope={{ firm: data.firm.slug }}
+        policyHref={hrefFor(cookieHref, false)}
+        privacyHref={hrefFor(privacyHref, false)}
+        brandName={data.firm.name}
+      />
     </div>
   );
 }

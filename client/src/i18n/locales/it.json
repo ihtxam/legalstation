@@ -80,8 +80,8 @@
   "home": {
     "signIn": "Accedi",
     "badge": "Pensato per gli studi legali svizzeri",
-    "title": "Lo spazio del tuo studio,",
-    "titleAccent": "attivo in pochi minuti.",
+    "title": "Le operazioni dello studio,",
+    "titleAccent": "in un unico spazio.",
     "subtitle": "Cliavo riunisce l’intero studio in uno spazio elegante — pratiche, clienti, documenti, fatturazione e comunicazione.",
     "subtitleTrial": "Registrati, ottieni uno slug dedicato e prova Cliavo gratis per {{days}} giorni. Poi continua in cloud, aggiungi il dominio o passa on-premise.",
     "getStarted": "Inizia",
@@ -132,12 +132,12 @@
     "onpremTitle": "Deploy on-premise",
     "onpremDesc": "Preferisci ospitare Cliavo? Possiamo preparare un’installazione dedicata dopo la prova.",
     "contactOnprem": "Chiedi l’on-premise",
-    "featuresTitle": "Tutto ciò di cui il tuo studio ha bisogno",
-    "featuresSubtitle": "Una piattaforma pensata per precisione e riservatezza del lavoro legale.",
+    "featuresTitle": "Tutto per snellire lo studio",
+    "featuresSubtitle": "Dall’intake alla fattura — per studi piccoli e medi.",
     "featureClients": "Gestione clienti",
-    "featureClientsDesc": "Gestisci clienti privati e aziendali con onboarding e profili completi.",
+    "featureClientsDesc": "Clienti privati e aziende, contatti e storico in un unico posto.",
     "featureCases": "Gestione pratiche",
-    "featureCasesDesc": "Segui le pratiche con timeline, note interne, stati e scadenze.",
+    "featureCasesDesc": "Organizza le pratiche con stati, scadenze, note, task e timeline.",
     "featureDocs": "Documenti sicuri",
     "featureDocsDesc": "Carica, versiona e condividi con audit e controlli di accesso.",
     "featureMessages": "Messaggistica per pratica",
@@ -146,7 +146,21 @@
     "featureBillingDesc": "Fatture PDF in CHF, conformità IVA e pagamenti Stripe.",
     "featureSaaS": "SaaS multi-tenant",
     "featureSaaSDesc": "Spazi isolati per studio con controllo accessi per ruolo.",
-    "footerTagline": "— Gestione dello studio legale svizzero"
+    "footerTagline": "— Gestione dello studio per avvocati moderni",
+    "subtitleClear": "Cliavo aiuta gli studi a organizzare clienti, pratiche, documenti, fatturazione e messaggi — e offre ai clienti un portale semplice per seguire le pratiche e acquistare servizi.",
+    "seeHow": "Scopri come aiuta",
+    "helpsTitle": "Pensato per il lavoro legale reale",
+    "helpsSubtitle": "Una piattaforma per lo studio, il percorso cliente e la crescita — senza moltiplicare gli strumenti.",
+    "forFirmsTitle": "Per gli studi",
+    "forFirmsDesc": "Gestisci il quotidiano in un posto: clienti, pratiche, scadenze, documenti, ruoli, fatture e tempo.",
+    "forClientsTitle": "Per i vostri clienti",
+    "forClientsDesc": "I clienti vedono le pratiche, caricano documenti, scrivono allo studio e pagano — meno solleciti.",
+    "forGrowthTitle": "Vendi pacchetti e servizi",
+    "forGrowthDesc": "Pubblica abbonamenti e servizi on-demand. Sito e portale diventano un canale di crescita.",
+    "trustOps": "Pratiche, docs e billing",
+    "trustPortal": "Portale cliente incluso",
+    "featureUpsell": "Pacchetti e servizi on-demand",
+    "featureUpsellDesc": "Vendi abbonamenti e prestazioni una tantum da sito e portale."
   },
   "trial": {
     "active": "Trial: {{days}} day left. Upgrade your package anytime from Account.",
@@ -633,7 +647,13 @@
     "defaultCurrencyMustBeEnabled": "La valuta predefinita deve essere abilitata",
     "swissQrCurrencyNote": "Le QR-bill svizzere vengono generate solo per CHF ed EUR. Altre valute saltano la pagina QR.",
     "viewFirmAccount": "Vedi account dello studio",
-    "unknownFirm": "Studio sconosciuto"
+    "unknownFirm": "Studio sconosciuto",
+    "legalTitle": "Legale e cookie",
+    "legalDesc": "Termini, privacy e cookie della piattaforma (footer e banner).",
+    "legalTermsHtml": "Termini (HTML)",
+    "legalPrivacyHtml": "Privacy (HTML)",
+    "legalCookiesHtml": "Cookie (HTML)",
+    "cookieBannerEnabled": "Mostra banner cookie"
   },
   "login": {
     "email": "Email",
@@ -1654,7 +1674,15 @@
     "liveDataHint": "Questi blocchi mostrano automaticamente i Pacchetti / Servizi pubblicati — gestisci i contenuti da Upselling.",
     "liveBadge": "· live",
     "addItem": "Aggiungi elemento",
-    "dragToReorder": "Trascina per riordinare"
+    "dragToReorder": "Trascina per riordinare",
+    "visualBuilder": "Builder visuale",
+    "blockBuilder": "Builder a blocchi",
+    "visualEditorHint": "Trascina sezioni per progettare la pagina, poi pubblica.",
+    "switchToVisualConfirm": "Passare al builder visuale? Il layout a blocchi sarà sostituito.",
+    "switchToBlocksConfirm": "Passare ai blocchi? La pagina visuale sarà sostituita.",
+    "addLegalPages": "Aggiungi pagine legali",
+    "legalPagesCreated": "Create {{count}} pagine legali.",
+    "legalPagesExist": "Termini, privacy e cookie esistono già."
   },
   "upselling": {
     "hint": "Vendi pacchetti in abbonamento e servizi una tantum ai clienti da un unico posto.",
@@ -1662,5 +1690,16 @@
     "packagesHint": "Piani ricorrenti con fatturazione mensile, semestrale o annuale. Ore e casi annuali; impegno minimo di un anno.",
     "servicesTitle": "Servizi on-demand",
     "servicesHint": "Servizi una tantum (contratti, consulenza, revisioni). I clienti li acquistano nel portale."
+  },
+  "legal": {
+    "terms": "Termini e condizioni",
+    "privacy": "Informativa privacy",
+    "cookiePolicy": "Cookie policy",
+    "cookieBannerTitle": "Usiamo i cookie",
+    "cookieBannerBody": "{{brand}} usa cookie per sicurezza e preferenze. Continuando accetti la cookie policy.",
+    "acceptCookies": "Accetta",
+    "learnMore": "Scopri di più",
+    "backHome": "Torna alla home",
+    "placeholderBody": "Questa pagina legale sarà pubblicata a breve dall’amministratore."
   }
 }

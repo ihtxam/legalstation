@@ -80,8 +80,8 @@
   "home": {
     "signIn": "Sign in",
     "badge": "Built for Swiss law firms",
-    "title": "Your firm’s workspace,",
-    "titleAccent": "live in minutes.",
+    "title": "Law firm operations,",
+    "titleAccent": "in one calm workspace.",
     "subtitle": "Cliavo brings your entire firm into one elegant workspace — cases, clients, documents, billing, and communication, all in one place.",
     "subtitleTrial": "Sign up, get a dedicated workspace slug, and test Cliavo free for {{days}} days. Then continue on cloud, add your custom domain, or move on-premise.",
     "getStarted": "Get started",
@@ -132,12 +132,12 @@
     "onpremTitle": "On-premise deployment",
     "onpremDesc": "Prefer to host Cliavo yourself? We can help with a dedicated on-premise or private-cloud setup after your trial.",
     "contactOnprem": "Ask about on-premise",
-    "featuresTitle": "Everything your firm needs",
-    "featuresSubtitle": "A complete platform designed for the precision and confidentiality that legal work demands.",
+    "featuresTitle": "Everything to streamline the practice",
+    "featuresSubtitle": "From the first client intake to invoice and follow-up — designed for small and mid-size law firms.",
     "featureClients": "Client Management",
-    "featureClientsDesc": "Manage individual and corporate clients with full onboarding flows and profile management.",
+    "featureClientsDesc": "Keep individual and corporate clients, contacts, and activity history together — ready for the next call.",
     "featureCases": "Case Management",
-    "featureCasesDesc": "Track cases with timelines, internal notes, status changes, and deadline management.",
+    "featureCasesDesc": "Organize matters with statuses, deadlines, notes, tasks, and a clear timeline your whole team can follow.",
     "featureDocs": "Secure Documents",
     "featureDocsDesc": "Upload, version, and share documents with full audit trails and access controls.",
     "featureMessages": "Threaded Messaging",
@@ -146,7 +146,21 @@
     "featureBillingDesc": "Generate PDF invoices with CHF billing, VAT/TVA compliance, and Stripe payments.",
     "featureSaaS": "Multi-Tenant SaaS",
     "featureSaaSDesc": "Fully isolated workspaces per law firm with role-based access control.",
-    "footerTagline": "— Swiss Legal Practice Management"
+    "footerTagline": "— Practice management for modern law firms",
+    "subtitleClear": "Cliavo helps law firms organize clients, cases, documents, billing, and messages — while giving clients a simple portal to follow their matters and buy services in one place.",
+    "seeHow": "See how it helps",
+    "helpsTitle": "Built for how legal work actually runs",
+    "helpsSubtitle": "One platform for the firm desk, the client journey, and growth — without juggling tools.",
+    "forFirmsTitle": "For law firms",
+    "forFirmsDesc": "Run daily operations in one place: clients, cases, deadlines, documents, team roles, invoices, and time — so nothing slips between inboxes and spreadsheets.",
+    "forClientsTitle": "For your clients",
+    "forClientsDesc": "Clients log into a branded portal to see their cases, upload documents, message the firm, pay invoices, and track service orders — less chasing, more clarity.",
+    "forGrowthTitle": "Upsell with packages & services",
+    "forGrowthDesc": "Publish subscription plans and on-demand legal services. Clients can subscribe or add services to cart — your website and portal become a growth channel.",
+    "trustOps": "Cases, docs & billing together",
+    "trustPortal": "Client portal included",
+    "featureUpsell": "Packages & on-demand services",
+    "featureUpsellDesc": "Sell retainers and one-shot services from your site and portal — track orders and intake without leaving Cliavo."
   },
   "trial": {
     "active": "Trial: {{days}} day left. Upgrade your package anytime from Account.",
@@ -633,7 +647,13 @@
     "defaultCurrencyMustBeEnabled": "Default currency must be enabled",
     "swissQrCurrencyNote": "Swiss QR-bills are only generated for CHF and EUR invoices. Other currencies skip the QR page.",
     "viewFirmAccount": "View firm account",
-    "unknownFirm": "Unknown firm"
+    "unknownFirm": "Unknown firm",
+    "legalTitle": "Legal & cookies",
+    "legalDesc": "Platform Terms, Privacy, and Cookie policy shown in the footer and cookie banner.",
+    "legalTermsHtml": "Terms & Conditions (HTML)",
+    "legalPrivacyHtml": "Privacy Policy (HTML)",
+    "legalCookiesHtml": "Cookie Policy (HTML)",
+    "cookieBannerEnabled": "Show cookie consent banner"
   },
   "login": {
     "email": "Email",
@@ -1654,7 +1674,15 @@
     "liveDataHint": "These blocks automatically show your published Packages / Services — manage the actual content from Upselling.",
     "liveBadge": "· live",
     "addItem": "Add item",
-    "dragToReorder": "Drag to reorder"
+    "dragToReorder": "Drag to reorder",
+    "visualBuilder": "Visual builder",
+    "blockBuilder": "Block builder",
+    "visualEditorHint": "Drag and drop sections to design your page — then publish to your firm website.",
+    "switchToVisualConfirm": "Switch to the visual drag-and-drop builder? Unsaved block layout will be replaced with a starter canvas.",
+    "switchToBlocksConfirm": "Switch to the block builder? The visual page will be replaced with a block template.",
+    "addLegalPages": "Add legal pages",
+    "legalPagesCreated": "Created {{count}} legal page(s). Edit them like any CMS page.",
+    "legalPagesExist": "Terms, Privacy, and Cookies pages already exist."
   },
   "upselling": {
     "hint": "Sell subscription packages and one-shot legal services to your clients from one place.",
@@ -1662,5 +1690,16 @@
     "packagesHint": "Recurring plans with monthly, biannual, or yearly billing. Hours and cases are yearly; minimum commitment one year.",
     "servicesTitle": "On-demand services",
     "servicesHint": "One-shot services (contracts, advice, reviews). Clients buy them in their portal."
+  },
+  "legal": {
+    "terms": "Terms & Conditions",
+    "privacy": "Privacy Policy",
+    "cookiePolicy": "Cookie Policy",
+    "cookieBannerTitle": "We use cookies",
+    "cookieBannerBody": "{{brand}} uses cookies to keep the site secure and remember your preferences. By continuing, you accept our cookie policy.",
+    "acceptCookies": "Accept",
+    "learnMore": "Learn more",
+    "backHome": "Back to home",
+    "placeholderBody": "This legal page will be published by the platform administrator shortly."
   }
 }

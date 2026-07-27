@@ -994,6 +994,12 @@ export const superadminRouter = router({
         const n = parseInt(settings.support_tickets_per_month || "10", 10);
         return Number.isFinite(n) && n >= 0 ? Math.min(1000, n) : 10;
       })(),
+      legal: {
+        termsHtml: settings.legal_terms_html || "",
+        privacyHtml: settings.legal_privacy_html || "",
+        cookiesHtml: settings.legal_cookies_html || "",
+        cookieBannerEnabled: settings.cookie_banner_enabled !== "false",
+      },
     };
   }),
 
@@ -1029,6 +1035,10 @@ export const superadminRouter = router({
         microsoftCalendarClientSecret: z.string().optional(),
         microsoftCalendarTenant: z.string().optional(),
         supportTicketsPerMonth: z.number().int().min(0).max(1000).optional(),
+        termsHtml: z.string().max(200_000).optional(),
+        privacyHtml: z.string().max(200_000).optional(),
+        cookiesHtml: z.string().max(200_000).optional(),
+        cookieBannerEnabled: z.boolean().optional(),
       })
     )
     .mutation(async ({ ctx, input }) => {
@@ -1075,6 +1085,19 @@ export const superadminRouter = router({
         await upsertAgencySetting(
           "support_tickets_per_month",
           String(input.supportTicketsPerMonth)
+        );
+      }
+      if (input.termsHtml !== undefined) await upsertAgencySetting("legal_terms_html", input.termsHtml);
+      if (input.privacyHtml !== undefined) {
+        await upsertAgencySetting("legal_privacy_html", input.privacyHtml);
+      }
+      if (input.cookiesHtml !== undefined) {
+        await upsertAgencySetting("legal_cookies_html", input.cookiesHtml);
+      }
+      if (input.cookieBannerEnabled !== undefined) {
+        await upsertAgencySetting(
+          "cookie_banner_enabled",
+          input.cookieBannerEnabled ? "true" : "false"
         );
       }
 

@@ -48,6 +48,7 @@ import TrialBanner from "./components/TrialBanner";
 import AnnouncementPopup from "./components/AnnouncementPopup";
 import SupportPage from "./pages/Support";
 import AccountPage from "./pages/Account";
+import PlatformLegalPage from "./pages/PlatformLegal";
 import FirmPublicSitePage from "./pages/FirmPublicSite";
 
 function HomeOrFirmSite() {
@@ -247,6 +248,12 @@ function Router() {
           <Route path="/upselling" component={FirmUpsellingPage} />
           <Route path="/packages" component={FirmPackagesPage} />
           <Route path="/services" component={FirmServicesPage} />
+          <Route path="/legal/terms" component={PlatformLegalPage} />
+          <Route path="/legal/privacy" component={PlatformLegalPage} />
+          <Route path="/legal/cookies" component={PlatformLegalPage} />
+          <Route path="/terms" component={PlatformLegalPage} />
+          <Route path="/privacy" component={PlatformLegalPage} />
+          <Route path="/cookies" component={PlatformLegalPage} />
           <Route path="/subscribe/:firmSlug" component={SubscribePage} />
           <Route path="/superadmin" component={SuperadminDashboard} />
           <Route path="/superadmin/" component={SuperadminDashboard} />
