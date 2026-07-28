@@ -7,6 +7,15 @@
   var drawer = document.getElementById("searchPanel");
   if (!input || !panel) return;
 
+  // Always start closed — avoids a floating input if a prior open state leaked.
+  if (wrap) wrap.classList.remove("open");
+  if (drawer) {
+    drawer.hidden = true;
+    drawer.setAttribute("hidden", "");
+  }
+  if (toggle) toggle.setAttribute("aria-expanded", "false");
+  panel.hidden = true;
+
   var index = null;
   var loading = false;
 
