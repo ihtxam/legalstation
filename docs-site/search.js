@@ -28,6 +28,7 @@
     }
     wrap.classList.add("open");
     drawer.hidden = false;
+    drawer.removeAttribute("hidden");
     toggle.setAttribute("aria-expanded", "true");
     setTimeout(function () { input.focus(); }, 10);
     loadIndex();
@@ -40,8 +41,11 @@
     }
     wrap.classList.remove("open");
     drawer.hidden = true;
+    drawer.setAttribute("hidden", "");
     panel.hidden = true;
     toggle.setAttribute("aria-expanded", "false");
+    input.value = "";
+    panel.innerHTML = "";
     input.blur();
   }
 

@@ -32,55 +32,75 @@ a:hover { color: var(--teal-soft); text-decoration: underline; }
 .shell {
   max-width: 1080px;
   margin: 0 auto;
-  padding: 1.5rem 1.25rem 4rem;
+  padding: 1rem 1rem 4rem;
 }
 
 .top {
   display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
   align-items: center;
   justify-content: space-between;
-  gap: 0.75rem;
-  margin-bottom: 1.75rem;
-  flex-wrap: nowrap;
+  gap: 0.5rem;
+  margin-bottom: 1.25rem;
+  width: 100%;
+  position: relative;
+  z-index: 30;
 }
 
 .brand {
   font-family: var(--serif);
-  font-size: 1.5rem;
+  font-size: 1.2rem;
   font-weight: 700;
   color: var(--teal);
   letter-spacing: -0.02em;
   min-width: 0;
+  flex: 0 1 auto;
+  line-height: 1.15;
+  white-space: nowrap;
 }
 
 .brand span {
-  display: block;
+  display: inline;
   font-family: var(--sans);
-  font-size: 0.72rem;
+  font-size: 0.62rem;
   font-weight: 500;
   color: var(--slate);
   letter-spacing: 0.04em;
   text-transform: uppercase;
-  margin-top: 0.15rem;
+  margin-top: 0;
+  margin-left: 0.35rem;
+  vertical-align: middle;
+}
+
+@media (min-width: 520px) {
+  .brand { font-size: 1.5rem; }
+  .brand span {
+    display: block;
+    font-size: 0.72rem;
+    margin-left: 0;
+    margin-top: 0.15rem;
+  }
 }
 
 .top-actions {
   display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
   align-items: center;
   justify-content: flex-end;
-  gap: 0.55rem;
-  flex-shrink: 0;
+  gap: 0.35rem;
+  flex: 0 0 auto;
   margin-left: auto;
+  white-space: nowrap;
 }
 
-.top nav {
-  display: none;
-}
+.top nav { display: none; }
 
-@media (min-width: 720px) {
+@media (min-width: 860px) {
   .top nav {
     display: flex;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
     gap: 0.75rem 1rem;
     font-size: 0.8rem;
   }
@@ -89,11 +109,12 @@ a:hover { color: var(--teal-soft); text-decoration: underline; }
 .search {
   position: relative;
   flex: 0 0 auto;
+  z-index: 40;
 }
 
 .search-toggle {
-  width: 2.35rem;
-  height: 2.35rem;
+  width: 2.15rem;
+  height: 2.15rem;
   border-radius: 10px;
   border: 1px solid var(--line);
   background: var(--white);
@@ -118,17 +139,28 @@ a:hover { color: var(--teal-soft); text-decoration: underline; }
   height: 1.05rem;
 }
 
+.search-panel,
+.search-panel[hidden] {
+  display: none !important;
+}
+
+.search.open .search-panel {
+  display: block !important;
+}
+
 .search-panel {
   position: absolute;
   top: calc(100% + 8px);
   right: 0;
-  width: min(92vw, 380px);
-  z-index: 40;
+  left: auto;
+  width: min(18rem, calc(100vw - 2rem));
+  z-index: 50;
   background: var(--white);
   border: 1px solid var(--line);
   border-radius: 12px;
-  box-shadow: 0 12px 32px rgba(15, 23, 42, 0.12);
+  box-shadow: 0 12px 32px rgba(15, 23, 42, 0.14);
   padding: 0.65rem;
+  box-sizing: border-box;
 }
 
 [dir="rtl"] .search-panel {
@@ -138,14 +170,23 @@ a:hover { color: var(--teal-soft); text-decoration: underline; }
 
 .lang {
   display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
   align-items: center;
-  gap: 0.4rem;
-  font-size: 0.72rem;
-  letter-spacing: 0.04em;
-  flex-shrink: 0;
+  gap: 0.22rem;
+  font-size: 0.65rem;
+  letter-spacing: 0.02em;
+  flex: 0 0 auto;
 }
 
-.lang a { color: var(--slate); padding: 0.15rem 0.1rem; }
+@media (min-width: 400px) {
+  .lang {
+    gap: 0.35rem;
+    font-size: 0.72rem;
+  }
+}
+
+.lang a { color: var(--slate); padding: 0.15rem 0.06rem; }
 .lang a:hover { color: var(--teal); text-decoration: none; }
 .lang a.active {
   color: var(--teal);
@@ -184,7 +225,7 @@ a:hover { color: var(--teal-soft); text-decoration: underline; }
   border: 0;
   border-radius: 0;
   box-shadow: none;
-  max-height: 320px;
+  max-height: 280px;
   overflow: auto;
   z-index: 50;
 }
@@ -393,6 +434,6 @@ a:hover { color: var(--teal-soft); text-decoration: underline; }
 }
 
 @media (max-width: 640px) {
-  .top { flex-direction: column; align-items: flex-start; }
+  .shell { padding: 0.85rem 0.85rem 3rem; }
   .hero { padding: 1.35rem 1.15rem; }
 }
